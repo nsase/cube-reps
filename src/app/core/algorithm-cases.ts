@@ -59,6 +59,14 @@ function createPllPattern(index: number): CubePattern {
   return pattern;
 }
 
+const PLL_ALTERNATIVES: Record<string, readonly string[]> = {
+  T: ["R U R' U' R' F R F' r U R' U' r' F R F'"],
+  H: ["M2 U' M2 U2 M2 U' M2"],
+  Ua: ["R U' R U R U R U' R' U' R2"],
+  Ub: ["R2 U R U R' U' R' U' R' U R'"],
+  Jb: ["R U2 R' U' R U2 L' U R' U' L"],
+};
+
 const PLL_DATA = [
   ['Aa', 'Corner', "x L2 D2 L' U' L D2 L' U L' x'"],
   ['Ab', 'Corner', "x' L2 D2 L U L' D2 L U' L x"],
@@ -88,7 +96,7 @@ export const PLL_CASES: AlgorithmCase[] = PLL_DATA.map(([number, group, algorith
   number,
   name: `${number}-perm`,
   group,
-  algorithm,
+  algorithms: [algorithm, ...(PLL_ALTERNATIVES[number] ?? [])],
   pattern: createPllPattern(index),
 }));
 
@@ -108,11 +116,11 @@ export const OLL_CASES: AlgorithmCase[] = Array.from({ length: 57 }, (_, index) 
   number: String(index + 1).padStart(2, '0'),
   name: `OLL ${index + 1}`,
   group: OLL_GROUPS[index % OLL_GROUPS.length],
-  algorithm:
+  algorithms:
     index === 26
-      ? "R U R' U R U2 R'"
+      ? ["R U R' U R U2 R'", "y R U2 R' U' R U' R'"]
       : index === 20
-        ? "R U2 R' U' R U R' U' R U' R'"
-        : '手順を登録予定',
+        ? ["R U2 R' U' R U R' U' R U' R'"]
+        : [],
   pattern: createOllPattern(index),
 }));

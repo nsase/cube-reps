@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PLL_CASES } from '../../core/algorithm-cases';
+import { AlgorithmLibraryService } from '../../core/algorithm-library';
 import { CubeService } from '../../core/cube';
 import { SolveMode } from '../../core/cube.models';
 
@@ -22,6 +23,8 @@ import { SolveMode } from '../../core/cube.models';
 export class Timer implements OnDestroy {
   readonly showHistory = output<void>();
   protected readonly cube = inject(CubeService);
+
+  protected readonly algorithmLibrary = inject(AlgorithmLibraryService);
   protected readonly mode = signal<SolveMode>('3x3');
   protected readonly elapsed = signal(0);
   protected readonly state = signal<'idle' | 'ready' | 'running'>('idle');

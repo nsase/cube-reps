@@ -1,8 +1,10 @@
 <section>
   <div class="tools">
     <div>
-      <button [class.on]="kind() === 'OLL'" (click)="kind.set('OLL')">OLL <small>57</small></button>
-      <button [class.on]="kind() === 'PLL'" (click)="kind.set('PLL')">PLL <small>21</small></button>
+      <button [class.on]="kind() === 'OLL'" (click)="kind.set('OLL')">OLL <small>57</small></button
+      ><button [class.on]="kind() === 'PLL'" (click)="kind.set('PLL')">
+        PLL <small>21</small>
+      </button>
     </div>
     <label>⌕ <input placeholder="番号・名前・グループで検索" [(ngModel)]="query" /></label>
   </div>
@@ -21,10 +23,65 @@
           <h2>{{ item.name }}</h2>
           <p>{{ item.group }}</p>
         </div>
-        <code>{{ item.algorithm }}</code>
-        <button [disabled]="item.algorithm.includes('登録予定')" (click)="copy(item)">
-          {{ copied() === item.kind + item.number ? 'コピー済み ✓' : '手順をコピー' }}
-        </button>
+        <div class="algorithm-panel">
+          <div class="algorithm-heading">
+            <strong>手順</strong><small>先頭が使用中の手順です</small>
+          </div>
+          <ol class="algorithm-list">
+            @for (
+              algorithm of library.algorithmsFor(item);
+              track algorithm.id;
+              let index = $index;
+              let first = $first;
+              let last = $last
+            ) {
+              <li [class.preferred]="first">
+                <span class="rank">{{ index + 1 }}</span>
+                <code>{{ algorithm.notation }}</code>
+                <span class="source">{{ algorithm.builtIn ? '標準' : '追加' }}</span>
+                <div class="algorithm-actions">
+                  <button
+                    title="上へ"
+                    [disabled]="first"
+                    (click)="library.move(item, algorithm.id, -1)"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    title="下へ"
+                    [disabled]="last"
+                    (click)="library.move(item, algorithm.id, 1)"
+                  >
+                    ↓
+                  </button>
+                  <button title="コピー" (click)="copy(item, algorithm)">
+                    {{ copied() === library.caseKey(item) + '-' + algorithm.id ? '✓' : '⧉' }}
+                  </button>
+                  @if (!algorithm.builtIn) {
+                    <button
+                      class="remove"
+                      title="削除"
+                      (click)="library.remove(item, algorithm.id)"
+                    >
+                      ×
+                    </button>
+                  }
+                </div>
+              </li>
+            } @empty {
+              <li class="no-algorithm">手順がまだありません</li>
+            }
+          </ol>
+          <form class="algorithm-form" (submit)="$event.preventDefault(); add(item)">
+            <input
+              placeholder="新しい手順を入力"
+              [ngModel]="draftFor(item)"
+              (ngModelChange)="setDraft(item, $event)"
+              [name]="'algorithm-' + item.kind + item.number"
+            />
+            <button type="submit" [disabled]="!draftFor(item).trim()">追加</button>
+          </form>
+        </div>
       </article>
     } @empty {
       <div class="empty">該当するケースがありません。</div>

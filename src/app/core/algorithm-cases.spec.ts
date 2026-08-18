@@ -3,7 +3,12 @@ import { OLL_CASES, PLL_CASES } from './algorithm-cases';
 
 const cases = [...OLL_CASES, ...PLL_CASES];
 
-describe('algorithm case patterns', () => {
+describe('algorithm cases', () => {
+  it('includes cases with multiple built-in algorithms', () => {
+    expect(PLL_CASES.find((item) => item.number === 'T')?.algorithms.length).toBeGreaterThan(1);
+    expect(OLL_CASES.find((item) => item.number === '27')?.algorithms.length).toBeGreaterThan(1);
+  });
+
   it('uses a 5x5 matrix for every OLL and PLL case', () => {
     expect(cases).toHaveLength(78);
     for (const item of cases) {
@@ -21,10 +26,11 @@ describe('algorithm case patterns', () => {
     }
   });
 
-  it('uses only two sticker colors for OLL patterns', () => {
+  it('uses only yellow and none for OLL patterns', () => {
     for (const item of OLL_CASES) {
-      const colors = new Set(item.pattern.flat().filter((color) => color !== 'none'));
-      expect([...colors].every((color) => color === 'yellow' || color === 'white')).toBe(true);
+      const colors = new Set(item.pattern.flat());
+      expect([...colors].every((color) => color === 'yellow' || color === 'none')).toBe(true);
+      expect(colors.has('none')).toBe(true);
     }
   });
 });
