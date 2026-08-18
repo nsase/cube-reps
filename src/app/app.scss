@@ -319,22 +319,6 @@ header p {
   font: 500 var(--font-size-small) var(--font-family-mono);
   color: $muted;
 }
-.pattern {
-  width: 60px;
-  height: 60px;
-  background: $ink;
-  padding: 4px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 3px;
-  border-radius: 4px;
-}
-.pattern i {
-  background: #464943;
-}
-.pattern i.on {
-  background: $lime;
-}
 .grid h2 {
   font-size: var(--font-size-base);
   margin: 5px 0 2px;
