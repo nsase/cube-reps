@@ -1,0 +1,53 @@
+<section>
+  <div class="modes">
+    <button [class.on]="mode() === '3x3'" (click)="setMode('3x3')">
+      3×3<small>FULL SOLVE</small>
+    </button>
+    <button [class.on]="mode() === 'PLL'" (click)="setMode('PLL')">
+      PLL<small>CASE DRILL</small>
+    </button>
+  </div>
+  @if (mode() === 'PLL') {
+    <div class="select">
+      練習ケース
+      <select [(ngModel)]="selected" (change)="newScramble()">
+        @for (item of pllCases; track item.number; let index = $index) {
+          <option [ngValue]="index">{{ item.number }} — {{ item.name }}</option>
+        }
+      </select>
+      <code>{{ pllCases[selected()].algorithm }}</code>
+    </div>
+  }
+  <div class="scramble">
+    <span>SCRAMBLE <button (click)="newScramble()">↻</button></span>
+    <p>{{ scramble() }}</p>
+  </div>
+  <div
+    class="timer"
+    [class.ready]="state() === 'ready'"
+    (pointerdown)="press()"
+    (pointerup)="release()"
+  >
+    <small>{{
+      state() === 'ready'
+        ? '離してスタート'
+        : state() === 'running'
+          ? 'SPACE / タップでストップ'
+          : 'SPACEを長押し'
+    }}</small>
+    <strong>{{ cube.formatTime(elapsed()) }}</strong>
+    <i>━━ SPACE ━━</i>
+  </div>
+  <div class="stats">
+    <div>
+      直近<strong>{{ cube.solves().length ? cube.displayTime(cube.solves()[0]) : '—' }}</strong>
+    </div>
+    <div>
+      ベスト<strong>{{ cube.formatTime(cube.best()) }}</strong>
+    </div>
+    <div>
+      直近5回 平均<strong>{{ cube.formatTime(cube.average()) }}</strong>
+    </div>
+    <button (click)="showHistory.emit()">すべての記録 →</button>
+  </div>
+</section>

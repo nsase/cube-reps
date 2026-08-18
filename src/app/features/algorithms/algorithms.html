@@ -1,0 +1,37 @@
+<section>
+  <div class="tools">
+    <div>
+      <button [class.on]="kind() === 'OLL'" (click)="kind.set('OLL')">OLL <small>57</small></button>
+      <button [class.on]="kind() === 'PLL'" (click)="kind.set('PLL')">PLL <small>21</small></button>
+    </div>
+    <label>⌕ <input placeholder="番号・名前・グループで検索" [(ngModel)]="query" /></label>
+  </div>
+  <p class="count">
+    <b>{{ kind() }}</b> {{ cases().length }}ケース
+  </p>
+  <div class="grid">
+    @for (item of cases(); track item.kind + item.number) {
+      <article>
+        <div class="casehead">
+          <b>{{ item.number }}</b
+          ><small>{{ item.kind }}</small>
+        </div>
+        <div class="pattern">
+          @for (dot of [1, 2, 3, 4, 5, 6, 7, 8, 9]; track dot) {
+            <i [class.on]="dot === 5 || (dot + (+item.number || 1)) % 3 === 0"></i>
+          }
+        </div>
+        <div>
+          <h2>{{ item.name }}</h2>
+          <p>{{ item.group }}</p>
+        </div>
+        <code>{{ item.algorithm }}</code>
+        <button [disabled]="item.algorithm.includes('登録予定')" (click)="copy(item)">
+          {{ copied() === item.kind + item.number ? 'コピー済み ✓' : '手順をコピー' }}
+        </button>
+      </article>
+    } @empty {
+      <div class="empty">該当するケースがありません。</div>
+    }
+  </div>
+</section>
