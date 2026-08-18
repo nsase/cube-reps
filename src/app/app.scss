@@ -1,7 +1,7 @@
-$ink: #181a17;
-$lime: #c9ef46;
-$line: #d9d8d2;
-$muted: #7d8078;
+$ink: var(--text-color);
+$lime: var(--primary-color);
+$line: var(--border-color);
+$muted: var(--text-muted-color);
 .shell {
   min-height: 100vh;
   display: grid;
@@ -12,7 +12,7 @@ aside {
   position: sticky;
   top: 0;
   background: $ink;
-  color: #fff;
+  color: var(--surface-color);
   padding: 34px 24px;
   display: flex;
   flex-direction: column;
@@ -21,8 +21,8 @@ aside {
   display: flex;
   align-items: center;
   gap: 11px;
-  color: #fff;
-  font: 700 22px Outfit;
+  color: var(--surface-color);
+  font: 700 var(--font-size-title) var(--font-family-heading);
   cursor: pointer;
 }
 .brand > span {
@@ -40,10 +40,10 @@ aside {
   background: $lime;
 }
 .brand i:nth-child(2) {
-  background: #ff6960;
+  background: var(--danger-color);
 }
 .brand i:nth-child(3) {
-  background: #55aaff;
+  background: var(--info-color);
 }
 .brand i:last-child {
   background: white;
@@ -76,14 +76,14 @@ nav button.on {
   border: 1px solid #363934;
   border-radius: 8px;
   padding: 14px;
-  font-size: 10px;
+  font-size: var(--font-size-small);
   color: #a4a79f;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 .today strong {
-  font: 600 24px Outfit;
+  font: 600 var(--font-size-title) var(--font-family-heading);
   color: $lime;
 }
 main {
@@ -105,17 +105,17 @@ header {
 }
 header small,
 .history-title small {
-  font: 500 9px 'DM Mono';
+  font: 500 var(--font-size-small) var(--font-family-mono);
   letter-spacing: 2px;
   color: $muted;
 }
 h1 {
-  font-size: 25px;
+  font-size: var(--font-size-title);
   margin: 6px 0 0;
 }
 header p {
-  font-size: 10px;
-  color: #69935e;
+  font-size: var(--font-size-small);
+  color: var(--success-color);
 }
 .modes {
   margin: 0 auto 23px;
@@ -136,11 +136,11 @@ header p {
 }
 .modes button small {
   display: block;
-  font: 500 7px 'DM Mono';
+  font: 500 var(--font-size-small) var(--font-family-mono);
   letter-spacing: 1.5px;
 }
 .modes button.on {
-  background: #fff;
+  background: var(--surface-color);
   color: $ink;
   box-shadow: 0 2px 9px #0001;
 }
@@ -149,7 +149,7 @@ header p {
   max-width: 780px;
   margin: 0 auto 12px;
   border: 1px solid $line;
-  background: #fff;
+  background: var(--surface-color);
   border-radius: 8px;
 }
 .select {
@@ -158,7 +158,7 @@ header p {
   gap: 12px;
   align-items: center;
   color: $muted;
-  font-size: 10px;
+  font-size: var(--font-size-small);
 }
 .select select {
   border: 0;
@@ -167,15 +167,15 @@ header p {
 .select code {
   margin-left: auto;
   color: $ink;
-  font-size: 9px;
+  font-size: var(--font-size-small);
 }
 .scramble {
   text-align: center;
   padding: 16px 22px;
-  background: #faf9f6;
+  background: var(--surface-muted-color);
 }
 .scramble span {
-  font: 500 9px 'DM Mono';
+  font: 500 var(--font-size-small) var(--font-family-mono);
   letter-spacing: 2px;
   color: $muted;
 }
@@ -184,7 +184,7 @@ header p {
   background: none;
 }
 .scramble p {
-  font: 500 clamp(14px, 1.5vw, 18px) 'DM Mono';
+  font: 500 clamp(var(--font-size-base), 1.5vw, var(--font-size-large)) var(--font-family-mono);
   word-spacing: 5px;
   margin: 10px 0 2px;
 }
@@ -198,12 +198,13 @@ header p {
   touch-action: none;
 }
 .timer small {
-  font: 500 9px 'DM Mono';
+  font: 500 var(--font-size-small) var(--font-family-mono);
   letter-spacing: 1.5px;
   color: #999;
 }
 .timer strong {
-  font: 600 clamp(70px, 10vw, 128px) Outfit;
+  font: 600 clamp(var(--font-size-timer-min), 10vw, var(--font-size-timer-max))
+    var(--font-family-heading);
   letter-spacing: -6px;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -212,7 +213,7 @@ header p {
   color: #70a700;
 }
 .timer i {
-  font: normal 8px 'DM Mono';
+  font: normal var(--font-size-small) var(--font-family-mono);
   letter-spacing: 2px;
   color: #aaa;
   margin-top: 25px;
@@ -226,19 +227,19 @@ header p {
   padding: 15px 24px;
   border-right: 1px solid $line;
   color: $muted;
-  font-size: 9px;
+  font-size: var(--font-size-small);
 }
 .stats strong {
   display: block;
   color: $ink;
-  font: 600 22px Outfit;
+  font: 600 var(--font-size-title) var(--font-family-heading);
 }
 .stats > button {
   border: 0;
   background: none;
   padding: 20px;
   color: $muted;
-  font-size: 10px;
+  font-size: var(--font-size-small);
 }
 .tools {
   display: flex;
@@ -249,7 +250,7 @@ header p {
 }
 .tools button {
   border: 1px solid $line;
-  background: #fff;
+  background: var(--surface-color);
   padding: 10px 25px;
   font-weight: 700;
 }
@@ -266,7 +267,7 @@ header p {
 }
 .tools label {
   width: 360px;
-  background: #fff;
+  background: var(--surface-color);
   border: 1px solid $line;
   border-radius: 7px;
   padding: 0 13px;
@@ -279,12 +280,12 @@ header p {
   background: none;
   padding: 11px;
   outline: 0;
-  font-size: 11px;
+  font-size: var(--font-size-small);
 }
 .count {
   margin: 27px 0 13px;
   color: $muted;
-  font-size: 10px;
+  font-size: var(--font-size-small);
 }
 .count b {
   color: $ink;
@@ -295,7 +296,7 @@ header p {
   gap: 13px;
 }
 .grid article {
-  background: #fff;
+  background: var(--surface-color);
   border: 1px solid $line;
   border-radius: 9px;
   padding: 17px;
@@ -309,13 +310,13 @@ header p {
   justify-content: space-between;
 }
 .casehead b {
-  font: 700 19px Outfit;
+  font: 700 var(--font-size-large) var(--font-family-heading);
 }
 .casehead small {
   border: 1px solid $line;
   border-radius: 4px;
   padding: 3px 6px;
-  font: 500 8px 'DM Mono';
+  font: 500 var(--font-size-small) var(--font-family-mono);
   color: $muted;
 }
 .pattern {
@@ -335,21 +336,21 @@ header p {
   background: $lime;
 }
 .grid h2 {
-  font-size: 15px;
+  font-size: var(--font-size-base);
   margin: 5px 0 2px;
 }
 .grid p {
-  font-size: 10px;
+  font-size: var(--font-size-small);
   color: $muted;
   margin: 0;
 }
 .grid code {
   grid-column: 1/-1;
-  background: #f4f4f0;
+  background: var(--surface-muted-color);
   border-radius: 5px;
   padding: 9px;
   min-height: 42px;
-  font-size: 9px;
+  font-size: var(--font-size-small);
   line-height: 1.5;
 }
 .grid article > button {
@@ -357,7 +358,7 @@ header p {
   border: 0;
   background: none;
   text-align: right;
-  font-size: 10px;
+  font-size: var(--font-size-small);
   color: #555;
 }
 .grid button:disabled {
@@ -370,20 +371,20 @@ header p {
   margin-bottom: 16px;
 }
 .summaries article {
-  background: #fff;
+  background: var(--surface-color);
   border: 1px solid $line;
   border-radius: 8px;
   padding: 19px;
   color: $muted;
-  font-size: 10px;
+  font-size: var(--font-size-small);
 }
 .summaries strong {
   display: block;
   color: $ink;
-  font: 600 31px Outfit;
+  font: 600 var(--font-size-display) var(--font-family-heading);
 }
 .history {
-  background: #fff;
+  background: var(--surface-color);
   border: 1px solid $line;
   border-radius: 9px;
   overflow: hidden;
@@ -394,7 +395,7 @@ header p {
 }
 .history-title h2 {
   margin: 4px 0 0;
-  font-size: 18px;
+  font-size: var(--font-size-large);
 }
 .row {
   display: grid;
@@ -406,19 +407,19 @@ header p {
 }
 .row > span,
 .row time {
-  font: 500 9px 'DM Mono';
+  font: 500 var(--font-size-small) var(--font-family-mono);
   color: $muted;
 }
 .row > div:nth-child(2) strong {
   display: block;
-  font: 600 20px Outfit;
+  font: 600 var(--font-size-large) var(--font-family-heading);
 }
 .row > div:nth-child(2) small {
-  font-size: 8px;
+  font-size: var(--font-size-small);
   color: $muted;
 }
 .row code {
-  font-size: 9px;
+  font-size: var(--font-size-small);
   color: $muted;
   white-space: nowrap;
   overflow: hidden;
@@ -431,10 +432,10 @@ header p {
 }
 .row button {
   border: 1px solid $line;
-  background: #fff;
+  background: var(--surface-color);
   border-radius: 4px;
   padding: 4px 6px;
-  font: 600 9px 'DM Mono';
+  font: 600 var(--font-size-small) var(--font-family-mono);
 }
 .row button.on {
   background: $ink;
@@ -476,7 +477,7 @@ header p {
   }
   nav button {
     text-align: center;
-    font-size: 18px;
+    font-size: var(--font-size-large);
   }
   nav em {
     display: none;
@@ -520,13 +521,13 @@ header p {
   }
   nav button,
   nav button.on {
-    font-size: 14px;
+    font-size: var(--font-size-base);
     padding: 6px 18px;
   }
   nav em {
     display: block;
     margin: 1px 0 0;
-    font-size: 8px;
+    font-size: var(--font-size-small);
   }
   main {
     padding: 23px 14px 80px;
@@ -551,7 +552,7 @@ header p {
     padding: 12px 8px;
   }
   .stats strong {
-    font-size: 17px;
+    font-size: var(--font-size-large);
   }
   .stats > button {
     display: none;
@@ -574,7 +575,7 @@ header p {
     padding: 12px 8px;
   }
   .summaries strong {
-    font-size: 21px;
+    font-size: var(--font-size-large);
   }
   .row {
     grid-template-columns: 28px 85px 1fr;
@@ -601,16 +602,16 @@ header p {
   div small {
     display: block;
     color: #969b91;
-    font: 500 8px 'DM Mono';
+    font: 500 var(--font-size-small) var(--font-family-mono);
     letter-spacing: 1.5px;
   }
   div strong {
     color: $lime;
-    font-size: 15px;
+    font-size: var(--font-size-base);
   }
   label {
     color: #aeb2aa;
-    font-size: 9px;
+    font-size: var(--font-size-small);
     display: flex;
     align-items: center;
     gap: 9px;
@@ -638,15 +639,15 @@ header p {
   gap: 20px;
   h2 {
     margin: 4px 0 2px;
-    font-size: 18px;
+    font-size: var(--font-size-large);
   }
   p {
     margin: 0;
     color: $muted;
-    font-size: 10px;
+    font-size: var(--font-size-small);
   }
   small {
-    font: 500 9px 'DM Mono';
+    font: 500 var(--font-size-small) var(--font-family-mono);
     letter-spacing: 2px;
     color: $muted;
   }
@@ -665,13 +666,13 @@ header p {
   display: flex;
   align-items: flex-end;
   gap: 9px;
-  background: #f4f4f0;
+  background: var(--surface-muted-color);
   border-radius: 7px;
   label {
     display: grid;
     gap: 5px;
     color: $muted;
-    font-size: 9px;
+    font-size: var(--font-size-small);
   }
   input,
   select {
@@ -687,7 +688,7 @@ header p {
     background: white;
     padding: 8px 10px;
     border-radius: 5px;
-    font-size: 10px;
+    font-size: var(--font-size-small);
   }
 }
 .group-list {
@@ -703,8 +704,8 @@ header p {
     overflow: hidden;
   }
   article.active {
-    border-color: #a6c92e;
-    box-shadow: inset 0 0 0 1px #a6c92e;
+    border-color: var(--primary-color-dark);
+    box-shadow: inset 0 0 0 1px var(--primary-color-dark);
   }
 }
 .group-main {
@@ -728,11 +729,11 @@ header p {
     text-overflow: ellipsis;
   }
   strong {
-    font-size: 11px;
+    font-size: var(--font-size-small);
   }
   small {
     color: $muted;
-    font-size: 8px;
+    font-size: var(--font-size-small);
     margin-top: 2px;
   }
 }
@@ -762,7 +763,7 @@ header p {
   margin-bottom: 10px;
   label {
     color: $muted;
-    font-size: 9px;
+    font-size: var(--font-size-small);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -790,7 +791,7 @@ header p {
   border-radius: 4px;
   background: #f0f1e9;
   color: #64702f;
-  font-size: 8px;
+  font-size: var(--font-size-small);
 }
 @media (max-width: 900px) {
   .group-list {
