@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ViewEncapsulation,
-  inject,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CubeService } from './core/cube';
 import { View } from './core/cube.models';
 import { Algorithms } from './features/algorithms/algorithms';
@@ -17,7 +11,6 @@ import { Timer } from './features/timer/timer';
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
 })
 export class App {
   protected readonly cube = inject(CubeService);
