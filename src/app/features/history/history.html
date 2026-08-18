@@ -1,0 +1,47 @@
+<section>
+  <div class="summaries">
+    <article>
+      全ソルブ<strong>{{ cube.solves().length }}</strong>
+    </article>
+    <article>
+      ベスト<strong>{{ cube.formatTime(cube.best()) }}</strong>
+    </article>
+    <article>
+      直近5回 平均<strong>{{ cube.formatTime(cube.average()) }}</strong>
+    </article>
+  </div>
+  <div class="history">
+    <div class="history-title">
+      <small>SOLVE HISTORY</small>
+      <h2>計測記録</h2>
+    </div>
+    @for (solve of cube.solves(); track solve.id; let index = $index) {
+      <div class="row">
+        <span>#{{ cube.solves().length - index }}</span>
+        <div>
+          <strong>{{ cube.displayTime(solve) }}</strong
+          ><small>{{ solve.mode }}{{ solve.caseName ? ' · ' + solve.caseName : '' }}</small>
+        </div>
+        <code>{{ solve.scramble }}</code>
+        <time>{{ solve.date | date: 'MM/dd HH:mm' }}</time>
+        <div>
+          <button [class.on]="solve.penalty === '+2'" (click)="cube.togglePenalty(solve.id, '+2')">
+            +2
+          </button>
+          <button
+            [class.on]="solve.penalty === 'DNF'"
+            (click)="cube.togglePenalty(solve.id, 'DNF')"
+          >
+            DNF
+          </button>
+          <button (click)="cube.removeSolve(solve.id)">×</button>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty">
+        <b>まだ記録がありません</b><span>タイマーで最初のソルブを計測してみましょう。</span
+        ><button (click)="showTimer.emit()">タイマーへ</button>
+      </div>
+    }
+  </div>
+</section>
