@@ -1,4 +1,17 @@
 <section>
+  <div class="record-context">
+    <div>
+      <small>RECORD GROUP</small><strong>{{ cube.activeGroup().name }}</strong>
+    </div>
+    <label>
+      記録先
+      <select [ngModel]="cube.activeGroupId()" (ngModelChange)="cube.activeGroupId.set($event)">
+        @for (group of cube.groups(); track group.id) {
+          <option [value]="group.id">{{ group.name }}</option>
+        }
+      </select>
+    </label>
+  </div>
   <div class="modes">
     <button [class.on]="mode() === '3x3'" (click)="setMode('3x3')">
       3×3<small>FULL SOLVE</small>
@@ -35,12 +48,14 @@
           ? 'SPACE / タップでストップ'
           : 'SPACEを長押し'
     }}</small>
-    <strong>{{ cube.formatTime(elapsed()) }}</strong>
-    <i>━━ SPACE ━━</i>
+    <strong>{{ cube.formatTime(elapsed()) }}</strong
+    ><i>━━ SPACE ━━</i>
   </div>
   <div class="stats">
     <div>
-      直近<strong>{{ cube.solves().length ? cube.displayTime(cube.solves()[0]) : '—' }}</strong>
+      直近<strong>{{
+        cube.activeSolves().length ? cube.displayTime(cube.activeSolves()[0]) : '—'
+      }}</strong>
     </div>
     <div>
       ベスト<strong>{{ cube.formatTime(cube.best()) }}</strong>

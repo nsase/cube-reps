@@ -1,13 +1,76 @@
 <section>
+  <div class="group-panel">
+    <div class="group-panel-title">
+      <div>
+        <small>RECORD GROUPS</small>
+        <h2>記録グループ</h2>
+        <p>用途やキューブごとに記録を分けられます。</p>
+      </div>
+      <button class="primary" (click)="showCreateForm.set(!showCreateForm())">
+        ＋ 新しいグループ
+      </button>
+    </div>
+    @if (showCreateForm()) {
+      <form class="group-form" (submit)="$event.preventDefault(); createGroup()">
+        <label
+          >グループ名<input
+            placeholder="例：大会本番、GAN 12"
+            [ngModel]="newGroupName()"
+            (ngModelChange)="newGroupName.set($event)"
+            name="groupName"
+            autofocus
+        /></label>
+        <button class="primary" type="submit" [disabled]="!newGroupName().trim()">作成</button>
+        <button type="button" (click)="showCreateForm.set(false)">キャンセル</button>
+      </form>
+    }
+    <div class="group-list">
+      @for (group of cube.groups(); track group.id) {
+        <article [class.active]="cube.activeGroupId() === group.id">
+          <button
+            class="group-main"
+            (click)="cube.activeGroupId.set(group.id); selectedGroup.set(group.id)"
+          >
+            <span class="group-icon">●</span>
+            <span
+              ><strong>{{ group.name }}</strong
+              ><small
+                >{{ cube.solves().filter((solve) => solve.groupId === group.id).length }}回</small
+              ></span
+            >
+          </button>
+          <button
+            class="group-delete"
+            [disabled]="group.id === 'unclassified' || cube.groups().length === 1"
+            title="グループを削除"
+            (click)="deleteGroup(group.id)"
+          >
+            ×
+          </button>
+        </article>
+      }
+    </div>
+  </div>
+
+  <div class="history-filter">
+    <label
+      >表示する記録<select [ngModel]="selectedGroup()" (ngModelChange)="selectedGroup.set($event)">
+        <option value="all">すべてのグループ</option>
+        @for (group of cube.groups(); track group.id) {
+          <option [value]="group.id">{{ group.name }}</option>
+        }
+      </select></label
+    >
+  </div>
   <div class="summaries">
     <article>
-      全ソルブ<strong>{{ cube.solves().length }}</strong>
+      対象ソルブ<strong>{{ filteredSolves().length }}</strong>
     </article>
     <article>
-      ベスト<strong>{{ cube.formatTime(cube.best()) }}</strong>
+      ベスト<strong>{{ cube.formatTime(filteredBest()) }}</strong>
     </article>
     <article>
-      直近5回 平均<strong>{{ cube.formatTime(cube.average()) }}</strong>
+      直近5回 平均<strong>{{ cube.formatTime(filteredAverage()) }}</strong>
     </article>
   </div>
   <div class="history">
@@ -15,31 +78,31 @@
       <small>SOLVE HISTORY</small>
       <h2>計測記録</h2>
     </div>
-    @for (solve of cube.solves(); track solve.id; let index = $index) {
+    @for (solve of filteredSolves(); track solve.id; let index = $index) {
       <div class="row">
-        <span>#{{ cube.solves().length - index }}</span>
+        <span>#{{ filteredSolves().length - index }}</span>
         <div>
           <strong>{{ cube.displayTime(solve) }}</strong
           ><small>{{ solve.mode }}{{ solve.caseName ? ' · ' + solve.caseName : '' }}</small>
         </div>
         <code>{{ solve.scramble }}</code>
         <time>{{ solve.date | date: 'MM/dd HH:mm' }}</time>
-        <div>
-          <button [class.on]="solve.penalty === '+2'" (click)="cube.togglePenalty(solve.id, '+2')">
-            +2
-          </button>
-          <button
+        <div class="row-actions">
+          <span class="group-badge">{{ cube.groupName(solve.groupId) }}</span
+          ><button [class.on]="solve.penalty === '+2'" (click)="cube.togglePenalty(solve.id, '+2')">
+            +2</button
+          ><button
             [class.on]="solve.penalty === 'DNF'"
             (click)="cube.togglePenalty(solve.id, 'DNF')"
           >
-            DNF
-          </button>
-          <button (click)="cube.removeSolve(solve.id)">×</button>
+            DNF</button
+          ><button (click)="cube.removeSolve(solve.id)">×</button>
         </div>
       </div>
     } @empty {
       <div class="empty">
-        <b>まだ記録がありません</b><span>タイマーで最初のソルブを計測してみましょう。</span
+        <b>このグループにはまだ記録がありません</b
+        ><span>タイマーでグループを選んで計測してみましょう。</span
         ><button (click)="showTimer.emit()">タイマーへ</button>
       </div>
     }
