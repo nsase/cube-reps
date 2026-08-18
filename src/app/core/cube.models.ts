@@ -27,6 +27,6 @@ export interface AlgorithmCase {
   number: string;
   name: string;
   group: string;
-  algorithm: string;
+  algorithms: readonly string[];
   pattern: CubePattern;
 }

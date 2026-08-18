@@ -28,7 +28,7 @@
           <option [ngValue]="index">{{ item.number }} — {{ item.name }}</option>
         }
       </select>
-      <code>{{ pllCases[selected()].algorithm }}</code>
+      <code>{{ algorithmLibrary.primaryNotation(pllCases[selected()]) }}</code>
     </div>
   }
   <div class="scramble">
