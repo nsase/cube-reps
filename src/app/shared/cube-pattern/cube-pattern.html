@@ -1,0 +1,11 @@
+<div class="cube-pattern" aria-hidden="true">
+  @for (cell of cells(); track cell.y * 5 + cell.x) {
+    <span
+      class="sticker"
+      [class]="'sticker ' + cell.region"
+      [attr.data-color]="cell.color"
+      [attr.data-x]="cell.x"
+      [attr.data-y]="cell.y"
+    ></span>
+  }
+</div>

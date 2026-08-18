@@ -19,10 +19,14 @@ export interface Solve {
   penalty: Penalty;
 }
 
+export type StickerColor = 'yellow' | 'white' | 'green' | 'blue' | 'red' | 'orange' | 'none';
+export type CubePattern = ReadonlyArray<ReadonlyArray<StickerColor>>;
+
 export interface AlgorithmCase {
   kind: 'OLL' | 'PLL';
   number: string;
   name: string;
   group: string;
   algorithm: string;
+  pattern: CubePattern;
 }

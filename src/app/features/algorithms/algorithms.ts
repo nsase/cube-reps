@@ -2,10 +2,11 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 import { FormsModule } from '@angular/forms';
 import { OLL_CASES, PLL_CASES } from '../../core/algorithm-cases';
 import { AlgorithmCase } from '../../core/cube.models';
+import { CubePatternView } from '../../shared/cube-pattern/cube-pattern';
 
 @Component({
   selector: 'app-algorithms',
-  imports: [FormsModule],
+  imports: [FormsModule, CubePatternView],
   templateUrl: './algorithms.html',
   styleUrl: './algorithms.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
