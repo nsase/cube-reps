@@ -1,0 +1,22 @@
+import { defineOllCase } from './oll-case';
+
+export const OLL_26_CASE = defineOllCase({
+  number: '26',
+  names: ['Antisune', 'AS', 'S-', 'Swimming Right'],
+  group: 'Cross',
+  algorithms: [
+    "(R U2 R') U' R U' R'",
+    "y' R' U' R U' R' U2 R",
+    "(y') R U2 R' U' R U' R'",
+    "(U2) R' U' R U' R' U2 R",
+    "(U') R U2 R' U' R U' R'",
+    "L' U' L U' L' U2 L",
+  ],
+  pattern: [
+    ['none', 'none', 'none', 'none', 'none'],
+    ['yellow', 'none', 'yellow', 'yellow', 'none'],
+    ['none', 'yellow', 'yellow', 'yellow', 'none'],
+    ['none', 'none', 'yellow', 'none', 'yellow'],
+    ['none', 'yellow', 'none', 'none', 'none'],
+  ],
+});
