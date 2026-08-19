@@ -22,7 +22,18 @@ export class AlgorithmLibraryService {
   }
 
   algorithmsFor(item: AlgorithmCase): CaseAlgorithm[] {
-    return this.preferences()[this.caseKey(item)] ?? this.defaultsFor(item);
+    const defaults = this.defaultsFor(item);
+    const saved = this.preferences()[this.caseKey(item)];
+    if (!saved) return defaults;
+
+    const defaultsById = new Map(defaults.map((algorithm) => [algorithm.id, algorithm]));
+    const synced = saved.flatMap((algorithm) => {
+      if (!algorithm.builtIn) return [algorithm];
+      const current = defaultsById.get(algorithm.id);
+      return current ? [current] : [];
+    });
+    const savedIds = new Set(synced.map((algorithm) => algorithm.id));
+    return [...synced, ...defaults.filter((algorithm) => !savedIds.has(algorithm.id))];
   }
 
   primaryNotation(item: AlgorithmCase): string {
