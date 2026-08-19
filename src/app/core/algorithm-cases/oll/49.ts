@@ -1,0 +1,19 @@
+import { defineOllCase } from './oll-case';
+
+export const OLL_49_CASE = defineOllCase({
+  number: '49',
+  names: ['Right back squeezy'],
+  group: 'Small L Shape',
+  algorithms: [
+    "Rw U' Rw2 U Rw2 U Rw2 U' Rw",
+    "(U2) Rw U' Rw2 U Rw2 U Rw2 U' Rw",
+    "R B' R2 F R2 B R2 F' R",
+  ],
+  pattern: [
+    ['none', 'none', 'none', 'yellow', 'none'],
+    ['yellow', 'none', 'yellow', 'none', 'none'],
+    ['yellow', 'none', 'yellow', 'yellow', 'none'],
+    ['yellow', 'none', 'none', 'none', 'none'],
+    ['none', 'none', 'yellow', 'yellow', 'none'],
+  ],
+});

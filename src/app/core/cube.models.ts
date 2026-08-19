@@ -26,6 +26,7 @@ export interface AlgorithmCase {
   kind: 'OLL' | 'PLL';
   number: string;
   name: string;
+  aliases?: readonly string[];
   group: string;
   algorithms: readonly string[];
   pattern: CubePattern;

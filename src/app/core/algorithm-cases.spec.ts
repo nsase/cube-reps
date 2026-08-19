@@ -4,6 +4,34 @@ import { OLL_CASES, PLL_CASES } from './algorithm-cases';
 const cases = [...OLL_CASES, ...PLL_CASES];
 
 describe('algorithm cases', () => {
+  it('includes OLL 01 through 57 in order', () => {
+    expect(OLL_CASES.map((item) => item.number)).toEqual(
+      Array.from({ length: 57 }, (_, index) => String(index + 1).padStart(2, '0')),
+    );
+  });
+
+  it('provides algorithms and nine yellow stickers for every OLL case', () => {
+    for (const item of OLL_CASES) {
+      expect(item.kind).toBe('OLL');
+      expect(item.name).toBe(item.aliases?.[0]);
+      expect(item.aliases?.length).toBeGreaterThan(0);
+      expect(item.algorithms.length).toBeGreaterThan(0);
+      const yellowCount = item.pattern.flat().filter((color) => color === 'yellow').length;
+      expect(yellowCount).toBe(9);
+    }
+  });
+
+  it('uses the configured J Perm algorithms for representative OLL cases', () => {
+    const oll01 = OLL_CASES.find((item) => item.number === '01');
+    expect(oll01?.aliases).toEqual(['Runway', 'Blank']);
+    expect(oll01?.algorithms[0]).toBe("R U2 R2 F R F' U2 R' F R F'");
+    expect(oll01?.algorithms).toContain("(U) R U' R2 D' Rw U' Rw' D R2 U R'");
+    expect(OLL_CASES.find((item) => item.number === '27')?.algorithms[0]).toBe("R U R' U R U2 R'");
+    expect(OLL_CASES.find((item) => item.number === '57')?.algorithms[0]).toBe(
+      "R U R' U' M' U R U' Rw'",
+    );
+  });
+
   it('includes every PLL case once in the configured order and group', () => {
     expect(PLL_CASES.map(({ number, group }) => [number, group])).toEqual([
       ['Aa', 'Corner'],

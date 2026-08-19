@@ -20,7 +20,7 @@
         </div>
         <app-cube-pattern [pattern]="item.pattern" [label]="item.name + ' のパターン'" />
         <div>
-          <h2>{{ item.name }}</h2>
+          <h2>{{ item.aliases?.join(' / ') ?? item.name }}</h2>
           <p>{{ item.group }}</p>
         </div>
         <div class="algorithm-panel">
