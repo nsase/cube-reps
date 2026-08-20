@@ -34,6 +34,10 @@
   <div class="scramble">
     <span>SCRAMBLE <button (click)="newScramble()">↻</button></span>
     <p>{{ scramble() }}</p>
+    <app-cube-net
+      [scramble]="scramble()"
+      [orientation]="mode() === 'PLL' ? 'yellow-top' : 'white-top'"
+    />
   </div>
   <div
     class="timer"

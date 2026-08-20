@@ -10,12 +10,13 @@ import {
 import { FormsModule } from '@angular/forms';
 import { PLL_CASES } from '../../core/algorithm-cases';
 import { AlgorithmLibraryService } from '../../core/algorithm-library';
+import { CubeNetView } from '../../shared/cube-net/cube-net';
 import { CubeService } from '../../core/cube';
 import { SolveMode } from '../../core/cube.models';
 
 @Component({
   selector: 'app-timer',
-  imports: [FormsModule],
+  imports: [FormsModule, CubeNetView],
   templateUrl: './timer.html',
   styleUrl: './timer.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

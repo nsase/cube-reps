@@ -19,6 +19,17 @@ describe('cube state', () => {
     expect(faces.B.flat()).toEqual(Array(9).fill('blue'));
   });
 
+  it('supports the white-top, green-front scramble orientation', () => {
+    const faces = cubeFacesFromScramble('', 'white-top');
+
+    expect(faces.U.flat()).toEqual(Array(9).fill('white'));
+    expect(faces.R.flat()).toEqual(Array(9).fill('red'));
+    expect(faces.F.flat()).toEqual(Array(9).fill('green'));
+    expect(faces.D.flat()).toEqual(Array(9).fill('yellow'));
+    expect(faces.L.flat()).toEqual(Array(9).fill('orange'));
+    expect(faces.B.flat()).toEqual(Array(9).fill('blue'));
+  });
+
   it('applies a clockwise R turn with standard face orientation', () => {
     const faces = cubeFacesFromScramble('R');
 

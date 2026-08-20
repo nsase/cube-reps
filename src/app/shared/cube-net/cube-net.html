@@ -1,0 +1,9 @@
+<div class="cube-net" aria-hidden="true">
+  @for (face of faces(); track face.name) {
+    <div class="face" [attr.data-face]="face.name">
+      @for (color of face.stickers; track $index) {
+        <i class="sticker" [attr.data-color]="color"></i>
+      }
+    </div>
+  }
+</div>
