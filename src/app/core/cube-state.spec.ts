@@ -12,21 +12,21 @@ describe('cube state', () => {
     const faces = cubeFacesFromScramble('');
 
     expect(faces.U.flat()).toEqual(Array(9).fill('yellow'));
-    expect(faces.R.flat()).toEqual(Array(9).fill('red'));
-    expect(faces.F.flat()).toEqual(Array(9).fill('blue'));
+    expect(faces.R.flat()).toEqual(Array(9).fill('orange'));
+    expect(faces.F.flat()).toEqual(Array(9).fill('green'));
     expect(faces.D.flat()).toEqual(Array(9).fill('white'));
-    expect(faces.L.flat()).toEqual(Array(9).fill('orange'));
-    expect(faces.B.flat()).toEqual(Array(9).fill('green'));
+    expect(faces.L.flat()).toEqual(Array(9).fill('red'));
+    expect(faces.B.flat()).toEqual(Array(9).fill('blue'));
   });
 
   it('applies a clockwise R turn with standard face orientation', () => {
     const faces = cubeFacesFromScramble('R');
 
-    expect(faces.U.map((row) => row[2])).toEqual(['blue', 'blue', 'blue']);
+    expect(faces.U.map((row) => row[2])).toEqual(['green', 'green', 'green']);
     expect(faces.F.map((row) => row[2])).toEqual(['white', 'white', 'white']);
-    expect(faces.D.map((row) => row[2])).toEqual(['green', 'green', 'green']);
+    expect(faces.D.map((row) => row[2])).toEqual(['blue', 'blue', 'blue']);
     expect(faces.B.map((row) => row[0])).toEqual(['yellow', 'yellow', 'yellow']);
-    expect(faces.R.flat()).toEqual(Array(9).fill('red'));
+    expect(faces.R.flat()).toEqual(Array(9).fill('orange'));
   });
 
   it('supports inverse, double, wide, slice, rotation, and grouped moves', () => {
@@ -70,28 +70,28 @@ describe('cube state', () => {
     ]);
     expect(net.flat().filter((color) => color !== 'none')).toHaveLength(54);
     expect(net[4].slice(0, 12)).toEqual([
-      'orange',
-      'orange',
-      'orange',
-      'blue',
-      'blue',
-      'blue',
       'red',
       'red',
       'red',
       'green',
       'green',
       'green',
+      'orange',
+      'orange',
+      'orange',
+      'blue',
+      'blue',
+      'blue',
     ]);
   });
 
   it('creates the existing 5x5 top-layer pattern format', () => {
     expect(topLayerPatternFromScramble('')).toEqual([
-      ['none', 'green', 'green', 'green', 'none'],
-      ['orange', 'yellow', 'yellow', 'yellow', 'red'],
-      ['orange', 'yellow', 'yellow', 'yellow', 'red'],
-      ['orange', 'yellow', 'yellow', 'yellow', 'red'],
       ['none', 'blue', 'blue', 'blue', 'none'],
+      ['red', 'yellow', 'yellow', 'yellow', 'orange'],
+      ['red', 'yellow', 'yellow', 'yellow', 'orange'],
+      ['red', 'yellow', 'yellow', 'yellow', 'orange'],
+      ['none', 'green', 'green', 'green', 'none'],
     ]);
   });
 

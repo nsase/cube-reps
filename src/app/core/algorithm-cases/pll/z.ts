@@ -4,11 +4,11 @@ export const Z_CASE = definePllCase({
   number: 'Z',
   group: 'Edge',
   pattern: [
-    ['none', 'orange', 'blue', 'orange', 'none'],
+    ['none', 'blue', 'red', 'blue', 'none'],
+    ['red', 'yellow', 'yellow', 'yellow', 'orange'],
     ['blue', 'yellow', 'yellow', 'yellow', 'green'],
-    ['orange', 'yellow', 'yellow', 'yellow', 'red'],
-    ['blue', 'yellow', 'yellow', 'yellow', 'green'],
-    ['none', 'red', 'green', 'red', 'none'],
+    ['red', 'yellow', 'yellow', 'yellow', 'orange'],
+    ['none', 'green', 'orange', 'green', 'none'],
   ],
   algorithms: ["M2 U M2 U M' U2 M2 U2 M' U2", "M' U' M2' U' M2' U' M' U2 M2' U"],
 });
