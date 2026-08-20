@@ -8,9 +8,9 @@ export const OLL_53_CASE = defineOllCase({
     "Lw' U2 L U L' U' L U L' U Lw",
     "y2 Rw' U2 (R U R' U') R U R' U Rw",
     "y Rw' U' R U' R' U R U' R' U2 Rw",
-    "Lw' U' L U' L' U L U' L' U2 Lw",
-    "(U') Rw' U2 R U R' U' R U R' U Rw",
-    "(U2) Rw' U' R U' R' U R U' R' U2 Rw",
+    "(y') Lw' U' L U' L' U L U' L' U2 Lw",
+    "(y2) Rw' U2 R U R' U' R U R' U Rw",
+    "(y) Rw' U' R U' R' U R U' R' U2 Rw",
   ],
   pattern: [
     ['none', 'yellow', 'none', 'yellow', 'none'],

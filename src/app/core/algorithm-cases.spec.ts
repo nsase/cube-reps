@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { OLL_CASES, PLL_CASES } from './algorithm-cases';
+import { invertAlgorithm, topLayerOrientationPatternFromScramble } from './cube-state';
 
 const cases = [...OLL_CASES, ...PLL_CASES];
 
@@ -19,6 +20,22 @@ describe('algorithm cases', () => {
       const yellowCount = item.pattern.flat().filter((color) => color === 'yellow').length;
       expect(yellowCount).toBe(9);
     }
+  });
+
+  it('reconstructs each OLL pattern by applying every inverted algorithm', () => {
+    for (const item of OLL_CASES) {
+      for (const algorithm of item.algorithms) {
+        const scramble = invertAlgorithm(algorithm);
+        const actual = topLayerOrientationPatternFromScramble(scramble);
+        expect.soft(actual, `OLL ${item.number}: ${algorithm}`).toEqual(item.pattern);
+      }
+    }
+  });
+
+  it('uses the configured OLL 31 algorithm without a U2 setup move', () => {
+    expect(OLL_CASES.find((item) => item.number === '31')?.algorithms).toEqual([
+      "R' U' F U R U' R' F' R",
+    ]);
   });
 
   it('uses the configured J Perm algorithms for representative OLL cases', () => {
