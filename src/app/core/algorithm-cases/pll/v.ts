@@ -4,11 +4,11 @@ export const V_CASE = definePllCase({
   number: 'V',
   group: 'Mixed',
   pattern: [
-    ['none', 'green', 'orange', 'blue', 'none'],
-    ['orange', 'yellow', 'yellow', 'yellow', 'orange'],
-    ['red', 'yellow', 'yellow', 'yellow', 'blue'],
-    ['red', 'yellow', 'yellow', 'yellow', 'red'],
-    ['none', 'green', 'green', 'blue', 'none'],
+    ['none', 'red', 'green', 'orange', 'none'],
+    ['green', 'yellow', 'yellow', 'yellow', 'green'],
+    ['blue', 'yellow', 'yellow', 'yellow', 'orange'],
+    ['blue', 'yellow', 'yellow', 'yellow', 'blue'],
+    ['none', 'red', 'red', 'orange', 'none'],
   ],
   algorithms: ["R' U R' U' y R' F' R2 U' R' U R' F R F", "R' U R' Dw' R' F' R2 U' R' U R' F R F"],
 });

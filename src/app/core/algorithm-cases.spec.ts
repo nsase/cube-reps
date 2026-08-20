@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { OLL_CASES, PLL_CASES } from './algorithm-cases';
-import { invertAlgorithm, topLayerOrientationPatternFromScramble } from './cube-state';
+import { topLayerPatternAfterAlgorithm } from './cube-state';
 
 const cases = [...OLL_CASES, ...PLL_CASES];
 
@@ -22,12 +22,20 @@ describe('algorithm cases', () => {
     }
   });
 
-  it('reconstructs each OLL pattern by applying every inverted algorithm', () => {
+  it('solves the U face from each OLL pattern with every algorithm', () => {
     for (const item of OLL_CASES) {
       for (const algorithm of item.algorithms) {
-        const scramble = invertAlgorithm(algorithm);
-        const actual = topLayerOrientationPatternFromScramble(scramble);
-        expect.soft(actual, `OLL ${item.number}: ${algorithm}`).toEqual(item.pattern);
+        const actual = topLayerPatternAfterAlgorithm(item.pattern, algorithm);
+        expect.soft(isSolvedUFace(actual), `OLL ${item.number}: ${algorithm}`).toBe(true);
+      }
+    }
+  });
+
+  it('solves the top layer from each PLL pattern with every algorithm', () => {
+    for (const item of PLL_CASES) {
+      for (const algorithm of item.algorithms) {
+        const actual = topLayerPatternAfterAlgorithm(item.pattern, algorithm);
+        expect.soft(isSolvedTopLayer(actual), `PLL ${item.number}: ${algorithm}`).toBe(true);
       }
     }
   });
@@ -330,11 +338,11 @@ describe('algorithm cases', () => {
 
   it('uses the configured side colors for V', () => {
     expect(PLL_CASES.find((item) => item.number === 'V')?.pattern).toEqual([
-      ['none', 'green', 'orange', 'blue', 'none'],
-      ['orange', 'yellow', 'yellow', 'yellow', 'orange'],
-      ['red', 'yellow', 'yellow', 'yellow', 'blue'],
-      ['red', 'yellow', 'yellow', 'yellow', 'red'],
-      ['none', 'green', 'green', 'blue', 'none'],
+      ['none', 'red', 'green', 'orange', 'none'],
+      ['green', 'yellow', 'yellow', 'yellow', 'green'],
+      ['blue', 'yellow', 'yellow', 'yellow', 'orange'],
+      ['blue', 'yellow', 'yellow', 'yellow', 'blue'],
+      ['none', 'red', 'red', 'orange', 'none'],
     ]);
   });
 
@@ -350,11 +358,11 @@ describe('algorithm cases', () => {
 
   it('uses the configured side colors for Z', () => {
     expect(PLL_CASES.find((item) => item.number === 'Z')?.pattern).toEqual([
-      ['none', 'orange', 'blue', 'orange', 'none'],
+      ['none', 'blue', 'red', 'blue', 'none'],
+      ['red', 'yellow', 'yellow', 'yellow', 'orange'],
       ['blue', 'yellow', 'yellow', 'yellow', 'green'],
-      ['orange', 'yellow', 'yellow', 'yellow', 'red'],
-      ['blue', 'yellow', 'yellow', 'yellow', 'green'],
-      ['none', 'red', 'green', 'red', 'none'],
+      ['red', 'yellow', 'yellow', 'yellow', 'orange'],
+      ['none', 'green', 'orange', 'green', 'none'],
     ]);
   });
 
@@ -366,3 +374,20 @@ describe('algorithm cases', () => {
     }
   });
 });
+
+function isSolvedTopLayer(pattern: import('./cube.models').CubePattern): boolean {
+  const topIsYellow = pattern
+    .slice(1, 4)
+    .every((row) => row.slice(1, 4).every((color) => color === 'yellow'));
+  const strips = [
+    pattern[0].slice(1, 4),
+    pattern.slice(1, 4).map((row) => row[0]),
+    pattern.slice(1, 4).map((row) => row[4]),
+    pattern[4].slice(1, 4),
+  ];
+  return topIsYellow && strips.every((strip) => strip.every((color) => color === strip[0]));
+}
+
+function isSolvedUFace(pattern: import('./cube.models').CubePattern): boolean {
+  return pattern.slice(1, 4).every((row) => row.slice(1, 4).every((color) => color === 'yellow'));
+}
