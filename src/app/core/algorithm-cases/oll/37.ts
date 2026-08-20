@@ -4,7 +4,7 @@ export const OLL_37_CASE = defineOllCase({
   number: '37',
   names: ['Mounted Fish', 'Untying Shoelaces'],
   group: 'Fish Shape',
-  algorithms: ["F R' F' R U R U' R'", "F R U' R' U' R U R' F'", "(U) F R' F' R U R U' R'"],
+  algorithms: ["F R' F' R U R U' R'", "F R U' R' U' R U R' F'"],
   pattern: [
     ['none', 'none', 'none', 'none', 'none'],
     ['none', 'yellow', 'yellow', 'none', 'yellow'],

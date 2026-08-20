@@ -6,9 +6,8 @@ export const OLL_29_CASE = defineOllCase({
   group: 'Awkward Shape',
   algorithms: [
     "R U R' U' R U' R' F' U' F R U R'",
-    "(U) R U R' U' R U' R' F' U' F R U R'",
-    "(U) R U R' U' R' F R F' R U R' U' M' U R U' Rw'",
-    "Rw2 D' Rw U Rw' D Rw2 U' Rw' U' Rw",
+    "R U R' U' R' F R F' R U R' U' M' U R U' Rw'",
+    "(y') Rw2 D' Rw U Rw' D Rw2 U' Rw' U' Rw",
   ],
   pattern: [
     ['none', 'yellow', 'none', 'none', 'none'],

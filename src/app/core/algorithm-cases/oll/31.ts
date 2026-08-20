@@ -4,7 +4,7 @@ export const OLL_31_CASE = defineOllCase({
   number: '31',
   names: ['Couch'],
   group: 'P Shape',
-  algorithms: ["R' U' F U R U' R' F' R", "(U2) R' U' F U R U' R' F' R"],
+  algorithms: ["R' U' F U R U' R' F' R"],
   pattern: [
     ['none', 'yellow', 'none', 'none', 'none'],
     ['none', 'none', 'yellow', 'yellow', 'none'],

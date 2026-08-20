@@ -4,7 +4,7 @@ export const OLL_16_CASE = defineOllCase({
   number: '16',
   names: ['Anti-Squeegee'],
   group: 'Knight Move Shape',
-  algorithms: ["Rw U Rw' R U R' U' Rw U' Rw'", "(U2) Rw U Rw' R U R' U' Rw U' Rw'"],
+  algorithms: ["Rw U Rw' R U R' U' Rw U' Rw'", "Rw U Rw' R U R' U' Rw U' Rw'"],
   pattern: [
     ['none', 'none', 'yellow', 'none', 'none'],
     ['yellow', 'none', 'none', 'yellow', 'none'],

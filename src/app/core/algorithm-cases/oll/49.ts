@@ -6,8 +6,8 @@ export const OLL_49_CASE = defineOllCase({
   group: 'Small L Shape',
   algorithms: [
     "Rw U' Rw2 U Rw2 U Rw2 U' Rw",
-    "(U2) Rw U' Rw2 U Rw2 U Rw2 U' Rw",
-    "R B' R2 F R2 B R2 F' R",
+    "Rw U' Rw2 U Rw2 U Rw2 U' Rw",
+    "(y2) R B' R2 F R2 B R2 F' R",
   ],
   pattern: [
     ['none', 'none', 'none', 'yellow', 'none'],

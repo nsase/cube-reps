@@ -8,7 +8,6 @@ export const OLL_51_CASE = defineOllCase({
     "F U R U' R' U R U' R' F'",
     "y2 Fw R U R' U' R U R' U' Fw'",
     "(U2) Fw R U R' U' R U R' U' Fw'",
-    "(U) R' U' R' F R F' R U2 R' U2 R",
   ],
   pattern: [
     ['none', 'yellow', 'yellow', 'none', 'none'],
