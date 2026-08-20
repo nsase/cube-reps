@@ -162,6 +162,31 @@ $muted: var(--text-muted-color);
   }
 }
 
+.favorite-panel {
+  margin-bottom: 11px;
+}
+
+.favorite-algorithm {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--primary-color-dark);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--primary-color) 12%, var(--surface-color));
+
+  code {
+    grid-column: auto;
+    min-height: 0;
+    padding: 0;
+    background: none;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
 .algorithm-list {
   height: 205px;
   overflow-y: auto;
@@ -226,6 +251,15 @@ $muted: var(--text-muted-color);
   button:disabled {
     opacity: 0.25;
     cursor: default;
+  }
+  .star {
+    color: var(--text-muted-color);
+    font-size: 15px;
+  }
+  .star.active {
+    color: #b77900;
+    border-color: #d9a72e;
+    background: #fff8dc;
   }
   .remove {
     color: var(--danger-color);
