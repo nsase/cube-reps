@@ -1,0 +1,22 @@
+{
+  "name": "CubeFlow",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "runArgs": ["--name", "cube-flow-dev"],
+  "mounts": ["source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached"],
+  "postCreateCommand": "npm ci",
+  "forwardPorts": [4200],
+  "portsAttributes": {
+    "4200": {
+      "label": "Angular development server",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["Angular.ng-template", "esbenp.prettier-vscode"]
+    }
+  },
+  "remoteUser": "node"
+}
