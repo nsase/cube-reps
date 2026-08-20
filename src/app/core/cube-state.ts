@@ -2,6 +2,7 @@ import { CubePattern, StickerColor } from './cube.models';
 
 export type CubeFace = 'U' | 'R' | 'F' | 'D' | 'L' | 'B';
 export type CubeColor = Exclude<StickerColor, 'none'>;
+export type CubeOrientation = 'yellow-top' | 'white-top';
 export type CubeFaceState = ReadonlyArray<ReadonlyArray<CubeColor>>;
 export type CubeFaces = Readonly<Record<CubeFace, CubeFaceState>>;
 export type CubeNet = ReadonlyArray<ReadonlyArray<StickerColor>>;
@@ -27,13 +28,9 @@ interface MoveDefinition {
   clockwise: -1 | 1;
 }
 
-const FACE_COLORS: Readonly<Record<CubeFace, CubeColor>> = {
-  U: 'yellow',
-  R: 'orange',
-  F: 'green',
-  D: 'white',
-  L: 'red',
-  B: 'blue',
+const FACE_COLORS: Readonly<Record<CubeOrientation, Readonly<Record<CubeFace, CubeColor>>>> = {
+  'yellow-top': { U: 'yellow', R: 'orange', F: 'green', D: 'white', L: 'red', B: 'blue' },
+  'white-top': { U: 'white', R: 'red', F: 'green', D: 'yellow', L: 'orange', B: 'blue' },
 };
 
 const FACE_NORMALS: Readonly<Record<CubeFace, Vector>> = {
@@ -73,14 +70,20 @@ export function invertAlgorithm(algorithm: string): string {
     .join(' ');
 }
 
-export function cubeFacesFromScramble(scramble: string): CubeFaces {
-  const stickers = createSolvedStickers();
+export function cubeFacesFromScramble(
+  scramble: string,
+  orientation: CubeOrientation = 'yellow-top',
+): CubeFaces {
+  const stickers = createSolvedStickers(orientation);
   for (const parsedMove of parseAlgorithm(scramble)) applyMove(stickers, parsedMove);
   return stickersToFaces(stickers);
 }
 
-export function cubeNetFromScramble(scramble: string): CubeNet {
-  const faces = cubeFacesFromScramble(scramble);
+export function cubeNetFromScramble(
+  scramble: string,
+  orientation: CubeOrientation = 'yellow-top',
+): CubeNet {
+  const faces = cubeFacesFromScramble(scramble, orientation);
   const net = Array.from({ length: 9 }, () => Array<StickerColor>(12).fill('none'));
 
   placeFace(net, faces.U, 0, 3);
@@ -147,7 +150,7 @@ function topLayerPatternFromStickers(stickers: Sticker[]): CubePattern {
   ];
 }
 
-function createSolvedStickers(): Sticker[] {
+function createSolvedStickers(orientation: CubeOrientation = 'yellow-top'): Sticker[] {
   const stickers: Sticker[] = [];
   for (const face of Object.keys(FACE_NORMALS) as CubeFace[]) {
     const normal = FACE_NORMALS[face];
@@ -156,7 +159,7 @@ function createSolvedStickers(): Sticker[] {
         stickers.push({
           position: positionFor(face, normal, first, second),
           normal: [...normal],
-          color: FACE_COLORS[face],
+          color: FACE_COLORS[orientation][face],
         });
       }
     }

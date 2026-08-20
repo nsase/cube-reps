@@ -9,11 +9,12 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CubeService } from '../../core/cube';
+import { CubeNetView } from '../../shared/cube-net/cube-net';
 import { Solve } from '../../core/cube.models';
 
 @Component({
   selector: 'app-history',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CubeNetView],
   templateUrl: './history.html',
   styleUrl: './history.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

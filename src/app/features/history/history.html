@@ -86,6 +86,10 @@
           ><small>{{ solve.mode }}{{ solve.caseName ? ' · ' + solve.caseName : '' }}</small>
         </div>
         <code>{{ solve.scramble }}</code>
+        <app-cube-net
+          [scramble]="solve.scramble"
+          [orientation]="solve.mode === 'PLL' ? 'yellow-top' : 'white-top'"
+        />
         <time>{{ solve.date | date: 'MM/dd HH:mm' }}</time>
         <div class="row-actions">
           <span class="group-badge">{{ cube.groupName(solve.groupId) }}</span

@@ -16,10 +16,10 @@ export class App {
   protected readonly cube = inject(CubeService);
   protected readonly view = signal<View>('timer');
 
-  protected readonly headings: Record<View, { eyebrow: string; title: string }> = {
-    timer: { eyebrow: 'PRACTICE SESSION', title: '集中して、回そう。' },
-    algorithms: { eyebrow: 'ALGORITHM LIBRARY', title: '手順を探す。' },
-    history: { eyebrow: 'YOUR PROGRESS', title: '積み重ねを確認。' },
+  protected readonly headings: Record<View, string> = {
+    timer: 'PRACTICE SESSION',
+    algorithms: 'ALGORITHM LIBRARY',
+    history: 'YOUR PROGRESS',
   };
 
   protected navigate(view: View): void {
