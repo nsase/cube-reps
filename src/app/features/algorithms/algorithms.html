@@ -24,34 +24,44 @@
           <p>{{ item.group }}</p>
         </div>
         <div class="algorithm-panel">
+          <div class="favorite-panel">
+            <div class="algorithm-heading"><strong>お気に入りの手順</strong></div>
+            @if (library.favoriteFor(item); as favorite) {
+              <div class="favorite-algorithm">
+                <span class="rank">{{ favoriteRank(item, favorite) + 1 }}</span>
+                <code>{{ favorite.notation }}</code>
+              </div>
+            }
+          </div>
           <div class="algorithm-heading">
-            <strong>手順</strong><small>先頭が使用中の手順です</small>
+            <strong>手順</strong>
           </div>
           <ol class="algorithm-list">
             @for (
               algorithm of library.algorithmsFor(item);
               track algorithm.id;
-              let index = $index;
-              let first = $first;
-              let last = $last
+              let index = $index
             ) {
-              <li [class.preferred]="first">
+              <li [class.preferred]="library.favoriteFor(item)?.id === algorithm.id">
                 <span class="rank">{{ index + 1 }}</span>
                 <code>{{ algorithm.notation }}</code>
                 <div class="algorithm-actions">
                   <button
-                    title="上へ"
-                    [disabled]="first"
-                    (click)="library.move(item, algorithm.id, -1)"
+                    class="star"
+                    [class.active]="library.favoriteFor(item)?.id === algorithm.id"
+                    [attr.aria-label]="
+                      library.favoriteFor(item)?.id === algorithm.id
+                        ? 'お気に入りの手順'
+                        : 'お気に入りにする'
+                    "
+                    [title]="
+                      library.favoriteFor(item)?.id === algorithm.id
+                        ? 'お気に入りの手順'
+                        : 'お気に入りにする'
+                    "
+                    (click)="library.setFavorite(item, algorithm.id)"
                   >
-                    ↑
-                  </button>
-                  <button
-                    title="下へ"
-                    [disabled]="last"
-                    (click)="library.move(item, algorithm.id, 1)"
-                  >
-                    ↓
+                    {{ library.favoriteFor(item)?.id === algorithm.id ? '★' : '☆' }}
                   </button>
                   <button title="コピー" (click)="copy(item, algorithm)">
                     {{ copied() === library.caseKey(item) + '-' + algorithm.id ? '✓' : '⧉' }}

@@ -35,6 +35,9 @@ export class Algorithms {
   protected setDraft(item: AlgorithmCase, value: string): void {
     this.drafts.update((drafts) => ({ ...drafts, [this.library.caseKey(item)]: value }));
   }
+  protected favoriteRank(item: AlgorithmCase, algorithm: CaseAlgorithm): number {
+    return this.library.algorithmsFor(item).findIndex((candidate) => candidate.id === algorithm.id);
+  }
   protected add(item: AlgorithmCase): void {
     if (!this.library.add(item, this.draftFor(item))) return;
     this.setDraft(item, '');

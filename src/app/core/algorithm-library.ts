@@ -7,14 +7,21 @@ export interface CaseAlgorithm {
   builtIn: boolean;
 }
 
-type AlgorithmPreferences = Record<string, CaseAlgorithm[]>;
+interface CasePreferences {
+  custom: CaseAlgorithm[];
+  favoriteId?: string;
+}
+
+const STORAGE_KEY = 'cubeflow-algorithm-preferences';
+
+type AlgorithmPreferences = Record<string, CasePreferences>;
 
 @Injectable({ providedIn: 'root' })
 export class AlgorithmLibraryService {
   private readonly preferences = signal<AlgorithmPreferences>(this.load());
 
   constructor() {
-    effect(() => localStorage.setItem('cubeflow-algorithms', JSON.stringify(this.preferences())));
+    effect(() => localStorage.setItem(STORAGE_KEY, JSON.stringify(this.preferences())));
   }
 
   caseKey(item: AlgorithmCase): string {
@@ -22,49 +29,43 @@ export class AlgorithmLibraryService {
   }
 
   algorithmsFor(item: AlgorithmCase): CaseAlgorithm[] {
-    const defaults = this.defaultsFor(item);
-    const saved = this.preferences()[this.caseKey(item)];
-    if (!saved) return defaults;
+    return [...this.defaultsFor(item), ...this.preferenceFor(item).custom];
+  }
 
-    const defaultsById = new Map(defaults.map((algorithm) => [algorithm.id, algorithm]));
-    const synced = saved.flatMap((algorithm) => {
-      if (!algorithm.builtIn) return [algorithm];
-      const current = defaultsById.get(algorithm.id);
-      return current ? [current] : [];
-    });
-    const savedIds = new Set(synced.map((algorithm) => algorithm.id));
-    return [...synced, ...defaults.filter((algorithm) => !savedIds.has(algorithm.id))];
+  favoriteFor(item: AlgorithmCase): CaseAlgorithm | undefined {
+    const algorithms = this.algorithmsFor(item);
+    const favoriteId = this.preferenceFor(item).favoriteId;
+    return algorithms.find((algorithm) => algorithm.id === favoriteId) ?? algorithms[0];
   }
 
   primaryNotation(item: AlgorithmCase): string {
-    return this.algorithmsFor(item)[0]?.notation ?? '手順未登録';
+    return this.favoriteFor(item)?.notation ?? '手順未登録';
+  }
+
+  setFavorite(item: AlgorithmCase, id: string): void {
+    if (!this.algorithmsFor(item).some((algorithm) => algorithm.id === id)) return;
+    this.save(item, { ...this.preferenceFor(item), favoriteId: id });
   }
 
   add(item: AlgorithmCase, notation: string): boolean {
     const value = notation.trim();
     if (!value) return false;
-    const algorithms = this.algorithmsFor(item);
-    if (algorithms.some((algorithm) => algorithm.notation === value)) return false;
-    this.save(item, [...algorithms, { id: `user-${Date.now()}`, notation: value, builtIn: false }]);
+    if (this.algorithmsFor(item).some((algorithm) => algorithm.notation === value)) return false;
+    const preference = this.preferenceFor(item);
+    this.save(item, {
+      ...preference,
+      custom: [...preference.custom, { id: `user-${Date.now()}`, notation: value, builtIn: false }],
+    });
     return true;
   }
 
-  move(item: AlgorithmCase, id: string, offset: -1 | 1): void {
-    const algorithms = [...this.algorithmsFor(item)];
-    const index = algorithms.findIndex((algorithm) => algorithm.id === id);
-    const target = index + offset;
-    if (index < 0 || target < 0 || target >= algorithms.length) return;
-    [algorithms[index], algorithms[target]] = [algorithms[target], algorithms[index]];
-    this.save(item, algorithms);
-  }
-
   remove(item: AlgorithmCase, id: string): void {
-    const algorithm = this.algorithmsFor(item).find((entry) => entry.id === id);
-    if (!algorithm || algorithm.builtIn) return;
-    this.save(
-      item,
-      this.algorithmsFor(item).filter((entry) => entry.id !== id),
-    );
+    const preference = this.preferenceFor(item);
+    if (!preference.custom.some((algorithm) => algorithm.id === id)) return;
+    this.save(item, {
+      custom: preference.custom.filter((algorithm) => algorithm.id !== id),
+      favoriteId: preference.favoriteId === id ? undefined : preference.favoriteId,
+    });
   }
 
   private defaultsFor(item: AlgorithmCase): CaseAlgorithm[] {
@@ -75,16 +76,20 @@ export class AlgorithmLibraryService {
     }));
   }
 
-  private save(item: AlgorithmCase, algorithms: CaseAlgorithm[]): void {
+  private preferenceFor(item: AlgorithmCase): CasePreferences {
+    return this.preferences()[this.caseKey(item)] ?? { custom: [] };
+  }
+
+  private save(item: AlgorithmCase, preference: CasePreferences): void {
     this.preferences.update((preferences) => ({
       ...preferences,
-      [this.caseKey(item)]: algorithms,
+      [this.caseKey(item)]: preference,
     }));
   }
 
   private load(): AlgorithmPreferences {
     try {
-      return JSON.parse(localStorage.getItem('cubeflow-algorithms') ?? '{}');
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as AlgorithmPreferences;
     } catch {
       return {};
     }
