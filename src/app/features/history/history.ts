@@ -8,7 +8,14 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { CubeService } from '../../core/cube';
+import { DialogButtons } from '../../shared/confirm-dialog/confirm-dialog.buttons';
+import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
+import {
+  ConfirmDialogData,
+  ConfirmDialogResult,
+} from '../../shared/confirm-dialog/confirm-dialog.models';
 import { CubeNetView } from '../../shared/cube-net/cube-net';
 import { Solve } from '../../core/cube.models';
 
@@ -22,6 +29,7 @@ import { Solve } from '../../core/cube.models';
 export class History {
   readonly showTimer = output<void>();
   protected readonly cube = inject(CubeService);
+  private readonly dialog = inject(MatDialog);
   protected readonly selectedGroup = signal('all');
   protected readonly showCreateForm = signal(false);
   protected readonly newGroupName = signal('');
@@ -53,8 +61,40 @@ export class History {
   }
 
   protected deleteGroup(id: string): void {
-    this.cube.removeGroup(id);
-    if (this.selectedGroup() === id) this.selectedGroup.set('all');
+    const group = this.cube.groups().find((candidate) => candidate.id === id);
+    if (!group) return;
+
+    const data = {
+      title: 'グループを削除しますか？',
+      message: `「${group.name}」を削除します。\nこの操作は取り消せません。`,
+      buttons: [DialogButtons.cancel, DialogButtons.delete],
+      defaultFocus: DialogButtons.cancel.id,
+    } as const satisfies ConfirmDialogData;
+
+    this.dialog
+      .open<ConfirmDialog, ConfirmDialogData, ConfirmDialogResult>(ConfirmDialog, { data })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result !== DialogButtons.delete.id) return;
+        this.cube.removeGroup(id);
+        if (this.selectedGroup() === id) this.selectedGroup.set('all');
+      });
+  }
+
+  protected deleteSolve(id: number): void {
+    const data = {
+      title: '記録を削除しますか？',
+      message: '選択した計測記録を削除します。\nこの操作は取り消せません。',
+      buttons: [DialogButtons.cancel, DialogButtons.delete],
+      defaultFocus: DialogButtons.cancel.id,
+    } as const satisfies ConfirmDialogData;
+
+    this.dialog
+      .open<ConfirmDialog, ConfirmDialogData, ConfirmDialogResult>(ConfirmDialog, { data })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result === DialogButtons.delete.id) this.cube.removeSolve(id);
+      });
   }
 
   protected trackSolve(_index: number, solve: Solve): number {
