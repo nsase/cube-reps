@@ -67,13 +67,7 @@
                     {{ copied() === library.caseKey(item) + '-' + algorithm.id ? '✓' : '⧉' }}
                   </button>
                   @if (!algorithm.builtIn) {
-                    <button
-                      class="remove"
-                      title="削除"
-                      (click)="library.remove(item, algorithm.id)"
-                    >
-                      ×
-                    </button>
+                    <button class="remove" title="削除" (click)="remove(item, algorithm)">×</button>
                   }
                 </div>
               </li>

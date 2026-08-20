@@ -1,8 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { OLL_CASES, PLL_CASES } from '../../core/algorithm-cases';
 import { AlgorithmLibraryService, CaseAlgorithm } from '../../core/algorithm-library';
 import { AlgorithmCase } from '../../core/cube.models';
+import { DialogButtons } from '../../shared/confirm-dialog/confirm-dialog.buttons';
+import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
+import {
+  ConfirmDialogData,
+  ConfirmDialogResult,
+} from '../../shared/confirm-dialog/confirm-dialog.models';
 import { CubePatternView } from '../../shared/cube-pattern/cube-pattern';
 
 @Component({
@@ -14,6 +21,7 @@ import { CubePatternView } from '../../shared/cube-pattern/cube-pattern';
 })
 export class Algorithms {
   protected readonly library = inject(AlgorithmLibraryService);
+  private readonly dialog = inject(MatDialog);
   protected readonly kind = signal<'OLL' | 'PLL'>('PLL');
   protected readonly query = signal('');
   protected readonly copied = signal('');
@@ -46,5 +54,21 @@ export class Algorithms {
     await navigator.clipboard?.writeText(algorithm.notation);
     this.copied.set(`${this.library.caseKey(item)}-${algorithm.id}`);
     window.setTimeout(() => this.copied.set(''), 1000);
+  }
+
+  protected remove(item: AlgorithmCase, algorithm: CaseAlgorithm): void {
+    const data = {
+      title: 'ユーザー手順を削除しますか？',
+      message: `${item.kind} ${item.number} の手順「${algorithm.notation}」を削除します。\nこの操作は取り消せません。`,
+      buttons: [DialogButtons.cancel, DialogButtons.delete],
+      defaultFocus: DialogButtons.cancel.id,
+    } as const satisfies ConfirmDialogData;
+
+    this.dialog
+      .open<ConfirmDialog, ConfirmDialogData, ConfirmDialogResult>(ConfirmDialog, { data })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result === DialogButtons.delete.id) this.library.remove(item, algorithm.id);
+      });
   }
 }

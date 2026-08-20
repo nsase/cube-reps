@@ -1,4 +1,19 @@
+@use '@angular/material' as mat;
+
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap');
+
+html {
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$chartreuse-palette,
+        tertiary: mat.$red-palette,
+      ),
+      typography: Outfit,
+      density: 0,
+    )
+  );
+}
 
 :root {
   // Brand and semantic colors
