@@ -4,11 +4,12 @@
   (pointerup)="store.release()"
 >
   <small>{{
-    store.state() === 'ready'
-      ? '離してスタート'
+    (store.state() === 'ready'
+      ? 'timer.releaseToStart'
       : store.state() === 'running'
-        ? 'SPACE / タップでストップ'
-        : 'SPACEを長押し'
+        ? 'timer.tapToStop'
+        : 'timer.holdSpace'
+    ) | transloco
   }}</small>
   <strong>{{ cube.formatTime(store.elapsed()) }}</strong
   ><i>━━ SPACE ━━</i>

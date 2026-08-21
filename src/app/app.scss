@@ -26,6 +26,7 @@ aside {
   color: var(--surface-color);
   font: 700 var(--font-size-title) var(--font-family-heading);
   cursor: pointer;
+  text-decoration: none;
 
   > span {
     color: $lime;
@@ -57,7 +58,8 @@ nav {
   gap: 8px;
   margin-top: 65px;
 
-  button {
+  a {
+    display: block;
     border: 0;
     background: none;
     color: #92968e;
@@ -65,12 +67,13 @@ nav {
     padding: 14px;
     border-radius: 7px;
     font-weight: 600;
+    text-decoration: none;
   }
   em {
     font-style: normal;
     margin-left: 12px;
   }
-  button.on {
+  a.on {
     background: #2a2d28;
     color: $lime;
   }
@@ -112,8 +115,30 @@ h1 {
   margin: 0;
 }
 header p {
+  margin: 0;
   font-size: var(--font-size-small);
   color: var(--success-color);
+}
+.header-tools {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  select {
+    border: 1px solid $line;
+    border-radius: 4px;
+    background: var(--surface-color);
+    color: $ink;
+    padding: 5px 8px;
+  }
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 @media (max-width: 900px) {
@@ -131,7 +156,7 @@ header p {
     width: 30px;
     height: 30px;
   }
-  nav button {
+  nav a {
     text-align: center;
     font-size: var(--font-size-large);
   }
@@ -167,8 +192,8 @@ header p {
     display: flex;
     justify-content: space-around;
   }
-  nav button,
-  nav button.on {
+  nav a,
+  nav a.on {
     font-size: var(--font-size-base);
     padding: 6px 18px;
   }

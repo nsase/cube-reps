@@ -1,6 +1,3 @@
-/** アプリ内で切り替え可能な画面。 */
-export type View = 'timer' | 'algorithms' | 'history';
-
 /** 計測対象となる練習モード。 */
 export type SolveMode = '3x3' | 'PLL';
 
@@ -13,6 +10,8 @@ export interface RecordGroup {
   id: string;
   /** 画面に表示するグループ名。 */
   name: string;
+  /** アプリ定義グループの表示名を切り替える翻訳キー。 */
+  nameKey?: string;
   /** グループを作成した日時を表すISO 8601文字列。 */
   createdAt: string;
 }

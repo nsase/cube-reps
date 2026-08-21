@@ -6,10 +6,16 @@
     class="star"
     [class.active]="library.favoriteFor(item())?.id === algorithm().id"
     [attr.aria-label]="
-      library.favoriteFor(item())?.id === algorithm().id ? 'お気に入りの手順' : 'お気に入りにする'
+      (library.favoriteFor(item())?.id === algorithm().id
+        ? 'algorithms.favorite'
+        : 'algorithms.makeFavorite'
+      ) | transloco
     "
     [title]="
-      library.favoriteFor(item())?.id === algorithm().id ? 'お気に入りの手順' : 'お気に入りにする'
+      (library.favoriteFor(item())?.id === algorithm().id
+        ? 'algorithms.favorite'
+        : 'algorithms.makeFavorite'
+      ) | transloco
     "
     (click)="library.setFavorite(item(), algorithm().id)"
   >
@@ -17,15 +23,20 @@
       library.favoriteFor(item())?.id === algorithm().id ? 'star' : 'star_border'
     }}</mat-icon>
   </button>
-  <button mat-icon-button aria-label="手順をコピー" title="コピー" (click)="copy()">
+  <button
+    mat-icon-button
+    [attr.aria-label]="(copied() ? 'algorithms.copied' : 'algorithms.copy') | transloco"
+    [title]="(copied() ? 'algorithms.copied' : 'algorithms.copy') | transloco"
+    (click)="copy()"
+  >
     <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
   </button>
   @if (!algorithm().builtIn) {
     <button
       mat-icon-button
       class="remove"
-      aria-label="ユーザー手順を削除"
-      title="削除"
+      [attr.aria-label]="'algorithms.removeUserAlgorithm' | transloco"
+      [title]="'common.delete' | transloco"
       (click)="remove()"
     >
       <mat-icon>delete</mat-icon>

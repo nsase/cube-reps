@@ -1,0 +1,73 @@
+{
+  "app": { "offline": "Saved offline", "language": "Language" },
+  "routes": {
+    "timer": "PRACTICE SESSION",
+    "algorithms": "ALGORITHM LIBRARY",
+    "history": "YOUR PROGRESS"
+  },
+  "nav": { "timer": "Timer", "history": "History", "todaySolves": "Today's solves" },
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "No",
+    "delete": "Delete",
+    "add": "Add",
+    "best": "Best",
+    "recentAverage": "Last 5 average"
+  },
+  "timer": {
+    "recordGroup": "RECORD GROUP",
+    "recordDestination": "Record to",
+    "fullSolve": "FULL SOLVE",
+    "caseDrill": "CASE DRILL",
+    "practiceCase": "Practice case",
+    "scramble": "SCRAMBLE",
+    "refreshScramble": "Refresh scramble",
+    "releaseToStart": "Release to start",
+    "tapToStop": "SPACE / Tap to stop",
+    "holdSpace": "Hold SPACE",
+    "latest": "Latest",
+    "allRecords": "All records →",
+    "cubeNet": "Cube net for scramble: {{scramble}}"
+  },
+  "algorithms": {
+    "search": "Search by number, name, or group",
+    "caseCount": "{{count}} cases",
+    "empty": "No matching cases.",
+    "pattern": "Pattern for {{name}}",
+    "favorite": "Favorite algorithm",
+    "makeFavorite": "Set as favorite",
+    "algorithms": "Algorithms",
+    "noAlgorithm": "No algorithms yet",
+    "newAlgorithm": "Enter a new algorithm",
+    "copy": "Copy algorithm",
+    "copied": "Copied",
+    "removeUserAlgorithm": "Delete custom algorithm",
+    "removeTitle": "Delete custom algorithm?",
+    "removeMessage": "Delete algorithm “{{notation}}” from {{kind}} {{number}}?\nThis action cannot be undone."
+  },
+  "history": {
+    "unclassified": "Unclassified",
+    "recordGroups": "RECORD GROUPS",
+    "newGroup": "New group",
+    "groupName": "Group name",
+    "groupPlaceholder": "e.g. Competition, GAN 12",
+    "create": "Create",
+    "solveCount": "{{count}} solves",
+    "deleteGroup": "Delete group",
+    "deleteGroupTitle": "Delete this group?",
+    "deleteGroupMessage": "Delete “{{name}}”?\nThis action cannot be undone.",
+    "recordFilter": "Records to show",
+    "allGroups": "All groups",
+    "targetSolves": "Solves",
+    "solveHistory": "SOLVE HISTORY",
+    "records": "Records",
+    "emptyTitle": "No records in this group yet",
+    "emptyDescription": "Select this group in the timer and complete a solve.",
+    "goToTimer": "Go to timer",
+    "deleteSolve": "Delete solve",
+    "deleteSolveTitle": "Delete this solve?",
+    "deleteSolveMessage": "The selected solve will be deleted.\nThis action cannot be undone."
+  }
+}

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostListener, inject, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, inject } from '@angular/core';
 import { TimerClock } from './timer-clock/timer-clock';
 import { TimerScramble } from './timer-scramble/timer-scramble';
 import { TimerSettings } from './timer-settings/timer-settings';
@@ -15,8 +15,6 @@ import { TimerStore } from './timer.store';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Timer {
-  /** 履歴画面への遷移を親コンポーネントへ通知する。 */
-  readonly showHistory = output<void>();
   /** Timerコンポーネントツリー内で共有する計測状態。 */
   private readonly store = inject(TimerStore);
 

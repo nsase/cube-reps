@@ -12,11 +12,12 @@ import {
   ConfirmDialogResult,
 } from '../../../../shared/confirm-dialog/confirm-dialog.models';
 import { CubeNetView } from '../../../../shared/cube-net/cube-net';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 /** 1件の計測記録と、そのペナルティ・削除操作を表示するコンポーネント。 */
 @Component({
   selector: 'app-solve-record',
-  imports: [CommonModule, MatButtonModule, MatIconModule, CubeNetView],
+  imports: [CommonModule, MatButtonModule, MatIconModule, CubeNetView, TranslocoPipe],
   templateUrl: './solve-record.html',
   styleUrl: './solve-record.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,12 +32,14 @@ export class SolveRecord {
   protected readonly cube = inject(CubeService);
   /** 記録削除の確認を表示するMaterial Dialogサービス。 */
   private readonly dialog = inject(MatDialog);
+  /** 確認メッセージを現在の言語へ翻訳するサービス。 */
+  private readonly i18n = inject(TranslocoService);
 
   /** 確認後にこの計測記録を削除する。 */
   protected delete(): void {
     const data = {
-      title: '記録を削除しますか？',
-      message: '選択した計測記録を削除します。\nこの操作は取り消せません。',
+      title: this.i18n.translate('history.deleteSolveTitle'),
+      message: this.i18n.translate('history.deleteSolveMessage'),
       buttons: [DialogButtons.cancel, DialogButtons.delete],
       defaultFocus: DialogButtons.cancel.id,
     } as const satisfies ConfirmDialogData;

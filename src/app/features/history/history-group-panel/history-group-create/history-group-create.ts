@@ -4,11 +4,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CubeService } from '../../../../core/cube';
 import { HistoryStore } from '../../history.store';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /** 記録グループの作成フォームと、その表示状態を管理するコンポーネント。 */
 @Component({
   selector: 'app-history-group-create',
-  imports: [FormsModule, MatButtonModule, MatIconModule],
+  imports: [FormsModule, MatButtonModule, MatIconModule, TranslocoPipe],
   templateUrl: './history-group-create.html',
   styleUrl: './history-group-create.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

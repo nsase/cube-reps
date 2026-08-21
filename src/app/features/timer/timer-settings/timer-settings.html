@@ -1,26 +1,28 @@
 <div class="record-context">
   <div>
-    <small>RECORD GROUP</small><strong>{{ cube.activeGroup().name }}</strong>
+    <small>{{ 'timer.recordGroup' | transloco }}</small
+    ><strong>{{ cube.groupName(cube.activeGroup().id) }}</strong>
   </div>
   <label
-    >記録先<select [(ngModel)]="cube.activeGroupId">
+    >{{ 'timer.recordDestination' | transloco
+    }}<select [(ngModel)]="cube.activeGroupId">
       @for (group of cube.groups(); track group.id) {
-        <option [value]="group.id">{{ group.name }}</option>
+        <option [value]="group.id">{{ cube.groupName(group.id) }}</option>
       }
     </select></label
   >
 </div>
 <div class="modes">
   <button [class.on]="store.mode() === '3x3'" (click)="store.setMode('3x3')">
-    3×3<small>FULL SOLVE</small>
+    3×3<small>{{ 'timer.fullSolve' | transloco }}</small>
   </button>
   <button [class.on]="store.mode() === 'PLL'" (click)="store.setMode('PLL')">
-    PLL<small>CASE DRILL</small>
+    PLL<small>{{ 'timer.caseDrill' | transloco }}</small>
   </button>
 </div>
 @if (store.mode() === 'PLL') {
   <div class="case-select">
-    練習ケース
+    {{ 'timer.practiceCase' | transloco }}
     <select [(ngModel)]="store.selectedCase" (change)="store.newScramble()">
       @for (item of store.pllCases; track item.number; let index = $index) {
         <option [ngValue]="index">{{ item.number }} — {{ item.name }}</option>

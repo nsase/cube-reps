@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { translateSignal } from '@jsverse/transloco';
 import { CubeFace, CubeOrientation, cubeFacesFromScramble } from '../../core/cube-state';
 import { StickerColor } from '../../core/cube.models';
 
@@ -25,7 +26,10 @@ export class CubeNetView {
   readonly orientation = input<CubeOrientation>('white-top');
 
   /** 支援技術へ展開図の内容を伝えるラベル。 */
-  protected readonly label = computed(() => `スクランブルの展開図: ${this.scramble()}`);
+  protected readonly label = translateSignal(
+    'timer.cubeNet',
+    computed(() => ({ scramble: this.scramble() })),
+  );
 
   /** テンプレートの描画順に変換した6面分のステッカー。 */
   protected readonly faces = computed<NetFace[]>(() => {

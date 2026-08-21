@@ -2,7 +2,10 @@
   <b>{{ item().number }}</b
   ><small>{{ item().kind }}</small>
 </div>
-<app-cube-pattern [pattern]="item().pattern" [label]="item().name + ' のパターン'" />
+<app-cube-pattern
+  [pattern]="item().pattern"
+  [label]="'algorithms.pattern' | transloco: { name: item().name }"
+/>
 <div>
   <h2>{{ item().aliases?.join(' / ') ?? item().name }}</h2>
   <p>{{ item().group }}</p>

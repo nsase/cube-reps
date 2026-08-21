@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { AlgorithmLibraryService } from '../../../core/algorithm-library';
 import { CubeService } from '../../../core/cube';
 import { TimerStore } from '../timer.store';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /** 記録先、計測モード、PLL練習ケースを選択するコンポーネント。 */
 @Component({
   selector: 'app-timer-settings',
-  imports: [FormsModule],
+  imports: [FormsModule, TranslocoPipe],
   templateUrl: './timer-settings.html',
   styleUrl: './timer-settings.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

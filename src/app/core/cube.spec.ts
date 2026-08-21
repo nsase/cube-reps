@@ -31,6 +31,40 @@ describe('CubeService record statistics', () => {
     expect(cube.activeSolves()).toHaveLength(2);
   });
 
+  it('初期カテゴリーを英語名で作成する', () => {
+    const cube = TestBed.inject(CubeService);
+
+    expect(cube.groups()[0]).toMatchObject({ id: 'unclassified', name: 'Unclassified' });
+    expect(cube.groupName('missing')).toBe('Unclassified');
+  });
+
+  it('既定カテゴリーを保存対象から除外してユーザー作成カテゴリーだけを復元する', () => {
+    localStorage.setItem(
+      'cubeflow-groups',
+      JSON.stringify([
+        { id: 'unclassified', name: 'Stored default', createdAt: new Date(0).toISOString() },
+        { id: 'user-group', name: 'Competition', createdAt: new Date(1).toISOString() },
+      ]),
+    );
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+
+    expect(TestBed.inject(CubeService).groups()).toEqual([
+      expect.objectContaining({ id: 'unclassified', name: 'Unclassified' }),
+      expect.objectContaining({ id: 'user-group', name: 'Competition' }),
+    ]);
+  });
+
+  it('localStorageにはユーザー作成カテゴリーだけを保存する', () => {
+    const cube = TestBed.inject(CubeService);
+    cube.addGroup('Competition');
+    TestBed.tick();
+
+    expect(JSON.parse(localStorage.getItem('cubeflow-groups') ?? '[]')).toEqual([
+      expect.objectContaining({ name: 'Competition' }),
+    ]);
+  });
+
   it('DNFを除外し、+2を反映してベストを計算する', () => {
     const cube = TestBed.inject(CubeService);
     cube.solves.set([solve(1, 1000, 'DNF'), solve(2, 900, '+2'), solve(3, 1500)]);

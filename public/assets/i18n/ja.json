@@ -1,0 +1,73 @@
+{
+  "app": { "offline": "オフライン保存", "language": "表示言語" },
+  "routes": {
+    "timer": "PRACTICE SESSION",
+    "algorithms": "ALGORITHM LIBRARY",
+    "history": "YOUR PROGRESS"
+  },
+  "nav": { "timer": "タイマー", "history": "記録", "todaySolves": "今日のソルブ" },
+  "common": {
+    "ok": "OK",
+    "cancel": "キャンセル",
+    "yes": "はい",
+    "no": "いいえ",
+    "delete": "削除",
+    "add": "追加",
+    "best": "ベスト",
+    "recentAverage": "直近5回 平均"
+  },
+  "timer": {
+    "recordGroup": "RECORD GROUP",
+    "recordDestination": "記録先",
+    "fullSolve": "FULL SOLVE",
+    "caseDrill": "CASE DRILL",
+    "practiceCase": "練習ケース",
+    "scramble": "SCRAMBLE",
+    "refreshScramble": "スクランブルを更新",
+    "releaseToStart": "離してスタート",
+    "tapToStop": "SPACE / タップでストップ",
+    "holdSpace": "SPACEを長押し",
+    "latest": "直近",
+    "allRecords": "すべての記録 →",
+    "cubeNet": "スクランブルの展開図: {{scramble}}"
+  },
+  "algorithms": {
+    "search": "番号・名前・グループで検索",
+    "caseCount": "{{count}}ケース",
+    "empty": "該当するケースがありません。",
+    "pattern": "{{name}} のパターン",
+    "favorite": "お気に入りの手順",
+    "makeFavorite": "お気に入りにする",
+    "algorithms": "手順",
+    "noAlgorithm": "手順がまだありません",
+    "newAlgorithm": "新しい手順を入力",
+    "copy": "手順をコピー",
+    "copied": "コピーしました",
+    "removeUserAlgorithm": "ユーザー手順を削除",
+    "removeTitle": "ユーザー手順を削除しますか？",
+    "removeMessage": "{{kind}} {{number}} の手順「{{notation}}」を削除します。\nこの操作は取り消せません。"
+  },
+  "history": {
+    "unclassified": "未分類",
+    "recordGroups": "RECORD GROUPS",
+    "newGroup": "新しいグループ",
+    "groupName": "グループ名",
+    "groupPlaceholder": "例：大会本番、GAN 12",
+    "create": "作成",
+    "solveCount": "{{count}}回",
+    "deleteGroup": "グループを削除",
+    "deleteGroupTitle": "グループを削除しますか？",
+    "deleteGroupMessage": "「{{name}}」を削除します。\nこの操作は取り消せません。",
+    "recordFilter": "表示する記録",
+    "allGroups": "すべてのグループ",
+    "targetSolves": "対象ソルブ",
+    "solveHistory": "SOLVE HISTORY",
+    "records": "計測記録",
+    "emptyTitle": "このグループにはまだ記録がありません",
+    "emptyDescription": "タイマーでグループを選んで計測してみましょう。",
+    "goToTimer": "タイマーへ",
+    "deleteSolve": "計測記録を削除",
+    "deleteSolveTitle": "記録を削除しますか？",
+    "deleteSolveMessage": "選択した計測記録を削除します。\nこの操作は取り消せません。"
+  }
+}

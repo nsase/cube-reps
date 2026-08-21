@@ -10,11 +10,12 @@ import {
   ConfirmDialogData,
   ConfirmDialogResult,
 } from '../../../../../shared/confirm-dialog/confirm-dialog.models';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 /** 1件の手順と、お気に入り・コピー・削除操作を表示するコンポーネント。 */
 @Component({
   selector: 'app-algorithm-row',
-  imports: [MatButtonModule, MatIconModule],
+  imports: [MatButtonModule, MatIconModule, TranslocoPipe],
   templateUrl: './algorithm-row.html',
   styleUrl: './algorithm-row.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,6 +32,8 @@ export class AlgorithmRow {
   protected readonly library = inject(AlgorithmLibraryService);
   /** 手順削除の確認を表示するMaterial Dialogサービス。 */
   private readonly dialog = inject(MatDialog);
+  /** 確認メッセージを現在の言語へ翻訳するサービス。 */
+  private readonly i18n = inject(TranslocoService);
   /** コピー完了を表示しているか。 */
   protected readonly copied = signal(false);
 
@@ -46,8 +49,12 @@ export class AlgorithmRow {
     const item = this.item();
     const algorithm = this.algorithm();
     const data = {
-      title: 'ユーザー手順を削除しますか？',
-      message: `${item.kind} ${item.number} の手順「${algorithm.notation}」を削除します。\nこの操作は取り消せません。`,
+      title: this.i18n.translate('algorithms.removeTitle'),
+      message: this.i18n.translate('algorithms.removeMessage', {
+        kind: item.kind,
+        number: item.number,
+        notation: algorithm.notation,
+      }),
       buttons: [DialogButtons.cancel, DialogButtons.delete],
       defaultFocus: DialogButtons.cancel.id,
     } as const satisfies ConfirmDialogData;

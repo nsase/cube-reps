@@ -2,11 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { FormsModule } from '@angular/forms';
 import { CubeService } from '../../../core/cube';
 import { HistoryStore } from '../history.store';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /** 履歴の絞り込み条件と対象記録の集計値を表示するコンポーネント。 */
 @Component({
   selector: 'app-history-summary',
-  imports: [FormsModule],
+  imports: [FormsModule, TranslocoPipe],
   templateUrl: './history-summary.html',
   styleUrl: './history-summary.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
