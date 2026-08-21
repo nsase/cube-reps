@@ -1,0 +1,12 @@
+<div>
+  直近<strong>{{
+    cube.activeSolves().length ? cube.displayTime(cube.activeSolves()[0]) : '—'
+  }}</strong>
+</div>
+<div>
+  ベスト<strong>{{ cube.formatTime(cube.best()) }}</strong>
+</div>
+<div>
+  直近5回 平均<strong>{{ cube.formatTime(cube.average()) }}</strong>
+</div>
+<button (click)="showHistory.emit()">すべての記録 →</button>

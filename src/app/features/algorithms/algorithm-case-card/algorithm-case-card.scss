@@ -1,0 +1,43 @@
+$line: var(--border-color);
+$muted: var(--text-muted-color);
+
+:host {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 17px;
+  border: 1px solid $line;
+  border-radius: 9px;
+  background: var(--surface-color);
+}
+
+.casehead {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: space-between;
+
+  b {
+    font: 700 var(--font-size-large) var(--font-family-heading);
+  }
+
+  small {
+    padding: 3px 6px;
+    border: 1px solid $line;
+    border-radius: 4px;
+    color: $muted;
+    font: 500 var(--font-size-small) var(--font-family-mono);
+  }
+}
+
+h2 {
+  margin: 5px 0 2px;
+  font-size: var(--font-size-base);
+}
+
+p {
+  margin: 0;
+  color: $muted;
+  font-size: var(--font-size-small);
+}

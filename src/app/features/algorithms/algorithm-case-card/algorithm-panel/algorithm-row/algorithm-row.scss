@@ -1,0 +1,66 @@
+$ink: var(--text-color);
+$line: var(--border-color);
+$muted: var(--text-muted-color);
+
+:host {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 7px;
+  border: 1px solid $line;
+  border-radius: 5px;
+  background: var(--surface-muted-color);
+}
+
+:host(.preferred) {
+  border-color: var(--primary-color-dark);
+  box-shadow: inset 3px 0 0 var(--primary-color);
+}
+
+code {
+  min-height: 0;
+  padding: 0;
+  background: none;
+  font-size: var(--font-size-small);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.rank {
+  color: $muted;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-small);
+  text-align: center;
+}
+
+.algorithm-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+
+  button {
+    color: $ink;
+  }
+
+  .star {
+    color: var(--text-muted-color);
+  }
+
+  .star.active {
+    color: #b77900;
+  }
+
+  .remove {
+    color: var(--danger-color);
+  }
+}
+
+@media (max-width: 620px) {
+  :host {
+    grid-template-columns: 18px minmax(0, 1fr) auto;
+  }
+}

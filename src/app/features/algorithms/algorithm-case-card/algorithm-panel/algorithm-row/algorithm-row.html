@@ -1,0 +1,34 @@
+<span class="rank">{{ rank() }}</span>
+<code>{{ algorithm().notation }}</code>
+<div class="algorithm-actions">
+  <button
+    mat-icon-button
+    class="star"
+    [class.active]="library.favoriteFor(item())?.id === algorithm().id"
+    [attr.aria-label]="
+      library.favoriteFor(item())?.id === algorithm().id ? 'お気に入りの手順' : 'お気に入りにする'
+    "
+    [title]="
+      library.favoriteFor(item())?.id === algorithm().id ? 'お気に入りの手順' : 'お気に入りにする'
+    "
+    (click)="library.setFavorite(item(), algorithm().id)"
+  >
+    <mat-icon>{{
+      library.favoriteFor(item())?.id === algorithm().id ? 'star' : 'star_border'
+    }}</mat-icon>
+  </button>
+  <button mat-icon-button aria-label="手順をコピー" title="コピー" (click)="copy()">
+    <mat-icon>{{ copied() ? 'check' : 'content_copy' }}</mat-icon>
+  </button>
+  @if (!algorithm().builtIn) {
+    <button
+      mat-icon-button
+      class="remove"
+      aria-label="ユーザー手順を削除"
+      title="削除"
+      (click)="remove()"
+    >
+      <mat-icon>delete</mat-icon>
+    </button>
+  }
+</div>
