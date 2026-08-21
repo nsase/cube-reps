@@ -32,7 +32,18 @@
     </div>
   }
   <div class="scramble">
-    <span>SCRAMBLE <button (click)="newScramble()">↻</button></span>
+    <span>
+      SCRAMBLE
+      <button
+        mat-icon-button
+        class="refresh-button"
+        aria-label="スクランブルを更新"
+        title="スクランブルを更新"
+        (click)="newScramble()"
+      >
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </span>
     <p>{{ scramble() }}</p>
     <app-cube-net
       [scramble]="scramble()"

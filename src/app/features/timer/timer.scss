@@ -68,10 +68,19 @@ $muted: var(--text-muted-color);
   font: 500 var(--font-size-small) var(--font-family-mono);
   letter-spacing: 2px;
   color: $muted;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
-.scramble button {
+.scramble .refresh-button {
   border: 0;
   background: none;
+  color: $muted;
+
+  &:hover {
+    color: $ink;
+    background: var(--surface-color);
+  }
 }
 .scramble p {
   font: 500 clamp(var(--font-size-base), 1.5vw, var(--font-size-large)) var(--font-family-mono);
