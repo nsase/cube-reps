@@ -1,5 +1,6 @@
 import { definePllCase } from './pll-case';
 
+/** PLL Naのケース定義。 */
 export const NA_CASE = definePllCase({
   number: 'Na',
   group: 'Mixed',

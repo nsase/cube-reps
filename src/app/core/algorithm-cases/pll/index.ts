@@ -20,6 +20,7 @@ import { V_CASE } from './v';
 import { Y_CASE } from './y';
 import { Z_CASE } from './z';
 
+/** PLL識別名順に並べた全21ケース。 */
 export const PLL_CASES = [
   AA_CASE,
   AB_CASE,

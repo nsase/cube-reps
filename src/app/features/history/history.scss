@@ -40,9 +40,14 @@ $muted: var(--text-muted-color);
   margin: 4px 0 0;
   font-size: var(--font-size-large);
 }
+.history-title small {
+  font: 500 var(--font-size-small) var(--font-family-mono);
+  letter-spacing: 2px;
+  color: $muted;
+}
 .row {
   display: grid;
-  grid-template-columns: 40px 110px minmax(0, 1fr) 110px 90px 140px;
+  grid-template-columns: 40px 105px minmax(0, 1fr) 110px 85px max-content;
   gap: 10px;
   align-items: center;
   padding: 12px 18px;
@@ -77,9 +82,8 @@ $muted: var(--text-muted-color);
 }
 .row-actions {
   grid-column: 6;
-}
-.row > div:last-child {
   display: flex;
+  align-items: center;
   gap: 4px;
   justify-content: flex-end;
 }
@@ -245,12 +249,6 @@ $muted: var(--text-muted-color);
     font-weight: 600;
   }
 }
-.row {
-  grid-template-columns: 40px 105px minmax(0, 1fr) 110px 85px max-content;
-}
-.row-actions {
-  align-items: center;
-}
 .group-badge {
   max-width: 80px;
   overflow: hidden;
@@ -261,11 +259,6 @@ $muted: var(--text-muted-color);
   background: #f0f1e9;
   color: #64702f;
   font-size: var(--font-size-small);
-}
-.history-title small {
-  font: 500 var(--font-size-small) var(--font-family-mono);
-  letter-spacing: 2px;
-  color: $muted;
 }
 @media (max-width: 900px) {
   .row {

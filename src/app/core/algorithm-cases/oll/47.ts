@@ -1,5 +1,6 @@
 import { defineOllCase } from './oll-case';
 
+/** OLL 47のケース定義。 */
 export const OLL_47_CASE = defineOllCase({
   number: '47',
   names: ['Anti-Breakneck'],

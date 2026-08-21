@@ -1,5 +1,6 @@
 import { defineOllCase } from './oll-case';
 
+/** OLL 46のケース定義。 */
 export const OLL_46_CASE = defineOllCase({
   number: '46',
   names: ["Seein' Headlights (C and headlights)"],

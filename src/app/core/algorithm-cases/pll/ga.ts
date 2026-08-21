@@ -1,5 +1,6 @@
 import { definePllCase } from './pll-case';
 
+/** PLL Gaのケース定義。 */
 export const GA_CASE = definePllCase({
   number: 'Ga',
   group: 'Mixed',

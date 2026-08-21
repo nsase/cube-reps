@@ -1,5 +1,6 @@
 import { definePllCase } from './pll-case';
 
+/** PLL Eのケース定義。 */
 export const E_CASE = definePllCase({
   number: 'E',
   group: 'Corner',

@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { ConfirmDialogData } from './confirm-dialog.models';
 
+/** 渡された本文とボタン配列を表示する汎用確認ダイアログ。 */
 @Component({
   selector: 'app-confirm-dialog',
   imports: [A11yModule, MatButtonModule, MatDialogModule],
@@ -12,5 +13,6 @@ import { ConfirmDialogData } from './confirm-dialog.models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ConfirmDialog {
+  /** 呼び出し元から渡されたダイアログ表示データ。 */
   protected readonly data = inject<ConfirmDialogData>(MAT_DIALOG_DATA);
 }

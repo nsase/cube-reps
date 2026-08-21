@@ -1,5 +1,6 @@
 import { definePllCase } from './pll-case';
 
+/** PLL Ubのケース定義。 */
 export const UB_CASE = definePllCase({
   number: 'Ub',
   group: 'Edge',
