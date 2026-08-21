@@ -6,7 +6,10 @@
         PLL <small>21</small>
       </button>
     </div>
-    <label>⌕ <input placeholder="番号・名前・グループで検索" [(ngModel)]="query" /></label>
+    <label>
+      <mat-icon aria-hidden="true">search</mat-icon>
+      <input placeholder="番号・名前・グループで検索" [(ngModel)]="query" />
+    </label>
   </div>
   <p class="count">
     <b>{{ kind() }}</b> {{ cases().length }}ケース
@@ -47,6 +50,7 @@
                 <code>{{ algorithm.notation }}</code>
                 <div class="algorithm-actions">
                   <button
+                    mat-icon-button
                     class="star"
                     [class.active]="library.favoriteFor(item)?.id === algorithm.id"
                     [attr.aria-label]="
@@ -61,13 +65,32 @@
                     "
                     (click)="library.setFavorite(item, algorithm.id)"
                   >
-                    {{ library.favoriteFor(item)?.id === algorithm.id ? '★' : '☆' }}
+                    <mat-icon>{{
+                      library.favoriteFor(item)?.id === algorithm.id ? 'star' : 'star_border'
+                    }}</mat-icon>
                   </button>
-                  <button title="コピー" (click)="copy(item, algorithm)">
-                    {{ copied() === library.caseKey(item) + '-' + algorithm.id ? '✓' : '⧉' }}
+                  <button
+                    mat-icon-button
+                    aria-label="手順をコピー"
+                    title="コピー"
+                    (click)="copy(item, algorithm)"
+                  >
+                    <mat-icon>{{
+                      copied() === library.caseKey(item) + '-' + algorithm.id
+                        ? 'check'
+                        : 'content_copy'
+                    }}</mat-icon>
                   </button>
                   @if (!algorithm.builtIn) {
-                    <button class="remove" title="削除" (click)="remove(item, algorithm)">×</button>
+                    <button
+                      mat-icon-button
+                      class="remove"
+                      aria-label="ユーザー手順を削除"
+                      title="削除"
+                      (click)="remove(item, algorithm)"
+                    >
+                      <mat-icon>delete</mat-icon>
+                    </button>
                   }
                 </div>
               </li>

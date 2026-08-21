@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { OLL_CASES, PLL_CASES } from '../../core/algorithm-cases';
 import { AlgorithmLibraryService, CaseAlgorithm } from '../../core/algorithm-library';
 import { AlgorithmCase } from '../../core/cube.models';
@@ -14,7 +16,7 @@ import { CubePatternView } from '../../shared/cube-pattern/cube-pattern';
 
 @Component({
   selector: 'app-algorithms',
-  imports: [FormsModule, CubePatternView],
+  imports: [FormsModule, MatButtonModule, MatIconModule, CubePatternView],
   templateUrl: './algorithms.html',
   styleUrl: './algorithms.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

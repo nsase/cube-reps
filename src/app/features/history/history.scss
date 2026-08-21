@@ -145,6 +145,9 @@ $muted: var(--text-muted-color);
   padding: 9px 13px !important;
   border-radius: 6px !important;
   font-weight: 700 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 .group-form {
   margin-top: 16px;
@@ -236,11 +239,23 @@ $muted: var(--text-muted-color);
 .group-delete {
   border: 0;
   background: none;
-  color: #aaa;
-  padding: 10px;
+  color: $muted;
+
+  &:hover:not(:disabled) {
+    color: var(--danger-color);
+    background: color-mix(in srgb, var(--danger-color) 12%, transparent);
+  }
+
   &:disabled {
     opacity: 0.2;
     cursor: default;
+  }
+}
+.row .row-delete {
+  color: var(--danger-color);
+
+  &:hover {
+    background: color-mix(in srgb, var(--danger-color) 12%, transparent);
   }
 }
 .history-filter {

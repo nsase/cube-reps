@@ -7,7 +7,8 @@
         <p>用途やキューブごとに記録を分けられます。</p>
       </div>
       <button class="primary" (click)="showCreateForm.set(!showCreateForm())">
-        ＋ 新しいグループ
+        <mat-icon aria-hidden="true">add</mat-icon>
+        新しいグループ
       </button>
     </div>
     @if (showCreateForm()) {
@@ -40,12 +41,14 @@
             >
           </button>
           <button
+            mat-icon-button
             class="group-delete"
             [disabled]="group.id === 'unclassified' || cube.groups().length === 1"
+            aria-label="グループを削除"
             title="グループを削除"
             (click)="deleteGroup(group.id)"
           >
-            ×
+            <mat-icon>delete</mat-icon>
           </button>
         </article>
       }
@@ -100,7 +103,15 @@
             (click)="cube.togglePenalty(solve.id, 'DNF')"
           >
             DNF</button
-          ><button (click)="deleteSolve(solve.id)">×</button>
+          ><button
+            mat-icon-button
+            class="row-delete"
+            aria-label="計測記録を削除"
+            title="計測記録を削除"
+            (click)="deleteSolve(solve.id)"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
         </div>
       </div>
     } @empty {

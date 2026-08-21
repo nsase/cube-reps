@@ -9,6 +9,8 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { CubeService } from '../../core/cube';
 import { DialogButtons } from '../../shared/confirm-dialog/confirm-dialog.buttons';
 import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
@@ -21,7 +23,7 @@ import { Solve } from '../../core/cube.models';
 
 @Component({
   selector: 'app-history',
-  imports: [CommonModule, FormsModule, CubeNetView],
+  imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, CubeNetView],
   templateUrl: './history.html',
   styleUrl: './history.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

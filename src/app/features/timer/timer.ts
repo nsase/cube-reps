@@ -8,6 +8,8 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { PLL_CASES } from '../../core/algorithm-cases';
 import { AlgorithmLibraryService } from '../../core/algorithm-library';
 import { CubeNetView } from '../../shared/cube-net/cube-net';
@@ -16,7 +18,7 @@ import { SolveMode } from '../../core/cube.models';
 
 @Component({
   selector: 'app-timer',
-  imports: [FormsModule, CubeNetView],
+  imports: [FormsModule, MatButtonModule, MatIconModule, CubeNetView],
   templateUrl: './timer.html',
   styleUrl: './timer.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -40,6 +40,10 @@ $muted: var(--text-muted-color);
   display: flex;
   align-items: center;
 }
+.tools mat-icon {
+  flex: 0 0 auto;
+  color: $muted;
+}
 .tools input {
   width: 100%;
   border: 0;
@@ -238,13 +242,8 @@ $muted: var(--text-muted-color);
   gap: 2px;
 
   button {
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    border: 1px solid $line;
-    border-radius: 4px;
-    background: var(--surface-color);
     color: $ink;
+    line-height: normal;
   }
 
   button:disabled {
@@ -253,12 +252,9 @@ $muted: var(--text-muted-color);
   }
   .star {
     color: var(--text-muted-color);
-    font-size: 15px;
   }
   .star.active {
     color: #b77900;
-    border-color: #d9a72e;
-    background: #fff8dc;
   }
   .remove {
     color: var(--danger-color);
