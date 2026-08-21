@@ -1,0 +1,122 @@
+$ink: var(--text-color);
+$lime: var(--primary-color);
+$muted: var(--text-muted-color);
+
+:host {
+  display: grid;
+  grid-template-columns: 40px 105px minmax(0, 1fr) 110px 85px max-content;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #ecebe7;
+
+  > span,
+  time {
+    color: $muted;
+    font: 500 var(--font-size-small) var(--font-family-mono);
+  }
+
+  > div:nth-child(2) strong {
+    display: block;
+    font: 600 var(--font-size-large) var(--font-family-heading);
+  }
+
+  > div:nth-child(2) small {
+    color: $muted;
+    font-size: var(--font-size-small);
+  }
+
+  code {
+    overflow: hidden;
+    color: $muted;
+    font-size: var(--font-size-small);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  app-cube-net {
+    --cube-net-width: 100px;
+
+    grid-column: 4;
+  }
+
+  time {
+    grid-column: 5;
+  }
+
+  button.on {
+    background: $ink;
+    color: $lime;
+  }
+}
+
+.row-actions {
+  display: flex;
+  grid-column: 6;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.row-delete {
+  color: var(--danger-color);
+
+  &:hover {
+    background: color-mix(in srgb, var(--danger-color) 12%, transparent);
+  }
+}
+
+.group-badge {
+  overflow: hidden;
+  max-width: 80px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: #f0f1e9;
+  color: #64702f;
+  font-size: var(--font-size-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  :host {
+    grid-template-columns: 30px 95px minmax(0, 1fr) 90px max-content;
+  }
+
+  :host app-cube-net {
+    --cube-net-width: 90px;
+  }
+
+  :host time {
+    display: none;
+  }
+
+  .row-actions {
+    grid-column: 5;
+  }
+}
+
+@media (max-width: 620px) {
+  :host {
+    grid-template-columns: 27px 82px 68px minmax(0, 1fr);
+    padding: 10px;
+  }
+
+  :host app-cube-net {
+    --cube-net-width: 68px;
+
+    grid-column: 3;
+  }
+
+  :host code {
+    display: none;
+  }
+
+  .row-actions {
+    grid-column: 1 / -1;
+  }
+
+  .group-badge {
+    max-width: 64px;
+  }
+}

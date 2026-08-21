@@ -1,0 +1,15 @@
+<div class="history">
+  <div class="history-title">
+    <small>SOLVE HISTORY</small>
+    <h2>計測記録</h2>
+  </div>
+  @for (solve of store.filteredSolves(); track solve.id; let index = $index) {
+    <app-solve-record [solve]="solve" [recordNumber]="store.filteredSolves().length - index" />
+  } @empty {
+    <div class="empty">
+      <b>このグループにはまだ記録がありません</b
+      ><span>タイマーでグループを選んで計測してみましょう。</span
+      ><button mat-flat-button (click)="showTimer.emit()">タイマーへ</button>
+    </div>
+  }
+</div>
