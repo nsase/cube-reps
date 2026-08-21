@@ -12,8 +12,6 @@
 }
 
 html {
-  // --mat-icon-button-state-layer-size: 25px;
-
   @include mat.theme(
     (
       color: (
@@ -41,6 +39,10 @@ html {
   --success-color: #69935e;
   --danger-color: #ff6960;
   --info-color: #55aaff;
+
+  // Angular Material buttons
+  --mat-button-filled-label-text-color: var(--primary-color);
+  --mat-button-filled-container-color: var(--primary-contrast-color);
 
   // Cube sticker colors
   --cube-yellow: #ffe624;
@@ -95,6 +97,10 @@ textarea {
 
 button {
   cursor: pointer;
+}
+
+button[mat-icon-button] {
+  line-height: normal;
 }
 
 code,

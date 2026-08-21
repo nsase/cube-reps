@@ -105,7 +105,7 @@
               (ngModelChange)="setDraft(item, $event)"
               [name]="'algorithm-' + item.kind + item.number"
             />
-            <button type="submit" [disabled]="!draftFor(item).trim()">追加</button>
+            <button mat-flat-button type="submit" [disabled]="!draftFor(item).trim()">追加</button>
           </form>
         </div>
       </article>
