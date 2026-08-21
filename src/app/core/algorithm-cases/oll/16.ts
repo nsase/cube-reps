@@ -1,5 +1,6 @@
 import { defineOllCase } from './oll-case';
 
+/** OLL 16のケース定義。 */
 export const OLL_16_CASE = defineOllCase({
   number: '16',
   names: ['Anti-Squeegee'],

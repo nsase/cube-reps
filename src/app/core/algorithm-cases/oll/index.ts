@@ -57,6 +57,7 @@ import { OLL_55_CASE } from './55';
 import { OLL_56_CASE } from './56';
 import { OLL_57_CASE } from './57';
 
+/** OLL番号順に並べた全57ケース。 */
 export const OLL_CASES = [
   OLL_01_CASE,
   OLL_02_CASE,

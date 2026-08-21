@@ -1,38 +1,60 @@
 import { CubePattern, StickerColor } from './cube.models';
 
+/** キューブの6面を表すSingmaster記号。 */
 export type CubeFace = 'U' | 'R' | 'F' | 'D' | 'L' | 'B';
+/** 未配置色を除いた実ステッカー色。 */
 export type CubeColor = Exclude<StickerColor, 'none'>;
+/** キューブを観察する基準面。 */
 export type CubeOrientation = 'yellow-top' | 'white-top';
+/** 1面分の3行3列ステッカー。 */
 export type CubeFaceState = ReadonlyArray<ReadonlyArray<CubeColor>>;
+/** 面記号をキーとする6面分の状態。 */
 export type CubeFaces = Readonly<Record<CubeFace, CubeFaceState>>;
+/** 6面を9行12列へ配置した展開図。 */
 export type CubeNet = ReadonlyArray<ReadonlyArray<StickerColor>>;
 
+/** 3次元座標上に配置した1枚のステッカー。 */
 interface Sticker {
+  /** キューブ中心を原点とするステッカー位置。 */
   position: Vector;
+  /** ステッカーが向いている面の法線。 */
   normal: Vector;
+  /** ステッカー色。 */
   color: CubeColor;
 }
 
+/** 各要素が`-1`から`1`の3次元ベクトル。 */
 type Vector = [number, number, number];
+/** 回転軸。`0`、`1`、`2`はそれぞれx、y、z軸。 */
 type Axis = 0 | 1 | 2;
+/** 90度単位の回転量。 */
 type QuarterTurn = -1 | 1 | 2;
 
+/** パース済みの1手。 */
 interface ParsedMove {
+  /** 正規化された手の名前。 */
   move: string;
+  /** 時計回り、反時計回り、180度の回転量。 */
   turn: QuarterTurn;
 }
 
+/** 1種類の手が動かす層と回転方向。 */
 interface MoveDefinition {
+  /** 回転させる軸。 */
   axis: Axis;
+  /** 指定座標の層が回転対象かを判定する関数。 */
   includesLayer: (coordinate: number) => boolean;
+  /** 基本手を時計回りに実行するときの座標回転方向。 */
   clockwise: -1 | 1;
 }
 
+/** 観察方向ごとの完成状態の面色。 */
 const FACE_COLORS: Readonly<Record<CubeOrientation, Readonly<Record<CubeFace, CubeColor>>>> = {
   'yellow-top': { U: 'yellow', R: 'orange', F: 'green', D: 'white', L: 'red', B: 'blue' },
   'white-top': { U: 'white', R: 'red', F: 'green', D: 'yellow', L: 'orange', B: 'blue' },
 };
 
+/** 各面が向いている単位法線ベクトル。 */
 const FACE_NORMALS: Readonly<Record<CubeFace, Vector>> = {
   U: [0, 1, 0],
   R: [1, 0, 0],
@@ -42,6 +64,7 @@ const FACE_NORMALS: Readonly<Record<CubeFace, Vector>> = {
   B: [0, 0, -1],
 };
 
+/** 対応するキューブ記法ごとの回転定義。 */
 const MOVE_DEFINITIONS: Readonly<Record<string, MoveDefinition>> = {
   R: { axis: 0, includesLayer: (value) => value === 1, clockwise: -1 },
   L: { axis: 0, includesLayer: (value) => value === -1, clockwise: 1 },
@@ -63,6 +86,13 @@ const MOVE_DEFINITIONS: Readonly<Record<string, MoveDefinition>> = {
   z: { axis: 2, includesLayer: () => true, clockwise: -1 },
 };
 
+/**
+ * キューブ手順を逆順かつ逆回転へ変換する。
+ *
+ * @param algorithm 反転するキューブ手順
+ * @returns 入力と逆の状態遷移を行う手順
+ * @throws 記法に未対応のトークンや不正な括弧が含まれる場合
+ */
 export function invertAlgorithm(algorithm: string): string {
   return parseAlgorithm(algorithm)
     .reverse()
@@ -70,6 +100,13 @@ export function invertAlgorithm(algorithm: string): string {
     .join(' ');
 }
 
+/**
+ * 完成状態へスクランブルを適用し、6面の状態を返す。
+ *
+ * @param scramble 適用するキューブ手順
+ * @param orientation 完成状態を観察する向き
+ * @returns スクランブル適用後の6面
+ */
 export function cubeFacesFromScramble(
   scramble: string,
   orientation: CubeOrientation = 'yellow-top',
@@ -79,6 +116,13 @@ export function cubeFacesFromScramble(
   return stickersToFaces(stickers);
 }
 
+/**
+ * スクランブル適用後の状態を9行12列の展開図へ変換する。
+ *
+ * @param scramble 適用するキューブ手順
+ * @param orientation 完成状態を観察する向き
+ * @returns 面のないセルを`none`で埋めた展開図
+ */
 export function cubeNetFromScramble(
   scramble: string,
   orientation: CubeOrientation = 'yellow-top',
@@ -96,6 +140,12 @@ export function cubeNetFromScramble(
   return net;
 }
 
+/**
+ * スクランブル適用後の上面と側面上段を5行5列で返す。
+ *
+ * @param scramble 適用するキューブ手順
+ * @returns OLL/PLL表示用パターン
+ */
 export function topLayerPatternFromScramble(scramble: string): CubePattern {
   const faces = cubeFacesFromScramble(scramble);
   return [
@@ -107,6 +157,13 @@ export function topLayerPatternFromScramble(scramble: string): CubePattern {
   ];
 }
 
+/**
+ * 上段パターンへ手順を適用した結果を返す。
+ *
+ * @param pattern 手順適用前の上段パターン
+ * @param algorithm 適用するキューブ手順
+ * @returns 手順適用後の上段パターン
+ */
 export function topLayerPatternAfterAlgorithm(
   pattern: CubePattern,
   algorithm: string,
@@ -117,12 +174,24 @@ export function topLayerPatternAfterAlgorithm(
   return topLayerPatternFromStickers(stickers);
 }
 
+/**
+ * 上段パターンから黄色面の向きだけを抽出する。
+ *
+ * @param scramble 適用するキューブ手順
+ * @returns 黄色以外を`none`へ置換したOLL向けパターン
+ */
 export function topLayerOrientationPatternFromScramble(scramble: string): CubePattern {
   return topLayerPatternFromScramble(scramble).map((row) =>
     row.map((color) => (color === 'yellow' ? 'yellow' : 'none')),
   );
 }
 
+/**
+ * 5行5列の上段パターンを3次元ステッカーへ反映する。
+ *
+ * @param stickers 更新対象のステッカー
+ * @param pattern 反映する上段パターン
+ */
 function applyTopLayerPattern(stickers: Sticker[], pattern: CubePattern): void {
   for (const sticker of stickers) {
     const face = faceForNormal(sticker.normal);
@@ -139,6 +208,7 @@ function applyTopLayerPattern(stickers: Sticker[], pattern: CubePattern): void {
   }
 }
 
+/** @returns 3次元ステッカーから抽出した5行5列の上段パターン */
 function topLayerPatternFromStickers(stickers: Sticker[]): CubePattern {
   const faces = stickersToFaces(stickers);
   return [
@@ -150,6 +220,12 @@ function topLayerPatternFromStickers(stickers: Sticker[]): CubePattern {
   ];
 }
 
+/**
+ * 指定方向の完成状態を54枚の3次元ステッカーとして生成する。
+ *
+ * @param orientation キューブを観察する向き
+ * @returns 完成状態のステッカー
+ */
 function createSolvedStickers(orientation: CubeOrientation = 'yellow-top'): Sticker[] {
   const stickers: Sticker[] = [];
   for (const face of Object.keys(FACE_NORMALS) as CubeFace[]) {
@@ -167,15 +243,37 @@ function createSolvedStickers(orientation: CubeOrientation = 'yellow-top'): Stic
   return stickers;
 }
 
+/**
+ * 面内の2次元位置を3次元座標へ変換する。
+ *
+ * @param face 配置する面
+ * @param normal 面の法線
+ * @param first 面内の第1座標
+ * @param second 面内の第2座標
+ * @returns キューブ中心を原点とする座標
+ */
 function positionFor(face: CubeFace, normal: Vector, first: number, second: number): Vector {
   if (face === 'U' || face === 'D') return [first, normal[1], second];
   if (face === 'R' || face === 'L') return [normal[0], first, second];
   return [first, second, normal[2]];
 }
 
+/**
+ * 括弧、反復、ワイドムーブを含むキューブ記法を解析する。
+ *
+ * @param algorithm 解析する手順
+ * @returns 正規化された手の一覧
+ * @throws 記法が不正または未対応の場合
+ */
 function parseAlgorithm(algorithm: string): ParsedMove[] {
   let position = 0;
 
+  /**
+   * 現在位置から手または括弧グループを再帰的に読み取る。
+   *
+   * @param inGroup 閉じ括弧を期待する再帰呼び出しかどうか
+   * @returns 読み取った手の一覧
+   */
   function parseSequence(inGroup: boolean): ParsedMove[] {
     const moves: ParsedMove[] = [];
     while (position < algorithm.length) {
@@ -199,10 +297,12 @@ function parseAlgorithm(algorithm: string): ParsedMove[] {
     return moves;
   }
 
+  /** 現在位置から連続する空白を読み飛ばす。 */
   function skipWhitespace(): void {
     while (/\s/.test(algorithm[position] ?? '')) position++;
   }
 
+  /** @returns 現在位置にある反復回数。省略時は`1` */
   function readRepetitions(): number {
     skipWhitespace();
     const match = /^\d+/.exec(algorithm.slice(position));
@@ -213,6 +313,11 @@ function parseAlgorithm(algorithm: string): ParsedMove[] {
     return repetitions;
   }
 
+  /**
+   * 現在位置から1手を読み取り、ワイドムーブ表記を正規化する。
+   *
+   * @returns パース済みの1手
+   */
   function readMove(): ParsedMove {
     const rest = algorithm.slice(position);
     const match = /^([URFDLB](?:w)?|[urfdlb]|[MESxyz])(2'?|')?/.exec(rest);
@@ -225,6 +330,12 @@ function parseAlgorithm(algorithm: string): ParsedMove[] {
     return { move, turn: suffix.startsWith('2') ? 2 : suffix === "'" ? -1 : 1 };
   }
 
+  /**
+   * 現在の解析位置を含む記法エラーを生成する。
+   *
+   * @param message エラーの詳細
+   * @returns 呼び出し元から送出するエラー
+   */
   function notationError(message: string): Error {
     return new Error(`Invalid cube notation at position ${position}: ${message}`);
   }
@@ -232,6 +343,12 @@ function parseAlgorithm(algorithm: string): ParsedMove[] {
   return parseSequence(false);
 }
 
+/**
+ * 1手を対象層のステッカー位置と法線へ適用する。
+ *
+ * @param stickers 更新対象のステッカー
+ * @param parsedMove 適用するパース済み手
+ */
 function applyMove(stickers: Sticker[], parsedMove: ParsedMove): void {
   const definition = MOVE_DEFINITIONS[parsedMove.move];
   if (!definition) throw new Error(`Unsupported cube move: ${parsedMove.move}`);
@@ -245,6 +362,14 @@ function applyMove(stickers: Sticker[], parsedMove: ParsedMove): void {
   }
 }
 
+/**
+ * ベクトルを指定軸の周りに90度単位で回転する。
+ *
+ * @param vector 回転するベクトル
+ * @param axis 回転軸
+ * @param quarterTurns 90度単位の回転量
+ * @returns 回転後の新しいベクトル
+ */
 function rotateVector(vector: Vector, axis: Axis, quarterTurns: QuarterTurn): Vector {
   let [x, y, z] = vector;
   const repetitions = quarterTurns === -1 ? 3 : quarterTurns;
@@ -256,6 +381,7 @@ function rotateVector(vector: Vector, axis: Axis, quarterTurns: QuarterTurn): Ve
   return [x, y, z];
 }
 
+/** @returns 3次元ステッカーを面ごとの3行3列へ変換した状態 */
 function stickersToFaces(stickers: Sticker[]): CubeFaces {
   const faces = Object.fromEntries(
     (Object.keys(FACE_NORMALS) as CubeFace[]).map((face) => [
@@ -272,6 +398,13 @@ function stickersToFaces(stickers: Sticker[]): CubeFaces {
   return faces;
 }
 
+/**
+ * 法線ベクトルに対応する面を返す。
+ *
+ * @param normal 判定する法線
+ * @returns 法線が向いている面
+ * @throws 6面のどれにも一致しない場合
+ */
 function faceForNormal(normal: Vector): CubeFace {
   const entry = (Object.entries(FACE_NORMALS) as Array<[CubeFace, Vector]>).find(([, candidate]) =>
     candidate.every((value, index) => value === normal[index]),
@@ -280,6 +413,13 @@ function faceForNormal(normal: Vector): CubeFace {
   return entry[0];
 }
 
+/**
+ * 3次元位置を指定面内の行列位置へ変換する。
+ *
+ * @param face 変換対象の面
+ * @param position ステッカーの3次元位置
+ * @returns 面内の行と列
+ */
 function faceCoordinates(face: CubeFace, [x, y, z]: Vector): [number, number] {
   if (face === 'U') return [z + 1, x + 1];
   if (face === 'D') return [1 - z, x + 1];
@@ -289,6 +429,14 @@ function faceCoordinates(face: CubeFace, [x, y, z]: Vector): [number, number] {
   return [1 - y, z + 1];
 }
 
+/**
+ * 3行3列の面を展開図の指定位置へコピーする。
+ *
+ * @param net 更新対象の展開図
+ * @param face コピーする面
+ * @param startRow コピー先の開始行
+ * @param startColumn コピー先の開始列
+ */
 function placeFace(
   net: StickerColor[][],
   face: CubeFaceState,

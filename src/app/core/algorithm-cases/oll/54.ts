@@ -1,5 +1,6 @@
 import { defineOllCase } from './oll-case';
 
+/** OLL 54のケース定義。 */
 export const OLL_54_CASE = defineOllCase({
   number: '54',
   names: ['Anti-Frying Pan'],

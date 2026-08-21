@@ -1,5 +1,6 @@
 import { ConfirmDialogButton } from './confirm-dialog.models';
 
+/** アプリ全体で再利用する標準ダイアログボタン。 */
 export const DialogButtons = {
   ok: { id: 'ok', label: 'OK', color: 'primary' },
   cancel: { id: 'cancel', label: 'キャンセル' },

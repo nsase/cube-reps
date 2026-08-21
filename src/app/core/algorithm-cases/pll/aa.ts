@@ -1,5 +1,6 @@
 import { definePllCase } from './pll-case';
 
+/** PLL Aaのケース定義。 */
 export const AA_CASE = definePllCase({
   number: 'Aa',
   group: 'Corner',

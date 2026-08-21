@@ -1,5 +1,6 @@
 import { definePllCase } from './pll-case';
 
+/** PLL Tのケース定義。 */
 export const T_CASE = definePllCase({
   number: 'T',
   group: 'Mixed',

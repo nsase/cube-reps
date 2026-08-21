@@ -1,5 +1,6 @@
 import { defineOllCase } from './oll-case';
 
+/** OLL 09のケース定義。 */
 export const OLL_09_CASE = defineOllCase({
   number: '09',
   names: ['Kite'],
