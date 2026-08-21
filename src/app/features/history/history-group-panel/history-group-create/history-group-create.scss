@@ -1,0 +1,56 @@
+$ink: var(--text-color);
+$line: var(--border-color);
+$muted: var(--text-muted-color);
+
+:host {
+  display: contents;
+}
+
+.create-toggle {
+  grid-column: 2;
+}
+
+.group-form {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: flex-end;
+  gap: 9px;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 7px;
+  background: var(--surface-muted-color);
+
+  label {
+    display: grid;
+    gap: 5px;
+    color: $muted;
+    font-size: var(--font-size-small);
+  }
+
+  input {
+    min-width: 180px;
+    padding: 8px 10px;
+    border: 1px solid $line;
+    border-radius: 5px;
+    background: var(--surface-color);
+    color: $ink;
+  }
+}
+
+@media (max-width: 620px) {
+  .create-toggle {
+    align-self: start;
+  }
+
+  .group-form {
+    flex-wrap: wrap;
+  }
+
+  .group-form label:first-child {
+    width: 100%;
+  }
+
+  .group-form input {
+    width: 100%;
+  }
+}

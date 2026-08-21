@@ -1,0 +1,40 @@
+$line: var(--border-color);
+$muted: var(--text-muted-color);
+
+:host {
+  display: block;
+}
+
+.history {
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: 9px;
+  background: var(--surface-color);
+}
+
+.history-title {
+  padding: 20px 22px;
+  border-bottom: 1px solid $line;
+
+  h2 {
+    margin: 4px 0 0;
+    font-size: var(--font-size-large);
+  }
+
+  small {
+    color: $muted;
+    font: 500 var(--font-size-small) var(--font-family-mono);
+    letter-spacing: 2px;
+  }
+}
+
+.empty {
+  display: flex;
+  grid-column: 1/-1;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 60px 20px;
+  color: $muted;
+  text-align: center;
+}

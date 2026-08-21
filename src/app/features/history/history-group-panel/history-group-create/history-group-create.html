@@ -1,0 +1,17 @@
+<button mat-flat-button class="create-toggle" (click)="showForm.set(!showForm())">
+  <mat-icon aria-hidden="true">add</mat-icon>
+  新しいグループ
+</button>
+@if (showForm()) {
+  <form class="group-form" (submit)="$event.preventDefault(); createGroup()">
+    <label
+      >グループ名<input
+        placeholder="例：大会本番、GAN 12"
+        [(ngModel)]="groupName"
+        name="groupName"
+        autofocus
+    /></label>
+    <button mat-flat-button type="submit" [disabled]="!groupName().trim()">作成</button>
+    <button mat-button type="button" (click)="cancel()">キャンセル</button>
+  </form>
+}

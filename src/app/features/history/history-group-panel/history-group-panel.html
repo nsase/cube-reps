@@ -1,0 +1,11 @@
+<div class="group-panel">
+  <div class="group-panel-title">
+    <h2>RECORD GROUPS</h2>
+  </div>
+  <app-history-group-create />
+  <div class="group-list">
+    @for (group of cube.groups(); track group.id) {
+      <app-record-group [group]="group" />
+    }
+  </div>
+</div>
