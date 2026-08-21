@@ -1,12 +1,13 @@
 <div>
-  直近<strong>{{
+  {{ 'timer.latest' | transloco
+  }}<strong>{{
     cube.activeSolves().length ? cube.displayTime(cube.activeSolves()[0]) : '—'
   }}</strong>
 </div>
 <div>
-  ベスト<strong>{{ cube.formatTime(cube.best()) }}</strong>
+  {{ 'common.best' | transloco }}<strong>{{ cube.formatTime(cube.best()) }}</strong>
 </div>
 <div>
-  直近5回 平均<strong>{{ cube.formatTime(cube.average()) }}</strong>
+  {{ 'common.recentAverage' | transloco }}<strong>{{ cube.formatTime(cube.average()) }}</strong>
 </div>
-<button (click)="showHistory.emit()">すべての記録 →</button>
+<a routerLink="/history">{{ 'timer.allRecords' | transloco }}</a>

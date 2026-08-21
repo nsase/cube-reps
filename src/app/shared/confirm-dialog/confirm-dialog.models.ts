@@ -4,8 +4,8 @@ import { ThemePalette } from '@angular/material/core';
 export interface ConfirmDialogButton<TId extends string = string> {
   /** ダイアログの戻り値として使用する操作ID。 */
   readonly id: TId;
-  /** ボタンに表示するラベル。 */
-  readonly label: string;
+  /** ボタンに表示する翻訳キー。 */
+  readonly labelKey: string;
   /** Angular Materialのテーマ色。 */
   readonly color?: ThemePalette;
 }

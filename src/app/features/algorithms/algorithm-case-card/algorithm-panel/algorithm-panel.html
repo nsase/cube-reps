@@ -1,5 +1,7 @@
 <div class="favorite-panel">
-  <div class="algorithm-heading"><strong>お気に入りの手順</strong></div>
+  <div class="algorithm-heading">
+    <strong>{{ 'algorithms.favorite' | transloco }}</strong>
+  </div>
   @if (library.favoriteFor(item()); as favorite) {
     <div class="favorite-algorithm">
       <span class="rank">{{ favoriteRank(favorite) + 1 }}</span>
@@ -7,7 +9,9 @@
     </div>
   }
 </div>
-<div class="algorithm-heading"><strong>手順</strong></div>
+<div class="algorithm-heading">
+  <strong>{{ 'algorithms.algorithms' | transloco }}</strong>
+</div>
 <div class="algorithm-list">
   @for (algorithm of library.algorithmsFor(item()); track algorithm.id; let index = $index) {
     <app-algorithm-row
@@ -17,14 +21,16 @@
       [rank]="index + 1"
     />
   } @empty {
-    <div class="no-algorithm">手順がまだありません</div>
+    <div class="no-algorithm">{{ 'algorithms.noAlgorithm' | transloco }}</div>
   }
 </div>
 <form class="algorithm-form" (submit)="$event.preventDefault(); add()">
   <input
-    placeholder="新しい手順を入力"
+    [placeholder]="'algorithms.newAlgorithm' | transloco"
     [(ngModel)]="draft"
     [name]="'algorithm-' + item().kind + item().number"
   />
-  <button mat-flat-button type="submit" [disabled]="!draft().trim()">追加</button>
+  <button mat-flat-button type="submit" [disabled]="!draft().trim()">
+    {{ 'common.add' | transloco }}
+  </button>
 </form>

@@ -1,38 +1,39 @@
 <div class="shell">
   <aside>
-    <a class="brand" (click)="navigate('timer')"
+    <a class="brand" routerLink="/timer"
       ><b><i></i><i></i><i></i><i></i></b>Cube<span>Flow</span></a
     >
     <nav>
-      <button [class.on]="view() === 'timer'" (click)="navigate('timer')">
-        ⏱ <em>タイマー</em>
-      </button>
-      <button [class.on]="view() === 'algorithms'" (click)="navigate('algorithms')">
-        ▦ <em>OLL / PLL</em>
-      </button>
-      <button [class.on]="view() === 'history'" (click)="navigate('history')">
-        ↗ <em>記録</em>
-      </button>
+      <a routerLink="/timer" routerLinkActive="on"
+        >⏱ <em>{{ 'nav.timer' | transloco }}</em></a
+      >
+      <a routerLink="/algorithms" routerLinkActive="on">▦ <em>OLL / PLL</em></a>
+      <a routerLink="/history" routerLinkActive="on"
+        >↗ <em>{{ 'nav.history' | transloco }}</em></a
+      >
     </nav>
     <div class="today">
-      今日のソルブ <strong>{{ cube.solves().length }}</strong>
+      {{ 'nav.todaySolves' | transloco }} <strong>{{ cube.solves().length }}</strong>
     </div>
   </aside>
   <main>
     <header>
-      <h1>{{ headings[view()] }}</h1>
-      <p>● オフライン保存</p>
+      <h1>{{ headingKey() | transloco }}</h1>
+      <div class="header-tools">
+        <p>● {{ 'app.offline' | transloco }}</p>
+        <label>
+          <span class="visually-hidden">{{ 'app.language' | transloco }}</span>
+          <select
+            [value]="i18n.getActiveLang()"
+            (change)="setLanguage($any($event.target).value)"
+            [attr.aria-label]="'app.language' | transloco"
+          >
+            <option value="ja">日本語</option>
+            <option value="en">English</option>
+          </select>
+        </label>
+      </div>
     </header>
-    @switch (view()) {
-      @case ('timer') {
-        <app-timer (showHistory)="navigate('history')" />
-      }
-      @case ('algorithms') {
-        <app-algorithms />
-      }
-      @case ('history') {
-        <app-history (showTimer)="navigate('timer')" />
-      }
-    }
+    <router-outlet />
   </main>
 </div>

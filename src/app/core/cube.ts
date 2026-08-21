@@ -1,20 +1,35 @@
-import { Injectable, computed, effect, signal } from '@angular/core';
+import { Injectable, Signal, computed, effect, signal } from '@angular/core';
+import { translateSignal } from '@jsverse/transloco';
 import { Penalty, RecordGroup, Solve, SolveMode } from './cube.models';
 
-/** 削除できない既定の記録グループ。 */
-const DEFAULT_GROUP: RecordGroup = {
-  id: 'unclassified',
-  name: '未分類',
-  createdAt: new Date(0).toISOString(),
-};
+/** ユーザーデータとは分離して常に先頭へ表示する既定の記録グループ。 */
+const DEFAULT_GROUPS: readonly RecordGroup[] = [
+  {
+    id: 'unclassified',
+    name: 'Unclassified',
+    nameKey: 'history.unclassified',
+    createdAt: new Date(0).toISOString(),
+  },
+];
+
+/** 記録先が存在しない場合に使用する既定グループ。 */
+const DEFAULT_GROUP = DEFAULT_GROUPS[0];
 
 /** 計測記録、グループ、スクランブル生成を管理するアプリケーションサービス。 */
 @Injectable({ providedIn: 'root' })
 export class CubeService {
+  /** アプリ定義グループIDに対応する、ロード完了後の翻訳済み表示名。 */
+  private readonly defaultGroupNames = new Map<string, Signal<string>>(
+    DEFAULT_GROUPS.flatMap((group) =>
+      group.nameKey ? [[group.id, translateSignal(group.nameKey)] as const] : [],
+    ),
+  );
   /** 新しい順に保持する全計測記録。 */
   readonly solves = signal<Solve[]>(this.loadSolves());
-  /** 作成順に保持する記録グループ。 */
-  readonly groups = signal<RecordGroup[]>(this.loadGroups());
+  /** 作成順に保持し、localStorageへ保存するユーザー作成グループ。 */
+  private readonly userGroups = signal<RecordGroup[]>(this.loadUserGroups());
+  /** 既定グループの後ろへユーザー作成グループを連結した表示用一覧。 */
+  readonly groups = computed<RecordGroup[]>(() => [...DEFAULT_GROUPS, ...this.userGroups()]);
   /** 現在の記録先グループID。 */
   readonly activeGroupId = signal(this.loadActiveGroupId());
   /** 現在の記録先グループ。 */
@@ -43,11 +58,10 @@ export class CubeService {
 
   /** 保存済みデータを初期化し、以後の変更をlocalStorageへ同期する。 */
   constructor() {
-    if (!this.groups().length) this.groups.set([DEFAULT_GROUP]);
     if (!this.groups().some((group) => group.id === this.activeGroupId()))
-      this.activeGroupId.set(this.groups()[0].id);
+      this.activeGroupId.set(DEFAULT_GROUP.id);
     effect(() => localStorage.setItem('cubeflow-solves', JSON.stringify(this.solves())));
-    effect(() => localStorage.setItem('cubeflow-groups', JSON.stringify(this.groups())));
+    effect(() => localStorage.setItem('cubeflow-groups', JSON.stringify(this.userGroups())));
     effect(() => localStorage.setItem('cubeflow-active-group', this.activeGroupId()));
   }
 
@@ -65,30 +79,31 @@ export class CubeService {
       name: trimmedName,
       createdAt: new Date().toISOString(),
     };
-    this.groups.update((groups) => [...groups, group]);
+    this.userGroups.update((groups) => [...groups, group]);
     this.activeGroupId.set(group.id);
     return group;
   }
 
   /**
-   * 指定グループを削除する。既定グループと最後の1件は削除しない。
+   * 指定したユーザー作成グループを削除する。既定グループは削除しない。
    *
    * @param id 削除対象のグループID
    */
   removeGroup(id: string): void {
-    if (id === DEFAULT_GROUP.id || this.groups().length === 1) return;
-    this.groups.update((groups) => groups.filter((group) => group.id !== id));
-    if (this.activeGroupId() === id) this.activeGroupId.set(this.groups()[0].id);
+    if (DEFAULT_GROUPS.some((group) => group.id === id)) return;
+    this.userGroups.update((groups) => groups.filter((group) => group.id !== id));
+    if (this.activeGroupId() === id) this.activeGroupId.set(DEFAULT_GROUP.id);
   }
 
   /**
    * グループIDに対応する表示名を返す。
    *
    * @param groupId 検索するグループID
-   * @returns グループ名。見つからない場合は「未分類」
+   * @returns グループ名。見つからない場合は既定グループ名
    */
   groupName(groupId?: string): string {
-    return this.groups().find((group) => group.id === groupId)?.name ?? '未分類';
+    const group = this.groups().find(({ id }) => id === groupId) ?? DEFAULT_GROUP;
+    return this.defaultGroupNames.get(group.id)?.() ?? group.name;
   }
 
   /**
@@ -189,27 +204,21 @@ export class CubeService {
   private loadSolves(): Solve[] {
     return this.load<Solve[]>('cubeflow-solves', []).map((solve) => ({
       ...solve,
-      groupId: !solve.groupId || solve.groupId === 'practice' ? DEFAULT_GROUP.id : solve.groupId,
+      groupId: solve.groupId || DEFAULT_GROUP.id,
     }));
   }
 
-  /** @returns 既定グループを保証した保存済みグループ */
-  private loadGroups(): RecordGroup[] {
-    const groups = this.load<RecordGroup[]>('cubeflow-groups', [DEFAULT_GROUP]);
-    const migrated = groups.map((group) =>
-      group.id === 'practice'
-        ? { ...DEFAULT_GROUP, createdAt: group.createdAt }
-        : { id: group.id, name: group.name, createdAt: group.createdAt },
-    );
-    return migrated.some((group) => group.id === DEFAULT_GROUP.id)
-      ? migrated
-      : [DEFAULT_GROUP, ...migrated];
+  /** @returns 保存済みデータから既定グループを除外したユーザー作成グループ */
+  private loadUserGroups(): RecordGroup[] {
+    return this.load<RecordGroup[]>('cubeflow-groups', [])
+      .filter((group) => !DEFAULT_GROUPS.some(({ id }) => id === group.id))
+      .map((group) => ({ id: group.id, name: group.name, createdAt: group.createdAt }));
   }
 
-  /** @returns 保存済みの記録先ID。旧IDと未設定時は既定グループID */
+  /** @returns 保存済みの記録先ID。未設定時は既定グループID */
   private loadActiveGroupId(): string {
     const stored = localStorage.getItem('cubeflow-active-group');
-    return !stored || stored === 'practice' ? DEFAULT_GROUP.id : stored;
+    return stored || DEFAULT_GROUP.id;
   }
 
   /**

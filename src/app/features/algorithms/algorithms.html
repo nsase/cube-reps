@@ -1,13 +1,13 @@
 <section>
-  <app-algorithm-tools [(kind)]="kind" [(query)]="query" />
+  <app-algorithm-tools [kind]="kind()" [(query)]="query" />
   <p class="count">
-    <b>{{ kind() }}</b> {{ cases().length }}ケース
+    <b>{{ kind() }}</b> {{ 'algorithms.caseCount' | transloco: { count: cases().length } }}
   </p>
   <div class="grid">
     @for (item of cases(); track item.kind + item.number) {
       <app-algorithm-case-card [item]="item" />
     } @empty {
-      <div class="empty">該当するケースがありません。</div>
+      <div class="empty">{{ 'algorithms.empty' | transloco }}</div>
     }
   </div>
 </section>

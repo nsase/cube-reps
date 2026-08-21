@@ -26,8 +26,8 @@
   ><button
     mat-icon-button
     class="row-delete"
-    aria-label="計測記録を削除"
-    title="計測記録を削除"
+    [attr.aria-label]="'history.deleteSolve' | transloco"
+    [title]="'history.deleteSolve' | transloco"
     (click)="delete()"
   >
     <mat-icon>delete</mat-icon>

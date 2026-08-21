@@ -11,11 +11,12 @@ import {
   ConfirmDialogResult,
 } from '../../../../shared/confirm-dialog/confirm-dialog.models';
 import { HistoryStore } from '../../history.store';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 /** 1件の記録グループと、その選択・削除操作を表示するコンポーネント。 */
 @Component({
   selector: 'app-record-group',
-  imports: [MatButtonModule, MatIconModule],
+  imports: [MatButtonModule, MatIconModule, TranslocoPipe],
   templateUrl: './record-group.html',
   styleUrl: './record-group.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +34,8 @@ export class RecordGroup {
   private readonly store = inject(HistoryStore);
   /** グループ削除の確認を表示するMaterial Dialogサービス。 */
   private readonly dialog = inject(MatDialog);
+  /** 確認メッセージを現在の言語へ翻訳するサービス。 */
+  private readonly i18n = inject(TranslocoService);
 
   /** このグループが履歴の絞り込み対象として選択されているか。 */
   protected readonly isActive = computed(() => this.store.selectedGroup() === this.group().id);
@@ -54,8 +57,8 @@ export class RecordGroup {
   protected delete(): void {
     const group = this.group();
     const data = {
-      title: 'グループを削除しますか？',
-      message: `「${group.name}」を削除します。\nこの操作は取り消せません。`,
+      title: this.i18n.translate('history.deleteGroupTitle'),
+      message: this.i18n.translate('history.deleteGroupMessage', { name: group.name }),
       buttons: [DialogButtons.cancel, DialogButtons.delete],
       defaultFocus: DialogButtons.cancel.id,
     } as const satisfies ConfirmDialogData;

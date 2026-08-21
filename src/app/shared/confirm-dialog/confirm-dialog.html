@@ -14,11 +14,11 @@
         [color]="button.color"
         [mat-dialog-close]="button.id"
       >
-        {{ button.label }}
+        {{ button.labelKey | transloco }}
       </button>
     } @else {
       <button type="button" mat-button [color]="button.color" [mat-dialog-close]="button.id">
-        {{ button.label }}
+        {{ button.labelKey | transloco }}
       </button>
     }
   }

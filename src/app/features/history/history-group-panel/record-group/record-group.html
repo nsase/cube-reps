@@ -1,16 +1,16 @@
 <button class="group-main" (click)="select()">
   <span class="group-icon">●</span>
   <span
-    ><strong>{{ group().name }}</strong
-    ><small>{{ solveCount() }}回</small></span
+    ><strong>{{ cube.groupName(group().id) }}</strong
+    ><small>{{ 'history.solveCount' | transloco: { count: solveCount() } }}</small></span
   >
 </button>
 <button
   mat-icon-button
   class="group-delete"
   [disabled]="!canDelete()"
-  aria-label="グループを削除"
-  title="グループを削除"
+  [attr.aria-label]="'history.deleteGroup' | transloco"
+  [title]="'history.deleteGroup' | transloco"
   (click)="delete()"
 >
   <mat-icon>delete</mat-icon>

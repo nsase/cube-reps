@@ -1,5 +1,6 @@
 import { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { CubeService } from '../../../core/cube';
 import { Solve } from '../../../core/cube.models';
 import { TimerStats } from './timer-stats';
@@ -8,7 +9,10 @@ describe('TimerStats', () => {
   beforeEach(async () => {
     localStorage.clear();
     TestBed.resetTestingModule();
-    await TestBed.configureTestingModule({ imports: [TimerStats] }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [TimerStats],
+      providers: [provideRouter([])],
+    }).compileComponents();
   });
 
   /** TimerStatsに表示されている直近・ベスト・平均の値を返す。 */

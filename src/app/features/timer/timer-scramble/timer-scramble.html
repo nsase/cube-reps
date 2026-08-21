@@ -1,8 +1,9 @@
 <span
-  >SCRAMBLE<button
+  >{{ 'timer.scramble' | transloco
+  }}<button
     mat-icon-button
-    aria-label="スクランブルを更新"
-    title="スクランブルを更新"
+    [attr.aria-label]="'timer.refreshScramble' | transloco"
+    [title]="'timer.refreshScramble' | transloco"
     (click)="store.newScramble()"
   >
     <mat-icon>refresh</mat-icon>

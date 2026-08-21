@@ -1,21 +1,22 @@
 <div class="history-filter">
   <label
-    >表示する記録<select [(ngModel)]="store.selectedGroup">
-      <option value="all">すべてのグループ</option>
+    >{{ 'history.recordFilter' | transloco
+    }}<select [(ngModel)]="store.selectedGroup">
+      <option value="all">{{ 'history.allGroups' | transloco }}</option>
       @for (group of cube.groups(); track group.id) {
-        <option [value]="group.id">{{ group.name }}</option>
+        <option [value]="group.id">{{ cube.groupName(group.id) }}</option>
       }
     </select></label
   >
 </div>
 <div class="summaries">
   <article>
-    対象ソルブ<strong>{{ store.filteredSolves().length }}</strong>
+    {{ 'history.targetSolves' | transloco }}<strong>{{ store.filteredSolves().length }}</strong>
   </article>
   <article>
-    ベスト<strong>{{ cube.formatTime(best()) }}</strong>
+    {{ 'common.best' | transloco }}<strong>{{ cube.formatTime(best()) }}</strong>
   </article>
   <article>
-    直近5回 平均<strong>{{ cube.formatTime(average()) }}</strong>
+    {{ 'common.recentAverage' | transloco }}<strong>{{ cube.formatTime(average()) }}</strong>
   </article>
 </div>

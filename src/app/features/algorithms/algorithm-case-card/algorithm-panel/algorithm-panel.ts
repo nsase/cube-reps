@@ -4,11 +4,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { AlgorithmLibraryService, CaseAlgorithm } from '../../../../core/algorithm-library';
 import { AlgorithmCase } from '../../../../core/cube.models';
 import { AlgorithmRow } from './algorithm-row/algorithm-row';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /** 1ケース分のお気に入り手順、手順一覧、追加フォームを表示するコンポーネント。 */
 @Component({
   selector: 'app-algorithm-panel',
-  imports: [FormsModule, MatButtonModule, AlgorithmRow],
+  imports: [FormsModule, MatButtonModule, AlgorithmRow, TranslocoPipe],
   templateUrl: './algorithm-panel.html',
   styleUrl: './algorithm-panel.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
