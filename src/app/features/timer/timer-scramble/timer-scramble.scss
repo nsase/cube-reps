@@ -1,0 +1,37 @@
+$ink: var(--text-color);
+$line: var(--border-color);
+$muted: var(--text-muted-color);
+
+:host {
+  display: block;
+  max-width: 780px;
+  margin: 0 auto 12px;
+  padding: 16px 22px;
+  border: 1px solid $line;
+  border-radius: 8px;
+  background: var(--surface-muted-color);
+  text-align: center;
+}
+span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: $muted;
+  font: 500 var(--font-size-small) var(--font-family-mono);
+  letter-spacing: 2px;
+}
+button {
+  color: $muted;
+  &:hover {
+    background: var(--surface-color);
+    color: $ink;
+  }
+}
+p {
+  margin: 10px 0 2px;
+  font: 500 clamp(var(--font-size-base), 1.5vw, var(--font-size-large)) var(--font-family-mono);
+  word-spacing: 5px;
+}
+app-cube-net {
+  margin: 14px auto 0;
+}

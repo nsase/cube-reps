@@ -1,0 +1,38 @@
+:host {
+  display: block;
+}
+div {
+  display: flex;
+  height: 310px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  touch-action: none;
+}
+small {
+  color: #999;
+  font: 500 var(--font-size-small) var(--font-family-mono);
+  letter-spacing: 1.5px;
+}
+strong {
+  font: 600 clamp(var(--font-size-timer-min), 10vw, var(--font-size-timer-max))
+    var(--font-family-heading);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -6px;
+  line-height: 1;
+}
+.ready strong {
+  color: #70a700;
+}
+i {
+  margin-top: 25px;
+  color: #aaa;
+  font: normal var(--font-size-small) var(--font-family-mono);
+  letter-spacing: 2px;
+}
+@media (max-width: 620px) {
+  div {
+    height: 275px;
+  }
+}

@@ -1,0 +1,15 @@
+<span
+  >SCRAMBLE<button
+    mat-icon-button
+    aria-label="スクランブルを更新"
+    title="スクランブルを更新"
+    (click)="store.newScramble()"
+  >
+    <mat-icon>refresh</mat-icon>
+  </button></span
+>
+<p>{{ store.scramble() }}</p>
+<app-cube-net
+  [scramble]="store.scramble()"
+  [orientation]="store.mode() === 'PLL' ? 'yellow-top' : 'white-top'"
+/>

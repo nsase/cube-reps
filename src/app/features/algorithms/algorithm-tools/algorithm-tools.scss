@@ -1,0 +1,70 @@
+$ink: var(--text-color);
+$lime: var(--primary-color);
+$line: var(--border-color);
+$muted: var(--text-muted-color);
+
+:host {
+  display: flex;
+  justify-content: space-between;
+}
+
+.kind-selector {
+  display: flex;
+}
+
+button {
+  padding: 10px 25px;
+  border: 1px solid $line;
+  background: var(--surface-color);
+  font-weight: 700;
+}
+
+button:first-child {
+  border-radius: 7px 0 0 7px;
+}
+
+button:nth-child(2) {
+  border-radius: 0 7px 7px 0;
+}
+
+button.on {
+  border-color: $ink;
+  background: $ink;
+  color: $lime;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  width: 360px;
+  padding: 0 13px;
+  border: 1px solid $line;
+  border-radius: 7px;
+  background: var(--surface-color);
+  --mat-icon-color: #{$muted};
+}
+
+mat-icon {
+  flex: 0 0 auto;
+}
+
+input {
+  width: 100%;
+  padding: 11px;
+  border: 0;
+  outline: 0;
+  background: none;
+  font-size: var(--font-size-small);
+}
+
+@media (max-width: 620px) {
+  :host {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  label {
+    width: 100%;
+    height: 42px;
+  }
+}

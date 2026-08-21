@@ -1,0 +1,15 @@
+<div
+  [class.ready]="store.state() === 'ready'"
+  (pointerdown)="store.press()"
+  (pointerup)="store.release()"
+>
+  <small>{{
+    store.state() === 'ready'
+      ? '離してスタート'
+      : store.state() === 'running'
+        ? 'SPACE / タップでストップ'
+        : 'SPACEを長押し'
+  }}</small>
+  <strong>{{ cube.formatTime(store.elapsed()) }}</strong
+  ><i>━━ SPACE ━━</i>
+</div>

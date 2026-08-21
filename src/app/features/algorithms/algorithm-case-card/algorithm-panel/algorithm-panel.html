@@ -1,0 +1,30 @@
+<div class="favorite-panel">
+  <div class="algorithm-heading"><strong>お気に入りの手順</strong></div>
+  @if (library.favoriteFor(item()); as favorite) {
+    <div class="favorite-algorithm">
+      <span class="rank">{{ favoriteRank(favorite) + 1 }}</span>
+      <code>{{ favorite.notation }}</code>
+    </div>
+  }
+</div>
+<div class="algorithm-heading"><strong>手順</strong></div>
+<div class="algorithm-list">
+  @for (algorithm of library.algorithmsFor(item()); track algorithm.id; let index = $index) {
+    <app-algorithm-row
+      [class.preferred]="library.favoriteFor(item())?.id === algorithm.id"
+      [item]="item()"
+      [algorithm]="algorithm"
+      [rank]="index + 1"
+    />
+  } @empty {
+    <div class="no-algorithm">手順がまだありません</div>
+  }
+</div>
+<form class="algorithm-form" (submit)="$event.preventDefault(); add()">
+  <input
+    placeholder="新しい手順を入力"
+    [(ngModel)]="draft"
+    [name]="'algorithm-' + item().kind + item().number"
+  />
+  <button mat-flat-button type="submit" [disabled]="!draft().trim()">追加</button>
+</form>

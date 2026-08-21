@@ -1,0 +1,31 @@
+<div class="record-context">
+  <div>
+    <small>RECORD GROUP</small><strong>{{ cube.activeGroup().name }}</strong>
+  </div>
+  <label
+    >記録先<select [(ngModel)]="cube.activeGroupId">
+      @for (group of cube.groups(); track group.id) {
+        <option [value]="group.id">{{ group.name }}</option>
+      }
+    </select></label
+  >
+</div>
+<div class="modes">
+  <button [class.on]="store.mode() === '3x3'" (click)="store.setMode('3x3')">
+    3×3<small>FULL SOLVE</small>
+  </button>
+  <button [class.on]="store.mode() === 'PLL'" (click)="store.setMode('PLL')">
+    PLL<small>CASE DRILL</small>
+  </button>
+</div>
+@if (store.mode() === 'PLL') {
+  <div class="case-select">
+    練習ケース
+    <select [(ngModel)]="store.selectedCase" (change)="store.newScramble()">
+      @for (item of store.pllCases; track item.number; let index = $index) {
+        <option [ngValue]="index">{{ item.number }} — {{ item.name }}</option>
+      }
+    </select>
+    <code>{{ algorithmLibrary.primaryNotation(store.pllCases[store.selectedCase()]) }}</code>
+  </div>
+}
