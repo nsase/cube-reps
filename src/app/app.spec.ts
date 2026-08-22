@@ -42,6 +42,15 @@ describe('App', () => {
     expect(compiled.querySelector('h1')?.textContent).toContain('PRACTICE SESSION');
   });
 
+  it('ブランドロゴをSVGで表示する', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const logo = fixture.nativeElement.querySelector('.brand img') as HTMLImageElement;
+    expect(logo.getAttribute('src')).toBe('cube-flow-mark.svg');
+    expect(logo.getAttribute('alt')).toBe('');
+  });
+
   it('タイマー画面に主要な操作要素を同時に構成する', async () => {
     const fixture = TestBed.createComponent(App);
     await TestBed.inject(Router).navigateByUrl('/timer');
