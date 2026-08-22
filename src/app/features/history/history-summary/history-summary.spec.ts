@@ -39,7 +39,7 @@ describe('HistorySummary', () => {
     const cube = TestBed.inject(CubeService);
     const solves: Solve[] = [
       {
-        id: 1,
+        id: '1',
         time: 1000,
         scramble: 'R U',
         date: new Date(1).toISOString(),
@@ -48,7 +48,7 @@ describe('HistorySummary', () => {
         penalty: 'none',
       },
       {
-        id: 2,
+        id: '2',
         time: 2000,
         scramble: 'U R',
         date: new Date(2).toISOString(),
@@ -57,7 +57,7 @@ describe('HistorySummary', () => {
         penalty: '+2',
       },
       {
-        id: 3,
+        id: '3',
         time: 500,
         scramble: 'F R',
         date: new Date(3).toISOString(),

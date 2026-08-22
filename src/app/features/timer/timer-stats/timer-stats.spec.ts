@@ -27,7 +27,7 @@ describe('TimerStats', () => {
     const cube = TestBed.inject(CubeService);
     const solves: Solve[] = [
       {
-        id: 1,
+        id: '1',
         time: 1000,
         scramble: 'R U',
         date: new Date(1).toISOString(),
@@ -36,7 +36,7 @@ describe('TimerStats', () => {
         penalty: '+2',
       },
       {
-        id: 2,
+        id: '2',
         time: 2000,
         scramble: 'U R',
         date: new Date(2).toISOString(),
@@ -45,7 +45,7 @@ describe('TimerStats', () => {
         penalty: 'none',
       },
       {
-        id: 3,
+        id: '3',
         time: 500,
         scramble: 'F R',
         date: new Date(3).toISOString(),
@@ -66,7 +66,7 @@ describe('TimerStats', () => {
     const cube = TestBed.inject(CubeService);
     cube.solves.set([
       {
-        id: 1,
+        id: '1',
         time: 1000,
         scramble: 'R U',
         date: new Date(1).toISOString(),
@@ -75,7 +75,7 @@ describe('TimerStats', () => {
         penalty: 'none',
       },
       {
-        id: 2,
+        id: '2',
         time: 4000,
         scramble: 'U R',
         date: new Date(2).toISOString(),
@@ -100,7 +100,7 @@ describe('TimerStats', () => {
     const group = cube.addGroup('大会')!;
     cube.solves.set([
       {
-        id: 1,
+        id: '1',
         time: 1000,
         scramble: 'R U',
         date: new Date(1).toISOString(),
@@ -109,7 +109,7 @@ describe('TimerStats', () => {
         penalty: 'none',
       },
       {
-        id: 2,
+        id: '2',
         time: 4000,
         scramble: 'U R',
         date: new Date(2).toISOString(),

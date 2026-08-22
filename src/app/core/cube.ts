@@ -86,7 +86,7 @@ export class CubeService {
     const trimmedName = name.trim();
     if (!trimmedName) return undefined;
     const group: RecordGroup = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      id: crypto.randomUUID(),
       name: trimmedName,
       createdAt: new Date().toISOString(),
     };
@@ -145,7 +145,7 @@ export class CubeService {
    */
   addSolve(time: number, scramble: string, category: SolveCategory, caseName?: string): Solve {
     const solve: Solve = {
-      id: Date.now(),
+      id: crypto.randomUUID(),
       time,
       scramble,
       date: new Date().toISOString(),
@@ -164,7 +164,7 @@ export class CubeService {
    * @param id 対象の計測記録ID
    * @param penalty 切り替えるペナルティ
    */
-  togglePenalty(id: number, penalty: Exclude<Penalty, 'none'>): void {
+  togglePenalty(id: string, penalty: Exclude<Penalty, 'none'>): void {
     this.solves.update((solves) =>
       solves.map((solve) =>
         solve.id === id
@@ -175,7 +175,7 @@ export class CubeService {
   }
 
   /** @param id 削除する計測記録ID */
-  removeSolve(id: number): void {
+  removeSolve(id: string): void {
     this.solves.update((solves) => solves.filter((solve) => solve.id !== id));
   }
 

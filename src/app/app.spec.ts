@@ -108,7 +108,7 @@ describe('App', () => {
     const cube = TestBed.inject(CubeService);
     cube.solves.set(
       Array.from({ length: 101 }, (_, index) => ({
-        id: index + 1,
+        id: String(index + 1),
         time: 1000 + index,
         scramble: 'R U',
         date: new Date(index).toISOString(),

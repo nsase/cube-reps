@@ -12,7 +12,7 @@ describe('CubeService record statistics', () => {
   /** 指定時間とペナルティを持つテスト用計測記録を作成する。 */
   function solve(id: number, time: number, penalty: Penalty = 'none'): Solve {
     return {
-      id,
+      id: String(id),
       time,
       scramble: 'R U',
       date: new Date(id).toISOString(),
@@ -29,6 +29,17 @@ describe('CubeService record statistics', () => {
     cube.activeGroupId.set('unclassified');
 
     expect(cube.activeSolves()).toHaveLength(2);
+  });
+
+  it('新しい計測記録とユーザー作成カテゴリーへUUIDを割り当てる', () => {
+    const cube = TestBed.inject(CubeService);
+    const group = cube.addGroup('UUID確認')!;
+    const solve = cube.addSolve(1000, 'R U', 'full');
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i;
+
+    expect(group.id).toMatch(uuidPattern);
+    expect(solve.id).toMatch(uuidPattern);
+    expect(solve.id).not.toBe(group.id);
   });
 
   it('初期カテゴリーを英語名で作成する', () => {
@@ -82,12 +93,12 @@ describe('CubeService record statistics', () => {
       { ...solve(2, 2000), category: 'pll' },
     ]);
 
-    expect(cube.activeSolves().map(({ id }) => id)).toEqual([1]);
+    expect(cube.activeSolves().map(({ id }) => id)).toEqual(['1']);
     expect(cube.best()).toBe(1000);
 
     cube.activeSolveCategory.set('pll');
 
-    expect(cube.activeSolves().map(({ id }) => id)).toEqual([2]);
+    expect(cube.activeSolves().map(({ id }) => id)).toEqual(['2']);
     expect(cube.best()).toBe(2000);
   });
 
@@ -100,11 +111,7 @@ describe('CubeService record statistics', () => {
 
   it('全記録の平均へ+2を反映し、DNFを除外する', () => {
     const cube = TestBed.inject(CubeService);
-    cube.solves.set([
-      solve(1, 1000),
-      solve(3, 1000, '+2'),
-      solve(4, 4000),
-    ]);
+    cube.solves.set([solve(1, 1000), solve(3, 1000, '+2'), solve(4, 4000)]);
 
     expect(cube.mean()).toBe((1000 + 3000 + 4000) / 3);
     cube.solves.update((solves) => [solve(2, 2000, 'DNF'), ...solves]);
