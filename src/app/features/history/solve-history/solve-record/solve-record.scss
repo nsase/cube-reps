@@ -4,7 +4,8 @@ $muted: var(--text-muted-color);
 
 :host {
   display: grid;
-  grid-template-columns: 40px 105px minmax(0, 1fr) 110px 85px max-content;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: center;
   gap: 10px;
   padding: 12px 18px;
@@ -14,6 +15,10 @@ $muted: var(--text-muted-color);
   time {
     color: $muted;
     font: 500 var(--font-size-small) var(--font-family-mono);
+  }
+
+  time {
+    white-space: nowrap;
   }
 
   > div:nth-child(2) strong {
@@ -79,10 +84,6 @@ $muted: var(--text-muted-color);
 }
 
 @media (max-width: 900px) {
-  :host {
-    grid-template-columns: 30px 95px minmax(0, 1fr) 90px max-content;
-  }
-
   :host app-cube-net {
     --cube-net-width: 90px;
   }
@@ -98,7 +99,6 @@ $muted: var(--text-muted-color);
 
 @media (max-width: 620px) {
   :host {
-    grid-template-columns: 27px 82px 68px minmax(0, 1fr);
     padding: 10px;
   }
 
