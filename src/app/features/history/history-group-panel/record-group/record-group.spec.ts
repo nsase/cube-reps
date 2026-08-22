@@ -35,6 +35,29 @@ describe('RecordGroup', () => {
     expect(fixture.nativeElement.classList.contains('active')).toBe(true);
   });
 
+  it('ユーザー作成カテゴリーの名前をインラインで変更する', async () => {
+    const cube = TestBed.inject(CubeService);
+    const group = cube.addGroup('変更前')!;
+    const fixture = TestBed.createComponent(RecordGroup);
+    fixture.componentRef.setInput('group', group);
+    fixture.detectChanges();
+
+    (fixture.nativeElement.querySelector('.group-edit') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const input = fixture.nativeElement.querySelector('.group-edit-form input') as HTMLInputElement;
+    input.value = '変更後';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.group-edit-form') as HTMLFormElement).dispatchEvent(
+      new Event('submit'),
+    );
+    fixture.detectChanges();
+
+    expect(cube.groupName(group.id)).toBe('変更後');
+    expect(fixture.nativeElement.querySelector('.group-edit-form')).toBeNull();
+  });
+
   it('削除確認後にカテゴリーを削除し、絞り込みをallへ戻す', () => {
     const cube = TestBed.inject(CubeService);
     const store = TestBed.inject(HistoryStore);

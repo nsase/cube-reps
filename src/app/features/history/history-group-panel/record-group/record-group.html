@@ -1,10 +1,50 @@
-<button class="group-main" (click)="select()">
-  <span class="group-icon">●</span>
-  <span
-    ><strong>{{ cube.groupName(group().id) }}</strong
-    ><small>{{ 'history.solveCount' | transloco: { count: solveCount() } }}</small></span
-  >
-</button>
+@if (editing()) {
+  <form class="group-edit-form" (submit)="$event.preventDefault(); rename()">
+    <input
+      [(ngModel)]="editedName"
+      name="editedName"
+      [attr.aria-label]="'history.groupName' | transloco"
+      autofocus
+    />
+    <button
+      mat-icon-button
+      type="submit"
+      [disabled]="!editedName().trim()"
+      [attr.aria-label]="'common.save' | transloco"
+      [title]="'common.save' | transloco"
+    >
+      <mat-icon>check</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      type="button"
+      [attr.aria-label]="'common.cancel' | transloco"
+      [title]="'common.cancel' | transloco"
+      (click)="cancelEditing()"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </form>
+} @else {
+  <button class="group-main" (click)="select()">
+    <span class="group-icon">●</span>
+    <span
+      ><strong>{{ cube.groupName(group().id) }}</strong
+      ><small>{{ 'history.solveCount' | transloco: { count: solveCount() } }}</small></span
+    >
+  </button>
+  @if (canEdit()) {
+    <button
+      mat-icon-button
+      class="group-edit"
+      [attr.aria-label]="'history.renameGroup' | transloco"
+      [title]="'history.renameGroup' | transloco"
+      (click)="startEditing()"
+    >
+      <mat-icon>edit</mat-icon>
+    </button>
+  }
+}
 <button
   mat-icon-button
   class="group-delete"

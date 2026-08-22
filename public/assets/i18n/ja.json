@@ -10,6 +10,7 @@
   "common": {
     "ok": "OK",
     "cancel": "キャンセル",
+    "save": "保存",
     "yes": "はい",
     "no": "いいえ",
     "delete": "削除",
@@ -64,6 +65,7 @@
     "create": "作成",
     "solveCount": "{{count}}回",
     "deleteGroup": "グループを削除",
+    "renameGroup": "グループ名を変更",
     "deleteGroupTitle": "グループを削除しますか？",
     "deleteGroupMessage": "「{{name}}」を削除します。\nこの操作は取り消せません。",
     "recordFilter": "表示する記録",

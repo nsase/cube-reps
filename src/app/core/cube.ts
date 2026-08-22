@@ -96,6 +96,23 @@ export class CubeService {
   }
 
   /**
+   * ユーザー作成グループの名前を変更する。既定グループは変更しない。
+   *
+   * @param id 名前を変更するグループID
+   * @param name 新しいグループ名
+   * @returns 名前を変更できた場合は`true`
+   */
+  renameGroup(id: string, name: string): boolean {
+    const trimmedName = name.trim();
+    if (!trimmedName || DEFAULT_GROUPS.some((group) => group.id === id)) return false;
+    if (!this.userGroups().some((group) => group.id === id)) return false;
+    this.userGroups.update((groups) =>
+      groups.map((group) => (group.id === id ? { ...group, name: trimmedName } : group)),
+    );
+    return true;
+  }
+
+  /**
    * 指定したユーザー作成グループを削除する。既定グループは削除しない。
    *
    * @param id 削除対象のグループID
