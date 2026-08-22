@@ -36,7 +36,8 @@
     "deleteSolveMessage": "直前の計測記録を削除します。\nこの操作は取り消せません。",
     "latest": "直近",
     "allRecords": "すべての記録 →",
-    "cubeNet": "スクランブルの展開図: {{scramble}}"
+    "cubeNet": "スクランブルの展開図: {{scramble}}",
+    "solvePattern": "スクランブルの上段パターン: {{scramble}}"
   },
   "algorithms": {
     "search": "番号・名前・グループで検索",

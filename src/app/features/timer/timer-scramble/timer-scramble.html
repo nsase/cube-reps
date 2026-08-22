@@ -12,7 +12,4 @@
   }</span
 >
 <p>{{ store.scramble() }}</p>
-<app-cube-net
-  [scramble]="store.scramble()"
-  [orientation]="store.category() === 'full' ? 'white-top' : 'yellow-top'"
-/>
+<app-solve-pattern [category]="store.category()" [scramble]="store.scramble()" />

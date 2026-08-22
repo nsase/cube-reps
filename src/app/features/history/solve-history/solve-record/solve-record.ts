@@ -5,13 +5,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { CubeService } from '../../../../core/cube';
 import { Solve } from '../../../../core/cube.models';
 import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
-import { CubeNetView } from '../../../../shared/cube-net/cube-net';
+import { SolvePattern } from '../../../../shared/solve-pattern/solve-pattern';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 /** 1件の計測記録と、そのペナルティ・削除操作を表示するコンポーネント。 */
 @Component({
   selector: 'app-solve-record',
-  imports: [CommonModule, MatButtonModule, MatIconModule, CubeNetView, TranslocoPipe],
+  imports: [CommonModule, MatButtonModule, MatIconModule, SolvePattern, TranslocoPipe],
   templateUrl: './solve-record.html',
   styleUrl: './solve-record.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

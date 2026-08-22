@@ -7,10 +7,7 @@
   >
 </div>
 <code>{{ solve().scramble }}</code>
-<app-cube-net
-  [scramble]="solve().scramble"
-  [orientation]="solve().category === 'full' ? 'white-top' : 'yellow-top'"
-/>
+<app-solve-pattern [category]="solve().category" [scramble]="solve().scramble" />
 <time>{{ solve().date | date: 'MM/dd HH:mm' }}</time>
 <div class="row-actions">
   <span class="group-badge">{{ cube.groupName(solve().groupId) }}</span

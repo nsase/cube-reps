@@ -39,8 +39,8 @@ $muted: var(--text-muted-color);
     white-space: nowrap;
   }
 
-  app-cube-net {
-    --cube-net-width: 100px;
+  app-solve-pattern {
+    --solve-pattern-width: 100px;
 
     grid-column: 4;
   }
@@ -84,8 +84,8 @@ $muted: var(--text-muted-color);
 }
 
 @media (max-width: 900px) {
-  :host app-cube-net {
-    --cube-net-width: 90px;
+  :host app-solve-pattern {
+    --solve-pattern-width: 90px;
   }
 
   :host time {
@@ -102,8 +102,8 @@ $muted: var(--text-muted-color);
     padding: 10px;
   }
 
-  :host app-cube-net {
-    --cube-net-width: 68px;
+  :host app-solve-pattern {
+    --solve-pattern-width: 68px;
 
     grid-column: 3;
   }
