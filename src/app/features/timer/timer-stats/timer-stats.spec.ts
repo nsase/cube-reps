@@ -15,7 +15,7 @@ describe('TimerStats', () => {
     }).compileComponents();
   });
 
-  /** TimerStatsに表示されている直近・ベスト・平均の値を返す。 */
+  /** TimerStatsに表示されているベスト・Mean・各AOの値を返す。 */
   function displayedValues(fixture: ComponentFixture<TimerStats>): Array<string | null> {
     return Array.from(
       fixture.nativeElement.querySelectorAll('div strong') as NodeListOf<HTMLElement>,
@@ -23,7 +23,7 @@ describe('TimerStats', () => {
     );
   }
 
-  it('現在のカテゴリーの直近記録、ベスト、DNFを除いた平均を表示する', async () => {
+  it('現在のカテゴリーのベスト、DNFを除外した平均、件数不足のAOを表示する', async () => {
     const cube = TestBed.inject(CubeService);
     const solves: Solve[] = [
       {
@@ -59,7 +59,7 @@ describe('TimerStats', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(displayedValues(fixture)).toEqual(['3.00+', '2.00', '2.50']);
+    expect(displayedValues(fixture)).toEqual(['2.00', '2.50', '—', '—', '—', '—']);
   });
 
   it('solveカテゴリーの変更に合わせて集計表示を分離する', async () => {
@@ -87,12 +87,12 @@ describe('TimerStats', () => {
     const fixture = TestBed.createComponent(TimerStats);
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(displayedValues(fixture)).toEqual(['1.00', '1.00', '1.00']);
+    expect(displayedValues(fixture)).toEqual(['1.00', '1.00', '—', '—', '—', '—']);
 
     cube.activeSolveCategory.set('pll');
     fixture.detectChanges();
 
-    expect(displayedValues(fixture)).toEqual(['4.00', '4.00', '4.00']);
+    expect(displayedValues(fixture)).toEqual(['4.00', '4.00', '—', '—', '—', '—']);
   });
 
   it('記録先カテゴリーの変更に合わせて集計表示を更新する', async () => {
@@ -122,11 +122,11 @@ describe('TimerStats', () => {
     const fixture = TestBed.createComponent(TimerStats);
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(displayedValues(fixture)).toEqual(['1.00', '1.00', '1.00']);
+    expect(displayedValues(fixture)).toEqual(['1.00', '1.00', '—', '—', '—', '—']);
 
     cube.activeGroupId.set(group.id);
     fixture.detectChanges();
 
-    expect(displayedValues(fixture)).toEqual(['4.00', '4.00', '4.00']);
+    expect(displayedValues(fixture)).toEqual(['4.00', '4.00', '—', '—', '—', '—']);
   });
 });

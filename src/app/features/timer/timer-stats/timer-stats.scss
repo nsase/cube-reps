@@ -4,7 +4,7 @@ $muted: var(--text-muted-color);
 
 :host {
   display: grid;
-  grid-template-columns: repeat(3, 1fr) auto;
+  grid-template-columns: repeat(6, 1fr) auto;
   border-block: 1px solid $line;
 }
 div {

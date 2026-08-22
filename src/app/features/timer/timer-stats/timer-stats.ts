@@ -14,4 +14,10 @@ import { TranslocoPipe } from '@jsverse/transloco';
 export class TimerStats {
   /** 現在の記録グループの集計値を提供するサービス。 */
   protected readonly cube = inject(CubeService);
+
+  /** 集計結果を未計測・DNF・タイムのいずれかで表示する。 */
+  protected formatStatistic(value: number | undefined): string {
+    if (value === undefined) return '—';
+    return value === Infinity ? 'DNF' : this.cube.formatTime(value);
+  }
 }

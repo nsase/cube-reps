@@ -14,7 +14,7 @@ describe('HistorySummary', () => {
     }).compileComponents();
   });
 
-  it('プルダウンでカテゴリーを切り替え、対象件数を更新する', async () => {
+  it('プルダウンでカテゴリーを切り替え、対象記録のベストを更新する', async () => {
     const cube = TestBed.inject(CubeService);
     cube.addSolve(1000, 'R U', 'full');
     const group = cube.addGroup('大会')!;
@@ -30,10 +30,12 @@ describe('HistorySummary', () => {
     await fixture.whenStable();
 
     expect(TestBed.inject(HistoryStore).selectedGroup()).toBe(group.id);
-    expect(fixture.nativeElement.querySelector('.summaries article strong')?.textContent).toBe('1');
+    expect(fixture.nativeElement.querySelector('.summaries article strong')?.textContent).toBe(
+      '2.00',
+    );
   });
 
-  it('対象件数、+2を反映したベスト、DNFを除外した平均を表示する', async () => {
+  it('+2を反映してDNFを除外したベストと平均、件数不足のAOを表示する', async () => {
     const cube = TestBed.inject(CubeService);
     const solves: Solve[] = [
       {
@@ -75,6 +77,6 @@ describe('HistorySummary', () => {
       ) as NodeListOf<HTMLElement>,
       (element) => element.textContent,
     );
-    expect(values).toEqual(['3', '1.00', '2.50']);
+    expect(values).toEqual(['1.00', '2.50', '—', '—', '—', '—']);
   });
 });
