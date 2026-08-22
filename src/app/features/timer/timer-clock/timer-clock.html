@@ -1,4 +1,5 @@
 <div
+  class="clock"
   [class.ready]="store.state() === 'ready'"
   (pointerdown)="store.press()"
   (pointerup)="store.release()"
@@ -14,3 +15,6 @@
   <strong>{{ cube.formatTime(store.elapsed()) }}</strong
   ><i>━━ SPACE ━━</i>
 </div>
+@if (store.completedSolve()) {
+  <app-timer-solve-actions />
+}

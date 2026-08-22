@@ -1,0 +1,20 @@
+:host {
+  display: block;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+button.on {
+  background: var(--text-color);
+  color: var(--primary-color);
+}
+
+button.delete {
+  color: var(--danger-color);
+}

@@ -1,9 +1,10 @@
 :host {
-  display: block;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
   height: 100%;
 }
 
-div {
+.clock {
   display: flex;
   height: 100%;
   min-height: 0;
@@ -12,6 +13,10 @@ div {
   justify-content: center;
   user-select: none;
   touch-action: none;
+}
+
+app-timer-solve-actions {
+  margin-top: clamp(8px, 1.5vh, 16px);
 }
 
 small {

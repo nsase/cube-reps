@@ -27,6 +27,7 @@ describe('TimerStore', () => {
     expect(store.state()).toBe('idle');
     expect(cube.solves()[0].time).toBe(1234);
     expect(cube.solves()[0].category).toBe('full');
+    expect(store.completedSolve()?.id).toBe(cube.solves()[0].id);
   });
 
   it('PLLモードでは選択中のケース番号を記録へ保存する', () => {

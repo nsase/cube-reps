@@ -118,21 +118,21 @@ export class CubeService {
    * @param scramble 計測に使用したスクランブル
    * @param category 集計カテゴリーID
    * @param caseName PLL練習時のケース名
+   * @returns 保存した計測記録
    */
-  addSolve(time: number, scramble: string, category: SolveCategory, caseName?: string): void {
-    this.solves.update((solves) => [
-      {
-        id: Date.now(),
-        time,
-        scramble,
-        date: new Date().toISOString(),
-        category,
-        caseName,
-        groupId: this.activeGroupId(),
-        penalty: 'none',
-      },
-      ...solves,
-    ]);
+  addSolve(time: number, scramble: string, category: SolveCategory, caseName?: string): Solve {
+    const solve: Solve = {
+      id: Date.now(),
+      time,
+      scramble,
+      date: new Date().toISOString(),
+      category,
+      caseName,
+      groupId: this.activeGroupId(),
+      penalty: 'none',
+    };
+    this.solves.update((solves) => [solve, ...solves]);
+    return solve;
   }
 
   /**
