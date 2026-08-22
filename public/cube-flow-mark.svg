@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Cube Flow</title>
+  <path fill="#c9ef46" d="M32 4 57 18 32 32 7 18 32 4Z"/>
+  <path fill="#55aaff" d="M7 22 30 35v25L7 47V22Z"/>
+  <path fill="#ff6960" d="m34 35 23-13v25L34 60V35Z"/>
+</svg>

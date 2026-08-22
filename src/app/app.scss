@@ -31,25 +31,10 @@ aside {
   > span {
     color: $lime;
   }
-  > b {
+  > img {
     width: 34px;
     height: 34px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3px;
-    transform: rotate(-7deg);
-  }
-  i {
-    background: $lime;
-  }
-  i:nth-child(2) {
-    background: var(--danger-color);
-  }
-  i:nth-child(3) {
-    background: var(--info-color);
-  }
-  i:last-child {
-    background: white;
+    flex: 0 0 auto;
   }
 }
 
@@ -152,7 +137,7 @@ header p {
     justify-content: center;
     font-size: 0;
   }
-  .brand b {
+  .brand img {
     width: 30px;
     height: 30px;
   }
