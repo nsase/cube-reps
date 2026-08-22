@@ -61,7 +61,6 @@
     "recordGroups": "RECORD GROUPS",
     "newGroup": "新しいグループ",
     "groupName": "グループ名",
-    "groupPlaceholder": "例：大会本番、GAN 12",
     "create": "作成",
     "solveCount": "{{count}}回",
     "deleteGroup": "グループを削除",

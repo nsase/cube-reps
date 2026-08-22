@@ -61,7 +61,6 @@
     "recordGroups": "RECORD GROUPS",
     "newGroup": "New group",
     "groupName": "Group name",
-    "groupPlaceholder": "e.g. Competition, GAN 12",
     "create": "Create",
     "solveCount": "{{count}} solves",
     "deleteGroup": "Delete group",
