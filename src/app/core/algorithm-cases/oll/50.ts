@@ -5,7 +5,7 @@ export const OLL_50_CASE = defineOllCase({
   number: '50',
   names: ['Right front squeezy'],
   group: 'Small L Shape',
-  algorithms: ["Rw' U Rw2 U' Rw2 U' Rw2 U Rw'", "(U2) R' F R2 B' R2 F' R2 B R'"],
+  algorithms: ["Rw' U Rw2 U' Rw2 U' Rw2 U Rw'", "(y2) R' F R2 B' R2 F' R2 B R'"],
   pattern: [
     ['none', 'none', 'yellow', 'yellow', 'none'],
     ['yellow', 'none', 'none', 'none', 'none'],

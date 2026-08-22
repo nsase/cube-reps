@@ -7,7 +7,7 @@
   [label]="'algorithms.pattern' | transloco: { name: item().name }"
 />
 <div>
-  <h2>{{ item().aliases?.join(' / ') ?? item().name }}</h2>
+  <h2>{{ item().name }}</h2>
   <p>{{ item().group }}</p>
 </div>
 <app-algorithm-panel [item]="item()" />

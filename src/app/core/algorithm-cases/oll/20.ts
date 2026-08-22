@@ -8,7 +8,7 @@ export const OLL_20_CASE = defineOllCase({
   algorithms: [
     "Rw U R' U' M2 U R U' R' U' M'",
     "Rw' R U (R U R' U') M2 U R U' Rw'",
-    "Rw' R U R U R' U' Rw R' M' U R U' Rw'",
+    "Rw' R U (R U R' U') Rw R' M' U R U' Rw'",
     "Rw U R' U' Rw R' M' U R U' R' U' M'",
     "S' R U R' S U' M' U R U' Rw'",
     "M U (R U R' U') M2 (U R U' Rw')",

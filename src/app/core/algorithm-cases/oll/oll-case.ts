@@ -4,7 +4,7 @@ import { AlgorithmCase, CubePattern } from '../../cube.models';
 interface OllCaseDefinition {
   /** 2桁のOLL番号。 */
   number: string;
-  /** 代表名を先頭にしたケース名一覧。 */
+  /** 表示と検索に使用するケース名一覧。 */
   names: readonly string[];
   /** OLL形状による分類。 */
   group: string;
@@ -18,14 +18,13 @@ interface OllCaseDefinition {
  * OLL固有の元データを共通のケースモデルへ変換する。
  *
  * @param definition OLLケースの元データ
- * @returns 種別と代表名を補完したケース
+ * @returns 種別と表示用のケース名を補完したケース
  */
 export function defineOllCase(definition: OllCaseDefinition): AlgorithmCase {
   return {
     kind: 'OLL',
     number: definition.number,
-    name: definition.names[0] ?? `OLL ${Number(definition.number)}`,
-    aliases: definition.names,
+    name: definition.names.join(' / ') || `OLL ${Number(definition.number)}`,
     group: definition.group,
     algorithms: definition.algorithms,
     pattern: definition.pattern,
