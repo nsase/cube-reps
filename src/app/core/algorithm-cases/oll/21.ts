@@ -7,7 +7,6 @@ export const OLL_21_CASE = defineOllCase({
   group: 'Cross',
   algorithms: [
     "R U2 R' U' R U R' U' R U' R'",
-    "y R U R' U R U' R' U R U2 R'",
     "(y) R U R' U R U' R' U R U2 R'",
     "(y2) R U2 R' U' R U R' U' R U' R'",
     "(y) U F (R U R' U')3 F'",

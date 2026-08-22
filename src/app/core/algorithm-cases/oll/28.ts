@@ -7,8 +7,8 @@ export const OLL_28_CASE = defineOllCase({
   group: 'Corners Oriented',
   algorithms: [
     "Rw U R' U' Rw' R U R U' R'",
-    "U2 (M' U Lw L') U2 (M' U Lw L')",
-    "U2 (M' U M) U2 (M' U M)",
+    "(y2) (M' U Lw L') U2 (M' U Lw L')",
+    "(y2) (M' U M) U2 (M' U M)",
   ],
   pattern: [
     ['none', 'none', 'none', 'none', 'none'],

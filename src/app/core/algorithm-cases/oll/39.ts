@@ -7,9 +7,9 @@ export const OLL_39_CASE = defineOllCase({
   group: 'Big Lightning Bolt',
   algorithms: [
     "L F' L' U' L U F U' L'",
-    "y2 R B' R' U' R U B U' R'",
-    "(U2) R U R' F' U' F U R U2 R'",
-    "(U2) Fw' Rw U Rw' U' Rw' F Rw S",
+    "(y2) R B' R' U' R U B U' R'",
+    "(y2) R U R' F' U' F U R U2 R'",
+    "(y2) Fw' Rw U Rw' U' Rw' F Rw S",
   ],
   pattern: [
     ['none', 'yellow', 'yellow', 'none', 'none'],

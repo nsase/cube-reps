@@ -9,7 +9,7 @@ export const OLL_34_CASE = defineOllCase({
     "R U R2 U' R' F R U R U' F'",
     "R U R' U' B' R' F R F' B",
     "R U R' U' y Lw' U' L U L' Lw",
-    "(U') Fw R Fw' U' Rw' U' R U M'",
+    "(y') Fw R Fw' U' Rw' U' R U M'",
   ],
   pattern: [
     ['none', 'none', 'yellow', 'none', 'none'],

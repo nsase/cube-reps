@@ -55,10 +55,8 @@ export interface AlgorithmCase {
   kind: 'OLL' | 'PLL';
   /** ケース番号または識別名。 */
   number: string;
-  /** ケースの代表名。 */
+  /** ケース名。複数の呼称がある場合は表示用に連結した文字列。 */
   name: string;
-  /** 検索と表示に使用する別名。 */
-  aliases?: readonly string[];
   /** ケースの分類名。 */
   group: string;
   /** 組み込み手順の一覧。 */

@@ -32,9 +32,7 @@ export class Algorithms {
     return [...OLL_CASES, ...PLL_CASES].filter(
       (item) =>
         item.kind === this.kind() &&
-        `${item.name} ${item.aliases?.join(' ') ?? ''} ${item.number} ${item.group}`
-          .toLowerCase()
-          .includes(query),
+        `${item.name} ${item.number} ${item.group}`.toLowerCase().includes(query),
     );
   });
 }

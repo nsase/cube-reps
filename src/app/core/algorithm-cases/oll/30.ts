@@ -8,7 +8,6 @@ export const OLL_30_CASE = defineOllCase({
   algorithms: [
     "F R' F R2 U' R' U' R U R' F2",
     "F U (R U2 R' U') R U2 R' U' F'",
-    "F U R U2 R' U' R U2 R' U' F'",
     "(y) Rw' D' Rw U' Rw' D Rw2 U' Rw' U Rw U Rw'",
   ],
   pattern: [

@@ -7,7 +7,6 @@ export const OLL_13_CASE = defineOllCase({
   group: 'Knight Move Shape',
   algorithms: [
     "F U R U' R2 F' R U R U' R'",
-    "Rw U' Rw' U' Rw U Rw' y' R' U R",
     "F U R U2 R' U' R U R' F'",
     "Rw U' Rw' U' Rw U Rw' F' U F",
   ],
