@@ -16,14 +16,14 @@ describe('HistorySummary', () => {
 
   it('プルダウンでカテゴリーを切り替え、対象件数を更新する', async () => {
     const cube = TestBed.inject(CubeService);
-    cube.addSolve(1000, 'R U', '3x3');
+    cube.addSolve(1000, 'R U', 'full');
     const group = cube.addGroup('大会')!;
-    cube.addSolve(2000, 'U R', '3x3');
+    cube.addSolve(2000, 'U R', 'full');
     const fixture = TestBed.createComponent(HistorySummary);
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    const select = fixture.nativeElement.querySelectorAll('select')[1] as HTMLSelectElement;
     select.value = group.id;
     select.dispatchEvent(new Event('change'));
     fixture.detectChanges();
@@ -41,7 +41,7 @@ describe('HistorySummary', () => {
         time: 1000,
         scramble: 'R U',
         date: new Date(1).toISOString(),
-        mode: '3x3',
+        category: 'full',
         groupId: 'unclassified',
         penalty: 'none',
       },
@@ -50,7 +50,7 @@ describe('HistorySummary', () => {
         time: 2000,
         scramble: 'U R',
         date: new Date(2).toISOString(),
-        mode: '3x3',
+        category: 'full',
         groupId: 'unclassified',
         penalty: '+2',
       },
@@ -59,7 +59,7 @@ describe('HistorySummary', () => {
         time: 500,
         scramble: 'F R',
         date: new Date(3).toISOString(),
-        mode: '3x3',
+        category: 'full',
         groupId: 'unclassified',
         penalty: 'DNF',
       },

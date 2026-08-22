@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CubeService } from '../../../core/cube';
 import { HistoryStore } from '../history.store';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { SOLVE_CATEGORIES } from '../../../core/cube.models';
 
 /** 履歴の絞り込み条件と対象記録の集計値を表示するコンポーネント。 */
 @Component({
@@ -13,6 +14,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HistorySummary {
+  /** 履歴で選択できるsolveカテゴリー一覧。 */
+  protected readonly solveCategories = SOLVE_CATEGORIES;
   /** グループ一覧と時間整形を提供するサービス。 */
   protected readonly cube = inject(CubeService);
   /** Historyコンポーネントツリー内で共有する画面状態。 */

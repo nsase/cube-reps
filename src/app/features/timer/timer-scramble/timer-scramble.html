@@ -12,5 +12,5 @@
 <p>{{ store.scramble() }}</p>
 <app-cube-net
   [scramble]="store.scramble()"
-  [orientation]="store.mode() === 'PLL' ? 'yellow-top' : 'white-top'"
+  [orientation]="store.category() === 'pll' ? 'yellow-top' : 'white-top'"
 />

@@ -26,13 +26,13 @@ describe('TimerStore', () => {
 
     expect(store.state()).toBe('idle');
     expect(cube.solves()[0].time).toBe(1234);
-    expect(cube.solves()[0].mode).toBe('3x3');
+    expect(cube.solves()[0].category).toBe('full');
   });
 
   it('PLLモードでは選択中のケース番号を記録へ保存する', () => {
     const store = TestBed.inject(TimerStore);
     const cube = TestBed.inject(CubeService);
-    store.setMode('PLL');
+    store.setCategory('pll');
     store.selectedCase.set(0);
 
     store.press();
@@ -40,7 +40,7 @@ describe('TimerStore', () => {
     store.elapsed.set(2000);
     store.press();
 
-    expect(cube.solves()[0].mode).toBe('PLL');
+    expect(cube.solves()[0].category).toBe('pll');
     expect(cube.solves()[0].caseName).toBe(store.pllCases[0].number);
   });
 

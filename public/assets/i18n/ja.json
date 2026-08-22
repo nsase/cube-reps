@@ -6,6 +6,7 @@
     "history": "YOUR PROGRESS"
   },
   "nav": { "timer": "タイマー", "history": "記録", "todaySolves": "今日のソルブ" },
+  "solveCategories": { "full": "フルソルブ", "pll": "PLL練習" },
   "common": {
     "ok": "OK",
     "cancel": "キャンセル",
@@ -59,6 +60,7 @@
     "deleteGroupTitle": "グループを削除しますか？",
     "deleteGroupMessage": "「{{name}}」を削除します。\nこの操作は取り消せません。",
     "recordFilter": "表示する記録",
+    "solveCategory": "ソルブカテゴリー",
     "allGroups": "すべてのグループ",
     "targetSolves": "対象ソルブ",
     "solveHistory": "SOLVE HISTORY",

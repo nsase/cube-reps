@@ -1,5 +1,11 @@
-/** 計測対象となる練習モード。 */
-export type SolveMode = '3x3' | 'PLL';
+/** 集計単位として扱うsolveカテゴリーの定義。 */
+export const SOLVE_CATEGORIES = [
+  { id: 'full', labelKey: 'solveCategories.full' },
+  { id: 'pll', labelKey: 'solveCategories.pll' },
+] as const satisfies ReadonlyArray<{ id: string; labelKey: string }>;
+
+/** 計測記録の集計カテゴリーID。 */
+export type SolveCategory = (typeof SOLVE_CATEGORIES)[number]['id'];
 
 /** 計測記録へ適用できるペナルティ。 */
 export type Penalty = 'none' | '+2' | 'DNF';
@@ -26,8 +32,8 @@ export interface Solve {
   scramble: string;
   /** 計測日時を表すISO 8601文字列。 */
   date: string;
-  /** 計測時の練習モード。 */
-  mode: SolveMode;
+  /** 記録を独立して集計するsolveカテゴリー。 */
+  category: SolveCategory;
   /** PLL練習時のケース名。 */
   caseName?: string;
   /** 記録が属するグループID。 */

@@ -1,5 +1,13 @@
 <div class="history-filter">
   <label
+    >{{ 'history.solveCategory' | transloco
+    }}<select [(ngModel)]="store.selectedCategory">
+      @for (category of solveCategories; track category.id) {
+        <option [value]="category.id">{{ category.labelKey | transloco }}</option>
+      }
+    </select></label
+  >
+  <label
     >{{ 'history.recordFilter' | transloco
     }}<select [(ngModel)]="store.selectedGroup">
       <option value="all">{{ 'history.allGroups' | transloco }}</option>
