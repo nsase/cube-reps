@@ -2,6 +2,7 @@ import { inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { PLL_CASES } from '../../core/algorithm-cases';
 import { CubeService } from '../../core/cube';
 import { Penalty, Solve, SolveCategory } from '../../core/cube.models';
+import { invertAlgorithm } from '../../core/cube-state';
 
 /** Timerコンポーネントツリー内で計測状態と操作を共有するStore。 */
 @Injectable()
@@ -67,11 +68,12 @@ export class TimerStore implements OnDestroy {
     this.category.set(category);
     this.cube.activeSolveCategory.set(category);
     this.reset();
+    this.scramble.set(this.createScrambleForSelection());
   }
 
-  /** 新しいランダムスクランブルを生成する。 */
+  /** 現在のカテゴリーとPLLケースに対応するスクランブルを設定する。 */
   newScramble(): void {
-    this.scramble.set(this.cube.createScramble());
+    this.scramble.set(this.createScrambleForSelection());
     this.completedSolve.set(undefined);
   }
 
@@ -126,7 +128,7 @@ export class TimerStore implements OnDestroy {
       this.category() === 'pll' ? PLL_CASES[this.selectedCase()].number : undefined,
     );
     this.state.set('idle');
-    this.scramble.set(this.cube.createScramble());
+    this.scramble.set(this.createScrambleForSelection());
     this.completedSolve.set(solve);
   }
 
@@ -136,6 +138,17 @@ export class TimerStore implements OnDestroy {
     this.elapsed.set(0);
     this.state.set('idle');
     this.completedSolve.set(undefined);
+  }
+
+  /**
+   * FULL SOLVEではランダム手順、PLL DRILLでは選択ケースを作る固定手順を返す。
+   *
+   * @returns 現在の練習対象に対応するスクランブル
+   */
+  private createScrambleForSelection(): string {
+    if (this.category() === 'full') return this.cube.createScramble();
+    const item = PLL_CASES[this.selectedCase()];
+    return invertAlgorithm(item.algorithms[0]);
   }
 
   /** @returns キーイベントの発生元が文字入力要素の場合は`true` */

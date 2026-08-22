@@ -1,13 +1,15 @@
 <span
   >{{ 'timer.scramble' | transloco
-  }}<button
-    mat-icon-button
-    [attr.aria-label]="'timer.refreshScramble' | transloco"
-    [title]="'timer.refreshScramble' | transloco"
-    (click)="store.newScramble()"
-  >
-    <mat-icon>refresh</mat-icon>
-  </button></span
+  }}@if (store.category() === 'full') {
+    <button
+      mat-icon-button
+      [attr.aria-label]="'timer.refreshScramble' | transloco"
+      [title]="'timer.refreshScramble' | transloco"
+      (click)="store.newScramble()"
+    >
+      <mat-icon>refresh</mat-icon>
+    </button>
+  }</span
 >
 <p>{{ store.scramble() }}</p>
 <app-cube-net

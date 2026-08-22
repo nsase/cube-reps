@@ -1,5 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { CubeService } from '../../core/cube';
+import {
+  invertAlgorithm,
+  topLayerPatternAfterAlgorithm,
+  topLayerPatternFromScramble,
+} from '../../core/cube-state';
 import { TimerStore } from './timer.store';
 
 describe('TimerStore', () => {
@@ -43,6 +48,39 @@ describe('TimerStore', () => {
 
     expect(cube.solves()[0].category).toBe('pll');
     expect(cube.solves()[0].caseName).toBe(store.pllCases[0].number);
+  });
+
+  it('PLLモードでは選択ケースの代表手順を反転した固定スクランブルを使う', () => {
+    const store = TestBed.inject(TimerStore);
+    store.setCategory('pll');
+
+    expect(store.scramble()).toBe(
+      invertAlgorithm(store.pllCases[store.selectedCase()].algorithms[0]),
+    );
+
+    store.selectedCase.set(0);
+    store.newScramble();
+    const scramble = store.scramble();
+    store.newScramble();
+
+    expect(scramble).toBe(invertAlgorithm(store.pllCases[0].algorithms[0]));
+    expect(store.scramble()).toBe(scramble);
+  });
+
+  it('PLLの固定スクランブルは全ケースで代表手順により完成状態へ戻る', () => {
+    const store = TestBed.inject(TimerStore);
+    store.setCategory('pll');
+    const solvedPattern = topLayerPatternFromScramble('');
+
+    for (const item of store.pllCases) {
+      store.selectedCase.set(store.pllCases.indexOf(item));
+      store.newScramble();
+      const scrambledPattern = topLayerPatternFromScramble(store.scramble());
+      expect.soft(
+        topLayerPatternAfterAlgorithm(scrambledPattern, item.algorithms[0]),
+        item.number,
+      ).toEqual(solvedPattern);
+    }
   });
 
   it('入力要素上のスペースキー操作では計測状態を変更しない', () => {
