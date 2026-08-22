@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { App } from './app';
+import { CubeService } from './core/cube';
 import { routes } from './app.routes';
 import { TranslocoService } from '@jsverse/transloco';
 import { firstValueFrom } from 'rxjs';
@@ -67,6 +68,44 @@ describe('App', () => {
     await fixture.whenStable();
 
     expect(fixture.nativeElement.querySelectorAll('app-algorithm-case-card')).toHaveLength(21);
+  });
+
+  it('履歴を100件ずつ表示し、Paginatorの言語切替を反映する', async () => {
+    const cube = TestBed.inject(CubeService);
+    cube.solves.set(
+      Array.from({ length: 101 }, (_, index) => ({
+        id: index + 1,
+        time: 1000 + index,
+        scramble: 'R U',
+        date: new Date(index).toISOString(),
+        category: 'full' as const,
+        groupId: 'unclassified',
+        penalty: 'none' as const,
+      })),
+    );
+    const fixture = TestBed.createComponent(App);
+    await TestBed.inject(Router).navigateByUrl('/history');
+    await firstValueFrom(TestBed.inject(TranslocoService).load('en'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelectorAll('app-solve-record')).toHaveLength(100);
+    const nextPage = fixture.nativeElement.querySelector(
+      '.mat-mdc-paginator-navigation-next',
+    ) as HTMLButtonElement;
+    expect(nextPage.getAttribute('aria-label')).toBe('Next page');
+    nextPage.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelectorAll('app-solve-record')).toHaveLength(1);
+
+    const i18n = TestBed.inject(TranslocoService);
+    await firstValueFrom(i18n.load('ja'));
+    i18n.setActiveLang('ja');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(nextPage.getAttribute('aria-label')).toBe('次のページ');
   });
 
   it('表示言語を日本語へ切り替えて選択を保存する', async () => {

@@ -3,13 +3,27 @@
     <small>{{ 'history.solveHistory' | transloco }}</small>
     <h2>{{ 'history.records' | transloco }}</h2>
   </div>
-  @for (solve of store.filteredSolves(); track solve.id; let index = $index) {
-    <app-solve-record [solve]="solve" [recordNumber]="store.filteredSolves().length - index" />
+  @for (solve of store.pagedSolves(); track solve.id; let index = $index) {
+    <app-solve-record
+      [solve]="solve"
+      [recordNumber]="store.filteredSolves().length - store.pageIndex() * store.pageSize - index"
+    />
   } @empty {
     <div class="empty">
       <b>{{ 'history.emptyTitle' | transloco }}</b
       ><span>{{ 'history.emptyDescription' | transloco }}</span
       ><a mat-flat-button routerLink="/timer">{{ 'history.goToTimer' | transloco }}</a>
     </div>
+  }
+  @if (store.filteredSolves().length > store.pageSize) {
+    <mat-paginator
+      [length]="store.filteredSolves().length"
+      [pageIndex]="store.pageIndex()"
+      [pageSize]="store.pageSize"
+      [hidePageSize]="true"
+      [showFirstLastButtons]="true"
+      (page)="store.setPage($event.pageIndex)"
+      [attr.aria-label]="'history.pagination' | transloco"
+    />
   }
 </div>
