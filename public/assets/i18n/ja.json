@@ -28,6 +28,11 @@
     "releaseToStart": "離してスタート",
     "tapToStop": "SPACE / タップでストップ",
     "holdSpace": "SPACEを長押し",
+    "solveActions": "直前の計測結果の操作",
+    "deleteSolve": "削除",
+    "retrySolve": "リトライ",
+    "deleteSolveTitle": "直前の記録を削除しますか？",
+    "deleteSolveMessage": "直前の計測記録を削除します。\nこの操作は取り消せません。",
     "latest": "直近",
     "allRecords": "すべての記録 →",
     "cubeNet": "スクランブルの展開図: {{scramble}}"

@@ -1,0 +1,24 @@
+<div class="actions" role="group" [attr.aria-label]="'timer.solveActions' | transloco">
+  <button mat-button class="delete" data-action="delete" (click)="delete($event)">
+    <mat-icon>delete</mat-icon>{{ 'timer.deleteSolve' | transloco }}
+  </button>
+  <button
+    mat-button
+    data-action="dnf"
+    [class.on]="store.completedSolve()?.penalty === 'DNF'"
+    (click)="togglePenalty('DNF', $event)"
+  >
+    DNF
+  </button>
+  <button
+    mat-button
+    data-action="plus-two"
+    [class.on]="store.completedSolve()?.penalty === '+2'"
+    (click)="togglePenalty('+2', $event)"
+  >
+    +2
+  </button>
+  <button mat-button data-action="retry" (click)="retry($event)">
+    <mat-icon>replay</mat-icon>{{ 'timer.retrySolve' | transloco }}
+  </button>
+</div>
