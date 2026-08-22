@@ -3,7 +3,7 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
-  "runArgs": ["--name", "cube-flow-dev"],
+  "runArgs": ["--name", "cube-flow-dev", "--ipc=host"],
   "mounts": ["source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached"],
   "postCreateCommand": "npm ci",
   "forwardPorts": [4200],
@@ -15,7 +15,13 @@
   },
   "customizations": {
     "vscode": {
-      "extensions": ["Angular.ng-template", "esbenp.prettier-vscode"]
+      "extensions": [
+        "Angular.ng-template",
+        "esbenp.prettier-vscode",
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "streetsidesoftware.code-spell-checker"
+      ]
     }
   },
   "remoteUser": "node"
