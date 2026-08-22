@@ -26,7 +26,7 @@ export interface RecordGroup {
 /** 1回分の計測結果。 */
 export interface Solve {
   /** 計測記録を一意に識別するID。 */
-  id: number;
+  id: string;
   /** ペナルティ適用前の計測時間（ミリ秒）。 */
   time: number;
   /** 計測時に使用したスクランブル。 */

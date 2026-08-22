@@ -52,7 +52,7 @@ describe('HistoryStore', () => {
     const store = TestBed.inject(HistoryStore);
     cube.solves.set(
       Array.from({ length: 205 }, (_, index) => ({
-        id: index + 1,
+        id: String(index + 1),
         time: 1000,
         scramble: 'R U',
         date: new Date(index).toISOString(),
@@ -67,7 +67,7 @@ describe('HistoryStore', () => {
     store.setPage(2);
 
     expect(store.pagedSolves()).toHaveLength(5);
-    expect(store.pagedSolves()[0].id).toBe(201);
+    expect(store.pagedSolves()[0].id).toBe('201');
   });
 
   it('絞り込み変更と最終ページ削除時に有効なページへ戻る', () => {
@@ -75,7 +75,7 @@ describe('HistoryStore', () => {
     const store = TestBed.inject(HistoryStore);
     cube.solves.set(
       Array.from({ length: 101 }, (_, index) => ({
-        id: index + 1,
+        id: String(index + 1),
         time: 1000,
         scramble: 'R U',
         date: new Date(index).toISOString(),
@@ -85,7 +85,7 @@ describe('HistoryStore', () => {
       })),
     );
     store.setPage(1);
-    cube.removeSolve(101);
+    cube.removeSolve('101');
     TestBed.tick();
     expect(store.pageIndex()).toBe(0);
 
