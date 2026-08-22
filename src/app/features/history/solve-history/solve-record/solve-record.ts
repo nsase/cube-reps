@@ -1,16 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { CubeService } from '../../../../core/cube';
 import { Solve } from '../../../../core/cube.models';
-import { DialogButtons } from '../../../../shared/confirm-dialog/confirm-dialog.buttons';
-import { ConfirmDialog } from '../../../../shared/confirm-dialog/confirm-dialog';
-import {
-  ConfirmDialogData,
-  ConfirmDialogResult,
-} from '../../../../shared/confirm-dialog/confirm-dialog.models';
+import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
 import { CubeNetView } from '../../../../shared/cube-net/cube-net';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
@@ -30,25 +24,20 @@ export class SolveRecord {
 
   /** 計測記録の表示と更新を行うサービス。 */
   protected readonly cube = inject(CubeService);
-  /** 記録削除の確認を表示するMaterial Dialogサービス。 */
-  private readonly dialog = inject(MatDialog);
+  /** 記録削除の確認を表示するサービス。 */
+  private readonly confirm = inject(ConfirmService);
   /** 確認メッセージを現在の言語へ翻訳するサービス。 */
   private readonly i18n = inject(TranslocoService);
 
   /** 確認後にこの計測記録を削除する。 */
   protected delete(): void {
-    const data = {
-      title: this.i18n.translate('history.deleteSolveTitle'),
-      message: this.i18n.translate('history.deleteSolveMessage'),
-      buttons: [DialogButtons.cancel, DialogButtons.delete],
-      defaultFocus: DialogButtons.cancel.id,
-    } as const satisfies ConfirmDialogData;
-
-    this.dialog
-      .open<ConfirmDialog, ConfirmDialogData, ConfirmDialogResult>(ConfirmDialog, { data })
-      .afterClosed()
-      .subscribe((result) => {
-        if (result === DialogButtons.delete.id) this.cube.removeSolve(this.solve().id);
+    this.confirm
+      .delete(
+        this.i18n.translate('history.deleteSolveTitle'),
+        this.i18n.translate('history.deleteSolveMessage'),
+      )
+      .subscribe((confirmed) => {
+        if (confirmed) this.cube.removeSolve(this.solve().id);
       });
   }
 }

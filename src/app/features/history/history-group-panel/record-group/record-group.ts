@@ -1,15 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { CubeService } from '../../../../core/cube';
 import { RecordGroup as RecordGroupModel } from '../../../../core/cube.models';
-import { DialogButtons } from '../../../../shared/confirm-dialog/confirm-dialog.buttons';
-import { ConfirmDialog } from '../../../../shared/confirm-dialog/confirm-dialog';
-import {
-  ConfirmDialogData,
-  ConfirmDialogResult,
-} from '../../../../shared/confirm-dialog/confirm-dialog.models';
+import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
 import { HistoryStore } from '../../history.store';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
@@ -32,8 +26,8 @@ export class RecordGroup {
   protected readonly cube = inject(CubeService);
   /** Historyコンポーネントツリー内で共有する画面状態。 */
   private readonly store = inject(HistoryStore);
-  /** グループ削除の確認を表示するMaterial Dialogサービス。 */
-  private readonly dialog = inject(MatDialog);
+  /** グループ削除の確認を表示するサービス。 */
+  private readonly confirm = inject(ConfirmService);
   /** 確認メッセージを現在の言語へ翻訳するサービス。 */
   private readonly i18n = inject(TranslocoService);
 
@@ -56,18 +50,13 @@ export class RecordGroup {
   /** 確認後にこのグループを削除する。 */
   protected delete(): void {
     const group = this.group();
-    const data = {
-      title: this.i18n.translate('history.deleteGroupTitle'),
-      message: this.i18n.translate('history.deleteGroupMessage', { name: group.name }),
-      buttons: [DialogButtons.cancel, DialogButtons.delete],
-      defaultFocus: DialogButtons.cancel.id,
-    } as const satisfies ConfirmDialogData;
-
-    this.dialog
-      .open<ConfirmDialog, ConfirmDialogData, ConfirmDialogResult>(ConfirmDialog, { data })
-      .afterClosed()
-      .subscribe((result) => {
-        if (result !== DialogButtons.delete.id) return;
+    this.confirm
+      .delete(
+        this.i18n.translate('history.deleteGroupTitle'),
+        this.i18n.translate('history.deleteGroupMessage', { name: group.name }),
+      )
+      .subscribe((confirmed) => {
+        if (!confirmed) return;
         this.cube.removeGroup(group.id);
         if (this.store.selectedGroup() === group.id) this.store.selectedGroup.set('all');
       });

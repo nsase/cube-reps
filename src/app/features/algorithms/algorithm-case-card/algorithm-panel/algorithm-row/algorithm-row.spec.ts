@@ -1,24 +1,23 @@
 import { TestBed } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { PLL_CASES } from '../../../../../core/algorithm-cases';
 import { AlgorithmLibraryService } from '../../../../../core/algorithm-library';
-import { DialogButtons } from '../../../../../shared/confirm-dialog/confirm-dialog.buttons';
+import { ConfirmService } from '../../../../../shared/confirm-dialog/confirm.service';
 import { AlgorithmRow } from './algorithm-row';
 
 describe('AlgorithmRow', () => {
-  /** ダイアログ終了結果を返すMatDialogのテスト用代替。 */
-  const dialog = {
-    open: vi.fn(() => ({ afterClosed: () => of(DialogButtons.delete.id) })),
+  /** 削除確認済みを返すConfirmServiceのテスト用代替。 */
+  const confirm = {
+    delete: vi.fn(() => of(true)),
   };
 
   beforeEach(async () => {
     localStorage.clear();
-    dialog.open.mockClear();
+    confirm.delete.mockClear();
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [AlgorithmRow],
-      providers: [{ provide: MatDialog, useValue: dialog }],
+      providers: [{ provide: ConfirmService, useValue: confirm }],
     }).compileComponents();
   });
 
@@ -65,7 +64,7 @@ describe('AlgorithmRow', () => {
 
     (fixture.nativeElement.querySelector('.remove') as HTMLButtonElement).click();
 
-    expect(dialog.open).toHaveBeenCalledOnce();
+    expect(confirm.delete).toHaveBeenCalledOnce();
     expect(library.algorithmsFor(item).some(({ id }) => id === algorithm.id)).toBe(false);
   });
 });
