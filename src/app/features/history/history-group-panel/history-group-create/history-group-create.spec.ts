@@ -21,6 +21,7 @@ describe('HistoryGroupCreate', () => {
     await fixture.whenStable();
 
     const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
+    expect(input.hasAttribute('placeholder')).toBe(false);
     input.value = '大会用';
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();

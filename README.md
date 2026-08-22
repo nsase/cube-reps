@@ -1,59 +1,87 @@
-# CubeFlow
+# Cube Flow
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.21.
+<p align="center">
+  <img src="public/cube-flow-mark.svg" alt="Cube Flow logo" width="96" height="96">
+</p>
 
-## Development server
+Cube Flowは、スピードキューブの計測とOLL・PLL練習をブラウザ上で完結できるWebアプリです。計測記録や設定はブラウザ内に保存されるため、アカウント登録やサーバー接続は必要ありません。
 
-To start a local development server, run:
+## 主な機能
 
-```bash
-ng serve
-```
+- フルソルブ、OLL、PLLのタイム計測
+- 20手のランダムスクランブルとキューブ展開図の表示
+- OLL 57ケース、PLL 21ケースの一覧・検索
+- ケース別ドリルと選択ケースに対応したスクランブル生成
+- 手順の追加、削除、コピー、お気に入り設定
+- 記録グループの作成・名称変更・削除
+- ベスト、全体平均、Ao5、Ao12、Ao50、Ao100の集計
+- 計測記録への`+2`・`DNF`ペナルティ設定
+- 日本語・英語の表示切り替え
+- PC、タブレット、スマートフォン対応
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## タイマーの使い方
 
-## Code scaffolding
+キーボードではスペースキー、タッチ端末では画面上のタイマーを使用します。
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+1. スペースキーまたはタイマーを押し続けて準備状態にします。
+2. 離すと計測を開始します。
+3. 計測中にもう一度押すと停止し、記録を保存します。
 
-```bash
-ng generate component component-name
-```
+停止後は、直前の記録へのペナルティ設定、削除、同じスクランブルでの再計測ができます。
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## セットアップ
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Node.jsとnpmを用意し、リポジトリ内で次のコマンドを実行します。
 
 ```bash
-ng test
+npm install
+npm start
 ```
 
-## Running end-to-end tests
+開発サーバーは通常、[http://localhost:4200](http://localhost:4200)で起動します。
 
-For end-to-end (e2e) testing, run:
+## 開発コマンド
 
-```bash
-ng e2e
+| コマンド                  | 内容                             |
+| ------------------------- | -------------------------------- |
+| `npm start`               | 開発サーバーを起動               |
+| `npm run build`           | プロダクションビルドを作成       |
+| `npm test`                | Vitestでテストを実行             |
+| `npm run prettier:format` | プロジェクト全体をPrettierで整形 |
+
+ビルド成果物は`dist/cube-flow`へ出力されます。
+
+## データの保存
+
+次のデータはブラウザの`localStorage`へ保存されます。
+
+- 計測記録とペナルティ
+- 記録グループと現在の記録先
+- OLL・PLLの追加手順とお気に入り
+- 表示言語
+
+データは利用中のブラウザとオリジンに紐づきます。ブラウザのサイトデータを削除すると、Cube Flowの記録も削除されます。現在、クラウド同期やエクスポート機能はありません。
+
+## 技術構成
+
+- Angular 21
+- Angular Material
+- Angular Signals / Signal Store
+- Transloco
+- Vitest
+- SCSS
+
+各画面はStandalone Componentとして構成し、ルート単位で遅延読み込みしています。アプリ全体の永続データはrootサービス、タイマーや履歴画面の一時状態は画面スコープのSignal Storeで管理しています。
+
+## ディレクトリ構成
+
+```text
+src/app/
+├── core/       # キューブ、集計、手順、永続データ
+├── features/   # タイマー、手順一覧、履歴の各画面
+└── shared/     # キューブ表示や確認ダイアログなどの共通UI
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## ライセンス
 
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+[0BSD（Zero-Clause BSD）](LICENSE)で公開しています。個人・商用を問わず、利用、複製、変更、再配布が可能です。

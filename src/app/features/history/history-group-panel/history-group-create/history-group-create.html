@@ -6,11 +6,7 @@
   <form class="group-form" (submit)="$event.preventDefault(); createGroup()">
     <label
       >{{ 'history.groupName' | transloco
-      }}<input
-        [placeholder]="'history.groupPlaceholder' | transloco"
-        [(ngModel)]="groupName"
-        name="groupName"
-        autofocus
+      }}<input [(ngModel)]="groupName" name="groupName" autofocus
     /></label>
     <button mat-flat-button type="submit" [disabled]="!groupName().trim()">
       {{ 'history.create' | transloco }}

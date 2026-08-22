@@ -33,6 +33,19 @@ describe('App', () => {
     expect(document.documentElement.lang).toBe('en');
   });
 
+  it('言語選択肢はデフォルト言語の英語を先頭に表示する', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+
+    const options = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.header-tools select option',
+      ) as NodeListOf<HTMLOptionElement>,
+    );
+    expect(options.map((option) => option.value)).toEqual(['en', 'ja']);
+    expect(options.map((option) => option.textContent)).toEqual(['English', '日本語']);
+  });
+
   it('should render title', async () => {
     const fixture = TestBed.createComponent(App);
     await TestBed.inject(Router).navigateByUrl('/timer');
