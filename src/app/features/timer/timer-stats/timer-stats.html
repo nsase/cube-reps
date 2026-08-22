@@ -1,13 +1,11 @@
 <div>
-  {{ 'timer.latest' | transloco
-  }}<strong>{{
-    cube.activeSolves().length ? cube.displayTime(cube.activeSolves()[0]) : '—'
-  }}</strong>
-</div>
-<div>
   {{ 'common.best' | transloco }}<strong>{{ cube.formatTime(cube.best()) }}</strong>
 </div>
 <div>
-  {{ 'common.recentAverage' | transloco }}<strong>{{ cube.formatTime(cube.average()) }}</strong>
+  {{ 'common.mean' | transloco }}<strong>{{ formatStatistic(cube.mean()) }}</strong>
 </div>
+<div>AO5<strong>{{ formatStatistic(cube.ao5()) }}</strong></div>
+<div>AO12<strong>{{ formatStatistic(cube.ao12()) }}</strong></div>
+<div>AO50<strong>{{ formatStatistic(cube.ao50()) }}</strong></div>
+<div>AO100<strong>{{ formatStatistic(cube.ao100()) }}</strong></div>
 <a routerLink="/history">{{ 'timer.allRecords' | transloco }}</a>

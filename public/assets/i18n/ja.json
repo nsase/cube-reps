@@ -15,6 +15,7 @@
     "delete": "削除",
     "add": "追加",
     "best": "ベスト",
+    "mean": "平均",
     "recentAverage": "直近5回 平均"
   },
   "timer": {

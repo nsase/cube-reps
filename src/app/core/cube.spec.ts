@@ -88,19 +88,17 @@ describe('CubeService record statistics', () => {
     expect(cube.best()).toBe(1500);
   });
 
-  it('DNFを除いた直近5件へ+2を反映して平均を計算する', () => {
+  it('全記録の平均へ+2を反映し、DNFを除外する', () => {
     const cube = TestBed.inject(CubeService);
     cube.solves.set([
       solve(1, 1000),
-      solve(2, 2000, 'DNF'),
       solve(3, 1000, '+2'),
       solve(4, 4000),
-      solve(5, 5000),
-      solve(6, 6000),
-      solve(7, 100000),
     ]);
 
-    expect(cube.average()).toBe((1000 + 3000 + 4000 + 5000 + 6000) / 5);
+    expect(cube.mean()).toBe((1000 + 3000 + 4000) / 3);
+    cube.solves.update((solves) => [solve(2, 2000, 'DNF'), ...solves]);
+    expect(cube.mean()).toBe((1000 + 3000 + 4000) / 3);
   });
 
   it('有効な記録がない場合はベストと平均を未記録として扱う', () => {
@@ -108,7 +106,17 @@ describe('CubeService record statistics', () => {
     cube.solves.set([solve(1, 1000, 'DNF')]);
 
     expect(cube.best()).toBe(Infinity);
-    expect(cube.average()).toBe(Infinity);
+    expect(cube.mean()).toBeUndefined();
     expect(cube.formatTime(cube.best())).toBe('—');
+  });
+
+  it('必要件数が揃ったAOだけを計算する', () => {
+    const cube = TestBed.inject(CubeService);
+    cube.solves.set(Array.from({ length: 12 }, (_, index) => solve(index, (index + 1) * 1000)));
+
+    expect(cube.ao5()).toBe(3000);
+    expect(cube.ao12()).toBe(6500);
+    expect(cube.ao50()).toBeUndefined();
+    expect(cube.ao100()).toBeUndefined();
   });
 });

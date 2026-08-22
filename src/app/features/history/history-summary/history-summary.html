@@ -19,12 +19,21 @@
 </div>
 <div class="summaries">
   <article>
-    {{ 'history.targetSolves' | transloco }}<strong>{{ store.filteredSolves().length }}</strong>
-  </article>
-  <article>
     {{ 'common.best' | transloco }}<strong>{{ cube.formatTime(best()) }}</strong>
   </article>
   <article>
-    {{ 'common.recentAverage' | transloco }}<strong>{{ cube.formatTime(average()) }}</strong>
+    {{ 'common.mean' | transloco }}<strong>{{ formatStatistic(mean()) }}</strong>
+  </article>
+  <article>
+    AO5<strong>{{ formatStatistic(ao5()) }}</strong>
+  </article>
+  <article>
+    AO12<strong>{{ formatStatistic(ao12()) }}</strong>
+  </article>
+  <article>
+    AO50<strong>{{ formatStatistic(ao50()) }}</strong>
+  </article>
+  <article>
+    AO100<strong>{{ formatStatistic(ao100()) }}</strong>
   </article>
 </div>

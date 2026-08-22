@@ -15,6 +15,7 @@
     "delete": "Delete",
     "add": "Add",
     "best": "Best",
+    "mean": "Overall mean",
     "recentAverage": "Last 5 average"
   },
   "timer": {

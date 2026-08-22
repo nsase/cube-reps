@@ -1,6 +1,7 @@
 import { Injectable, Signal, computed, effect, signal } from '@angular/core';
 import { translateSignal } from '@jsverse/transloco';
 import { Penalty, RecordGroup, Solve, SolveCategory } from './cube.models';
+import { average, mean } from './cube-statistics';
 
 /** ユーザーデータとは分離して常に先頭へ表示する既定の記録グループ。 */
 const DEFAULT_GROUPS: readonly RecordGroup[] = [
@@ -53,13 +54,18 @@ export class CubeService {
   readonly best = computed(() =>
     Math.min(...this.validActiveSolves().map((solve) => this.finalTime(solve)), Infinity),
   );
-  /** 現在のグループにある直近5件の有効記録の平均タイム。 */
-  readonly average = computed(() => {
-    const times = this.validActiveSolves()
-      .slice(0, 5)
-      .map((solve) => this.finalTime(solve));
-    return times.length ? times.reduce((total, time) => total + time, 0) / times.length : Infinity;
-  });
+  /** 現在のグループにある全記録のMean。 */
+  readonly mean = computed(() =>
+    mean(this.validActiveSolves().map((solve) => this.finalTime(solve))),
+  );
+  /** 現在のグループにある直近5件のAverage。 */
+  readonly ao5 = computed(() => this.averageOf(this.activeSolves(), 5));
+  /** 現在のグループにある直近12件のAverage。 */
+  readonly ao12 = computed(() => this.averageOf(this.activeSolves(), 12));
+  /** 現在のグループにある直近50件のAverage。 */
+  readonly ao50 = computed(() => this.averageOf(this.activeSolves(), 50));
+  /** 現在のグループにある直近100件のAverage。 */
+  readonly ao100 = computed(() => this.averageOf(this.activeSolves(), 100));
 
   /** 保存済みデータを初期化し、以後の変更をlocalStorageへ同期する。 */
   constructor() {
@@ -167,6 +173,16 @@ export class CubeService {
   }
 
   /**
+   * 集計用にDNFを最悪値へ変換したタイムを返す。
+   *
+   * @param solve 対象の計測記録
+   * @returns +2反映後のタイム。DNFの場合は`Infinity`
+   */
+  statTime(solve: Solve): number {
+    return solve.penalty === 'DNF' ? Infinity : this.finalTime(solve);
+  }
+
+  /**
    * ミリ秒をタイマー表示用文字列へ整形する。
    *
    * @param milliseconds 整形する時間
@@ -203,6 +219,12 @@ export class CubeService {
         result.push(move + suffixes[Math.floor(Math.random() * suffixes.length)]);
     }
     return result.join(' ');
+  }
+
+  /** 指定件数が揃っている場合に、最新記録からAverageを計算する。 */
+  private averageOf(solves: readonly Solve[], count: number): number | undefined {
+    if (solves.length < count) return undefined;
+    return average(solves.slice(0, count).map((solve) => this.statTime(solve)));
   }
 
   /** @returns 保存データを現行グループ形式へ移行した計測記録 */
