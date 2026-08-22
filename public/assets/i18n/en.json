@@ -6,7 +6,7 @@
     "history": "YOUR PROGRESS"
   },
   "nav": { "timer": "Timer", "history": "History", "todaySolves": "Today's solves" },
-  "solveCategories": { "full": "Full solve", "pll": "PLL drill" },
+  "solveCategories": { "full": "Full solve", "oll": "OLL drill", "pll": "PLL drill" },
   "common": {
     "ok": "OK",
     "cancel": "Cancel",

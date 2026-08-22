@@ -1,6 +1,7 @@
 /** 集計単位として扱うsolveカテゴリーの定義。 */
 export const SOLVE_CATEGORIES = [
   { id: 'full', labelKey: 'solveCategories.full' },
+  { id: 'oll', labelKey: 'solveCategories.oll' },
   { id: 'pll', labelKey: 'solveCategories.pll' },
 ] as const satisfies ReadonlyArray<{ id: string; labelKey: string }>;
 
