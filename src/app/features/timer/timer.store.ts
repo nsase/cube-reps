@@ -21,7 +21,7 @@ export class TimerStore implements OnDestroy {
   /** 操作対象として表示する直前の計測結果。 */
   readonly completedSolve = signal<Solve | undefined>(undefined);
   /** PLL練習で選択中のケース位置。 */
-  readonly selectedCase = signal(15);
+  readonly selectedCase = signal(0);
   /** PLLケース選択肢。 */
   readonly pllCases = PLL_CASES;
 
