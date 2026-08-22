@@ -1,0 +1,5 @@
+@if (category() === 'full') {
+  <app-cube-net [scramble]="scramble()" orientation="white-top" />
+} @else {
+  <app-cube-pattern [pattern]="pattern()" [label]="label()" />
+}

@@ -36,7 +36,8 @@
     "deleteSolveMessage": "The latest solve will be deleted.\nThis action cannot be undone.",
     "latest": "Latest",
     "allRecords": "All records →",
-    "cubeNet": "Cube net for scramble: {{scramble}}"
+    "cubeNet": "Cube net for scramble: {{scramble}}",
+    "solvePattern": "Top-layer pattern for scramble: {{scramble}}"
   },
   "algorithms": {
     "search": "Search by number, name, or group",

@@ -38,8 +38,8 @@ p {
   word-spacing: 4px;
 }
 
-app-cube-net {
-  --cube-net-width: clamp(150px, 27vh, 280px);
+app-solve-pattern {
+  --solve-pattern-width: clamp(150px, 27vh, 280px);
   margin: clamp(6px, 1.2vh, 14px) auto 0;
 }
 
@@ -47,8 +47,8 @@ app-cube-net {
   :host {
     height: 100%;
   }
-  app-cube-net {
-    --cube-net-width: min(100%, clamp(190px, 29vw, 300px));
+  app-solve-pattern {
+    --solve-pattern-width: min(100%, clamp(190px, 29vw, 300px));
   }
 }
 
@@ -64,7 +64,7 @@ app-cube-net {
     font-size: 11px;
     line-height: 1.35;
   }
-  app-cube-net {
-    --cube-net-width: clamp(135px, 24vh, 210px);
+  app-solve-pattern {
+    --solve-pattern-width: clamp(135px, 24vh, 210px);
   }
 }

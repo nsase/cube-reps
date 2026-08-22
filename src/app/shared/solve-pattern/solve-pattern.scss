@@ -1,0 +1,16 @@
+:host {
+  --solve-pattern-width: 260px;
+
+  display: block;
+  width: var(--solve-pattern-width);
+  max-width: 100%;
+  min-width: 0;
+}
+
+app-cube-net {
+  --cube-net-width: 100%;
+}
+
+app-cube-pattern {
+  --cube-width: 100%;
+}
