@@ -24,7 +24,7 @@ describe('SolveRecord', () => {
   /** 計測記録を作成して行コンポーネントへ設定する。 */
   function createFixture() {
     const cube = TestBed.inject(CubeService);
-    cube.addSolve(1234, 'R U', '3x3');
+    cube.addSolve(1234, 'R U', 'full');
     const solve = cube.solves()[0];
     const fixture = TestBed.createComponent(SolveRecord);
     fixture.componentRef.setInput('solve', solve);

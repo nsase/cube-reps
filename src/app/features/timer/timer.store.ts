@@ -1,7 +1,7 @@
 import { inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { PLL_CASES } from '../../core/algorithm-cases';
 import { CubeService } from '../../core/cube';
-import { SolveMode } from '../../core/cube.models';
+import { SolveCategory } from '../../core/cube.models';
 
 /** Timerコンポーネントツリー内で計測状態と操作を共有するStore。 */
 @Injectable()
@@ -9,8 +9,8 @@ export class TimerStore implements OnDestroy {
   /** 計測記録とスクランブルを管理するサービス。 */
   private readonly cube = inject(CubeService);
 
-  /** 現在の計測モード。 */
-  readonly mode = signal<SolveMode>('3x3');
+  /** 現在のsolveカテゴリー。 */
+  readonly category = signal<SolveCategory>('full');
   /** 現在の経過時間（ミリ秒）。 */
   readonly elapsed = signal(0);
   /** タイマー操作の状態。 */
@@ -28,6 +28,11 @@ export class TimerStore implements OnDestroy {
   private started = 0;
   /** スペースキーのキーリピートを抑止するフラグ。 */
   private spaceDown = false;
+
+  /** 初期カテゴリーをrootサービスの集計対象へ同期する。 */
+  constructor() {
+    this.cube.activeSolveCategory.set(this.category());
+  }
 
   /** スペース押下で準備状態へ入り、計測中の場合は停止する。 */
   keyDown(event: KeyboardEvent): void {
@@ -55,9 +60,10 @@ export class TimerStore implements OnDestroy {
     if (this.state() === 'ready') this.start();
   }
 
-  /** 計測モードを変更してタイマーを初期状態へ戻す。 */
-  setMode(mode: SolveMode): void {
-    this.mode.set(mode);
+  /** solveカテゴリーを変更してタイマーを初期状態へ戻す。 */
+  setCategory(category: SolveCategory): void {
+    this.category.set(category);
+    this.cube.activeSolveCategory.set(category);
     this.reset();
   }
 
@@ -88,8 +94,8 @@ export class TimerStore implements OnDestroy {
     this.cube.addSolve(
       this.elapsed(),
       this.scramble(),
-      this.mode(),
-      this.mode() === 'PLL' ? PLL_CASES[this.selectedCase()].number : undefined,
+      this.category(),
+      this.category() === 'pll' ? PLL_CASES[this.selectedCase()].number : undefined,
     );
     this.state.set('idle');
     this.newScramble();

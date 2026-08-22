@@ -16,7 +16,7 @@ describe('CubeService record statistics', () => {
       time,
       scramble: 'R U',
       date: new Date(id).toISOString(),
-      mode: '3x3',
+      category: 'full',
       groupId: 'unclassified',
       penalty,
     };
@@ -63,6 +63,22 @@ describe('CubeService record statistics', () => {
     expect(JSON.parse(localStorage.getItem('cubeflow-groups') ?? '[]')).toEqual([
       expect.objectContaining({ name: 'Competition' }),
     ]);
+  });
+
+  it('fullとpllを同じ記録先でも別々に集計する', () => {
+    const cube = TestBed.inject(CubeService);
+    cube.solves.set([
+      { ...solve(1, 1000), category: 'full' },
+      { ...solve(2, 2000), category: 'pll' },
+    ]);
+
+    expect(cube.activeSolves().map(({ id }) => id)).toEqual([1]);
+    expect(cube.best()).toBe(1000);
+
+    cube.activeSolveCategory.set('pll');
+
+    expect(cube.activeSolves().map(({ id }) => id)).toEqual([2]);
+    expect(cube.best()).toBe(2000);
   });
 
   it('DNFを除外し、+2を反映してベストを計算する', () => {

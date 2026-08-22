@@ -6,6 +6,7 @@
     "history": "YOUR PROGRESS"
   },
   "nav": { "timer": "Timer", "history": "History", "todaySolves": "Today's solves" },
+  "solveCategories": { "full": "Full solve", "pll": "PLL drill" },
   "common": {
     "ok": "OK",
     "cancel": "Cancel",
@@ -59,6 +60,7 @@
     "deleteGroupTitle": "Delete this group?",
     "deleteGroupMessage": "Delete “{{name}}”?\nThis action cannot be undone.",
     "recordFilter": "Records to show",
+    "solveCategory": "Solve category",
     "allGroups": "All groups",
     "targetSolves": "Solves",
     "solveHistory": "SOLVE HISTORY",

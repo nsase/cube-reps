@@ -1,12 +1,15 @@
 <span>#{{ recordNumber() }}</span>
 <div>
   <strong>{{ cube.displayTime(solve()) }}</strong
-  ><small>{{ solve().mode }}{{ solve().caseName ? ' · ' + solve().caseName : '' }}</small>
+  ><small
+    >{{ 'solveCategories.' + solve().category | transloco
+    }}{{ solve().caseName ? ' · ' + solve().caseName : '' }}</small
+  >
 </div>
 <code>{{ solve().scramble }}</code>
 <app-cube-net
   [scramble]="solve().scramble"
-  [orientation]="solve().mode === 'PLL' ? 'yellow-top' : 'white-top'"
+  [orientation]="solve().category === 'pll' ? 'yellow-top' : 'white-top'"
 />
 <time>{{ solve().date | date: 'MM/dd HH:mm' }}</time>
 <div class="row-actions">

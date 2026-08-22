@@ -13,14 +13,14 @@
   >
 </div>
 <div class="modes">
-  <button [class.on]="store.mode() === '3x3'" (click)="store.setMode('3x3')">
+  <button [class.on]="store.category() === 'full'" (click)="store.setCategory('full')">
     3×3<small>{{ 'timer.fullSolve' | transloco }}</small>
   </button>
-  <button [class.on]="store.mode() === 'PLL'" (click)="store.setMode('PLL')">
+  <button [class.on]="store.category() === 'pll'" (click)="store.setCategory('pll')">
     PLL<small>{{ 'timer.caseDrill' | transloco }}</small>
   </button>
 </div>
-@if (store.mode() === 'PLL') {
+@if (store.category() === 'pll') {
   <div class="case-select">
     {{ 'timer.practiceCase' | transloco }}
     <select [(ngModel)]="store.selectedCase" (change)="store.newScramble()">

@@ -31,7 +31,7 @@ describe('TimerStats', () => {
         time: 1000,
         scramble: 'R U',
         date: new Date(1).toISOString(),
-        mode: '3x3',
+        category: 'full',
         groupId: 'unclassified',
         penalty: '+2',
       },
@@ -40,7 +40,7 @@ describe('TimerStats', () => {
         time: 2000,
         scramble: 'U R',
         date: new Date(2).toISOString(),
-        mode: '3x3',
+        category: 'full',
         groupId: 'unclassified',
         penalty: 'none',
       },
@@ -49,7 +49,7 @@ describe('TimerStats', () => {
         time: 500,
         scramble: 'F R',
         date: new Date(3).toISOString(),
-        mode: '3x3',
+        category: 'full',
         groupId: 'unclassified',
         penalty: 'DNF',
       },
@@ -62,6 +62,39 @@ describe('TimerStats', () => {
     expect(displayedValues(fixture)).toEqual(['3.00+', '2.00', '2.50']);
   });
 
+  it('solveカテゴリーの変更に合わせて集計表示を分離する', async () => {
+    const cube = TestBed.inject(CubeService);
+    cube.solves.set([
+      {
+        id: 1,
+        time: 1000,
+        scramble: 'R U',
+        date: new Date(1).toISOString(),
+        category: 'full',
+        groupId: 'unclassified',
+        penalty: 'none',
+      },
+      {
+        id: 2,
+        time: 4000,
+        scramble: 'U R',
+        date: new Date(2).toISOString(),
+        category: 'pll',
+        groupId: 'unclassified',
+        penalty: 'none',
+      },
+    ]);
+    const fixture = TestBed.createComponent(TimerStats);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(displayedValues(fixture)).toEqual(['1.00', '1.00', '1.00']);
+
+    cube.activeSolveCategory.set('pll');
+    fixture.detectChanges();
+
+    expect(displayedValues(fixture)).toEqual(['4.00', '4.00', '4.00']);
+  });
+
   it('記録先カテゴリーの変更に合わせて集計表示を更新する', async () => {
     const cube = TestBed.inject(CubeService);
     const group = cube.addGroup('大会')!;
@@ -71,7 +104,7 @@ describe('TimerStats', () => {
         time: 1000,
         scramble: 'R U',
         date: new Date(1).toISOString(),
-        mode: '3x3',
+        category: 'full',
         groupId: 'unclassified',
         penalty: 'none',
       },
@@ -80,7 +113,7 @@ describe('TimerStats', () => {
         time: 4000,
         scramble: 'U R',
         date: new Date(2).toISOString(),
-        mode: '3x3',
+        category: 'full',
         groupId: group.id,
         penalty: 'none',
       },

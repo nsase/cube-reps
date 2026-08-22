@@ -1,6 +1,6 @@
 import { Injectable, Signal, computed, effect, signal } from '@angular/core';
 import { translateSignal } from '@jsverse/transloco';
-import { Penalty, RecordGroup, Solve, SolveMode } from './cube.models';
+import { Penalty, RecordGroup, Solve, SolveCategory } from './cube.models';
 
 /** ユーザーデータとは分離して常に先頭へ表示する既定の記録グループ。 */
 const DEFAULT_GROUPS: readonly RecordGroup[] = [
@@ -32,13 +32,18 @@ export class CubeService {
   readonly groups = computed<RecordGroup[]>(() => [...DEFAULT_GROUPS, ...this.userGroups()]);
   /** 現在の記録先グループID。 */
   readonly activeGroupId = signal(this.loadActiveGroupId());
+  /** タイマーで現在選択しているsolveカテゴリー。 */
+  readonly activeSolveCategory = signal<SolveCategory>('full');
   /** 現在の記録先グループ。 */
   readonly activeGroup = computed(
     () => this.groups().find((group) => group.id === this.activeGroupId()) ?? this.groups()[0],
   );
   /** 現在のグループに属する計測記録。 */
   readonly activeSolves = computed(() =>
-    this.solves().filter((solve) => solve.groupId === this.activeGroupId()),
+    this.solves().filter(
+      (solve) =>
+        solve.groupId === this.activeGroupId() && solve.category === this.activeSolveCategory(),
+    ),
   );
   /** 現在のグループに属するDNF以外の記録。 */
   readonly validActiveSolves = computed(() =>
@@ -111,17 +116,17 @@ export class CubeService {
    *
    * @param time 計測時間（ミリ秒）
    * @param scramble 計測に使用したスクランブル
-   * @param mode 計測モード
+   * @param category 集計カテゴリーID
    * @param caseName PLL練習時のケース名
    */
-  addSolve(time: number, scramble: string, mode: SolveMode, caseName?: string): void {
+  addSolve(time: number, scramble: string, category: SolveCategory, caseName?: string): void {
     this.solves.update((solves) => [
       {
         id: Date.now(),
         time,
         scramble,
         date: new Date().toISOString(),
-        mode,
+        category,
         caseName,
         groupId: this.activeGroupId(),
         penalty: 'none',
