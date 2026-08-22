@@ -1,114 +1,135 @@
 $ink: var(--text-color);
-$lime: var(--primary-color);
 $line: var(--border-color);
 $muted: var(--text-muted-color);
 
 :host {
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
 }
+
 .record-context {
   display: flex;
+  min-width: 0;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  max-width: 780px;
-  margin: 0 auto 18px;
-  padding: 12px 16px;
-  border-radius: 9px;
-  background: #20231f;
-  color: white;
-  box-shadow: 0 7px 20px #00000012;
-  div small {
-    display: block;
-    color: #969b91;
-    font: 500 var(--font-size-small) var(--font-family-mono);
-    letter-spacing: 1.5px;
-  }
-  div strong {
-    color: $lime;
-    font-size: var(--font-size-base);
-  }
-  label {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    color: #aeb2aa;
-    font-size: var(--font-size-small);
-  }
-  select {
-    min-width: 150px;
-    padding: 7px 28px 7px 9px;
-    border: 1px solid #44483f;
-    border-radius: 5px;
-    background: #2d302b;
-    color: white;
-  }
-}
-.modes {
-  display: flex;
-  width: 344px;
-  margin: 0 auto 23px;
-  padding: 4px;
-  border-radius: 8px;
-  background: #e8e7e1;
-  button {
-    flex: 1;
-    padding: 9px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: $muted;
-    font-weight: 700;
-  }
-  button small {
-    display: block;
-    font: 500 var(--font-size-small) var(--font-family-mono);
-    letter-spacing: 1.5px;
-  }
-  button.on {
-    background: var(--surface-color);
-    color: $ink;
-    box-shadow: 0 2px 9px #0001;
-  }
-}
-.case-select {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  max-width: 780px;
-  margin: 0 auto 12px;
-  padding: 12px 15px;
+  padding: 4px 10px;
   border: 1px solid $line;
   border-radius: 8px;
   background: var(--surface-color);
+
+  > div {
+    display: none;
+  }
+
+  label {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 7px;
+    color: $muted;
+    font-size: var(--font-size-small);
+  }
+
+  select {
+    min-width: 0;
+    max-width: 210px;
+    padding: 5px 24px 5px 7px;
+    border: 0;
+    background: transparent;
+    color: $ink;
+    font-weight: 700;
+  }
+}
+
+.modes {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid $line;
+  border-radius: 8px;
+  background: var(--surface-muted-color);
+
+  button {
+    padding: 5px 10px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: $muted;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  button small {
+    display: inline;
+    margin-left: 3px;
+    font: 500 10px var(--font-family-mono);
+  }
+
+  button.on {
+    background: var(--surface-color);
+    color: $ink;
+    box-shadow: 0 1px 5px #0001;
+  }
+}
+
+.case-select {
+  grid-column: 1 / -1;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  padding: 4px 10px;
+  border: 1px solid $line;
+  border-radius: 7px;
+  background: var(--surface-color);
   color: $muted;
   font-size: var(--font-size-small);
+
   select {
+    min-width: 0;
     border: 0;
     font-weight: 700;
   }
   code {
+    overflow: hidden;
     margin-left: auto;
     color: $ink;
     font-size: var(--font-size-small);
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
+
 @media (max-width: 620px) {
+  :host {
+    gap: 4px;
+  }
   .record-context {
-    align-items: flex-start;
+    padding-inline: 5px;
   }
   .record-context label {
-    flex-direction: column;
-    align-items: flex-start;
+    gap: 0;
+  }
+  .record-context label {
+    font-size: 0;
   }
   .record-context select {
-    min-width: 130px;
+    max-width: 120px;
+    padding-inline: 4px;
+    font-size: var(--font-size-small);
   }
-  .case-select {
-    flex-wrap: wrap;
+  .modes button {
+    padding-inline: 7px;
+  }
+  .modes button small {
+    display: none;
   }
   .case-select code {
-    width: 100%;
-    margin: 0;
+    display: none;
+  }
+  .case-select select {
+    max-width: calc(100vw - 130px);
   }
 }

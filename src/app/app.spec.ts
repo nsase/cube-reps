@@ -42,6 +42,18 @@ describe('App', () => {
     expect(compiled.querySelector('h1')?.textContent).toContain('PRACTICE SESSION');
   });
 
+  it('タイマー画面に主要な操作要素を同時に構成する', async () => {
+    const fixture = TestBed.createComponent(App);
+    await TestBed.inject(Router).navigateByUrl('/timer');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(fixture.nativeElement.querySelector('app-timer-settings')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-timer-clock strong')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-timer-scramble p')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-timer-scramble app-cube-net')).toBeTruthy();
+  });
+
   it('履歴のURLへ移動してルートdataの見出しを表示する', async () => {
     const fixture = TestBed.createComponent(App);
     await TestBed.inject(Router).navigateByUrl('/history');

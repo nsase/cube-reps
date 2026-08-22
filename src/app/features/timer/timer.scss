@@ -1,5 +1,80 @@
 :host {
   display: block;
-  max-width: 1120px;
+  width: min(100%, 1400px);
+  height: calc(100dvh - 178px);
   margin: auto;
+}
+
+section {
+  display: grid;
+  height: 100%;
+  min-height: 0;
+  grid-template-areas:
+    'settings'
+    'clock'
+    'scramble'
+    'stats';
+  grid-template-rows: auto minmax(120px, 1fr) auto auto;
+  gap: clamp(8px, 1.4vh, 16px);
+}
+
+app-timer-settings {
+  grid-area: settings;
+}
+app-timer-clock {
+  grid-area: clock;
+  min-height: 0;
+}
+app-timer-scramble {
+  grid-area: scramble;
+  min-height: 0;
+}
+app-timer-stats {
+  grid-area: stats;
+}
+
+@media (min-width: 1050px) and (min-aspect-ratio: 4 / 3) {
+  section {
+    grid-template-areas:
+      'settings settings'
+      'clock scramble'
+      'stats stats';
+    grid-template-columns: minmax(0, 1fr) clamp(260px, 28vw, 350px);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+}
+
+@media (max-width: 900px) {
+  :host {
+    height: calc(100dvh - 140px);
+  }
+}
+
+@media (max-width: 620px) {
+  :host {
+    height: calc(100dvh - 179px);
+  }
+}
+
+@media (max-height: 720px) {
+  section {
+    grid-template-areas:
+      'settings'
+      'clock'
+      'scramble';
+    grid-template-rows: auto minmax(100px, 1fr) auto;
+  }
+  app-timer-stats {
+    display: none;
+  }
+}
+
+@media (min-width: 1050px) and (min-aspect-ratio: 4 / 3) and (max-height: 720px) {
+  section {
+    grid-template-areas:
+      'settings settings'
+      'clock scramble';
+    grid-template-columns: minmax(0, 1fr) clamp(240px, 28vw, 330px);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
 }
