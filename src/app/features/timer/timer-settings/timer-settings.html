@@ -16,18 +16,21 @@
   <button [class.on]="store.category() === 'full'" (click)="store.setCategory('full')">
     3×3<small>{{ 'timer.fullSolve' | transloco }}</small>
   </button>
+  <button [class.on]="store.category() === 'oll'" (click)="store.setCategory('oll')">
+    OLL<small>{{ 'timer.caseDrill' | transloco }}</small>
+  </button>
   <button [class.on]="store.category() === 'pll'" (click)="store.setCategory('pll')">
     PLL<small>{{ 'timer.caseDrill' | transloco }}</small>
   </button>
 </div>
-@if (store.category() === 'pll') {
+@if (store.category() !== 'full') {
   <div class="case-select">
     {{ 'timer.practiceCase' | transloco }}
     <select [(ngModel)]="store.selectedCase" (change)="store.newScramble()">
-      @for (item of store.pllCases; track item.number; let index = $index) {
+      @for (item of store.drillCases(); track item.number; let index = $index) {
         <option [ngValue]="index">{{ item.number }} — {{ item.name }}</option>
       }
     </select>
-    <code>{{ algorithmLibrary.primaryNotation(store.pllCases[store.selectedCase()]) }}</code>
+    <code>{{ algorithmLibrary.primaryNotation(store.drillCases()[store.selectedCase()]) }}</code>
   </div>
 }

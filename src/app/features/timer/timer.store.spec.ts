@@ -47,14 +47,14 @@ describe('TimerStore', () => {
     store.press();
 
     expect(cube.solves()[0].category).toBe('pll');
-    expect(cube.solves()[0].caseName).toBe(store.pllCases[0].number);
+    expect(cube.solves()[0].caseName).toBe(store.drillCases()[0].number);
   });
 
   it('PLLケースは一覧の先頭を初期選択する', () => {
     const store = TestBed.inject(TimerStore);
 
     expect(store.selectedCase()).toBe(0);
-    expect(store.pllCases[store.selectedCase()].number).toBe('Aa');
+    expect(store.drillCases()[store.selectedCase()].number).toBe('Aa');
   });
 
   it('PLLモードでは選択ケースの代表手順を反転した固定スクランブルを使う', () => {
@@ -62,7 +62,7 @@ describe('TimerStore', () => {
     store.setCategory('pll');
 
     expect(store.scramble()).toBe(
-      invertAlgorithm(store.pllCases[store.selectedCase()].algorithms[0]),
+      invertAlgorithm(store.drillCases()[store.selectedCase()].algorithms[0]),
     );
 
     store.selectedCase.set(0);
@@ -70,7 +70,7 @@ describe('TimerStore', () => {
     const scramble = store.scramble();
     store.newScramble();
 
-    expect(scramble).toBe(invertAlgorithm(store.pllCases[0].algorithms[0]));
+    expect(scramble).toBe(invertAlgorithm(store.drillCases()[0].algorithms[0]));
     expect(store.scramble()).toBe(scramble);
   });
 
@@ -79,8 +79,42 @@ describe('TimerStore', () => {
     store.setCategory('pll');
     const solvedPattern = topLayerPatternFromScramble('');
 
-    for (const item of store.pllCases) {
-      store.selectedCase.set(store.pllCases.indexOf(item));
+    for (const item of store.drillCases()) {
+      store.selectedCase.set(store.drillCases().indexOf(item));
+      store.newScramble();
+      const scrambledPattern = topLayerPatternFromScramble(store.scramble());
+      expect.soft(
+        topLayerPatternAfterAlgorithm(scrambledPattern, item.algorithms[0]),
+        item.number,
+      ).toEqual(solvedPattern);
+    }
+  });
+
+  it('OLLモードでは先頭ケースの固定スクランブルとケース番号を記録する', () => {
+    const store = TestBed.inject(TimerStore);
+    const cube = TestBed.inject(CubeService);
+    store.setCategory('oll');
+    const item = store.drillCases()[0];
+
+    expect(item.number).toBe('01');
+    expect(store.scramble()).toBe(invertAlgorithm(item.algorithms[0]));
+
+    store.press();
+    store.release();
+    store.elapsed.set(1500);
+    store.press();
+
+    expect(cube.solves()[0].category).toBe('oll');
+    expect(cube.solves()[0].caseName).toBe('01');
+  });
+
+  it('OLLの固定スクランブルは全ケースで代表手順により完成状態へ戻る', () => {
+    const store = TestBed.inject(TimerStore);
+    store.setCategory('oll');
+    const solvedPattern = topLayerPatternFromScramble('');
+
+    for (const item of store.drillCases()) {
+      store.selectedCase.set(store.drillCases().indexOf(item));
       store.newScramble();
       const scrambledPattern = topLayerPatternFromScramble(store.scramble());
       expect.soft(

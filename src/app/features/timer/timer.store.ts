@@ -1,5 +1,5 @@
-import { inject, Injectable, OnDestroy, signal } from '@angular/core';
-import { PLL_CASES } from '../../core/algorithm-cases';
+import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
+import { OLL_CASES, PLL_CASES } from '../../core/algorithm-cases';
 import { CubeService } from '../../core/cube';
 import { Penalty, Solve, SolveCategory } from '../../core/cube.models';
 import { invertAlgorithm } from '../../core/cube-state';
@@ -20,10 +20,10 @@ export class TimerStore implements OnDestroy {
   readonly scramble = signal(this.cube.createScramble());
   /** 操作対象として表示する直前の計測結果。 */
   readonly completedSolve = signal<Solve | undefined>(undefined);
-  /** PLL練習で選択中のケース位置。 */
+  /** OLL・PLL練習で選択中のケース位置。 */
   readonly selectedCase = signal(0);
-  /** PLLケース選択肢。 */
-  readonly pllCases = PLL_CASES;
+  /** 現在のドリル種別に対応するケース選択肢。 */
+  readonly drillCases = computed(() => (this.category() === 'oll' ? OLL_CASES : PLL_CASES));
 
   /** 計測表示を更新するタイマーID。 */
   private interval?: number;
@@ -66,12 +66,13 @@ export class TimerStore implements OnDestroy {
   /** solveカテゴリーを変更してタイマーを初期状態へ戻す。 */
   setCategory(category: SolveCategory): void {
     this.category.set(category);
+    this.selectedCase.set(0);
     this.cube.activeSolveCategory.set(category);
     this.reset();
     this.scramble.set(this.createScrambleForSelection());
   }
 
-  /** 現在のカテゴリーとPLLケースに対応するスクランブルを設定する。 */
+  /** 現在のカテゴリーとドリルケースに対応するスクランブルを設定する。 */
   newScramble(): void {
     this.scramble.set(this.createScrambleForSelection());
     this.completedSolve.set(undefined);
@@ -125,7 +126,7 @@ export class TimerStore implements OnDestroy {
       this.elapsed(),
       this.scramble(),
       this.category(),
-      this.category() === 'pll' ? PLL_CASES[this.selectedCase()].number : undefined,
+      this.category() === 'full' ? undefined : this.drillCases()[this.selectedCase()].number,
     );
     this.state.set('idle');
     this.scramble.set(this.createScrambleForSelection());
@@ -141,13 +142,13 @@ export class TimerStore implements OnDestroy {
   }
 
   /**
-   * FULL SOLVEではランダム手順、PLL DRILLでは選択ケースを作る固定手順を返す。
+   * FULL SOLVEではランダム手順、OLL・PLL DRILLでは選択ケースを作る固定手順を返す。
    *
    * @returns 現在の練習対象に対応するスクランブル
    */
   private createScrambleForSelection(): string {
     if (this.category() === 'full') return this.cube.createScramble();
-    const item = PLL_CASES[this.selectedCase()];
+    const item = this.drillCases()[this.selectedCase()];
     return invertAlgorithm(item.algorithms[0]);
   }
 

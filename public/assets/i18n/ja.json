@@ -6,7 +6,7 @@
     "history": "YOUR PROGRESS"
   },
   "nav": { "timer": "タイマー", "history": "記録", "todaySolves": "今日のソルブ" },
-  "solveCategories": { "full": "フルソルブ", "pll": "PLL練習" },
+  "solveCategories": { "full": "フルソルブ", "oll": "OLL練習", "pll": "PLL練習" },
   "common": {
     "ok": "OK",
     "cancel": "キャンセル",
