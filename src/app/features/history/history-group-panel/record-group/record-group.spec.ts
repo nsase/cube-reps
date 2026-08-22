@@ -1,24 +1,23 @@
 import { TestBed } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
 import { CubeService } from '../../../../core/cube';
-import { DialogButtons } from '../../../../shared/confirm-dialog/confirm-dialog.buttons';
+import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
 import { HistoryStore } from '../../history.store';
 import { RecordGroup } from './record-group';
 
 describe('RecordGroup', () => {
-  /** 削除選択を返すMatDialogのテスト用代替。 */
-  const dialog = {
-    open: vi.fn(() => ({ afterClosed: () => of(DialogButtons.delete.id) })),
+  /** 削除確認済みを返すConfirmServiceのテスト用代替。 */
+  const confirm = {
+    delete: vi.fn(() => of(true)),
   };
 
   beforeEach(async () => {
     localStorage.clear();
-    dialog.open.mockClear();
+    confirm.delete.mockClear();
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [RecordGroup],
-      providers: [HistoryStore, { provide: MatDialog, useValue: dialog }],
+      providers: [HistoryStore, { provide: ConfirmService, useValue: confirm }],
     }).compileComponents();
   });
 
@@ -47,7 +46,7 @@ describe('RecordGroup', () => {
 
     (fixture.nativeElement.querySelector('.group-delete') as HTMLButtonElement).click();
 
-    expect(dialog.open).toHaveBeenCalledOnce();
+    expect(confirm.delete).toHaveBeenCalledOnce();
     expect(cube.groups().some(({ id }) => id === group.id)).toBe(false);
     expect(store.selectedGroup()).toBe('all');
   });
