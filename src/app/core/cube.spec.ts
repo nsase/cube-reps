@@ -65,6 +65,16 @@ describe('CubeService record statistics', () => {
     ]);
   });
 
+  it('ユーザー作成カテゴリーの名前を変更し、既定カテゴリーは変更しない', () => {
+    const cube = TestBed.inject(CubeService);
+    const group = cube.addGroup('変更前')!;
+
+    expect(cube.renameGroup(group.id, ' 変更後 ')).toBe(true);
+    expect(cube.groupName(group.id)).toBe('変更後');
+    expect(cube.renameGroup('unclassified', '変更不可')).toBe(false);
+    expect(cube.groupName('unclassified')).not.toBe('変更不可');
+  });
+
   it('fullとpllを同じ記録先でも別々に集計する', () => {
     const cube = TestBed.inject(CubeService);
     cube.solves.set([

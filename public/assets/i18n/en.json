@@ -10,6 +10,7 @@
   "common": {
     "ok": "OK",
     "cancel": "Cancel",
+    "save": "Save",
     "yes": "Yes",
     "no": "No",
     "delete": "Delete",
@@ -64,6 +65,7 @@
     "create": "Create",
     "solveCount": "{{count}} solves",
     "deleteGroup": "Delete group",
+    "renameGroup": "Rename group",
     "deleteGroupTitle": "Delete this group?",
     "deleteGroupMessage": "Delete “{{name}}”?\nThis action cannot be undone.",
     "recordFilter": "Records to show",
