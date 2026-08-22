@@ -50,6 +50,13 @@ describe('TimerStore', () => {
     expect(cube.solves()[0].caseName).toBe(store.pllCases[0].number);
   });
 
+  it('PLLケースは一覧の先頭を初期選択する', () => {
+    const store = TestBed.inject(TimerStore);
+
+    expect(store.selectedCase()).toBe(0);
+    expect(store.pllCases[store.selectedCase()].number).toBe('Aa');
+  });
+
   it('PLLモードでは選択ケースの代表手順を反転した固定スクランブルを使う', () => {
     const store = TestBed.inject(TimerStore);
     store.setCategory('pll');
