@@ -46,4 +46,52 @@ describe('HistoryStore', () => {
 
     expect(store.filteredSolves().map(({ category }) => category)).toEqual(['pll']);
   });
+
+  it('絞り込み済み履歴を100件ずつ返す', () => {
+    const cube = TestBed.inject(CubeService);
+    const store = TestBed.inject(HistoryStore);
+    cube.solves.set(
+      Array.from({ length: 205 }, (_, index) => ({
+        id: index + 1,
+        time: 1000,
+        scramble: 'R U',
+        date: new Date(index).toISOString(),
+        category: 'full' as const,
+        groupId: 'unclassified',
+        penalty: 'none' as const,
+      })),
+    );
+
+    expect(store.pagedSolves()).toHaveLength(100);
+
+    store.setPage(2);
+
+    expect(store.pagedSolves()).toHaveLength(5);
+    expect(store.pagedSolves()[0].id).toBe(201);
+  });
+
+  it('絞り込み変更と最終ページ削除時に有効なページへ戻る', () => {
+    const cube = TestBed.inject(CubeService);
+    const store = TestBed.inject(HistoryStore);
+    cube.solves.set(
+      Array.from({ length: 101 }, (_, index) => ({
+        id: index + 1,
+        time: 1000,
+        scramble: 'R U',
+        date: new Date(index).toISOString(),
+        category: 'full' as const,
+        groupId: 'unclassified',
+        penalty: 'none' as const,
+      })),
+    );
+    store.setPage(1);
+    cube.removeSolve(101);
+    TestBed.tick();
+    expect(store.pageIndex()).toBe(0);
+
+    store.setPage(1);
+    store.selectedCategory.set('pll');
+    TestBed.tick();
+    expect(store.pageIndex()).toBe(0);
+  });
 });
