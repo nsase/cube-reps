@@ -34,12 +34,12 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build -- --base-href /cube-flow/
+        run: npm run build -- --base-href /cube-stride/
 
       - name: Add GitHub Pages fallback
         run: |
-          cp dist/cube-flow/browser/index.html dist/cube-flow/browser/404.html
-          touch dist/cube-flow/browser/.nojekyll
+          cp dist/cube-stride/browser/index.html dist/cube-stride/browser/404.html
+          touch dist/cube-stride/browser/.nojekyll
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -47,7 +47,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist/cube-flow/browser
+          path: dist/cube-stride/browser
 
   deploy:
     environment:
