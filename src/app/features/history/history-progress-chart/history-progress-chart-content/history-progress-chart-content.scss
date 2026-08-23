@@ -1,5 +1,4 @@
-.chart-scroll {
-  overflow-x: auto;
+.chart-container {
   padding-top: 8px;
 }
 
@@ -26,16 +25,10 @@
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
 }
-.point-label,
 .axis-label {
   fill: var(--text-muted-color);
   font-family: var(--font-family-mono);
   font-size: var(--font-size-small);
-}
-.point-label {
-  text-anchor: middle;
-}
-.axis-label {
   text-anchor: end;
 }
 .result {
