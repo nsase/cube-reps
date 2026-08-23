@@ -5,7 +5,8 @@
 
 .plot {
   display: block;
-  width: var(--chart-width);
+  width: 100%;
+  min-width: var(--chart-min-width);
   height: 240px;
 }
 
