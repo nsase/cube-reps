@@ -225,17 +225,14 @@ export class CubeService {
       : `${this.formatTime(this.finalTime(solve))}${solve.penalty === '+2' ? '+' : ''}`;
   }
 
-  /** @returns 同じ面が連続しない20手のランダムスクランブル */
-  createScramble(): string {
-    const moves = ['R', 'L', 'U', 'D', 'F', 'B'];
-    const suffixes = ['', "'", '2'];
-    const result: string[] = [];
-    while (result.length < 20) {
-      const move = moves[Math.floor(Math.random() * moves.length)];
-      if (result.at(-1)?.[0] !== move)
-        result.push(move + suffixes[Math.floor(Math.random() * suffixes.length)]);
-    }
-    return result.join(' ');
+  /** @returns 3×3の合法状態を均等に選んだrandom-state scramble */
+  async createScramble(): Promise<string> {
+    const [{ randomScrambleForEvent }, { setSearchDebug }] = await Promise.all([
+      import('cubing/scramble'),
+      import('cubing/search'),
+    ]);
+    setSearchDebug({ logPerf: false });
+    return (await randomScrambleForEvent('333')).toString();
   }
 
   /** 指定件数が揃っている場合に、最新記録からAverageを計算する。 */
