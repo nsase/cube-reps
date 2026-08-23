@@ -1,10 +1,10 @@
-# Cube Flow
+# CubeStride
 
 <p align="center">
-  <img src="public/cube-flow-mark.svg" alt="Cube Flow logo" width="96" height="96">
+  <img src="public/cube-stride-mark.svg" alt="CubeStride logo" width="96" height="96">
 </p>
 
-Cube Flowは、スピードキューブの計測とOLL・PLL練習をブラウザ上で完結できるWebアプリです。計測記録や設定はブラウザ内に保存されるため、アカウント登録やサーバー接続は必要ありません。
+CubeStrideは、スピードキューブの計測とOLL・PLL練習をブラウザ上で完結できるWebアプリです。計測記録や設定はブラウザ内に保存されるため、アカウント登録やサーバー接続は必要ありません。
 
 ## 主な機能
 
@@ -49,7 +49,7 @@ npm start
 | `npm test`                | Vitestでテストを実行             |
 | `npm run prettier:format` | プロジェクト全体をPrettierで整形 |
 
-ビルド成果物は`dist/cube-flow`へ出力されます。
+ビルド成果物は`dist/cube-stride`へ出力されます。
 
 ## データの保存
 
@@ -60,7 +60,7 @@ npm start
 - OLL・PLLの追加手順とお気に入り
 - 表示言語
 
-データは利用中のブラウザとオリジンに紐づきます。ブラウザのサイトデータを削除すると、Cube Flowの記録も削除されます。現在、クラウド同期やエクスポート機能はありません。
+データは利用中のブラウザとオリジンに紐づきます。ブラウザのサイトデータを削除すると、CubeStrideの記録も削除されます。現在、クラウド同期やエクスポート機能はありません。
 
 ## 技術構成
 
