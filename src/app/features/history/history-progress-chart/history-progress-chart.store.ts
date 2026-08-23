@@ -30,9 +30,6 @@ export class HistoryProgressChartStore {
   private readonly cube = inject(CubeService);
   /** Historyコンポーネントツリー内で共有する画面状態。 */
   private readonly historyStore = inject(HistoryStore);
-  /** 親コンテナ内へ収められるグラフ幅。 */
-  private readonly containerWidth = signal(0);
-
   /** グラフへ表示する記録数。 */
   readonly displayRange = signal<ChartRange>(100);
   /** グラフで選択できる表示件数。 */
@@ -84,10 +81,8 @@ export class HistoryProgressChartStore {
     return { minimum: Math.max(minimum - padding, 0), maximum: maximum + padding };
   });
 
-  /** 記録数と親コンテナ幅から決定するグラフ幅。 */
-  readonly chartWidth = computed(() =>
-    Math.max(this.points().length * 64 + 80, this.containerWidth()),
-  );
+  /** 記録数から決定するデータ表示に必要な最小幅。 */
+  readonly minimumChartWidth = computed(() => this.points().length * 64 + 80);
   /** グラフの上端座標。 */
   readonly plotTop = 12;
   /** グラフの下端座標。 */
@@ -104,11 +99,6 @@ export class HistoryProgressChartStore {
     });
   });
 
-  /** @param width 横スクロール領域の表示幅 */
-  setContainerWidth(width: number): void {
-    this.containerWidth.set(width);
-  }
-
   /** 指定系列の集計値を返す。 */
   value(point: ProgressPoint, series: ProgressSeries): number | undefined {
     return point[series];
@@ -122,7 +112,7 @@ export class HistoryProgressChartStore {
   /** 計測位置を横軸座標へ変換する。 */
   xPosition(index: number): number {
     const pointCount = this.points().length;
-    const plotWidth = this.chartWidth() - 80;
+    const plotWidth = this.minimumChartWidth() - 80;
     if (pointCount <= 1) return plotWidth / 2;
     return 32 + (index * (plotWidth - 64)) / (pointCount - 1);
   }

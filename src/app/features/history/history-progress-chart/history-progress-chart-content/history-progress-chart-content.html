@@ -1,8 +1,9 @@
-<div #chartScroll class="chart-scroll">
+<div class="chart-scroll">
   <svg
     class="plot"
-    [style.--chart-width.px]="store.chartWidth()"
-    [attr.viewBox]="'0 0 ' + store.chartWidth() + ' 240'"
+    [style.--chart-min-width.px]="store.minimumChartWidth()"
+    [attr.viewBox]="'0 0 ' + store.minimumChartWidth() + ' 240'"
+    preserveAspectRatio="none"
     role="img"
     [attr.aria-label]="'history.progressChartDescription' | transloco"
   >
@@ -10,11 +11,11 @@
       <line
         class="grid-line"
         x1="0"
-        [attr.x2]="store.chartWidth() - 72"
+        [attr.x2]="store.minimumChartWidth() - 72"
         [attr.y1]="tick.y"
         [attr.y2]="tick.y"
       />
-      <text class="axis-label" [attr.x]="store.chartWidth() - 8" [attr.y]="tick.y + 4">
+      <text class="axis-label" [attr.x]="store.minimumChartWidth() - 8" [attr.y]="tick.y + 4">
         {{ store.formatValue(tick.value) }}
       </text>
     }
