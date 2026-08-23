@@ -18,13 +18,13 @@ export class Timer {
   /** Timerコンポーネントツリー内で共有する計測状態。 */
   private readonly store = inject(TimerStore);
 
-  /** スペース押下で準備状態へ入り、計測中の場合は停止する。 */
+  /** スペース押下で長押し状態へ入り、計測中の場合は停止する。 */
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     this.store.keyDown(event);
   }
 
-  /** スペースを離したとき、準備状態であれば計測を開始する。 */
+  /** スペースを離したとき、長押し完了後であれば計測を開始する。 */
   @HostListener('window:keyup', ['$event'])
   onKeyUp(event: KeyboardEvent): void {
     this.store.keyUp(event);
