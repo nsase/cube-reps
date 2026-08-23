@@ -4,65 +4,69 @@
   <img src="public/cube-stride-mark.svg" alt="CubeStride logo" width="96" height="96">
 </p>
 
-CubeStrideは、スピードキューブの計測とOLL・PLL練習をブラウザ上で完結できるWebアプリです。計測記録や設定はブラウザ内に保存されるため、アカウント登録やサーバー接続は必要ありません。
+**English** | [日本語](README.ja.md)
 
-## 主な機能
+CubeStride is a browser-based Rubik's Cube timer and training app for full solves, OLL, and PLL. Solve records and preferences are stored in your browser, so no account or server connection is required.
 
-- フルソルブ、OLL、PLLのタイム計測
-- 20手のランダムスクランブルとキューブ展開図の表示
-- OLL 57ケース、PLL 21ケースの一覧・検索
-- ケース別ドリルと選択ケースに対応したスクランブル生成
-- 手順の追加、削除、コピー、お気に入り設定
-- 記録グループの作成・名称変更・削除
-- ベスト、全体平均、Ao5、Ao12、Ao50、Ao100の集計
-- 計測記録への`+2`・`DNF`ペナルティ設定
-- 日本語・英語の表示切り替え
-- PC、タブレット、スマートフォン対応
+[Open CubeStride](https://nsase.github.io/cube-stride/)
 
-## タイマーの使い方
+## Features
 
-キーボードではスペースキー、タッチ端末では画面上のタイマーを使用します。
+- Timers for full solves, OLL, and PLL
+- Random-state scrambles with a cube net preview
+- Searchable references for all 57 OLL cases and 21 PLL cases
+- Case-specific drills with scrambles for the selected case
+- Add, delete, copy, and favorite algorithms
+- Create, rename, and delete record groups
+- Statistics for best, overall average, Ao5, Ao12, Ao50, and Ao100
+- `+2` and `DNF` penalties for solve records
+- English and Japanese interfaces
+- Responsive layouts for desktop, tablet, and mobile devices
 
-1. スペースキーまたはタイマーを押し続けて準備状態にします。
-2. 離すと計測を開始します。
-3. 計測中にもう一度押すと停止し、記録を保存します。
+## Using the timer
 
-停止後は、直前の記録へのペナルティ設定、削除、同じスクランブルでの再計測ができます。
+Use the space bar with a keyboard or the on-screen timer on a touch device.
 
-## セットアップ
+1. Hold the space bar or timer until it enters the ready state.
+2. Release it to start timing.
+3. Press again while the timer is running to stop and save the solve.
 
-Node.jsとnpmを用意し、リポジトリ内で次のコマンドを実行します。
+After stopping, you can apply a penalty, delete the latest solve, or retry the same scramble.
+
+## Setup
+
+Install Node.js and npm, then run the following commands in the repository:
 
 ```bash
 npm install
 npm start
 ```
 
-開発サーバーは通常、[http://localhost:4200](http://localhost:4200)で起動します。
+The development server normally starts at [http://localhost:4200](http://localhost:4200).
 
-## 開発コマンド
+## Development commands
 
-| コマンド                  | 内容                             |
+| Command                   | Description                      |
 | ------------------------- | -------------------------------- |
-| `npm start`               | 開発サーバーを起動               |
-| `npm run build`           | プロダクションビルドを作成       |
-| `npm test`                | Vitestでテストを実行             |
-| `npm run prettier:format` | プロジェクト全体をPrettierで整形 |
+| `npm start`               | Start the development server     |
+| `npm run build`           | Create a production build        |
+| `npm test`                | Run tests with Vitest            |
+| `npm run prettier:format` | Format the project with Prettier |
 
-ビルド成果物は`dist/cube-stride`へ出力されます。
+Build output is written to `dist/cube-stride`.
 
-## データの保存
+## Data storage
 
-次のデータはブラウザの`localStorage`へ保存されます。
+The following data is stored in your browser's `localStorage`:
 
-- 計測記録とペナルティ
-- 記録グループと現在の記録先
-- OLL・PLLの追加手順とお気に入り
-- 表示言語
+- Solve records and penalties
+- Record groups and the active record destination
+- Custom and favorite OLL and PLL algorithms
+- Display language
 
-データは利用中のブラウザとオリジンに紐づきます。ブラウザのサイトデータを削除すると、CubeStrideの記録も削除されます。現在、クラウド同期やエクスポート機能はありません。
+Data is tied to the browser and origin in use. Clearing the site's browser data also deletes CubeStride records. Cloud synchronization and data export are not currently available.
 
-## 技術構成
+## Technology
 
 - Angular 21
 - Angular Material
@@ -71,17 +75,17 @@ npm start
 - Vitest
 - SCSS
 
-各画面はStandalone Componentとして構成し、ルート単位で遅延読み込みしています。アプリ全体の永続データはrootサービス、タイマーや履歴画面の一時状態は画面スコープのSignal Storeで管理しています。
+Each page uses standalone components and route-level lazy loading. Persistent application data is managed by root services, while temporary timer and history state is managed by screen-scoped Signal Stores.
 
-## ディレクトリ構成
+## Project structure
 
 ```text
 src/app/
-├── core/       # キューブ、集計、手順、永続データ
-├── features/   # タイマー、手順一覧、履歴の各画面
-└── shared/     # キューブ表示や確認ダイアログなどの共通UI
+├── core/       # Cube logic, statistics, algorithms, and persistent data
+├── features/   # Timer, algorithm library, and history pages
+└── shared/     # Shared UI such as cube views and confirmation dialogs
 ```
 
-## ライセンス
+## License
 
-[0BSD（Zero-Clause BSD）](LICENSE)で公開しています。個人・商用を問わず、利用、複製、変更、再配布が可能です。
+CubeStride is available under the [0BSD (Zero-Clause BSD) License](LICENSE). You may use, copy, modify, and redistribute it for personal or commercial purposes.
