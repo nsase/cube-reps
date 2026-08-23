@@ -32,7 +32,7 @@ $muted: var(--text-muted-color);
 
 .summaries {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 13px;
   margin-bottom: 16px;
 
@@ -47,6 +47,7 @@ $muted: var(--text-muted-color);
 
   strong {
     display: block;
+    min-width: 0;
     color: $ink;
     font: 600 var(--font-size-display) var(--font-family-heading);
   }
@@ -54,7 +55,7 @@ $muted: var(--text-muted-color);
 
 @media (max-width: 620px) {
   .summaries {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
   }
 
