@@ -41,3 +41,4 @@ jobs:
                 labels: ['status: merged'],
               });
               core.info(`Added status: merged to issue #${issue_number}.`);
+            }
