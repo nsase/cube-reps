@@ -20,7 +20,7 @@ interface CasePreferences {
 }
 
 /** 手順設定を保存するlocalStorageキー。 */
-const STORAGE_KEY = 'cubeflow-algorithm-preferences';
+const STORAGE_KEY = 'cube-stride.algorithm-preferences';
 
 /** ケースキーごとのユーザー設定。 */
 type AlgorithmPreferences = Record<string, CasePreferences>;

@@ -51,7 +51,7 @@ describe('CubeService record statistics', () => {
 
   it('既定カテゴリーを保存対象から除外してユーザー作成カテゴリーだけを復元する', () => {
     localStorage.setItem(
-      'cubeflow-groups',
+      'cube-stride.groups',
       JSON.stringify([
         { id: 'unclassified', name: 'Stored default', createdAt: new Date(0).toISOString() },
         { id: 'user-group', name: 'Competition', createdAt: new Date(1).toISOString() },
@@ -71,7 +71,7 @@ describe('CubeService record statistics', () => {
     cube.addGroup('Competition');
     TestBed.tick();
 
-    expect(JSON.parse(localStorage.getItem('cubeflow-groups') ?? '[]')).toEqual([
+    expect(JSON.parse(localStorage.getItem('cube-stride.groups') ?? '[]')).toEqual([
       expect.objectContaining({ name: 'Competition' }),
     ]);
   });
