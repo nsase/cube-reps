@@ -9,12 +9,15 @@ import { firstValueFrom } from 'rxjs';
 describe('App', () => {
   beforeEach(async () => {
     localStorage.clear();
+    vi.spyOn(CubeService.prototype, 'createScramble').mockResolvedValue('R U');
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [provideRouter(routes)],
     }).compileComponents();
   });
+
+  afterEach(() => vi.restoreAllMocks());
 
   it('should create the app', () => {
     const fixture = TestBed.createComponent(App);
@@ -69,6 +72,7 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl('/timer');
     fixture.detectChanges();
     await fixture.whenStable();
+    fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('app-timer-settings')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-timer-clock strong')).toBeTruthy();

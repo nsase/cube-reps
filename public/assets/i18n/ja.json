@@ -27,6 +27,8 @@
     "practiceCase": "練習ケース",
     "scramble": "SCRAMBLE",
     "refreshScramble": "スクランブルを更新",
+    "generatingScramble": "スクランブルを生成しています…",
+    "scrambleGenerationFailed": "スクランブルを生成できませんでした",
     "releaseToStart": "離してスタート",
     "tapToStop": "SPACE / タップでストップ",
     "holdSpace": "SPACEを長押し",

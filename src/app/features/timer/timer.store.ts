@@ -17,7 +17,11 @@ export class TimerStore implements OnDestroy {
   /** タイマー操作の状態。 */
   readonly state = signal<'idle' | 'ready' | 'running'>('idle');
   /** 現在表示しているスクランブル。 */
-  readonly scramble = signal(this.cube.createScramble());
+  readonly scramble = signal('');
+  /** random-state scrambleを生成している途中か。 */
+  readonly scrambleGenerating = signal(false);
+  /** スクランブル生成に失敗したか。 */
+  readonly scrambleGenerationFailed = signal(false);
   /** 操作対象として表示する直前の計測結果。 */
   readonly completedSolve = signal<Solve | undefined>(undefined);
   /** OLL・PLL練習で選択中のケース位置。 */
@@ -31,10 +35,13 @@ export class TimerStore implements OnDestroy {
   private started = 0;
   /** スペースキーのキーリピートを抑止するフラグ。 */
   private spaceDown = false;
+  /** 遅れて完了した古いスクランブル生成を破棄するための連番。 */
+  private scrambleRequest = 0;
 
-  /** 初期カテゴリーをrootサービスの集計対象へ同期する。 */
+  /** 初期カテゴリーをrootサービスへ同期し、最初のスクランブル生成を開始する。 */
   constructor() {
     this.cube.activeSolveCategory.set(this.category());
+    this.updateScramble();
   }
 
   /** スペース押下で準備状態へ入り、計測中の場合は停止する。 */
@@ -42,7 +49,8 @@ export class TimerStore implements OnDestroy {
     if (event.code !== 'Space' || this.spaceDown || this.isTyping(event)) return;
     event.preventDefault();
     this.spaceDown = true;
-    this.state() === 'running' ? this.stop() : this.state.set('ready');
+    if (this.state() === 'running') this.stop();
+    else if (this.canStart()) this.state.set('ready');
   }
 
   /** スペースを離したとき、準備状態であれば計測を開始する。 */
@@ -55,7 +63,8 @@ export class TimerStore implements OnDestroy {
 
   /** ポインター押下で準備状態へ入り、計測中の場合は停止する。 */
   press(): void {
-    this.state() === 'running' ? this.stop() : this.state.set('ready');
+    if (this.state() === 'running') this.stop();
+    else if (this.canStart()) this.state.set('ready');
   }
 
   /** ポインターを離したとき、準備状態であれば計測を開始する。 */
@@ -69,12 +78,12 @@ export class TimerStore implements OnDestroy {
     this.selectedCase.set(0);
     this.cube.activeSolveCategory.set(category);
     this.reset();
-    this.scramble.set(this.createScrambleForSelection());
+    this.updateScramble();
   }
 
   /** 現在のカテゴリーとドリルケースに対応するスクランブルを設定する。 */
   newScramble(): void {
-    this.scramble.set(this.createScrambleForSelection());
+    this.updateScramble();
     this.completedSolve.set(undefined);
   }
 
@@ -98,6 +107,9 @@ export class TimerStore implements OnDestroy {
   retryCompletedSolve(): void {
     const solve = this.completedSolve();
     if (!solve) return;
+    this.scrambleRequest++;
+    this.scrambleGenerating.set(false);
+    this.scrambleGenerationFailed.set(false);
     this.scramble.set(solve.scramble);
     this.completedSolve.set(undefined);
   }
@@ -129,7 +141,7 @@ export class TimerStore implements OnDestroy {
       this.category() === 'full' ? undefined : this.drillCases()[this.selectedCase()].number,
     );
     this.state.set('idle');
-    this.scramble.set(this.createScrambleForSelection());
+    this.updateScramble();
     this.completedSolve.set(solve);
   }
 
@@ -141,15 +153,39 @@ export class TimerStore implements OnDestroy {
     this.completedSolve.set(undefined);
   }
 
-  /**
-   * FULL SOLVEではランダム手順、OLL・PLL DRILLでは選択ケースを作る固定手順を返す。
-   *
-   * @returns 現在の練習対象に対応するスクランブル
-   */
-  private createScrambleForSelection(): string {
-    if (this.category() === 'full') return this.cube.createScramble();
+  /** 現在のカテゴリーに対応するスクランブルを生成し、最新リクエストだけを反映する。 */
+  private updateScramble(): void {
+    const request = ++this.scrambleRequest;
+    this.scrambleGenerationFailed.set(false);
+    if (this.category() !== 'full') {
+      this.scrambleGenerating.set(false);
+      this.scramble.set(this.createDrillScramble());
+      return;
+    }
+    this.scrambleGenerating.set(true);
+    void this.cube
+      .createScramble()
+      .then((scramble) => {
+        if (request !== this.scrambleRequest) return;
+        this.scramble.set(scramble);
+        this.scrambleGenerating.set(false);
+      })
+      .catch(() => {
+        if (request !== this.scrambleRequest) return;
+        this.scrambleGenerating.set(false);
+        this.scrambleGenerationFailed.set(true);
+      });
+  }
+
+  /** @returns 選択中のOLL・PLLケースを作る固定スクランブル */
+  private createDrillScramble(): string {
     const item = this.drillCases()[this.selectedCase()];
     return invertAlgorithm(item.algorithms[0]);
+  }
+
+  /** @returns 完成したスクランブルがあり、計測開始できる場合は`true` */
+  private canStart(): boolean {
+    return !this.scrambleGenerating() && !this.scrambleGenerationFailed() && !!this.scramble();
   }
 
   /** @returns キーイベントの発生元が文字入力要素の場合は`true` */
