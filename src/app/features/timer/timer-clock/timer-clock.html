@@ -6,18 +6,23 @@
   (pointerup)="store.release()"
   (pointercancel)="store.cancelPress()"
 >
-  <small>{{
-    (store.state() === 'holding'
-      ? 'timer.keepHolding'
-      : store.state() === 'ready'
-        ? 'timer.releaseToStart'
-        : store.state() === 'running'
-          ? 'timer.tapToStop'
-          : 'timer.holdSpace'
-    ) | transloco
-  }}</small>
+  @if (store.state() !== 'running') {
+    @switch (store.state()) {
+      @case ('holding') {
+        <small>{{ 'timer.keepHolding' | transloco }}</small>
+      }
+      @case ('ready') {
+        <small>{{ 'timer.releaseToStart' | transloco }}</small>
+      }
+      @default {
+        <small>{{ 'timer.holdSpace' | transloco }}</small>
+      }
+    }
+  }
   <strong>{{ cube.formatTime(store.elapsed()) }}</strong
-  ><i>━━ SPACE ━━</i>
+  >@if (store.state() !== 'running') {
+    <i>━━ SPACE ━━</i>
+  }
 </div>
 @if (store.completedSolve()) {
   <app-timer-solve-actions />
