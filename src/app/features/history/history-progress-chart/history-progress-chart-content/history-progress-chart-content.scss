@@ -1,0 +1,53 @@
+.chart-scroll {
+  overflow-x: auto;
+  padding-top: 8px;
+}
+
+.plot {
+  display: block;
+  width: var(--chart-width);
+  height: 240px;
+}
+
+.grid-line {
+  stroke: var(--surface-muted-color);
+  stroke-width: 1;
+}
+.series-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.series-point {
+  fill: currentColor;
+  stroke: var(--surface-color);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.point-label,
+.axis-label {
+  fill: var(--text-muted-color);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-small);
+}
+.point-label {
+  text-anchor: middle;
+}
+.axis-label {
+  text-anchor: end;
+}
+.result {
+  color: var(--chart-result-color);
+}
+.best {
+  color: var(--chart-best-color);
+}
+.ao5 {
+  color: var(--chart-ao5-color);
+}
+.ao12 {
+  color: var(--chart-ao12-color);
+}
