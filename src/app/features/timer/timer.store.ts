@@ -39,6 +39,16 @@ export class TimerStore implements OnDestroy {
   private spaceDown = false;
   /** 遅れて完了した古いスクランブル生成を破棄するための連番。 */
   private scrambleRequest = 0;
+  /** 計測中の画面消灯を防ぐWake Lock。 */
+  private wakeLock?: WakeLockSentinel;
+  /** Wake Lockの重複要求を防ぐため、処理中の要求を保持する。 */
+  private wakeLockRequest?: Promise<void>;
+  /** 画面へ戻った際に、計測中のWake Lockを再取得する。 */
+  private readonly handleVisibilityChange = (): void => {
+    if (document.visibilityState === 'visible' && this.state() === 'running') {
+      this.requestWakeLock();
+    }
+  };
 
   /** 計測開始を許可するまでの長押し時間（ミリ秒）。 */
   private static readonly START_HOLD_DURATION = 500;
@@ -46,6 +56,7 @@ export class TimerStore implements OnDestroy {
   /** 初期カテゴリーをrootサービスへ同期し、最初のスクランブル生成を開始する。 */
   constructor() {
     this.cube.activeSolveCategory.set(this.category());
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
     this.updateScramble();
   }
 
@@ -124,10 +135,12 @@ export class TimerStore implements OnDestroy {
     this.completedSolve.set(undefined);
   }
 
-  /** Store破棄時に計測用タイマーを停止する。 */
+  /** Store破棄時に計測用タイマーとWake Lockを停止する。 */
   ngOnDestroy(): void {
     clearInterval(this.interval);
     clearTimeout(this.holdTimer);
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    this.releaseWakeLock();
   }
 
   /** 長押しを開始し、規定時間を経過したら開始可能な状態へ進める。 */
@@ -158,6 +171,7 @@ export class TimerStore implements OnDestroy {
     this.elapsed.set(0);
     this.completedSolve.set(undefined);
     this.state.set('running');
+    this.requestWakeLock();
     this.interval = window.setInterval(
       () => this.elapsed.set(performance.now() - this.started),
       10,
@@ -167,6 +181,7 @@ export class TimerStore implements OnDestroy {
   /** 計測を停止し、結果を保存して次のスクランブルを生成する。 */
   private stop(): void {
     clearInterval(this.interval);
+    this.releaseWakeLock();
     const solve = this.cube.addSolve(
       this.elapsed(),
       this.scramble(),
@@ -181,10 +196,38 @@ export class TimerStore implements OnDestroy {
   /** 保存せずに計測状態と経過時間を初期化する。 */
   private reset(): void {
     clearInterval(this.interval);
+    this.releaseWakeLock();
     clearTimeout(this.holdTimer);
     this.elapsed.set(0);
     this.state.set('idle');
     this.completedSolve.set(undefined);
+  }
+
+  /** 計測中の画面消灯を防ぐWake Lockを、利用可能な環境で取得する。 */
+  private requestWakeLock(): void {
+    if (this.wakeLockRequest || (this.wakeLock && !this.wakeLock.released)) return;
+    if (!('wakeLock' in navigator)) return;
+
+    this.wakeLockRequest = navigator.wakeLock
+      .request('screen')
+      .then((wakeLock) => {
+        if (this.state() === 'running' && document.visibilityState === 'visible') {
+          this.wakeLock = wakeLock;
+        } else {
+          void wakeLock.release();
+        }
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        this.wakeLockRequest = undefined;
+      });
+  }
+
+  /** 保持中のWake Lockを解除する。 */
+  private releaseWakeLock(): void {
+    const wakeLock = this.wakeLock;
+    this.wakeLock = undefined;
+    if (wakeLock && !wakeLock.released) void wakeLock.release().catch(() => undefined);
   }
 
   /** 現在のカテゴリーに対応するスクランブルを生成し、最新リクエストだけを反映する。 */

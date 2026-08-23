@@ -18,6 +18,8 @@ describe('TimerStore', () => {
   afterEach(() => {
     TestBed.inject(TimerStore).ngOnDestroy();
     vi.restoreAllMocks();
+    Reflect.deleteProperty(navigator, 'wakeLock');
+    Reflect.deleteProperty(document, 'visibilityState');
   });
 
   it('random-state scrambleの生成完了後に計測を開始できる', async () => {
@@ -51,6 +53,39 @@ describe('TimerStore', () => {
     expect(store.completedSolve()?.id).toBe(cube.solves()[0].id);
     expect(cube.createScramble).toHaveBeenCalledTimes(2);
     vi.useRealTimers();
+  });
+
+  it('計測中だけWake Lockを保持し、解除後に画面へ戻ると再取得する', async () => {
+    const firstRelease = vi.fn().mockResolvedValue(undefined);
+    const secondRelease = vi.fn().mockResolvedValue(undefined);
+    const firstWakeLock = { released: false, release: firstRelease } as unknown as WakeLockSentinel;
+    const secondWakeLock = {
+      released: false,
+      release: secondRelease,
+    } as unknown as WakeLockSentinel;
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce(firstWakeLock)
+      .mockResolvedValueOnce(secondWakeLock);
+    Object.defineProperty(navigator, 'wakeLock', { configurable: true, value: { request } });
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
+
+    const store = TestBed.inject(TimerStore);
+    store.setCategory('pll');
+    store.state.set('ready');
+    store.release();
+
+    await vi.waitFor(() => expect(request).toHaveBeenCalledWith('screen'));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    Object.defineProperty(firstWakeLock, 'released', { value: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2));
+
+    store.press();
+    await vi.waitFor(() => expect(secondRelease).toHaveBeenCalledOnce());
+    expect(store.state()).toBe('idle');
   });
 
   it('スクランブル生成に失敗した場合は計測を開始しない', async () => {
