@@ -24,10 +24,8 @@ import { HistoryProgressChartStore } from '../history-progress-chart.store';
 export class HistoryProgressChartContent implements AfterViewInit, OnDestroy {
   /** チャート内で共有する集計値とSVG座標。 */
   protected readonly store = inject(HistoryProgressChartStore);
-  /** 14件表示時の間隔を維持する基準件数。 */
-  private static readonly BASE_POINT_COUNT = 14;
-  /** 狭い画面でもラベルを判読できる最小間隔。 */
-  private static readonly MINIMUM_POINT_SPACING = 64;
+  /** 記録同士に確保する固定の横方向間隔。 */
+  protected readonly pointSpacing = 64;
   /** プロット領域の外側に確保する横幅。 */
   private static readonly CHART_HORIZONTAL_INSET = 80;
   /** スクロール領域の要素参照。 */
@@ -37,19 +35,11 @@ export class HistoryProgressChartContent implements AfterViewInit, OnDestroy {
   private resizeObserver?: ResizeObserver;
   /** 現在のスクロール表示領域幅。 */
   private readonly viewportWidth = signal(0);
-  /** 14件表示時を基準にした1件ごとの横方向間隔。 */
-  protected readonly pointSpacing = computed(() =>
-    Math.max(
-      HistoryProgressChartContent.MINIMUM_POINT_SPACING,
-      (this.viewportWidth() - HistoryProgressChartContent.CHART_HORIZONTAL_INSET) /
-        HistoryProgressChartContent.BASE_POINT_COUNT,
-    ),
-  );
-  /** 表示件数が基準を超えた場合だけ横へ拡張するSVG幅。 */
+  /** 固定間隔に必要な幅が表示領域を超えた場合だけ横へ拡張するSVG幅。 */
   protected readonly chartWidth = computed(() =>
     Math.max(
       this.viewportWidth(),
-      this.store.points().length * this.pointSpacing() +
+      this.store.points().length * this.pointSpacing +
         HistoryProgressChartContent.CHART_HORIZONTAL_INSET,
     ),
   );
