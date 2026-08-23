@@ -1,15 +1,19 @@
 <div
   class="clock"
+  [class.holding]="store.state() === 'holding'"
   [class.ready]="store.state() === 'ready'"
   (pointerdown)="store.press()"
   (pointerup)="store.release()"
+  (pointercancel)="store.cancelPress()"
 >
   <small>{{
-    (store.state() === 'ready'
-      ? 'timer.releaseToStart'
-      : store.state() === 'running'
-        ? 'timer.tapToStop'
-        : 'timer.holdSpace'
+    (store.state() === 'holding'
+      ? 'timer.keepHolding'
+      : store.state() === 'ready'
+        ? 'timer.releaseToStart'
+        : store.state() === 'running'
+          ? 'timer.tapToStop'
+          : 'timer.holdSpace'
     ) | transloco
   }}</small>
   <strong>{{ cube.formatTime(store.elapsed()) }}</strong
