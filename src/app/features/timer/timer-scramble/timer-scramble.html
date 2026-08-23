@@ -1,15 +1,22 @@
 <span
-  >{{ 'timer.scramble' | transloco
-  }}@if (store.category() === 'full') {
+  >{{ 'timer.scramble' | transloco }}
+  @if (store.category() === 'full') {
     <button
       mat-icon-button
       [attr.aria-label]="'timer.refreshScramble' | transloco"
       [title]="'timer.refreshScramble' | transloco"
+      [disabled]="store.scrambleGenerating()"
       (click)="store.newScramble()"
     >
       <mat-icon>refresh</mat-icon>
     </button>
-  }</span
->
-<p>{{ store.scramble() }}</p>
-<app-solve-pattern [category]="store.category()" [scramble]="store.scramble()" />
+  }
+</span>
+@if (store.scrambleGenerating()) {
+  <p>{{ 'timer.generatingScramble' | transloco }}</p>
+} @else if (store.scrambleGenerationFailed()) {
+  <p>{{ 'timer.scrambleGenerationFailed' | transloco }}</p>
+} @else {
+  <p>{{ store.scramble() }}</p>
+  <app-solve-pattern [category]="store.category()" [scramble]="store.scramble()" />
+}

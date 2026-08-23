@@ -10,17 +10,24 @@ import { TimerStore } from './timer.store';
 describe('TimerStore', () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.spyOn(CubeService.prototype, 'createScramble').mockResolvedValue('R U');
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({ providers: [TimerStore] });
   });
 
   afterEach(() => {
     TestBed.inject(TimerStore).ngOnDestroy();
+    vi.restoreAllMocks();
   });
 
-  it('押下と解放で計測を開始し、再押下で記録を保存する', () => {
+  it('random-state scrambleの生成完了後に計測を開始できる', async () => {
     const store = TestBed.inject(TimerStore);
     const cube = TestBed.inject(CubeService);
+    expect(store.scrambleGenerating()).toBe(true);
+    store.press();
+    expect(store.state()).toBe('idle');
+
+    await vi.waitFor(() => expect(store.scramble()).toBe('R U'));
 
     store.press();
     expect(store.state()).toBe('ready');
@@ -33,6 +40,17 @@ describe('TimerStore', () => {
     expect(cube.solves()[0].time).toBe(1234);
     expect(cube.solves()[0].category).toBe('full');
     expect(store.completedSolve()?.id).toBe(cube.solves()[0].id);
+    expect(cube.createScramble).toHaveBeenCalledTimes(2);
+  });
+
+  it('スクランブル生成に失敗した場合は計測を開始しない', async () => {
+    vi.mocked(CubeService.prototype.createScramble).mockRejectedValueOnce(new Error('failed'));
+    const store = TestBed.inject(TimerStore);
+
+    await vi.waitFor(() => expect(store.scrambleGenerationFailed()).toBe(true));
+    store.press();
+
+    expect(store.state()).toBe('idle');
   });
 
   it('PLLモードでは選択中のケース番号を記録へ保存する', () => {
@@ -83,10 +101,9 @@ describe('TimerStore', () => {
       store.selectedCase.set(store.drillCases().indexOf(item));
       store.newScramble();
       const scrambledPattern = topLayerPatternFromScramble(store.scramble());
-      expect.soft(
-        topLayerPatternAfterAlgorithm(scrambledPattern, item.algorithms[0]),
-        item.number,
-      ).toEqual(solvedPattern);
+      expect
+        .soft(topLayerPatternAfterAlgorithm(scrambledPattern, item.algorithms[0]), item.number)
+        .toEqual(solvedPattern);
     }
   });
 
@@ -117,10 +134,9 @@ describe('TimerStore', () => {
       store.selectedCase.set(store.drillCases().indexOf(item));
       store.newScramble();
       const scrambledPattern = topLayerPatternFromScramble(store.scramble());
-      expect.soft(
-        topLayerPatternAfterAlgorithm(scrambledPattern, item.algorithms[0]),
-        item.number,
-      ).toEqual(solvedPattern);
+      expect
+        .soft(topLayerPatternAfterAlgorithm(scrambledPattern, item.algorithms[0]), item.number)
+        .toEqual(solvedPattern);
     }
   });
 
