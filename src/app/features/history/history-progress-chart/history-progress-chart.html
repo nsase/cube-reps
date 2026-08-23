@@ -1,0 +1,9 @@
+@if (store.points().length) {
+  <section
+    class="progress-chart"
+    [attr.aria-label]="'history.progressChartDescription' | transloco"
+  >
+    <app-history-progress-chart-header />
+    <app-history-progress-chart-content />
+  </section>
+}

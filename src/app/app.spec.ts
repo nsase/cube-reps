@@ -9,12 +9,15 @@ import { firstValueFrom } from 'rxjs';
 describe('App', () => {
   beforeEach(async () => {
     localStorage.clear();
+    vi.spyOn(CubeService.prototype, 'createScramble').mockResolvedValue('R U');
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [provideRouter(routes)],
     }).compileComponents();
   });
+
+  afterEach(() => vi.restoreAllMocks());
 
   it('should create the app', () => {
     const fixture = TestBed.createComponent(App);
@@ -59,8 +62,9 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
+    expect(fixture.nativeElement.querySelector('.brand')?.textContent).toContain('CubeStride');
     const logo = fixture.nativeElement.querySelector('.brand img') as HTMLImageElement;
-    expect(logo.getAttribute('src')).toBe('cube-flow-mark.svg');
+    expect(logo.getAttribute('src')).toBe('cube-stride-mark.svg');
     expect(logo.getAttribute('alt')).toBe('');
   });
 
@@ -69,6 +73,7 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl('/timer');
     fixture.detectChanges();
     await fixture.whenStable();
+    fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('app-timer-settings')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-timer-clock strong')).toBeTruthy();
@@ -161,7 +166,7 @@ describe('App', () => {
     expect(fixture.nativeElement.querySelector('app-timer-settings strong')?.textContent).toContain(
       '未分類',
     );
-    expect(localStorage.getItem('cube-flow.language')).toBe('ja');
+    expect(localStorage.getItem('cube-stride.language')).toBe('ja');
     expect(document.documentElement.lang).toBe('ja');
   });
 });

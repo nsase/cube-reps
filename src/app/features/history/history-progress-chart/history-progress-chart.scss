@@ -1,0 +1,23 @@
+:host {
+  --chart-result-color: var(--info-color);
+  --chart-best-color: var(--success-color);
+  --chart-ao5-color: var(--primary-color-dark);
+  --chart-ao12-color: var(--danger-color);
+  display: block;
+}
+
+.progress-chart {
+  margin: 24px 0;
+  padding: 24px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--surface-color);
+}
+
+@media (max-width: 640px) {
+  .progress-chart {
+    margin: 16px 0;
+    padding: 16px;
+  }
+}

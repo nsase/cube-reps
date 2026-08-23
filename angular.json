@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "cube-flow": {
+    "cube-stride": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -59,14 +59,17 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "host": "0.0.0.0"
+            "host": "0.0.0.0",
+            "prebundle": {
+              "exclude": ["cubing"]
+            }
           },
           "configurations": {
             "production": {
-              "buildTarget": "cube-flow:build:production"
+              "buildTarget": "cube-stride:build:production"
             },
             "development": {
-              "buildTarget": "cube-flow:build:development"
+              "buildTarget": "cube-stride:build:development"
             }
           },
           "defaultConfiguration": "development"

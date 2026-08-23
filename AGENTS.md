@@ -1,5 +1,20 @@
 # Development Rules
 
+## Git Workflow
+
+- `main`はリリースブランチ、`develop`は次回リリースへ向けた常設の統合ブランチとして扱う。
+- `main`と`develop`へ直接pushしない。どちらへの変更もGitHub Pull Requestを経由する。
+- GitHub Issueに着手するときは、変更を始める前に最新の`develop`からIssue専用の作業ブランチを作成し、そのブランチへ切り替える。
+- 作業ブランチ名は、原則として`Issue番号/短い英語の説明`とする（例: `4/progress-chart`、`123/import-data`）。Issue番号の桁数は固定しない。
+- ユーザーからブランチ名の指定がある場合は、その名前を優先する。
+- Issueの実装が完了したら、Issueブランチから`develop`をbaseとするPull Requestを作成する。
+- Issue用Pull Requestには`Related to #<Issue番号>`を記載し、`develop`へのmerge時点ではIssueを閉じない。
+- Issue用Pull Requestでは、`npm run build`、`npm test`、`git diff --check`が成功していることを確認してからmergeする。
+- リリースは原則として1日1回を目安に、`develop`から`main`をbaseとするPull Requestを作成して行う。
+- リリース用Pull Requestには、そのリリースで完了する各Issueの`Closes #<Issue番号>`を記載し、`main`へのmerge時にIssueを閉じる。
+- リリース用Pull Requestでも、`npm run build`、`npm test`、`git diff --check`が成功していることを確認してからmergeする。
+- `main`へmergeしてリリースした後も、`develop`は削除せず常設ブランチとして維持する。
+
 ## Angular
 
 - AngularのコンポーネントはStandalone Componentとして作成する。
