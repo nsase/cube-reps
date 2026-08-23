@@ -32,6 +32,7 @@
     "generatingScramble": "スクランブルを生成しています…",
     "scrambleGenerationFailed": "スクランブルを生成できませんでした",
     "releaseToStart": "離してスタート",
+    "keepHolding": "そのまま長押し",
     "tapToStop": "SPACE / タップでストップ",
     "holdSpace": "SPACEを長押し",
     "solveActions": "直前の計測結果の操作",
