@@ -1,0 +1,24 @@
+<header>
+  <h2>{{ 'history.progressChart' | transloco }}</h2>
+  <div class="chart-tools">
+    <label>
+      {{ 'history.chartRange' | transloco }}
+      <select [(ngModel)]="store.displayRange">
+        @for (range of store.rangeOptions; track range) {
+          <option [ngValue]="range">
+            {{
+              range === 'all'
+                ? ('history.chartRangeAll' | transloco)
+                : ('history.chartRangeRecent' | transloco: { count: range })
+            }}
+          </option>
+        }
+      </select>
+    </label>
+    <ul class="legend" aria-hidden="true">
+      @for (item of store.series; track item.id) {
+        <li [class]="item.id"><span></span>{{ item.labelKey | transloco }}</li>
+      }
+    </ul>
+  </div>
+</header>

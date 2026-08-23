@@ -36,7 +36,7 @@ export class App {
 
   /** ブラウザに保存された表示言語を起動時に復元する。 */
   constructor() {
-    const saved = localStorage.getItem('cube-flow.language');
+    const saved = localStorage.getItem('cube-stride.language');
     const lang = saved === 'ja' || saved === 'en' ? saved : 'en';
     this.i18n.setActiveLang(lang);
     document.documentElement.lang = lang;
@@ -49,7 +49,7 @@ export class App {
    */
   protected setLanguage(lang: 'ja' | 'en'): void {
     this.i18n.setActiveLang(lang);
-    localStorage.setItem('cube-flow.language', lang);
+    localStorage.setItem('cube-stride.language', lang);
     document.documentElement.lang = lang;
   }
 }
