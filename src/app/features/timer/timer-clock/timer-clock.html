@@ -7,14 +7,17 @@
   (pointercancel)="store.cancelPress()"
 >
   @if (store.state() !== 'running') {
-    <small>{{
-      (store.state() === 'holding'
-        ? 'timer.keepHolding'
-        : store.state() === 'ready'
-          ? 'timer.releaseToStart'
-          : 'timer.holdSpace'
-      ) | transloco
-    }}</small>
+    @switch (store.state()) {
+      @case ('holding') {
+        <small>{{ 'timer.keepHolding' | transloco }}</small>
+      }
+      @case ('ready') {
+        <small>{{ 'timer.releaseToStart' | transloco }}</small>
+      }
+      @default {
+        <small>{{ 'timer.holdSpace' | transloco }}</small>
+      }
+    }
   }
   <strong>{{ cube.formatTime(store.elapsed()) }}</strong
   >@if (store.state() !== 'running') {
