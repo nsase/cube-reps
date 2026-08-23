@@ -16,7 +16,12 @@ import { TimerStore } from './timer.store';
 })
 export class Timer {
   /** Timerコンポーネントツリー内で共有する計測状態。 */
-  private readonly store = inject(TimerStore);
+  protected readonly store = inject(TimerStore);
+
+  /** 計測中のポインター押下を画面全体で受け取り、タイマーを停止する。 */
+  protected stopRunningTimer(): void {
+    if (this.store.state() === 'running') this.store.press();
+  }
 
   /** スペース押下で長押し状態へ入り、計測中の場合は停止する。 */
   @HostListener('window:keydown', ['$event'])

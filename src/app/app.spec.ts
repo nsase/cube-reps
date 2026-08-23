@@ -5,6 +5,9 @@ import { CubeService } from './core/cube';
 import { routes } from './app.routes';
 import { TranslocoService } from '@jsverse/transloco';
 import { firstValueFrom } from 'rxjs';
+import { By } from '@angular/platform-browser';
+import { Timer } from './features/timer/timer';
+import { TimerStore } from './features/timer/timer.store';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -79,6 +82,35 @@ describe('App', () => {
     expect(fixture.nativeElement.querySelector('app-timer-clock strong')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-timer-scramble p')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-timer-scramble app-cube-net')).toBeTruthy();
+  });
+
+  it('計測中はタイマーだけを全画面表示し、表示領域の押下で停止する', async () => {
+    const fixture = TestBed.createComponent(App);
+    await TestBed.inject(Router).navigateByUrl('/timer');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const timer = fixture.debugElement.query(By.directive(Timer));
+    const store = timer.injector.get(TimerStore);
+    store.setCategory('pll');
+    store.state.set('running');
+    store.elapsed.set(1234);
+    fixture.detectChanges();
+
+    const runningArea = timer.nativeElement.querySelector('section.running') as HTMLElement;
+    expect(runningArea).toBeTruthy();
+    expect(timer.nativeElement.querySelector('app-timer-settings')).toBeNull();
+    expect(timer.nativeElement.querySelector('app-timer-scramble')).toBeNull();
+    expect(timer.nativeElement.querySelector('app-timer-stats')).toBeNull();
+    expect(timer.nativeElement.querySelector('app-timer-clock small')).toBeNull();
+    expect(timer.nativeElement.querySelector('app-timer-clock i')).toBeNull();
+
+    runningArea.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(store.state()).toBe('idle');
+    expect(timer.nativeElement.querySelector('section.running')).toBeNull();
+    expect(timer.nativeElement.querySelector('app-timer-settings')).toBeTruthy();
   });
 
   it('履歴のURLへ移動してルートdataの見出しを表示する', async () => {
