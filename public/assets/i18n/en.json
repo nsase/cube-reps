@@ -32,6 +32,7 @@
     "generatingScramble": "Generating scramble…",
     "scrambleGenerationFailed": "Could not generate scramble",
     "releaseToStart": "Release to start",
+    "keepHolding": "Keep holding",
     "tapToStop": "SPACE / Tap to stop",
     "holdSpace": "Hold SPACE",
     "solveActions": "Actions for the latest solve",
