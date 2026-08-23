@@ -109,12 +109,16 @@ describe('HistoryProgressChart', () => {
     await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('h2')?.textContent).toContain('記録の推移');
     expect(fixture.nativeElement.querySelector('option')?.textContent).toContain('直近50回');
+    expect(fixture.nativeElement.querySelector('.legend')?.textContent).toContain('Ao5');
+    expect(fixture.nativeElement.querySelector('.legend')?.textContent).toContain('Ao12');
 
     i18n.setActiveLang('en');
     fixture.detectChanges();
     await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('h2')?.textContent).toContain('SOLVE PROGRESS');
     expect(fixture.nativeElement.querySelector('option')?.textContent).toContain('Last 50');
+    expect(fixture.nativeElement.querySelector('.legend')?.textContent).toContain('Ao5');
+    expect(fixture.nativeElement.querySelector('.legend')?.textContent).toContain('Ao12');
   });
 
   it('対象記録がない場合はグラフを表示しない', () => {
