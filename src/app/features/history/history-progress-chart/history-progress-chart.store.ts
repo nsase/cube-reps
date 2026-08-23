@@ -84,7 +84,7 @@ export class HistoryProgressChartStore {
   /** グラフの上端座標。 */
   readonly plotTop = 12;
   /** グラフの下端座標。 */
-  readonly plotBottom = 208;
+  readonly plotBottom = 228;
   /** 右端へ表示する時間目盛りとグリッド線の位置。 */
   readonly axisTicks = computed(() => {
     const { minimum, maximum } = this.timeRange();
@@ -111,12 +111,14 @@ export class HistoryProgressChartStore {
    * 計測位置を、最新記録が右端になる横軸座標へ変換する。
    * @param index 表示対象内の0始まりの位置
    * @param chartWidth SVG全体の横幅
-   * @param pointSpacing 記録同士の横方向間隔
    * @returns 指定記録のX座標
    */
-  xPosition(index: number, chartWidth: number, pointSpacing: number): number {
-    const pointsFromLatest = this.points().length - 1 - index;
-    return chartWidth - 112 - pointsFromLatest * pointSpacing;
+  xPosition(index: number, chartWidth: number): number {
+    const pointCount = this.points().length;
+    const plotLeft = 32;
+    const plotRight = chartWidth - 112;
+    if (pointCount <= 1) return plotRight;
+    return plotLeft + (index * (plotRight - plotLeft)) / (pointCount - 1);
   }
 
   /** タイムを縦軸座標へ変換する。 */
@@ -131,10 +133,9 @@ export class HistoryProgressChartStore {
    * DNFと件数不足で分割しながら系列を結ぶSVGパスを返す。
    * @param series 描画する集計系列
    * @param chartWidth SVG全体の横幅
-   * @param pointSpacing 記録同士の横方向間隔
    * @returns SVG pathの描画コマンド
    */
-  linePath(series: ProgressSeries, chartWidth: number, pointSpacing: number): string {
+  linePath(series: ProgressSeries, chartWidth: number): string {
     let drawing = false;
     return this.points()
       .map((point, index) => {
@@ -145,7 +146,7 @@ export class HistoryProgressChartStore {
         }
         const command = drawing ? 'L' : 'M';
         drawing = true;
-        return `${command} ${this.xPosition(index, chartWidth, pointSpacing)} ${this.yPosition(value)}`;
+        return `${command} ${this.xPosition(index, chartWidth)} ${this.yPosition(value)}`;
       })
       .filter(Boolean)
       .join(' ');
