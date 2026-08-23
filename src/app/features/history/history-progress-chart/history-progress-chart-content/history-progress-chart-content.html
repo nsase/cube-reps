@@ -1,8 +1,8 @@
-<div class="chart-scroll">
+<div #chartScroll class="chart-scroll">
   <svg
     class="plot"
-    [style.--chart-min-width.px]="store.minimumChartWidth()"
-    [attr.viewBox]="'0 0 ' + store.minimumChartWidth() + ' 240'"
+    [style.width.px]="chartWidth()"
+    [attr.viewBox]="'0 0 ' + chartWidth() + ' 240'"
     preserveAspectRatio="none"
     role="img"
     [attr.aria-label]="'history.progressChartDescription' | transloco"
@@ -11,22 +11,25 @@
       <line
         class="grid-line"
         x1="0"
-        [attr.x2]="store.minimumChartWidth() - 72"
+        [attr.x2]="chartWidth() - 72"
         [attr.y1]="tick.y"
         [attr.y2]="tick.y"
       />
-      <text class="axis-label" [attr.x]="store.minimumChartWidth() - 8" [attr.y]="tick.y + 4">
+      <text class="axis-label" [attr.x]="chartWidth() - 8" [attr.y]="tick.y + 4">
         {{ store.formatValue(tick.value) }}
       </text>
     }
     @for (item of store.series; track item.id) {
-      <path [attr.class]="'series-line ' + item.id" [attr.d]="store.linePath(item.id)" />
+      <path
+        [attr.class]="'series-line ' + item.id"
+        [attr.d]="store.linePath(item.id, chartWidth(), pointSpacing())"
+      />
       @for (point of store.points(); track point.number; let pointIndex = $index) {
         @let itemValue = store.value(point, item.id);
         @if (store.isAvailable(itemValue)) {
           <circle
             [attr.class]="'series-point ' + item.id"
-            [attr.cx]="store.xPosition(pointIndex)"
+            [attr.cx]="store.xPosition(pointIndex, chartWidth(), pointSpacing())"
             [attr.cy]="store.yPosition(itemValue)"
             r="4"
             [attr.data-series]="item.id"
@@ -38,7 +41,11 @@
       }
     }
     @for (point of store.points(); track point.number; let pointIndex = $index) {
-      <text class="point-label" [attr.x]="store.xPosition(pointIndex)" y="232">
+      <text
+        class="point-label"
+        [attr.x]="store.xPosition(pointIndex, chartWidth(), pointSpacing())"
+        y="232"
+      >
         {{ point.number }}
       </text>
     }

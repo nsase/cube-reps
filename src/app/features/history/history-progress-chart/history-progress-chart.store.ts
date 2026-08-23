@@ -81,8 +81,6 @@ export class HistoryProgressChartStore {
     return { minimum: Math.max(minimum - padding, 0), maximum: maximum + padding };
   });
 
-  /** 記録数から決定するデータ表示に必要な最小幅。 */
-  readonly minimumChartWidth = computed(() => this.points().length * 64 + 80);
   /** グラフの上端座標。 */
   readonly plotTop = 12;
   /** グラフの下端座標。 */
@@ -109,12 +107,16 @@ export class HistoryProgressChartStore {
     return Number.isFinite(value);
   }
 
-  /** 計測位置を横軸座標へ変換する。 */
-  xPosition(index: number): number {
-    const pointCount = this.points().length;
-    const plotWidth = this.minimumChartWidth() - 80;
-    if (pointCount <= 1) return plotWidth / 2;
-    return 32 + (index * (plotWidth - 64)) / (pointCount - 1);
+  /**
+   * 計測位置を、最新記録が右端になる横軸座標へ変換する。
+   * @param index 表示対象内の0始まりの位置
+   * @param chartWidth SVG全体の横幅
+   * @param pointSpacing 記録同士の横方向間隔
+   * @returns 指定記録のX座標
+   */
+  xPosition(index: number, chartWidth: number, pointSpacing: number): number {
+    const pointsFromLatest = this.points().length - 1 - index;
+    return chartWidth - 112 - pointsFromLatest * pointSpacing;
   }
 
   /** タイムを縦軸座標へ変換する。 */
@@ -125,8 +127,14 @@ export class HistoryProgressChartStore {
     return this.plotBottom - ratio * (this.plotBottom - this.plotTop);
   }
 
-  /** DNFと件数不足で分割しながら系列を結ぶSVGパスを返す。 */
-  linePath(series: ProgressSeries): string {
+  /**
+   * DNFと件数不足で分割しながら系列を結ぶSVGパスを返す。
+   * @param series 描画する集計系列
+   * @param chartWidth SVG全体の横幅
+   * @param pointSpacing 記録同士の横方向間隔
+   * @returns SVG pathの描画コマンド
+   */
+  linePath(series: ProgressSeries, chartWidth: number, pointSpacing: number): string {
     let drawing = false;
     return this.points()
       .map((point, index) => {
@@ -137,7 +145,7 @@ export class HistoryProgressChartStore {
         }
         const command = drawing ? 'L' : 'M';
         drawing = true;
-        return `${command} ${this.xPosition(index)} ${this.yPosition(value)}`;
+        return `${command} ${this.xPosition(index, chartWidth, pointSpacing)} ${this.yPosition(value)}`;
       })
       .filter(Boolean)
       .join(' ');
