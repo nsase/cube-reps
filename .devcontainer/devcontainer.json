@@ -1,9 +1,9 @@
 {
-  "name": "CubeFlow",
+  "name": "CubeStride",
   "build": {
     "dockerfile": "Dockerfile"
   },
-  "runArgs": ["--name", "cube-flow-dev", "--ipc=host"],
+  "runArgs": ["--name", "cube-stride-dev", "--ipc=host"],
   "mounts": ["source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached"],
   "postCreateCommand": "npm ci",
   "forwardPorts": [4200],
