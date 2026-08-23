@@ -17,6 +17,8 @@
     "add": "追加",
     "best": "ベスト",
     "mean": "平均",
+    "ao5": "Ao5",
+    "ao12": "Ao12",
     "recentAverage": "直近5回 平均"
   },
   "timer": {
