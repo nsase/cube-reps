@@ -28,7 +28,7 @@ describe('HistoryProgressChartContent', () => {
     expect(fixture.nativeElement.querySelectorAll('.axis-label')).toHaveLength(5);
   });
 
-  it('14件未満では間隔と文字倍率を維持して最新記録を右寄せする', async () => {
+  it('表示領域より記録が少ない場合は固定間隔で最新記録を右寄せする', async () => {
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1000);
     const cube = TestBed.inject(CubeService);
     for (let index = 0; index < 5; index += 1) {
@@ -49,7 +49,7 @@ describe('HistoryProgressChartContent', () => {
     expect(points[4].getAttribute('cx')).toBe('888');
   });
 
-  it('14件を超えると同じ間隔のままSVGを広げて横スクロール可能にする', async () => {
+  it('表示領域へ収まらない場合は固定間隔のままSVGを広げて横スクロール可能にする', async () => {
     vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(1000);
     const cube = TestBed.inject(CubeService);
     for (let index = 0; index < 20; index += 1) {
@@ -69,6 +69,6 @@ describe('HistoryProgressChartContent', () => {
     const latestX = Number(points[19].getAttribute('cx'));
     expect(width).toBeGreaterThan(1000);
     expect(plot.getAttribute('viewBox')).toBe('0 0 ' + width + ' 240');
-    expect(latestX - previousX).toBeCloseTo((1000 - 80) / 14);
+    expect(latestX - previousX).toBe(64);
   });
 });
