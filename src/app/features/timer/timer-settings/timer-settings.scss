@@ -102,7 +102,7 @@ $muted: var(--text-muted-color);
   }
 }
 
-@media (max-width: 900px) {
+@container timer (max-width: 900px) {
   .modes button small {
     display: none;
   }
