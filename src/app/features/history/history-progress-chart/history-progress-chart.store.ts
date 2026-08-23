@@ -38,8 +38,8 @@ export class HistoryProgressChartStore {
   readonly series = [
     { id: 'result', labelKey: 'history.solveResult' },
     { id: 'best', labelKey: 'common.best' },
-    { id: 'ao5', labelKey: 'AO5' },
-    { id: 'ao12', labelKey: 'AO12' },
+    { id: 'ao5', labelKey: 'common.ao5' },
+    { id: 'ao12', labelKey: 'common.ao12' },
   ] as const satisfies ReadonlyArray<{ id: ProgressSeries; labelKey: string }>;
 
   /** 絞り込み対象を古い順に集計した全グラフデータ。 */
