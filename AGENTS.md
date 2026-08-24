@@ -8,6 +8,8 @@
 - 作業ブランチ名は、原則として`Issue番号/短い英語の説明`とする（例: `4/progress-chart`、`123/import-data`）。Issue番号の桁数は固定しない。
 - ユーザーからブランチ名の指定がある場合は、その名前を優先する。
 - Issueの実装が完了したら、Issueブランチから`develop`をbaseとするPull Requestを作成する。
+- Pull Requestを作成するときは、`.github/pull_request_template.md`を本文のベースとして使用し、既定のセクションと確認項目を維持する。
+- Pull Requestのチェック項目は実際の確認結果に合わせて更新し、未確認の項目を完了扱いにしない。
 - Issue用Pull Requestには`Related to #<Issue番号>`を記載し、`develop`へのmerge時点ではIssueを閉じない。
 - Issue用Pull Requestでは、`npm run build`、`npm test`、`npm run test:e2e`、`git diff --check`が成功していることを確認してからmergeする。
 - リリースは原則として1日1回を目安に、`develop`から`main`をbaseとするPull Requestを作成して行う。
