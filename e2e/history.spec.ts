@@ -67,3 +67,36 @@ test('履歴のスクランブルを引き継いでタイマーでリトライ�
   await expect(page).toHaveURL(/#\/timer$/);
   await expect(page.locator('app-timer-scramble p')).toHaveText(scramble);
 });
+
+test('一覧にAoと日時を表示し、スクランブルと展開図を詳細で表示する', async ({ page }) => {
+  const scramble = 'R U F';
+  const solves = Array.from({ length: 12 }, (_, index) => ({
+    id: String(12 - index),
+    time: (index + 1) * 1000,
+    scramble,
+    date: new Date(Date.UTC(2026, 0, 12 - index)).toISOString(),
+    category: 'full',
+    groupId: 'unclassified',
+    penalty: 'none',
+  }));
+  await page.evaluate((storedSolves) => {
+    localStorage.setItem('cube-reps.solves', JSON.stringify(storedSolves));
+  }, solves);
+  await page.reload();
+
+  const firstRecord = page.locator('app-solve-record').first();
+  await expect(firstRecord.locator('.averages')).toContainText('Ao5');
+  await expect(firstRecord.locator('.averages')).toContainText('3.00');
+  await expect(firstRecord.locator('.averages')).toContainText('6.50');
+  await expect(firstRecord.locator('time')).toBeVisible();
+  await expect(firstRecord.locator('code')).toHaveCount(0);
+
+  await firstRecord
+    .getByRole('button', { name: /計測記録の詳細を表示|View solve details/ })
+    .click();
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('code')).toHaveText(scramble);
+  await expect(dialog.locator('app-solve-pattern')).toBeVisible();
+});
