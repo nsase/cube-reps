@@ -6,6 +6,7 @@
 
 - [ ] `npm run build`
 - [ ] `npm test`
+- [ ] `npm run test:e2e`
 - [ ] `git diff --check`
 
 ## Documentation
