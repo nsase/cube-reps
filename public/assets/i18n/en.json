@@ -88,6 +88,7 @@
     "records": "Records",
     "time": "Time",
     "recordNumber": "Number",
+    "solveActions": "Record actions",
     "recordedDate": "Date",
     "recordDestination": "Record group",
     "pagination": "Solve history pages",

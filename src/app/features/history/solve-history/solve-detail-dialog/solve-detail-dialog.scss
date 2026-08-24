@@ -44,6 +44,11 @@ section {
   }
 }
 
+.solve-actions {
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
 app-solve-pattern {
   --solve-pattern-width: min(220px, 60vw);
 

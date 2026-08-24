@@ -131,6 +131,7 @@ test('ヘッダーと記録の列を揃え、スクランブルと展開図を�
 
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
+  await expectElementsWithin(page, '[role="dialog"]', '.solve-actions button');
   await expect(dialog.locator('.record-number')).toHaveText('1234');
   await expect(dialog.locator('.result')).toHaveText('1.00');
   await expect(dialog.locator('code')).toHaveText(scramble);

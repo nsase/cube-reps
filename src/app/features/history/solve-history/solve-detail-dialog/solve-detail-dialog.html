@@ -25,6 +25,10 @@
       <dd class="recorded-date">{{ formattedDate() }}</dd>
     </div>
   </dl>
+  <section class="solve-actions">
+    <h3>{{ 'history.solveActions' | transloco }}</h3>
+    <app-solve-actions [solve]="solve" [detailed]="true" (deleted)="close()" (retried)="close()" />
+  </section>
   <section>
     <h3>{{ 'history.scramble' | transloco }}</h3>
     <code>{{ currentSolve().scramble }}</code>
@@ -32,6 +36,5 @@
   </section>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  <app-solve-actions [solve]="solve" (deleted)="close()" (retried)="close()" />
   <button mat-button mat-dialog-close>{{ 'common.close' | transloco }}</button>
 </mat-dialog-actions>
