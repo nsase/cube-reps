@@ -18,6 +18,8 @@ describe('TimerStore', () => {
   afterEach(() => {
     TestBed.inject(TimerStore).ngOnDestroy();
     vi.restoreAllMocks();
+    Reflect.deleteProperty(navigator, 'wakeLock');
+    Reflect.deleteProperty(document, 'visibilityState');
   });
 
   it('random-state scrambleの生成完了後に計測を開始できる', async () => {
@@ -29,7 +31,16 @@ describe('TimerStore', () => {
 
     await vi.waitFor(() => expect(store.scramble()).toBe('R U'));
 
+    vi.useFakeTimers();
     store.press();
+    expect(store.state()).toBe('holding');
+    store.release();
+    expect(store.state()).toBe('idle');
+
+    store.press();
+    vi.advanceTimersByTime(499);
+    expect(store.state()).toBe('holding');
+    vi.advanceTimersByTime(1);
     expect(store.state()).toBe('ready');
     store.release();
     expect(store.state()).toBe('running');
@@ -41,6 +52,40 @@ describe('TimerStore', () => {
     expect(cube.solves()[0].category).toBe('full');
     expect(store.completedSolve()?.id).toBe(cube.solves()[0].id);
     expect(cube.createScramble).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
+
+  it('計測中だけWake Lockを保持し、解除後に画面へ戻ると再取得する', async () => {
+    const firstRelease = vi.fn().mockResolvedValue(undefined);
+    const secondRelease = vi.fn().mockResolvedValue(undefined);
+    const firstWakeLock = { released: false, release: firstRelease } as unknown as WakeLockSentinel;
+    const secondWakeLock = {
+      released: false,
+      release: secondRelease,
+    } as unknown as WakeLockSentinel;
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce(firstWakeLock)
+      .mockResolvedValueOnce(secondWakeLock);
+    Object.defineProperty(navigator, 'wakeLock', { configurable: true, value: { request } });
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
+
+    const store = TestBed.inject(TimerStore);
+    store.setCategory('pll');
+    store.state.set('ready');
+    store.release();
+
+    await vi.waitFor(() => expect(request).toHaveBeenCalledWith('screen'));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    Object.defineProperty(firstWakeLock, 'released', { value: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2));
+
+    store.press();
+    await vi.waitFor(() => expect(secondRelease).toHaveBeenCalledOnce());
+    expect(store.state()).toBe('idle');
   });
 
   it('スクランブル生成に失敗した場合は計測を開始しない', async () => {
@@ -59,7 +104,7 @@ describe('TimerStore', () => {
     store.setCategory('pll');
     store.selectedCase.set(0);
 
-    store.press();
+    store.state.set('ready');
     store.release();
     store.elapsed.set(2000);
     store.press();
@@ -116,7 +161,7 @@ describe('TimerStore', () => {
     expect(item.number).toBe('01');
     expect(store.scramble()).toBe(invertAlgorithm(item.algorithms[0]));
 
-    store.press();
+    store.state.set('ready');
     store.release();
     store.elapsed.set(1500);
     store.press();
@@ -149,5 +194,38 @@ describe('TimerStore', () => {
     store.keyDown(event);
 
     expect(store.state()).toBe('idle');
+  });
+  it('Spaceを規定時間長押しして離した場合だけ計測を開始する', () => {
+    vi.useFakeTimers();
+    const store = TestBed.inject(TimerStore);
+    store.setCategory('pll');
+    const keyDown = new KeyboardEvent('keydown', { code: 'Space' });
+    const keyUp = new KeyboardEvent('keyup', { code: 'Space' });
+
+    store.keyDown(keyDown);
+    expect(store.state()).toBe('holding');
+    store.keyUp(keyUp);
+    expect(store.state()).toBe('idle');
+
+    store.keyDown(keyDown);
+    vi.advanceTimersByTime(500);
+    expect(store.state()).toBe('ready');
+    store.keyUp(keyUp);
+
+    expect(store.state()).toBe('running');
+    vi.useRealTimers();
+  });
+
+  it('ポインター操作が中断された場合は長押し完了後も開始しない', () => {
+    vi.useFakeTimers();
+    const store = TestBed.inject(TimerStore);
+    store.setCategory('pll');
+
+    store.press();
+    store.cancelPress();
+    vi.advanceTimersByTime(500);
+
+    expect(store.state()).toBe('idle');
+    vi.useRealTimers();
   });
 });

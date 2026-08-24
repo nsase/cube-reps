@@ -1,6 +1,10 @@
-<section>
-  <app-timer-settings />
-  <app-timer-scramble />
+<section [class.running]="store.state() === 'running'" (pointerdown)="stopRunningTimer()">
+  @if (store.state() !== 'running') {
+    <app-timer-settings />
+  }
   <app-timer-clock />
-  <app-timer-stats />
+  @if (store.state() !== 'running') {
+    <app-timer-scramble />
+    <app-timer-stats />
+  }
 </section>

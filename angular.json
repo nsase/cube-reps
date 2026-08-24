@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "cube-stride": {
+    "cube-reps": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -66,10 +66,10 @@
           },
           "configurations": {
             "production": {
-              "buildTarget": "cube-stride:build:production"
+              "buildTarget": "cube-reps:build:production"
             },
             "development": {
-              "buildTarget": "cube-stride:build:development"
+              "buildTarget": "cube-reps:build:development"
             }
           },
           "defaultConfiguration": "development"

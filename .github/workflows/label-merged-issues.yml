@@ -1,0 +1,44 @@
+name: Label merged issues
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [develop]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  label:
+    name: Add merged status label
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Label related issues
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const body = context.payload.pull_request.body ?? '';
+            const issueNumbers = [
+              ...new Set(
+                [...body.matchAll(/Related to #(\d+)/gi)].map(
+                  ([, issueNumber]) => Number(issueNumber),
+                ),
+              ),
+            ];
+
+            if (issueNumbers.length === 0) {
+              core.info('No related issues were found in the pull request body.');
+              return;
+            }
+
+            for (const issue_number of issueNumbers) {
+              await github.rest.issues.addLabels({
+                ...context.repo,
+                issue_number,
+                labels: ['status: merged'],
+              });
+              core.info(`Added status: merged to issue #${issue_number}.`);
+            }

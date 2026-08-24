@@ -79,4 +79,15 @@ describe('HistorySummary', () => {
     );
     expect(values).toEqual(['1.00', '2.50', '—', '—', '—', '—']);
   });
+
+  it('英語では平均のラベルをMeanと表示する', async () => {
+    const fixture = TestBed.createComponent(HistorySummary);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const articles = fixture.nativeElement.querySelectorAll(
+      '.summaries article',
+    ) as NodeListOf<HTMLElement>;
+    expect(articles[1]?.textContent?.trim()).toBe('Mean—');
+  });
 });

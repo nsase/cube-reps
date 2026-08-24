@@ -9,10 +9,10 @@
 - ユーザーからブランチ名の指定がある場合は、その名前を優先する。
 - Issueの実装が完了したら、Issueブランチから`develop`をbaseとするPull Requestを作成する。
 - Issue用Pull Requestには`Related to #<Issue番号>`を記載し、`develop`へのmerge時点ではIssueを閉じない。
-- Issue用Pull Requestでは、`npm run build`、`npm test`、`git diff --check`が成功していることを確認してからmergeする。
+- Issue用Pull Requestでは、`npm run build`、`npm test`、`npm run test:e2e`、`git diff --check`が成功していることを確認してからmergeする。
 - リリースは原則として1日1回を目安に、`develop`から`main`をbaseとするPull Requestを作成して行う。
 - リリース用Pull Requestには、そのリリースで完了する各Issueの`Closes #<Issue番号>`を記載し、`main`へのmerge時にIssueを閉じる。
-- リリース用Pull Requestでも、`npm run build`、`npm test`、`git diff --check`が成功していることを確認してからmergeする。
+- リリース用Pull Requestでも、`npm run build`、`npm test`、`npm run test:e2e`、`git diff --check`が成功していることを確認してからmergeする。
 - `main`へmergeしてリリースした後も、`develop`は削除せず常設ブランチとして維持する。
 
 ## Angular
@@ -62,6 +62,10 @@
 - クラス、サービス、Signal、computed、input、output、公開・protectedメソッドの目的をJSDocで説明する。
 - 引数があるメソッドには必要に応じて`@param`、戻り値に説明が必要な場合は`@returns`を記載する。
 - コメントは実装内容の言い換えではなく、責務や意図が分かる内容にする。
+- 機能の追加・変更・削除後は、`README.md`と`README.ja.md`への反映が必要か確認する。
+- ユーザー向けの機能、操作方法、保存データ、セットアップ、技術構成に影響する場合は、実装と同じPull RequestでREADMEを更新する。
+- READMEを更新する場合は英語版と日本語版を同時に更新し、両者の内容を一致させる。
+- READMEの変更が不要な場合は、Pull Request作成前に現在の記述と実装にズレがないことを確認する。
 
 ## Styles
 
@@ -86,9 +90,17 @@
 - Angular Material Dialogを伴う操作では、確認結果をテスト用に制御し、確定時と必要に応じてキャンセル時の振る舞いを確認する。
 - コンポーネントの内部実装へ過度に依存せず、DOM操作、Signalの結果、サービスの状態からユーザー操作の結果を確認する。
 
+## Browser Tests
+
+- UI、レイアウト、ナビゲーション、ユーザー操作を変更した場合は、Playwrightのブラウザテストを追加または更新する。
+- レスポンシブ表示を変更した場合は、デスクトップとモバイルの代表的なビューポートで、要素の重なりや画面外へのはみ出しがないことを確認する。
+- ブラウザテストでは実装内部ではなく、表示されたDOM、ユーザー操作、画面遷移から結果を確認する。
+- 実装後は`npm run test:e2e`を実行し、Chromium上でテストが成功することを確認する。
+
 ## Verification
 
 - コード変更後は`npm run build`を実行する。
 - コード変更後は`npm test`を実行する。
+- コード変更後は`npm run test:e2e`を実行する。
 - 最後に`git diff --check`を実行し、空白エラーがないことを確認する。
 - ビルド警告が既存のものか、新しい変更によるものかを区別して報告する。
