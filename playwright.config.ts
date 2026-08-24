@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-/** CubeStrideの実ブラウザテスト設定。 */
+/** CubeRepsの実ブラウザテスト設定。 */
 const config = defineConfig({
   testDir: './e2e',
   fullyParallel: true,
