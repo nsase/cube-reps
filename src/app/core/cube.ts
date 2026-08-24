@@ -35,6 +35,8 @@ export class CubeService {
   readonly activeGroupId = signal(this.loadActiveGroupId());
   /** タイマーで現在選択しているsolveカテゴリー。 */
   readonly activeSolveCategory = signal<SolveCategory>('full');
+  /** 履歴からタイマーへ一度だけ引き渡すリトライ対象。 */
+  private readonly retrySolve = signal<Solve | undefined>(undefined);
   /** 現在の記録先グループ。 */
   readonly activeGroup = computed(
     () => this.groups().find((group) => group.id === this.activeGroupId()) ?? this.groups()[0],
@@ -177,6 +179,32 @@ export class CubeService {
   /** @param id 削除する計測記録ID */
   removeSolve(id: string): void {
     this.solves.update((solves) => solves.filter((solve) => solve.id !== id));
+  }
+
+  /**
+   * 履歴の記録を次回のタイマー表示でリトライできる状態にする。
+   * リトライ結果を元記録と同じ条件で保存できるように、カテゴリーと存在する記録グループも引き継ぐ。
+   *
+   * @param solve リトライする計測記録
+   */
+  prepareRetry(solve: Solve): void {
+    this.retrySolve.set(solve);
+    this.activeSolveCategory.set(solve.category);
+    if (solve.groupId && this.groups().some(({ id }) => id === solve.groupId)) {
+      this.activeGroupId.set(solve.groupId);
+    }
+  }
+
+  /**
+   * 履歴から指定されたリトライ対象を一度だけ取得する。
+   * 通常のタイマー再表示で古いスクランブルを再利用しないように、取得と同時に指定を消費する。
+   *
+   * @returns リトライ対象。指定されていない場合は`undefined`
+   */
+  takeRetrySolve(): Solve | undefined {
+    const solve = this.retrySolve();
+    this.retrySolve.set(undefined);
+    return solve;
   }
 
   /**
