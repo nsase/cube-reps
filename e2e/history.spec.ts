@@ -68,7 +68,7 @@ test('履歴のスクランブルを引き継いでタイマーでリトライ�
   await expect(page.locator('app-timer-scramble p')).toHaveText(scramble);
 });
 
-test('一覧にAoと日時を表示し、スクランブルと展開図を詳細で表示する', async ({ page }) => {
+test('ヘッダーと記録の列を揃え、スクランブルと展開図を詳細で表示する', async ({ page }) => {
   const scramble = 'R U F';
   const solves = Array.from({ length: 12 }, (_, index) => ({
     id: String(12 - index),
@@ -84,12 +84,32 @@ test('一覧にAoと日時を表示し、スクランブルと展開図を詳細
   }, solves);
   await page.reload();
 
+  const header = page.locator('.history-header');
   const firstRecord = page.locator('app-solve-record').first();
-  await expect(firstRecord.locator('.averages')).toContainText('Ao5');
-  await expect(firstRecord.locator('.averages')).toContainText('3.00');
-  await expect(firstRecord.locator('.averages')).toContainText('6.50');
+  await expect(header).toContainText(/タイム|Time/);
+  await expect(header).toContainText('Ao5');
+  await expect(header).toContainText('Ao12');
+  await expect(header).toContainText(/日時|Date/);
+  await expect(header).toContainText(/記録先|Record group/);
+  await expect(firstRecord.locator('.ao5')).toHaveText('3.00');
+  await expect(firstRecord.locator('.ao12')).toHaveText('6.50');
+  await expect(firstRecord).not.toContainText('フルソルブ');
+  await expect(firstRecord).not.toContainText('Ao5');
   await expect(firstRecord.locator('time')).toBeVisible();
   await expect(firstRecord.locator('code')).toHaveCount(0);
+
+  const headerCells = header.locator('[role="columnheader"]');
+  const recordCells = firstRecord.locator(
+    '.record-number, .result, .ao5, .ao12, time, .group-badge',
+  );
+  const [headerPositions, recordPositions] = await Promise.all([
+    headerCells.evaluateAll((cells) => cells.map((cell) => cell.getBoundingClientRect().x)),
+    recordCells.evaluateAll((cells) => cells.map((cell) => cell.getBoundingClientRect().x)),
+  ]);
+  expect(recordPositions).toHaveLength(headerPositions.length);
+  recordPositions.forEach((position, index) => {
+    expect(Math.abs(position - headerPositions[index])).toBeLessThanOrEqual(1);
+  });
 
   await firstRecord
     .getByRole('button', { name: /計測記録の詳細を表示|View solve details/ })

@@ -3,14 +3,27 @@
     <small>{{ 'history.solveHistory' | transloco }}</small>
     <h2>{{ 'history.records' | transloco }}</h2>
   </div>
-  @for (row of store.pagedRows(); track row.solve.id) {
-    <app-solve-record
-      [solve]="row.solve"
-      [recordNumber]="row.number"
-      [ao5]="row.ao5"
-      [ao12]="row.ao12"
-    />
-  } @empty {
+  @if (store.pagedRows().length) {
+    <div class="history-header" role="row">
+      <span class="column-number" role="columnheader">#</span>
+      <span class="column-time" role="columnheader">{{ 'history.time' | transloco }}</span>
+      <span class="column-ao5" role="columnheader">Ao5</span>
+      <span class="column-ao12" role="columnheader">Ao12</span>
+      <span class="column-date" role="columnheader">{{ 'history.recordedDate' | transloco }}</span>
+      <span class="column-group" role="columnheader">{{
+        'history.recordDestination' | transloco
+      }}</span>
+      <span class="column-actions" aria-hidden="true"></span>
+    </div>
+    @for (row of store.pagedRows(); track row.solve.id) {
+      <app-solve-record
+        [solve]="row.solve"
+        [recordNumber]="row.number"
+        [ao5]="row.ao5"
+        [ao12]="row.ao12"
+      />
+    }
+  } @else {
     <div class="empty">
       <b>{{ 'history.emptyTitle' | transloco }}</b
       ><span>{{ 'history.emptyDescription' | transloco }}</span

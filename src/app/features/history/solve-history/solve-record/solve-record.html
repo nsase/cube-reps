@@ -1,24 +1,12 @@
 <span class="record-number">#{{ recordNumber() }}</span>
 <div class="result">
-  <strong>{{ cube.displayTime(solve()) }}</strong
-  ><small
-    >{{ 'solveCategories.' + solve().category | transloco
-    }}{{ solve().caseName ? ' · ' + solve().caseName : '' }}</small
-  >
+  <strong>{{ cube.displayTime(solve()) }}</strong>
 </div>
-<dl class="averages">
-  <div>
-    <dt>Ao5</dt>
-    <dd>{{ formatAverage(ao5()) }}</dd>
-  </div>
-  <div>
-    <dt>Ao12</dt>
-    <dd>{{ formatAverage(ao12()) }}</dd>
-  </div>
-</dl>
+<span class="average ao5">{{ formatAverage(ao5()) }}</span>
+<span class="average ao12">{{ formatAverage(ao12()) }}</span>
 <time>{{ solve().date | date: 'MM/dd HH:mm' }}</time>
+<span class="group-badge">{{ cube.groupName(solve().groupId) }}</span>
 <div class="row-actions">
-  <span class="group-badge">{{ cube.groupName(solve().groupId) }}</span>
   <button
     mat-icon-button
     class="row-details"
