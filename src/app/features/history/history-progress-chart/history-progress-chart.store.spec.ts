@@ -25,4 +25,21 @@ describe('HistoryProgressChartStore', () => {
     store.displayRange.set('all');
     expect(store.points()).toHaveLength(120);
   });
+
+  it('途中のDNFを飛ばして前後の有効な結果を線でつなぐ', () => {
+    const cube = TestBed.inject(CubeService);
+    const solves = Array.from({ length: 6 }, (_, index) =>
+      cube.addSolve(10000 - index * 500, 'R U', 'full'),
+    );
+    cube.togglePenalty(solves[2].id, 'DNF');
+    cube.togglePenalty(solves[3].id, 'DNF');
+    const store = TestBed.inject(HistoryProgressChartStore);
+    const chartWidth = 848;
+
+    const path = store.linePath('result', chartWidth);
+
+    expect(path.match(/[ML]/g)).toEqual(['M', 'L', 'L', 'L']);
+    expect(path).toContain(`L ${store.xPosition(4, chartWidth)}`);
+    expect(path).not.toContain(`M ${store.xPosition(4, chartWidth)}`);
+  });
 });

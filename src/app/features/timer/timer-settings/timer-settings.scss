@@ -102,6 +102,12 @@ $muted: var(--text-muted-color);
   }
 }
 
+@container timer (max-width: 900px) {
+  .modes button small {
+    display: none;
+  }
+}
+
 @media (max-width: 620px) {
   :host {
     gap: 4px;

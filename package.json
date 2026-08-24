@@ -1,5 +1,5 @@
 {
-  "name": "cube-stride",
+  "name": "cube-reps",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -7,6 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:e2e": "playwright test",
     "prettier:format": "prettier --write ."
   },
   "private": true,

@@ -71,9 +71,9 @@ export class CubeService {
   constructor() {
     if (!this.groups().some((group) => group.id === this.activeGroupId()))
       this.activeGroupId.set(DEFAULT_GROUP.id);
-    effect(() => localStorage.setItem('cube-stride.solves', JSON.stringify(this.solves())));
-    effect(() => localStorage.setItem('cube-stride.groups', JSON.stringify(this.userGroups())));
-    effect(() => localStorage.setItem('cube-stride.active-group', this.activeGroupId()));
+    effect(() => localStorage.setItem('cube-reps.solves', JSON.stringify(this.solves())));
+    effect(() => localStorage.setItem('cube-reps.groups', JSON.stringify(this.userGroups())));
+    effect(() => localStorage.setItem('cube-reps.active-group', this.activeGroupId()));
   }
 
   /**
@@ -243,7 +243,7 @@ export class CubeService {
 
   /** @returns 保存データを現行グループ形式へ移行した計測記録 */
   private loadSolves(): Solve[] {
-    return this.load<Solve[]>('cube-stride.solves', []).map((solve) => ({
+    return this.load<Solve[]>('cube-reps.solves', []).map((solve) => ({
       ...solve,
       groupId: solve.groupId || DEFAULT_GROUP.id,
     }));
@@ -251,14 +251,14 @@ export class CubeService {
 
   /** @returns 保存済みデータから既定グループを除外したユーザー作成グループ */
   private loadUserGroups(): RecordGroup[] {
-    return this.load<RecordGroup[]>('cube-stride.groups', [])
+    return this.load<RecordGroup[]>('cube-reps.groups', [])
       .filter((group) => !DEFAULT_GROUPS.some(({ id }) => id === group.id))
       .map((group) => ({ id: group.id, name: group.name, createdAt: group.createdAt }));
   }
 
   /** @returns 保存済みの記録先ID。未設定時は既定グループID */
   private loadActiveGroupId(): string {
-    const stored = localStorage.getItem('cube-stride.active-group');
+    const stored = localStorage.getItem('cube-reps.active-group');
     return stored || DEFAULT_GROUP.id;
   }
 
