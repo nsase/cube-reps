@@ -72,3 +72,41 @@ export async function expectResponsiveLayout(page: Page, selector: string): Prom
     }
   }
 }
+
+/**
+ * 子要素がoverflowで隠れず、指定したコンテナの左右端に収まることを確認する。
+ *
+ * @param page 検証対象のブラウザページ
+ * @param containerSelector 子要素を収めるコンテナのセレクター
+ * @param childSelector 端まで表示される必要がある子要素のセレクター
+ */
+export async function expectElementsWithin(
+  page: Page,
+  containerSelector: string,
+  childSelector: string,
+): Promise<void> {
+  const container = await page.locator(containerSelector).boundingBox();
+  expect(container).not.toBeNull();
+  const children = await page.locator(childSelector).evaluateAll((elements): LayoutBox[] =>
+    elements.map((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        label: `${element.tagName.toLowerCase()}${
+          element.className ? `.${String(element.className).trim().replaceAll(' ', '.')}` : ''
+        }`,
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+      };
+    }),
+  );
+  expect(children.length).toBeGreaterThan(0);
+
+  for (const child of children) {
+    expect.soft(child.left, `${child.label}の左端`).toBeGreaterThanOrEqual(container!.x);
+    expect
+      .soft(child.right, `${child.label}の右端`)
+      .toBeLessThanOrEqual(container!.x + container!.width);
+  }
+}

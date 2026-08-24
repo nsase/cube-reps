@@ -1,6 +1,10 @@
 import { expect, test } from '@playwright/test';
 
-import { expectNoHorizontalOverflow, expectResponsiveLayout } from './support/layout';
+import {
+  expectElementsWithin,
+  expectNoHorizontalOverflow,
+  expectResponsiveLayout,
+} from './support/layout';
 
 /** 履歴画面で独立して配置される主要コンポーネント。 */
 const layoutItems =
@@ -115,6 +119,11 @@ test('ヘッダーと記録の列を揃え、スクランブルと展開図を�
     return number.scrollWidth <= number.clientWidth;
   });
   expect(numberFitsColumn).toBe(true);
+  await expectElementsWithin(
+    page,
+    '.history',
+    'app-solve-record:first-of-type .row-actions, app-solve-record:first-of-type .row-actions button',
+  );
 
   await firstRecord
     .getByRole('button', { name: /計測記録の詳細を表示|View solve details/ })

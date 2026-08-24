@@ -19,19 +19,28 @@ const config = defineConfig({
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
     {
-      name: 'tablet',
-      use: { ...devices['Desktop Chrome'], viewport: { width: 820, height: 1180 } },
+      name: 'ipad-mini',
+      use: { ...devices['iPad Mini'], browserName: 'chromium' },
     },
     {
-      name: 'mobile-portrait',
-      use: { ...devices['Pixel 7'], viewport: { width: 390, height: 844 } },
+      name: 'ipad-mini-landscape',
+      use: { ...devices['iPad Mini landscape'], browserName: 'chromium' },
     },
     {
-      name: 'mobile-landscape',
-      use: {
-        ...devices['Pixel 7'],
-        viewport: { width: 844, height: 390 },
-      },
+      name: 'ipad-pro-11',
+      use: { ...devices['iPad Pro 11'], browserName: 'chromium' },
+    },
+    {
+      name: 'ipad-pro-11-landscape',
+      use: { ...devices['iPad Pro 11 landscape'], browserName: 'chromium' },
+    },
+    {
+      name: 'pixel-7',
+      use: { ...devices['Pixel 7'] },
+    },
+    {
+      name: 'pixel-7-landscape',
+      use: { ...devices['Pixel 7 landscape'] },
     },
   ],
   webServer: {
