@@ -95,6 +95,7 @@
     "emptyTitle": "No records in this group yet",
     "emptyDescription": "Select this group in the timer and complete a solve.",
     "goToTimer": "Go to timer",
+    "retrySolve": "Retry solve",
     "deleteSolve": "Delete solve",
     "deleteSolveTitle": "Delete this solve?",
     "deleteSolveMessage": "The selected solve will be deleted.\nThis action cannot be undone."
