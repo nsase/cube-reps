@@ -86,6 +86,19 @@ describe('CubeService record statistics', () => {
     expect(cube.groupName('unclassified')).not.toBe('変更不可');
   });
 
+  it('リトライ対象と元の計測条件を次のタイマーへ一度だけ引き渡す', () => {
+    const cube = TestBed.inject(CubeService);
+    const group = cube.addGroup('Retry group')!;
+    const solve = cube.addSolve(1234, 'R U', 'pll', 'Aa');
+
+    cube.prepareRetry(solve);
+
+    expect(cube.activeSolveCategory()).toBe('pll');
+    expect(cube.activeGroupId()).toBe(group.id);
+    expect(cube.takeRetrySolve()).toEqual(solve);
+    expect(cube.takeRetrySolve()).toBeUndefined();
+  });
+
   it('fullとpllを同じ記録先でも別々に集計する', () => {
     const cube = TestBed.inject(CubeService);
     cube.solves.set([

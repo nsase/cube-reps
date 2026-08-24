@@ -95,6 +95,7 @@
     "emptyTitle": "このグループにはまだ記録がありません",
     "emptyDescription": "タイマーでグループを選んで計測してみましょう。",
     "goToTimer": "タイマーへ",
+    "retrySolve": "この記録をリトライ",
     "deleteSolve": "計測記録を削除",
     "deleteSolveTitle": "記録を削除しますか？",
     "deleteSolveMessage": "選択した計測記録を削除します。\nこの操作は取り消せません。"
