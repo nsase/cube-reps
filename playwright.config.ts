@@ -15,12 +15,23 @@ const config = defineConfig({
   },
   projects: [
     {
-      name: 'desktop-chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: 'desktop-wide',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
     {
-      name: 'mobile-chromium',
-      use: { ...devices['Pixel 7'] },
+      name: 'tablet',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 820, height: 1180 } },
+    },
+    {
+      name: 'mobile-portrait',
+      use: { ...devices['Pixel 7'], viewport: { width: 390, height: 844 } },
+    },
+    {
+      name: 'mobile-landscape',
+      use: {
+        ...devices['Pixel 7'],
+        viewport: { width: 844, height: 390 },
+      },
     },
   ],
   webServer: {
