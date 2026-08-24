@@ -8,6 +8,14 @@ import { Solve } from '../../../../core/cube.models';
 import { SolvePattern } from '../../../../shared/solve-pattern/solve-pattern';
 import { SolveActions } from '../solve-actions/solve-actions';
 
+/** 計測記録の詳細表示に必要な記録本体と一覧上の通し番号。 */
+export interface SolveDetailData {
+  /** 表示する計測記録。 */
+  solve: Solve;
+  /** 履歴一覧で計測記録に割り当てられた通し番号。 */
+  recordNumber: number;
+}
+
 /** 計測記録のスクランブル、展開図、付帯情報を表示する詳細ダイアログ。 */
 @Component({
   selector: 'app-solve-detail-dialog',
@@ -17,8 +25,12 @@ import { SolveActions } from '../solve-actions/solve-actions';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolveDetailDialog {
+  /** ダイアログで表示する計測記録と通し番号。 */
+  private readonly data = inject<SolveDetailData>(MAT_DIALOG_DATA);
   /** ダイアログで表示する計測記録。 */
-  protected readonly solve = inject<Solve>(MAT_DIALOG_DATA);
+  protected readonly solve = this.data.solve;
+  /** 一覧と同じ計測記録を識別する通し番号。 */
+  protected readonly recordNumber = this.data.recordNumber;
   /** タイムと記録グループの表示形式を提供するサービス。 */
   protected readonly cube = inject(CubeService);
   /** 表示中の言語と変更通知を提供するサービス。 */

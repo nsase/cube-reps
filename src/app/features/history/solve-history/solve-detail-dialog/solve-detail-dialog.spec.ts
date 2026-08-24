@@ -24,7 +24,7 @@ describe('SolveDetailDialog', () => {
       imports: [SolveDetailDialog],
       providers: [
         provideRouter([]),
-        { provide: MAT_DIALOG_DATA, useValue: solve },
+        { provide: MAT_DIALOG_DATA, useValue: { solve, recordNumber: 1234 } },
         { provide: MatDialogRef, useValue: { close: vi.fn() } },
       ],
     }).compileComponents();
@@ -38,6 +38,7 @@ describe('SolveDetailDialog', () => {
     expect(fixture.nativeElement.querySelector('code').textContent).toContain('R U F');
     expect(fixture.nativeElement.querySelector('app-solve-pattern')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('app-solve-actions')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('.record-number').textContent).toContain('1234');
     expect(fixture.nativeElement.textContent).toContain('1.23');
 
     (fixture.nativeElement.querySelector('app-solve-actions button') as HTMLButtonElement).click();

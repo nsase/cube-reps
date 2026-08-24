@@ -1,7 +1,14 @@
 <h2 mat-dialog-title>{{ 'history.solveDetails' | transloco }}</h2>
 <mat-dialog-content>
-  <strong class="result">{{ cube.displayTime(currentSolve()) }}</strong>
   <dl>
+    <div>
+      <dt>{{ 'history.recordNumber' | transloco }}</dt>
+      <dd class="record-number">{{ recordNumber }}</dd>
+    </div>
+    <div>
+      <dt>{{ 'history.time' | transloco }}</dt>
+      <dd class="result">{{ cube.displayTime(currentSolve()) }}</dd>
+    </div>
     <div>
       <dt>{{ 'history.solveCategory' | transloco }}</dt>
       <dd>

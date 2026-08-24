@@ -4,10 +4,6 @@ mat-dialog-content {
   width: min(560px, 80vw);
 }
 
-.result {
-  font: 600 var(--font-size-heading) var(--font-family-heading);
-}
-
 dl {
   display: grid;
   gap: 10px;
@@ -26,6 +22,10 @@ dl {
 
   dd {
     margin: 0;
+  }
+
+  .result {
+    font: 600 var(--font-size-large) var(--font-family-heading);
   }
 }
 

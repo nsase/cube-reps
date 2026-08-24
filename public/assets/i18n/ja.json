@@ -87,6 +87,7 @@
     "solveHistory": "SOLVE HISTORY",
     "records": "計測記録",
     "time": "タイム",
+    "recordNumber": "番号",
     "recordedDate": "日時",
     "recordDestination": "記録先",
     "pagination": "計測履歴のページ",
