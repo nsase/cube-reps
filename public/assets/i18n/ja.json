@@ -106,8 +106,8 @@
     "recordGroup": "記録グループ",
     "recordedAt": "計測日時",
     "scramble": "スクランブル",
-    "retrySolve": "この記録をリトライ",
-    "deleteSolve": "計測記録を削除",
+    "retrySolve": "リトライ",
+    "deleteSolve": "削除",
     "deleteSolveTitle": "記録を削除しますか？",
     "deleteSolveMessage": "選択した計測記録を削除します。\nこの操作は取り消せません。"
   }

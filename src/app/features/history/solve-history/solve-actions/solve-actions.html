@@ -24,7 +24,7 @@
 } @else {
   <button
     mat-icon-button
-    class="row-retry"
+    class="compact-action row-retry"
     [attr.aria-label]="'history.retrySolve' | transloco"
     [title]="'history.retrySolve' | transloco"
     (click)="retry()"
@@ -33,11 +33,19 @@
   </button>
   <button
     mat-icon-button
-    class="row-delete"
+    class="compact-action row-delete"
     [attr.aria-label]="'history.deleteSolve' | transloco"
     [title]="'history.deleteSolve' | transloco"
     (click)="delete()"
   >
     <mat-icon>delete</mat-icon>
+  </button>
+  <button mat-button class="wide-action row-retry" (click)="retry()">
+    <mat-icon>replay</mat-icon>
+    {{ 'history.retrySolve' | transloco }}
+  </button>
+  <button mat-button class="wide-action row-delete" (click)="delete()">
+    <mat-icon>delete</mat-icon>
+    {{ 'history.deleteSolve' | transloco }}
   </button>
 }

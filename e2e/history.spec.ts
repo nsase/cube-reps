@@ -66,13 +66,15 @@ test('履歴のスクランブルを引き継いでタイマーでリトライ�
   );
   await page.reload();
 
-  await page.getByRole('button', { name: /この記録をリトライ|Retry solve/ }).click();
+  await page.getByRole('button', { name: /リトライ|Retry/ }).click();
 
   await expect(page).toHaveURL(/#\/timer$/);
   await expect(page.locator('app-timer-scramble p')).toHaveText(scramble);
 });
 
-test('ヘッダーと記録の列を揃え、スクランブルと展開図を詳細で表示する', async ({ page }) => {
+test('ヘッダーと記録の列を揃え、スクランブルと展開図を詳細で表示する', async ({
+  page,
+}, testInfo) => {
   const scramble = 'R U F';
   const solves = Array.from({ length: 1234 }, (_, index) => ({
     id: String(1234 - index),
@@ -124,6 +126,20 @@ test('ヘッダーと記録の列を揃え、スクランブルと展開図を�
     '.history',
     'app-solve-record:first-of-type .row-actions, app-solve-record:first-of-type .row-actions button',
   );
+  if (testInfo.project.name === 'desktop-wide') {
+    await expect(firstRecord.locator('.wide-action.row-retry')).toBeVisible();
+    await expect(firstRecord.locator('.compact-action.row-retry')).toBeHidden();
+  }
+  if (testInfo.project.name === 'pixel-7') {
+    await expect(firstRecord.locator('.wide-action.row-retry')).toBeHidden();
+    await expect(firstRecord.locator('.compact-action.row-retry')).toBeVisible();
+  }
+  const actionGap = await firstRecord.locator('.row-actions').evaluate((actions) => {
+    const details = actions.querySelector<HTMLElement>('.row-details')!;
+    const firstSolveAction = actions.querySelector<HTMLElement>('app-solve-actions button')!;
+    return firstSolveAction.getBoundingClientRect().left - details.getBoundingClientRect().right;
+  });
+  expect(actionGap).toBeLessThanOrEqual(8);
 
   await firstRecord
     .getByRole('button', { name: /計測記録の詳細を表示|View solve details/ })
@@ -138,10 +154,8 @@ test('ヘッダーと記録の列を揃え、スクランブルと展開図を�
   await expect(dialog.locator('app-solve-pattern')).toBeVisible();
   await expect(dialog.getByRole('button', { name: '+2' })).toBeVisible();
   await expect(dialog.getByRole('button', { name: 'DNF' })).toBeVisible();
-  await expect(
-    dialog.getByRole('button', { name: /この記録をリトライ|Retry solve/ }),
-  ).toBeVisible();
-  await expect(dialog.getByRole('button', { name: /計測記録を削除|Delete solve/ })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: /リトライ|Retry/ })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: /削除|Delete/ })).toBeVisible();
 
   await dialog.getByRole('button', { name: '+2' }).click();
   await expect(dialog.locator('.result')).toHaveText('3.00+');

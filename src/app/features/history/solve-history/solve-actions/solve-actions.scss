@@ -1,12 +1,28 @@
 :host {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 4px;
 }
 
 :host(.detailed) {
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.wide-action {
+  display: none;
+}
+
+@container (min-width: 380px) {
+  .compact-action {
+    display: none;
+  }
+
+  .wide-action {
+    display: inline-flex;
+  }
 }
 
 button.on {
