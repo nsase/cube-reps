@@ -27,3 +27,13 @@ test('時計文字が割り当て領域へ収まる', async ({ page }) => {
   expect(timeBox!.width).toBeLessThanOrEqual(clockBox!.width);
   expect(timeBox!.height).toBeLessThanOrEqual(clockBox!.height);
 });
+
+test('スクランブル再作成後にボタンからフォーカスを外す', async ({ page }) => {
+  const refreshButton = page.getByRole('button', { name: /スクランブルを更新|Refresh scramble/ });
+  await expect(refreshButton).toBeEnabled();
+
+  await refreshButton.focus();
+  await refreshButton.press('Enter');
+
+  await expect(refreshButton).not.toBeFocused();
+});
