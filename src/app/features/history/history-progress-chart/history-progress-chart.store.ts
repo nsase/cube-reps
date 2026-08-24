@@ -130,7 +130,7 @@ export class HistoryProgressChartStore {
   }
 
   /**
-   * DNFと件数不足で分割しながら系列を結ぶSVGパスを返す。
+   * DNFや件数不足の点を飛ばし、表示可能な値を連続して結ぶSVGパスを返す。
    * @param series 描画する集計系列
    * @param chartWidth SVG全体の横幅
    * @returns SVG pathの描画コマンド
@@ -141,7 +141,6 @@ export class HistoryProgressChartStore {
       .map((point, index) => {
         const value = this.value(point, series);
         if (!this.isAvailable(value)) {
-          drawing = false;
           return '';
         }
         const command = drawing ? 'L' : 'M';
