@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { CubeService } from '../../../../core/cube';
 import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
@@ -46,30 +46,6 @@ describe('SolveRecord', () => {
     return { cube, fixture, solve };
   }
 
-  it('+2ボタンでペナルティの適用と解除を切り替える', () => {
-    const { cube, fixture, solve } = createFixture();
-    const button = fixture.nativeElement.querySelectorAll(
-      '.row-actions button',
-    )[0] as HTMLButtonElement;
-
-    button.click();
-    expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('+2');
-    button.click();
-    expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('none');
-  });
-
-  it('DNFボタンでペナルティの適用と解除を切り替える', () => {
-    const { cube, fixture, solve } = createFixture();
-    const button = fixture.nativeElement.querySelectorAll(
-      '.row-actions button',
-    )[1] as HTMLButtonElement;
-
-    button.click();
-    expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('DNF');
-    button.click();
-    expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('none');
-  });
-
   it('Aoと日時を一覧に表示し、スクランブルは詳細ダイアログで開く', () => {
     const { fixture, solve } = createFixture();
 
@@ -79,25 +55,5 @@ describe('SolveRecord', () => {
     (fixture.nativeElement.querySelector('.row-details') as HTMLButtonElement).click();
 
     expect(dialog.open).toHaveBeenCalledWith(SolveDetailDialog, { data: solve });
-  });
-
-  it('リトライ対象を設定してタイマー画面へ移動する', () => {
-    const { cube, fixture, solve } = createFixture();
-    const router = TestBed.inject(Router);
-    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
-
-    (fixture.nativeElement.querySelector('.row-retry') as HTMLButtonElement).click();
-
-    expect(cube.takeRetrySolve()).toEqual(solve);
-    expect(navigate).toHaveBeenCalledWith(['/timer']);
-  });
-
-  it('削除確認後に計測記録を削除する', () => {
-    const { cube, fixture, solve } = createFixture();
-
-    (fixture.nativeElement.querySelector('.row-delete') as HTMLButtonElement).click();
-
-    expect(confirm.delete).toHaveBeenCalledOnce();
-    expect(cube.solves().some(({ id }) => id === solve.id)).toBe(false);
   });
 });

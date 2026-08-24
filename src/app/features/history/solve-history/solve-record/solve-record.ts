@@ -5,15 +5,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { CubeService } from '../../../../core/cube';
 import { Solve } from '../../../../core/cube.models';
-import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
-import { Router } from '@angular/router';
+import { SolveActions } from '../solve-actions/solve-actions';
 import { SolveDetailDialog } from '../solve-detail-dialog/solve-detail-dialog';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 /** 1件の計測記録と、そのペナルティ・削除操作を表示するコンポーネント。 */
 @Component({
   selector: 'app-solve-record',
-  imports: [CommonModule, MatButtonModule, MatIconModule, TranslocoPipe],
+  imports: [CommonModule, MatButtonModule, MatIconModule, SolveActions, TranslocoPipe],
   templateUrl: './solve-record.html',
   styleUrl: './solve-record.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,35 +29,8 @@ export class SolveRecord {
 
   /** 計測記録の表示と更新を行うサービス。 */
   protected readonly cube = inject(CubeService);
-  /** 記録削除の確認を表示するサービス。 */
-  private readonly confirm = inject(ConfirmService);
-  /** 確認メッセージを現在の言語へ翻訳するサービス。 */
-  private readonly i18n = inject(TranslocoService);
-  /** リトライ時にタイマー画面へ移動するルーター。 */
-  private readonly router = inject(Router);
-
   /** 記録の低優先度情報を詳細表示するダイアログサービス。 */
   private readonly dialog = inject(MatDialog);
-  /** 確認後にこの計測記録を削除する。 */
-  protected delete(): void {
-    this.confirm
-      .delete(
-        this.i18n.translate('history.deleteSolveTitle'),
-        this.i18n.translate('history.deleteSolveMessage'),
-      )
-      .subscribe((confirmed) => {
-        if (confirmed) this.cube.removeSolve(this.solve().id);
-      });
-  }
-
-  /**
-   * この記録と同じスクランブルで再計測できるようにして、タイマー画面へ移動する。
-   * 画面遷移後に元記録のカテゴリーと記録グループも引き継ぐ。
-   */
-  protected retry(): void {
-    this.cube.prepareRetry(this.solve());
-    void this.router.navigate(['/timer']);
-  }
 
   /**
    * スクランブルや展開図を含む、この記録の詳細を表示する。

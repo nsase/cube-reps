@@ -1,0 +1,18 @@
+:host {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+button.on {
+  background: var(--text-color);
+  color: var(--primary-color);
+}
+
+.row-delete {
+  color: var(--danger-color);
+
+  &:hover {
+    background: color-mix(in srgb, var(--danger-color) 12%, transparent);
+  }
+}

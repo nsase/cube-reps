@@ -99,4 +99,13 @@ test('一覧にAoと日時を表示し、スクランブルと展開図を詳細
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('code')).toHaveText(scramble);
   await expect(dialog.locator('app-solve-pattern')).toBeVisible();
+  await expect(dialog.getByRole('button', { name: '+2' })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'DNF' })).toBeVisible();
+  await expect(
+    dialog.getByRole('button', { name: /この記録をリトライ|Retry solve/ }),
+  ).toBeVisible();
+  await expect(dialog.getByRole('button', { name: /計測記録を削除|Delete solve/ })).toBeVisible();
+
+  await dialog.getByRole('button', { name: '+2' }).click();
+  await expect(dialog.locator('.result')).toHaveText('3.00+');
 });
