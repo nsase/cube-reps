@@ -52,7 +52,7 @@ $muted: var(--text-muted-color);
   white-space: nowrap;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1200px) {
   .row-actions {
     grid-column: 1 / -1;
   }
