@@ -11,6 +11,7 @@ import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.servic
 @Component({
   selector: 'app-solve-actions',
   imports: [MatButtonModule, MatIconModule, TranslocoPipe],
+  host: { '[class.detailed]': 'detailed()' },
   templateUrl: './solve-actions.html',
   styleUrl: './solve-actions.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +19,8 @@ import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.servic
 export class SolveActions {
   /** 操作する計測記録。 */
   readonly solve = input.required<Solve>();
+  /** retryと削除をアイコンだけでなくテキスト付きで表示するか。 */
+  readonly detailed = input(false);
   /** 記録を削除したことを呼び出し元へ通知する。 */
   readonly deleted = output<void>();
   /** リトライのためタイマーへ移動することを呼び出し元へ通知する。 */

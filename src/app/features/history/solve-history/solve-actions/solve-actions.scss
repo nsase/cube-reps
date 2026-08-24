@@ -4,6 +4,11 @@
   gap: 4px;
 }
 
+:host(.detailed) {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 button.on {
   background: var(--text-color);
   color: var(--primary-color);

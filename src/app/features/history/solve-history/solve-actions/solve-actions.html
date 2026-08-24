@@ -12,21 +12,32 @@
 >
   DNF
 </button>
-<button
-  mat-icon-button
-  class="row-retry"
-  [attr.aria-label]="'history.retrySolve' | transloco"
-  [title]="'history.retrySolve' | transloco"
-  (click)="retry()"
->
-  <mat-icon>replay</mat-icon>
-</button>
-<button
-  mat-icon-button
-  class="row-delete"
-  [attr.aria-label]="'history.deleteSolve' | transloco"
-  [title]="'history.deleteSolve' | transloco"
-  (click)="delete()"
->
-  <mat-icon>delete</mat-icon>
-</button>
+@if (detailed()) {
+  <button mat-button class="row-retry" (click)="retry()">
+    <mat-icon>replay</mat-icon>
+    {{ 'history.retrySolve' | transloco }}
+  </button>
+  <button mat-button class="row-delete" (click)="delete()">
+    <mat-icon>delete</mat-icon>
+    {{ 'history.deleteSolve' | transloco }}
+  </button>
+} @else {
+  <button
+    mat-icon-button
+    class="row-retry"
+    [attr.aria-label]="'history.retrySolve' | transloco"
+    [title]="'history.retrySolve' | transloco"
+    (click)="retry()"
+  >
+    <mat-icon>replay</mat-icon>
+  </button>
+  <button
+    mat-icon-button
+    class="row-delete"
+    [attr.aria-label]="'history.deleteSolve' | transloco"
+    [title]="'history.deleteSolve' | transloco"
+    (click)="delete()"
+  >
+    <mat-icon>delete</mat-icon>
+  </button>
+}
