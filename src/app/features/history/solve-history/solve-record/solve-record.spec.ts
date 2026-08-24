@@ -46,10 +46,13 @@ describe('SolveRecord', () => {
     return { cube, fixture, solve };
   }
 
-  it('Aoと日時を一覧に表示し、スクランブルは詳細ダイアログで開く', () => {
+  it('ヘッダーに対応する値だけを表示し、スクランブルは詳細ダイアログで開く', () => {
     const { fixture, solve } = createFixture();
 
-    expect(fixture.nativeElement.querySelector('.averages').textContent).toContain('2.00');
+    expect(fixture.nativeElement.querySelector('.ao5').textContent).toContain('2.00');
+    expect(fixture.nativeElement.querySelector('.ao12').textContent).toContain('3.00');
+    expect(fixture.nativeElement.textContent).not.toContain('Ao5');
+    expect(fixture.nativeElement.textContent).not.toContain('フルソルブ');
     expect(fixture.nativeElement.querySelector('time')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('code')).toBeNull();
     (fixture.nativeElement.querySelector('.row-details') as HTMLButtonElement).click();

@@ -7,11 +7,23 @@ $muted: var(--text-muted-color);
 
 .history {
   display: grid;
-  grid-template-columns: 40px 105px minmax(130px, 1fr) 110px max-content;
+  grid-template-columns: 40px 90px 70px 70px 120px minmax(80px, 1fr) max-content;
   overflow: hidden;
   border: 1px solid $line;
   border-radius: 9px;
   background: var(--surface-color);
+}
+
+.history-header {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px;
+  border-bottom: 1px solid $line;
+  color: $muted;
+  font: 500 var(--font-size-small) var(--font-family-mono);
 }
 
 .history-title {
@@ -48,12 +60,22 @@ mat-paginator {
 
 @media (max-width: 900px) {
   .history {
-    grid-template-columns: 30px 95px minmax(130px, 1fr) 100px;
+    grid-template-columns: 30px 85px 65px 65px 105px minmax(70px, 1fr);
+  }
+
+  .column-actions {
+    display: none;
   }
 }
 
 @media (max-width: 620px) {
   .history {
-    grid-template-columns: 27px 82px minmax(120px, 1fr);
+    grid-template-columns: 25px 60px 48px 48px 85px minmax(55px, 1fr);
+  }
+
+  .history-header {
+    gap: 6px;
+    padding: 8px 10px;
+    font-size: 10px;
   }
 }
