@@ -20,6 +20,8 @@
     "mean": "Mean",
     "ao5": "Ao5",
     "ao12": "Ao12",
+    "ao50": "Ao50",
+    "ao100": "Ao100",
     "recentAverage": "Last 5 average"
   },
   "timer": {

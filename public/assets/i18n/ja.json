@@ -20,6 +20,8 @@
     "mean": "平均",
     "ao5": "Ao5",
     "ao12": "Ao12",
+    "ao50": "Ao50",
+    "ao100": "Ao100",
     "recentAverage": "直近5回 平均"
   },
   "timer": {
@@ -81,7 +83,7 @@
     "chartRange": "表示範囲",
     "chartRangeRecent": "直近{{count}}回",
     "chartRangeAll": "すべて",
-    "progressChartDescription": "各計測時点の結果、ベスト、AO5、AO12を表す折れ線グラフ",
+    "progressChartDescription": "各計測時点の結果、ベスト、Ao5、Ao12を表す折れ線グラフ",
     "solveResult": "結果",
     "solveNumber": "ソルブ {{number}}",
     "solveHistory": "SOLVE HISTORY",

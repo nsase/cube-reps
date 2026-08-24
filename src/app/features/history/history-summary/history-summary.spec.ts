@@ -89,5 +89,11 @@ describe('HistorySummary', () => {
       '.summaries article',
     ) as NodeListOf<HTMLElement>;
     expect(articles[1]?.textContent?.trim()).toBe('Mean—');
+    expect(Array.from(articles, (article) => article.textContent?.trim()).slice(2)).toEqual([
+      'Ao5—',
+      'Ao12—',
+      'Ao50—',
+      'Ao100—',
+    ]);
   });
 });
