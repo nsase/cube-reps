@@ -6,7 +6,7 @@
       [attr.aria-label]="'timer.refreshScramble' | transloco"
       [title]="'timer.refreshScramble' | transloco"
       [disabled]="store.scrambleGenerating()"
-      (click)="store.newScramble()"
+      (click)="newScramble($event)"
     >
       <mat-icon>refresh</mat-icon>
     </button>

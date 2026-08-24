@@ -27,3 +27,20 @@ test('時計文字が割り当て領域へ収まる', async ({ page }) => {
   expect(timeBox!.width).toBeLessThanOrEqual(clockBox!.width);
   expect(timeBox!.height).toBeLessThanOrEqual(clockBox!.height);
 });
+
+test('スクランブル再作成後のSpace操作でタイマーを開始する', async ({ page }) => {
+  const refreshButton = page.getByRole('button', { name: /スクランブルを更新|Refresh scramble/ });
+  const clock = page.locator('app-timer-clock .clock');
+  const time = clock.locator('strong');
+  await expect(refreshButton).toBeEnabled();
+
+  await refreshButton.focus();
+  await refreshButton.press('Enter');
+  await expect(refreshButton).toBeEnabled();
+
+  await page.keyboard.down('Space');
+  await expect(clock).toHaveClass(/\bready\b/);
+  await page.keyboard.up('Space');
+
+  await expect(time).not.toHaveText('0.00');
+});
