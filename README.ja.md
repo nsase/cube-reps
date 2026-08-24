@@ -39,6 +39,7 @@ Node.jsとnpmを用意し、リポジトリ内で次のコマンドを実行し�
 
 ```bash
 npm install
+npx playwright install chromium
 npm start
 ```
 
@@ -51,6 +52,7 @@ npm start
 | `npm start`               | 開発サーバーを起動               |
 | `npm run build`           | プロダクションビルドを作成       |
 | `npm test`                | Vitestでテストを実行             |
+| `npm run test:e2e`        | Playwrightでブラウザテストを実行 |
 | `npm run prettier:format` | プロジェクト全体をPrettierで整形 |
 
 ビルド成果物は`dist/cube-stride`へ出力されます。
@@ -73,6 +75,7 @@ npm start
 - Angular Signals / Signal Store
 - Transloco
 - Vitest
+- Playwright
 - SCSS
 
 各画面はStandalone Componentとして構成し、ルート単位で遅延読み込みしています。アプリ全体の永続データはrootサービス、タイマーや履歴画面の一時状態は画面スコープのSignal Storeで管理しています。
