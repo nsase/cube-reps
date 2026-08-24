@@ -1,18 +1,18 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { CubeService } from '../../../../core/cube';
 import { Solve } from '../../../../core/cube.models';
 import { SolveActions } from '../solve-actions/solve-actions';
 import { SolveDetailDialog } from '../solve-detail-dialog/solve-detail-dialog';
-import { TranslocoPipe } from '@jsverse/transloco';
 
 /** 1件の計測記録と、そのペナルティ・削除操作を表示するコンポーネント。 */
 @Component({
   selector: 'app-solve-record',
-  imports: [CommonModule, MatButtonModule, MatIconModule, SolveActions, TranslocoPipe],
+  imports: [MatButtonModule, MatIconModule, SolveActions, TranslocoPipe],
   templateUrl: './solve-record.html',
   styleUrl: './solve-record.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,6 +29,26 @@ export class SolveRecord {
 
   /** 計測記録の表示と更新を行うサービス。 */
   protected readonly cube = inject(CubeService);
+  /** 表示中の言語と変更通知を提供するサービス。 */
+  private readonly i18n = inject(TranslocoService);
+  /** 一覧を表示したまま切り替えられる現在の言語。 */
+  private readonly activeLang = toSignal(this.i18n.langChanges$, {
+    initialValue: this.i18n.getActiveLang(),
+  });
+  /**
+   * 年を省略し、現在の表示言語に合わせて短く整形した計測日時。
+   * 英語では月名を使い、月と日の順序を誤解しない表記にする。
+   */
+  protected readonly formattedDate = computed(() => {
+    const locale = this.activeLang() === 'ja' ? 'ja-JP' : 'en-US';
+    return new Intl.DateTimeFormat(locale, {
+      month: locale === 'ja-JP' ? '2-digit' : 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).format(new Date(this.solve().date));
+  });
   /** 記録の低優先度情報を詳細表示するダイアログサービス。 */
   private readonly dialog = inject(MatDialog);
 
