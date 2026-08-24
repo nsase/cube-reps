@@ -39,6 +39,7 @@ Install Node.js and npm, then run the following commands in the repository:
 
 ```bash
 npm install
+npx playwright install chromium
 npm start
 ```
 
@@ -46,12 +47,13 @@ The development server normally starts at [http://localhost:4200](http://localho
 
 ## Development commands
 
-| Command                   | Description                      |
-| ------------------------- | -------------------------------- |
-| `npm start`               | Start the development server     |
-| `npm run build`           | Create a production build        |
-| `npm test`                | Run tests with Vitest            |
-| `npm run prettier:format` | Format the project with Prettier |
+| Command                   | Description                       |
+| ------------------------- | --------------------------------- |
+| `npm start`               | Start the development server      |
+| `npm run build`           | Create a production build         |
+| `npm test`                | Run tests with Vitest             |
+| `npm run test:e2e`        | Run browser tests with Playwright |
+| `npm run prettier:format` | Format the project with Prettier  |
 
 Build output is written to `dist/cube-stride`.
 
@@ -73,6 +75,7 @@ Data is tied to the browser and origin in use. Clearing the site's browser data 
 - Angular Signals / Signal Store
 - Transloco
 - Vitest
+- Playwright
 - SCSS
 
 Each page uses standalone components and route-level lazy loading. Persistent application data is managed by root services, while temporary timer and history state is managed by screen-scoped Signal Stores.
