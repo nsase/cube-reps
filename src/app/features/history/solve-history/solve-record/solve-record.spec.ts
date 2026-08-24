@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { of } from 'rxjs';
 import { CubeService } from '../../../../core/cube';
 import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
@@ -36,7 +37,8 @@ describe('SolveRecord', () => {
   function createFixture() {
     const cube = TestBed.inject(CubeService);
     cube.addSolve(1234, 'R U', 'full');
-    const solve = cube.solves()[0];
+    const solve = { ...cube.solves()[0], date: '2026-08-24T09:28:00.000Z' };
+    cube.solves.set([solve]);
     const fixture = TestBed.createComponent(SolveRecord);
     fixture.componentRef.setInput('solve', solve);
     fixture.componentRef.setInput('recordNumber', 1);
@@ -58,5 +60,18 @@ describe('SolveRecord', () => {
     (fixture.nativeElement.querySelector('.row-details') as HTMLButtonElement).click();
 
     expect(dialog.open).toHaveBeenCalledWith(SolveDetailDialog, { data: solve });
+  });
+
+  it('言語に応じて年なしの短い計測日時を表示する', () => {
+    const i18n = TestBed.inject(TranslocoService);
+    i18n.setActiveLang('en');
+    const { fixture } = createFixture();
+    const date = fixture.nativeElement.querySelector('time') as HTMLElement;
+    expect(date.textContent).toBe('Aug 24, 09:28');
+
+    i18n.setActiveLang('ja');
+    fixture.detectChanges();
+
+    expect(date.textContent).toBe('08/24 09:28');
   });
 });

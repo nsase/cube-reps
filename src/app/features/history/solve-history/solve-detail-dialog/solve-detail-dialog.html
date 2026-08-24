@@ -15,7 +15,7 @@
     </div>
     <div>
       <dt>{{ 'history.recordedAt' | transloco }}</dt>
-      <dd>{{ currentSolve().date | date: 'medium' }}</dd>
+      <dd class="recorded-date">{{ formattedDate() }}</dd>
     </div>
   </dl>
   <section>

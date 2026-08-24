@@ -4,7 +4,7 @@
 </div>
 <span class="average ao5">{{ formatAverage(ao5()) }}</span>
 <span class="average ao12">{{ formatAverage(ao12()) }}</span>
-<time>{{ solve().date | date: 'MM/dd HH:mm' }}</time>
+<time>{{ formattedDate() }}</time>
 <span class="group-badge">{{ cube.groupName(solve().groupId) }}</span>
 <div class="row-actions">
   <button

@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { CubeService } from '../../../../core/cube';
 import { Solve } from '../../../../core/cube.models';
 import { SolveDetailDialog } from './solve-detail-dialog';
@@ -42,5 +43,21 @@ describe('SolveDetailDialog', () => {
     (fixture.nativeElement.querySelector('app-solve-actions button') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.result').textContent).toContain('3.23');
+  });
+
+  it('言語切替後に計測日時のロケールを更新する', () => {
+    TestBed.inject(CubeService).solves.set([solve]);
+    const i18n = TestBed.inject(TranslocoService);
+    i18n.setActiveLang('en');
+    const fixture = TestBed.createComponent(SolveDetailDialog);
+    fixture.detectChanges();
+    const date = fixture.nativeElement.querySelector('.recorded-date') as HTMLElement;
+    const englishDate = date.textContent;
+
+    i18n.setActiveLang('ja');
+    fixture.detectChanges();
+
+    expect(date.textContent).not.toBe(englishDate);
+    expect(date.textContent).toContain('1970');
   });
 });
