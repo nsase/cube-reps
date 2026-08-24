@@ -1,29 +1,30 @@
 <h2 mat-dialog-title>{{ 'history.solveDetails' | transloco }}</h2>
 <mat-dialog-content>
-  <strong class="result">{{ cube.displayTime(solve) }}</strong>
+  <strong class="result">{{ cube.displayTime(currentSolve()) }}</strong>
   <dl>
     <div>
       <dt>{{ 'history.solveCategory' | transloco }}</dt>
       <dd>
-        {{ 'solveCategories.' + solve.category | transloco
-        }}{{ solve.caseName ? ' · ' + solve.caseName : '' }}
+        {{ 'solveCategories.' + currentSolve().category | transloco
+        }}{{ currentSolve().caseName ? ' · ' + currentSolve().caseName : '' }}
       </dd>
     </div>
     <div>
       <dt>{{ 'history.recordGroup' | transloco }}</dt>
-      <dd>{{ cube.groupName(solve.groupId) }}</dd>
+      <dd>{{ cube.groupName(currentSolve().groupId) }}</dd>
     </div>
     <div>
       <dt>{{ 'history.recordedAt' | transloco }}</dt>
-      <dd>{{ solve.date | date: 'medium' }}</dd>
+      <dd>{{ currentSolve().date | date: 'medium' }}</dd>
     </div>
   </dl>
   <section>
     <h3>{{ 'history.scramble' | transloco }}</h3>
-    <code>{{ solve.scramble }}</code>
-    <app-solve-pattern [category]="solve.category" [scramble]="solve.scramble" />
+    <code>{{ currentSolve().scramble }}</code>
+    <app-solve-pattern [category]="currentSolve().category" [scramble]="currentSolve().scramble" />
   </section>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
+  <app-solve-actions [solve]="solve" (deleted)="close()" (retried)="close()" />
   <button mat-button mat-dialog-close>{{ 'common.close' | transloco }}</button>
 </mat-dialog-actions>
