@@ -36,7 +36,9 @@ test('スクランブル再作成後のSpace操作でタイマーを開始する
 
   await refreshButton.focus();
   await refreshButton.press('Enter');
+  await page.evaluate(() => new Promise(requestAnimationFrame));
   await expect(refreshButton).toBeEnabled();
+  await expect(refreshButton).not.toBeFocused();
 
   await page.keyboard.down('Space');
   await expect(clock).toHaveClass(/\bready\b/);

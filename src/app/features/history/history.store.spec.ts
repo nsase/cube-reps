@@ -70,6 +70,30 @@ describe('HistoryStore', () => {
     expect(store.pagedSolves()[0].id).toBe('201');
   });
 
+  it('各記録時点の通し番号とAo5・Ao12を一覧行へ設定する', () => {
+    const cube = TestBed.inject(CubeService);
+    const store = TestBed.inject(HistoryStore);
+    cube.solves.set(
+      Array.from({ length: 12 }, (_, index) => ({
+        id: String(12 - index),
+        time: (index + 1) * 1000,
+        scramble: 'R U',
+        date: new Date(12 - index).toISOString(),
+        category: 'full' as const,
+        groupId: 'unclassified',
+        penalty: 'none' as const,
+      })),
+    );
+
+    expect(store.pagedRows()[0]).toMatchObject({
+      number: 12,
+      ao5: 3000,
+      ao12: 6500,
+    });
+    expect(store.pagedRows()[11]).toMatchObject({ number: 1 });
+    expect(store.pagedRows()[11].ao5).toBeUndefined();
+  });
+
   it('絞り込み変更と最終ページ削除時に有効なページへ戻る', () => {
     const cube = TestBed.inject(CubeService);
     const store = TestBed.inject(HistoryStore);

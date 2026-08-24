@@ -1,43 +1,20 @@
-<span>#{{ recordNumber() }}</span>
-<div>
-  <strong>{{ cube.displayTime(solve()) }}</strong
-  ><small
-    >{{ 'solveCategories.' + solve().category | transloco
-    }}{{ solve().caseName ? ' · ' + solve().caseName : '' }}</small
-  >
+<span class="record-number">{{ recordNumber() }}</span>
+<div class="result">
+  <strong>{{ cube.displayTime(solve()) }}</strong>
 </div>
-<code>{{ solve().scramble }}</code>
-<app-solve-pattern [category]="solve().category" [scramble]="solve().scramble" />
-<time>{{ solve().date | date: 'MM/dd HH:mm' }}</time>
+<span class="average ao5">{{ formatAverage(ao5()) }}</span>
+<span class="average ao12">{{ formatAverage(ao12()) }}</span>
+<time>{{ formattedDate() }}</time>
+<span class="group-badge">{{ cube.groupName(solve().groupId) }}</span>
 <div class="row-actions">
-  <span class="group-badge">{{ cube.groupName(solve().groupId) }}</span
-  ><button
-    mat-button
-    [class.on]="solve().penalty === '+2'"
-    (click)="cube.togglePenalty(solve().id, '+2')"
-  >
-    +2</button
-  ><button
-    mat-button
-    [class.on]="solve().penalty === 'DNF'"
-    (click)="cube.togglePenalty(solve().id, 'DNF')"
-  >
-    DNF</button
-  ><button
+  <button
     mat-icon-button
-    class="row-retry"
-    [attr.aria-label]="'history.retrySolve' | transloco"
-    [title]="'history.retrySolve' | transloco"
-    (click)="retry()"
+    class="row-details"
+    [attr.aria-label]="'history.viewSolveDetails' | transloco"
+    [title]="'history.viewSolveDetails' | transloco"
+    (click)="showDetails()"
   >
-    <mat-icon>replay</mat-icon></button
-  ><button
-    mat-icon-button
-    class="row-delete"
-    [attr.aria-label]="'history.deleteSolve' | transloco"
-    [title]="'history.deleteSolve' | transloco"
-    (click)="delete()"
-  >
-    <mat-icon>delete</mat-icon>
+    <mat-icon>info</mat-icon>
   </button>
+  <app-solve-actions [solve]="solve()" />
 </div>
