@@ -1,14 +1,14 @@
-# CubeStride
+# CubeReps
 
 <p align="center">
-  <img src="public/cube-stride-mark.svg" alt="CubeStride logo" width="96" height="96">
+  <img src="public/cube-reps-mark.svg" alt="CubeReps logo" width="96" height="96">
 </p>
 
 **English** | [日本語](README.ja.md)
 
-CubeStride is a browser-based Rubik's Cube timer and training app for full solves, OLL, and PLL. Solve records and preferences are stored in your browser, so no account or server connection is required.
+CubeReps is a browser-based Rubik's Cube timer and training app for full solves, OLL, and PLL. Solve records and preferences are stored in your browser, so no account or server connection is required.
 
-[Open CubeStride](https://nsase.github.io/cube-stride/)
+[Open CubeReps](https://nsase.github.io/cube-reps/)
 
 ## Features
 
@@ -55,7 +55,7 @@ The development server normally starts at [http://localhost:4200](http://localho
 | `npm run test:e2e`        | Run browser tests with Playwright |
 | `npm run prettier:format` | Format the project with Prettier  |
 
-Build output is written to `dist/cube-stride`.
+Build output is written to `dist/cube-reps`.
 
 ## Data storage
 
@@ -66,7 +66,7 @@ The following data is stored in your browser's `localStorage`:
 - Custom and favorite OLL and PLL algorithms
 - Display language
 
-Data is tied to the browser and origin in use. Clearing the site's browser data also deletes CubeStride records. Cloud synchronization and data export are not currently available.
+Data is tied to the browser and origin in use. Clearing the site's browser data also deletes CubeReps records. Cloud synchronization and data export are not currently available.
 
 ## Technology
 
@@ -91,4 +91,4 @@ src/app/
 
 ## License
 
-CubeStride is available under the [0BSD (Zero-Clause BSD) License](LICENSE). You may use, copy, modify, and redistribute it for personal or commercial purposes.
+CubeReps is available under the [0BSD (Zero-Clause BSD) License](LICENSE). You may use, copy, modify, and redistribute it for personal or commercial purposes.
