@@ -6,7 +6,6 @@ import { expectNoHorizontalOverflow, expectResponsiveLayout } from './support/la
 const layoutItems = 'app-timer-settings, app-timer-clock, app-timer-scramble, app-timer-stats';
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.clear());
   await page.goto('/#/timer');
   await expect(page.locator('app-timer')).toBeVisible();
 });
