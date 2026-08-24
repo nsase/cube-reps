@@ -70,8 +70,8 @@ test('履歴のスクランブルを引き継いでタイマーでリトライ�
 
 test('ヘッダーと記録の列を揃え、スクランブルと展開図を詳細で表示する', async ({ page }) => {
   const scramble = 'R U F';
-  const solves = Array.from({ length: 12 }, (_, index) => ({
-    id: String(12 - index),
+  const solves = Array.from({ length: 1234 }, (_, index) => ({
+    id: String(1234 - index),
     time: (index + 1) * 1000,
     scramble,
     date: new Date(Date.UTC(2026, 0, 12 - index)).toISOString(),
@@ -93,6 +93,7 @@ test('ヘッダーと記録の列を揃え、スクランブルと展開図を�
   await expect(header).toContainText(/記録先|Record group/);
   await expect(firstRecord.locator('.ao5')).toHaveText('3.00');
   await expect(firstRecord.locator('.ao12')).toHaveText('6.50');
+  await expect(firstRecord.locator('.record-number')).toHaveText('1234');
   await expect(firstRecord).not.toContainText('フルソルブ');
   await expect(firstRecord).not.toContainText('Ao5');
   await expect(firstRecord.locator('time')).toBeVisible();
@@ -110,6 +111,10 @@ test('ヘッダーと記録の列を揃え、スクランブルと展開図を�
   recordPositions.forEach((position, index) => {
     expect(Math.abs(position - headerPositions[index])).toBeLessThanOrEqual(1);
   });
+  const numberFitsColumn = await firstRecord.locator('.record-number').evaluate((number) => {
+    return number.scrollWidth <= number.clientWidth;
+  });
+  expect(numberFitsColumn).toBe(true);
 
   await firstRecord
     .getByRole('button', { name: /計測記録の詳細を表示|View solve details/ })

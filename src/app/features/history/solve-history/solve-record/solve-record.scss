@@ -16,6 +16,12 @@ $muted: var(--text-muted-color);
     font: 500 var(--font-size-small) var(--font-family-mono);
   }
 
+  .record-number {
+    min-width: 0;
+    text-align: right;
+    white-space: nowrap;
+  }
+
   .result strong {
     display: block;
     font: 600 var(--font-size-large) var(--font-family-heading);
