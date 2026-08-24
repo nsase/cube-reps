@@ -20,6 +20,7 @@ CubeReps is a browser-based Rubik's Cube timer and training app for full solves,
 - Create, rename, and delete record groups
 - Statistics for best, overall average, Ao5, Ao12, Ao50, and Ao100
 - `+2` and `DNF` penalties for solve records
+- Retry any solve from history with its original scramble, category, and record group
 - English and Japanese interfaces
 - Responsive layouts for desktop, tablet, and mobile devices
 

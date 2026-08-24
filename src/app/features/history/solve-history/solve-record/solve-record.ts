@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { CubeService } from '../../../../core/cube';
 import { Solve } from '../../../../core/cube.models';
 import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
+import { Router } from '@angular/router';
 import { SolvePattern } from '../../../../shared/solve-pattern/solve-pattern';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
@@ -28,6 +29,8 @@ export class SolveRecord {
   private readonly confirm = inject(ConfirmService);
   /** 確認メッセージを現在の言語へ翻訳するサービス。 */
   private readonly i18n = inject(TranslocoService);
+  /** リトライ時にタイマー画面へ移動するルーター。 */
+  private readonly router = inject(Router);
 
   /** 確認後にこの計測記録を削除する。 */
   protected delete(): void {
@@ -39,5 +42,14 @@ export class SolveRecord {
       .subscribe((confirmed) => {
         if (confirmed) this.cube.removeSolve(this.solve().id);
       });
+  }
+
+  /**
+   * この記録と同じスクランブルで再計測できるようにして、タイマー画面へ移動する。
+   * 画面遷移後に元記録のカテゴリーと記録グループも引き継ぐ。
+   */
+  protected retry(): void {
+    this.cube.prepareRetry(this.solve());
+    void this.router.navigate(['/timer']);
   }
 }

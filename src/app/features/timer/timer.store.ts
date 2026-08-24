@@ -53,11 +53,23 @@ export class TimerStore implements OnDestroy {
   /** 計測開始を許可するまでの長押し時間（ミリ秒）。 */
   private static readonly START_HOLD_DURATION = 500;
 
-  /** 初期カテゴリーをrootサービスへ同期し、最初のスクランブル生成を開始する。 */
+  /**
+   * 初期カテゴリーをrootサービスへ同期し、最初のスクランブルを設定する。
+   * 履歴からのリトライでは元記録の条件を復元し、通常表示では新しいスクランブルを生成する。
+   */
   constructor() {
+    const retrySolve = this.cube.takeRetrySolve();
+    if (retrySolve) {
+      this.category.set(retrySolve.category);
+      const selectedCase = this.drillCases().findIndex(
+        ({ number }) => number === retrySolve.caseName,
+      );
+      this.selectedCase.set(Math.max(selectedCase, 0));
+      this.scramble.set(retrySolve.scramble);
+    }
     this.cube.activeSolveCategory.set(this.category());
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
-    this.updateScramble();
+    if (!retrySolve) this.updateScramble();
   }
 
   /** スペース押下で長押し状態へ入り、計測中の場合は停止する。 */

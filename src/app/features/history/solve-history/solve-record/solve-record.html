@@ -25,6 +25,14 @@
     DNF</button
   ><button
     mat-icon-button
+    class="row-retry"
+    [attr.aria-label]="'history.retrySolve' | transloco"
+    [title]="'history.retrySolve' | transloco"
+    (click)="retry()"
+  >
+    <mat-icon>replay</mat-icon></button
+  ><button
+    mat-icon-button
     class="row-delete"
     [attr.aria-label]="'history.deleteSolve' | transloco"
     [title]="'history.deleteSolve' | transloco"

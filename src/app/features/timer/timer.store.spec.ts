@@ -98,6 +98,22 @@ describe('TimerStore', () => {
     expect(store.state()).toBe('idle');
   });
 
+  it('履歴のリトライ対象からスクランブルと計測条件を復元する', () => {
+    const cube = TestBed.inject(CubeService);
+    const group = cube.addGroup('Retry group')!;
+    const solve = cube.addSolve(1234, 'R U F', 'pll', 'Aa');
+    cube.prepareRetry(solve);
+
+    const store = TestBed.inject(TimerStore);
+
+    expect(store.category()).toBe('pll');
+    expect(store.drillCases()[store.selectedCase()].number).toBe('Aa');
+    expect(store.scramble()).toBe('R U F');
+    expect(store.scrambleGenerating()).toBe(false);
+    expect(cube.activeGroupId()).toBe(group.id);
+    expect(cube.createScramble).not.toHaveBeenCalled();
+  });
+
   it('PLLモードでは選択中のケース番号を記録へ保存する', () => {
     const store = TestBed.inject(TimerStore);
     const cube = TestBed.inject(CubeService);

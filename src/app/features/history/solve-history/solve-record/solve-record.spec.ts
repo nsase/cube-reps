@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { CubeService } from '../../../../core/cube';
 import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
@@ -16,7 +17,7 @@ describe('SolveRecord', () => {
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [SolveRecord],
-      providers: [{ provide: ConfirmService, useValue: confirm }],
+      providers: [provideRouter([]), { provide: ConfirmService, useValue: confirm }],
     }).compileComponents();
   });
 
@@ -54,6 +55,17 @@ describe('SolveRecord', () => {
     expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('DNF');
     button.click();
     expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('none');
+  });
+
+  it('リトライ対象を設定してタイマー画面へ移動する', () => {
+    const { cube, fixture, solve } = createFixture();
+    const router = TestBed.inject(Router);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    (fixture.nativeElement.querySelector('.row-retry') as HTMLButtonElement).click();
+
+    expect(cube.takeRetrySolve()).toEqual(solve);
+    expect(navigate).toHaveBeenCalledWith(['/timer']);
   });
 
   it('削除確認後に計測記録を削除する', () => {
