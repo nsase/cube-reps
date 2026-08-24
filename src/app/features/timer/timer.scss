@@ -6,6 +6,8 @@
 }
 
 section {
+  container-name: timer;
+  container-type: inline-size;
   display: grid;
   height: 100%;
   min-height: 0;
