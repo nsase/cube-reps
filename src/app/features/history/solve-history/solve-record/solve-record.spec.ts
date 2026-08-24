@@ -1,8 +1,10 @@
 import { TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { CubeService } from '../../../../core/cube';
 import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
+import { SolveDetailDialog } from '../solve-detail-dialog/solve-detail-dialog';
 import { SolveRecord } from './solve-record';
 
 describe('SolveRecord', () => {
@@ -10,14 +12,23 @@ describe('SolveRecord', () => {
   const confirm = {
     delete: vi.fn(() => of(true)),
   };
+  /** 詳細ダイアログを開くMatDialogのテスト用代替。 */
+  const dialog = {
+    open: vi.fn(),
+  };
 
   beforeEach(async () => {
     localStorage.clear();
     confirm.delete.mockClear();
+    dialog.open.mockClear();
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [SolveRecord],
-      providers: [provideRouter([]), { provide: ConfirmService, useValue: confirm }],
+      providers: [
+        provideRouter([]),
+        { provide: ConfirmService, useValue: confirm },
+        { provide: MatDialog, useValue: dialog },
+      ],
     }).compileComponents();
   });
 
@@ -29,6 +40,8 @@ describe('SolveRecord', () => {
     const fixture = TestBed.createComponent(SolveRecord);
     fixture.componentRef.setInput('solve', solve);
     fixture.componentRef.setInput('recordNumber', 1);
+    fixture.componentRef.setInput('ao5', 2000);
+    fixture.componentRef.setInput('ao12', 3000);
     fixture.detectChanges();
     return { cube, fixture, solve };
   }
@@ -55,6 +68,17 @@ describe('SolveRecord', () => {
     expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('DNF');
     button.click();
     expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('none');
+  });
+
+  it('Aoと日時を一覧に表示し、スクランブルは詳細ダイアログで開く', () => {
+    const { fixture, solve } = createFixture();
+
+    expect(fixture.nativeElement.querySelector('.averages').textContent).toContain('2.00');
+    expect(fixture.nativeElement.querySelector('time')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('code')).toBeNull();
+    (fixture.nativeElement.querySelector('.row-details') as HTMLButtonElement).click();
+
+    expect(dialog.open).toHaveBeenCalledWith(SolveDetailDialog, { data: solve });
   });
 
   it('リトライ対象を設定してタイマー画面へ移動する', () => {

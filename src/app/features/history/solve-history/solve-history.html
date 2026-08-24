@@ -3,10 +3,12 @@
     <small>{{ 'history.solveHistory' | transloco }}</small>
     <h2>{{ 'history.records' | transloco }}</h2>
   </div>
-  @for (solve of store.pagedSolves(); track solve.id; let index = $index) {
+  @for (row of store.pagedRows(); track row.solve.id) {
     <app-solve-record
-      [solve]="solve"
-      [recordNumber]="store.filteredSolves().length - store.pageIndex() * store.pageSize - index"
+      [solve]="row.solve"
+      [recordNumber]="row.number"
+      [ao5]="row.ao5"
+      [ao12]="row.ao12"
     />
   } @empty {
     <div class="empty">

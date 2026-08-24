@@ -1,0 +1,51 @@
+mat-dialog-content {
+  display: grid;
+  gap: 20px;
+  width: min(560px, 80vw);
+}
+
+.result {
+  font: 600 var(--font-size-heading) var(--font-family-heading);
+}
+
+dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+
+  div {
+    display: grid;
+    grid-template-columns: minmax(100px, 0.4fr) 1fr;
+    gap: 12px;
+  }
+
+  dt {
+    color: var(--text-muted-color);
+    font-size: var(--font-size-small);
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+
+section {
+  display: grid;
+  gap: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: var(--font-size-medium);
+  }
+
+  code {
+    overflow-wrap: anywhere;
+    color: var(--text-muted-color);
+  }
+}
+
+app-solve-pattern {
+  --solve-pattern-width: min(220px, 60vw);
+
+  justify-self: center;
+}

@@ -1,13 +1,21 @@
-<span>#{{ recordNumber() }}</span>
-<div>
+<span class="record-number">#{{ recordNumber() }}</span>
+<div class="result">
   <strong>{{ cube.displayTime(solve()) }}</strong
   ><small
     >{{ 'solveCategories.' + solve().category | transloco
     }}{{ solve().caseName ? ' · ' + solve().caseName : '' }}</small
   >
 </div>
-<code>{{ solve().scramble }}</code>
-<app-solve-pattern [category]="solve().category" [scramble]="solve().scramble" />
+<dl class="averages">
+  <div>
+    <dt>Ao5</dt>
+    <dd>{{ formatAverage(ao5()) }}</dd>
+  </div>
+  <div>
+    <dt>Ao12</dt>
+    <dd>{{ formatAverage(ao12()) }}</dd>
+  </div>
+</dl>
 <time>{{ solve().date | date: 'MM/dd HH:mm' }}</time>
 <div class="row-actions">
   <span class="group-badge">{{ cube.groupName(solve().groupId) }}</span
@@ -23,6 +31,14 @@
     (click)="cube.togglePenalty(solve().id, 'DNF')"
   >
     DNF</button
+  ><button
+    mat-icon-button
+    class="row-details"
+    [attr.aria-label]="'history.viewSolveDetails' | transloco"
+    [title]="'history.viewSolveDetails' | transloco"
+    (click)="showDetails()"
+  >
+    <mat-icon>info</mat-icon></button
   ><button
     mat-icon-button
     class="row-retry"
