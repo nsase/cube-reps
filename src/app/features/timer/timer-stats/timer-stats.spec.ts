@@ -60,6 +60,10 @@ describe('TimerStats', () => {
     await fixture.whenStable();
 
     expect(displayedValues(fixture)).toEqual(['2.00', '2.50', '—', '—', '—', '—']);
+    expect(fixture.nativeElement.textContent).toContain('Ao5');
+    expect(fixture.nativeElement.textContent).toContain('Ao12');
+    expect(fixture.nativeElement.textContent).toContain('Ao50');
+    expect(fixture.nativeElement.textContent).toContain('Ao100');
   });
 
   it('solveカテゴリーの変更に合わせて集計表示を分離する', async () => {

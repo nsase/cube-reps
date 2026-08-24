@@ -4,8 +4,16 @@
 <div>
   {{ 'common.mean' | transloco }}<strong>{{ formatStatistic(cube.mean()) }}</strong>
 </div>
-<div>AO5<strong>{{ formatStatistic(cube.ao5()) }}</strong></div>
-<div>AO12<strong>{{ formatStatistic(cube.ao12()) }}</strong></div>
-<div>AO50<strong>{{ formatStatistic(cube.ao50()) }}</strong></div>
-<div>AO100<strong>{{ formatStatistic(cube.ao100()) }}</strong></div>
+<div>
+  {{ 'common.ao5' | transloco }}<strong>{{ formatStatistic(cube.ao5()) }}</strong>
+</div>
+<div>
+  {{ 'common.ao12' | transloco }}<strong>{{ formatStatistic(cube.ao12()) }}</strong>
+</div>
+<div>
+  {{ 'common.ao50' | transloco }}<strong>{{ formatStatistic(cube.ao50()) }}</strong>
+</div>
+<div>
+  {{ 'common.ao100' | transloco }}<strong>{{ formatStatistic(cube.ao100()) }}</strong>
+</div>
 <a routerLink="/history">{{ 'timer.allRecords' | transloco }}</a>
