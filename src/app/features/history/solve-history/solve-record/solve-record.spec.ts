@@ -59,7 +59,9 @@ describe('SolveRecord', () => {
     expect(fixture.nativeElement.querySelector('code')).toBeNull();
     (fixture.nativeElement.querySelector('.row-details') as HTMLButtonElement).click();
 
-    expect(dialog.open).toHaveBeenCalledWith(SolveDetailDialog, { data: solve });
+    expect(dialog.open).toHaveBeenCalledWith(SolveDetailDialog, {
+      data: { solve, recordNumber: 1 },
+    });
   });
 
   it('言語に応じて年なしの短い計測日時を表示する', () => {

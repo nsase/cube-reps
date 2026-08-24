@@ -57,7 +57,9 @@ export class SolveRecord {
    * 一覧の情報量を抑えながら、必要な情報へアクセスできるようにダイアログへ分離する。
    */
   protected showDetails(): void {
-    this.dialog.open(SolveDetailDialog, { data: this.solve() });
+    this.dialog.open(SolveDetailDialog, {
+      data: { solve: this.solve(), recordNumber: this.recordNumber() },
+    });
   }
 
   /**
