@@ -65,9 +65,9 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.brand')?.textContent).toContain('CubeStride');
+    expect(fixture.nativeElement.querySelector('.brand')?.textContent).toContain('CubeReps');
     const logo = fixture.nativeElement.querySelector('.brand img') as HTMLImageElement;
-    expect(logo.getAttribute('src')).toBe('cube-stride-mark.svg');
+    expect(logo.getAttribute('src')).toBe('cube-reps-mark.svg');
     expect(logo.getAttribute('alt')).toBe('');
   });
 
@@ -198,7 +198,7 @@ describe('App', () => {
     expect(fixture.nativeElement.querySelector('app-timer-settings strong')?.textContent).toContain(
       '未分類',
     );
-    expect(localStorage.getItem('cube-stride.language')).toBe('ja');
+    expect(localStorage.getItem('cube-reps.language')).toBe('ja');
     expect(document.documentElement.lang).toBe('ja');
   });
 });

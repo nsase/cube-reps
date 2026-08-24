@@ -27,7 +27,7 @@ test('途中のDNFを飛ばして前後の結果を線でつなぐ', async ({ pa
     penalty: index === 2 || index === 3 ? 'DNF' : 'none',
   }));
   await page.evaluate((storedSolves) => {
-    localStorage.setItem('cube-stride.solves', JSON.stringify(storedSolves));
+    localStorage.setItem('cube-reps.solves', JSON.stringify(storedSolves));
   }, solves);
   await page.reload();
 
