@@ -1,14 +1,14 @@
-# CubeStride
+# CubeReps
 
 <p align="center">
-  <img src="public/cube-stride-mark.svg" alt="CubeStride logo" width="96" height="96">
+  <img src="public/cube-reps-mark.svg" alt="CubeReps logo" width="96" height="96">
 </p>
 
 [English](README.md) | **日本語**
 
-CubeStrideは、スピードキューブの計測とOLL・PLL練習をブラウザ上で完結できるWebアプリです。計測記録や設定はブラウザ内に保存されるため、アカウント登録やサーバー接続は必要ありません。
+CubeRepsは、スピードキューブの計測とOLL・PLL練習をブラウザ上で完結できるWebアプリです。計測記録や設定はブラウザ内に保存されるため、アカウント登録やサーバー接続は必要ありません。
 
-[CubeStrideを開く](https://nsase.github.io/cube-stride/)
+[CubeRepsを開く](https://nsase.github.io/cube-reps/)
 
 ## 主な機能
 
@@ -55,7 +55,7 @@ npm start
 | `npm run test:e2e`        | Playwrightでブラウザテストを実行 |
 | `npm run prettier:format` | プロジェクト全体をPrettierで整形 |
 
-ビルド成果物は`dist/cube-stride`へ出力されます。
+ビルド成果物は`dist/cube-reps`へ出力されます。
 
 ## データの保存
 
@@ -66,7 +66,7 @@ npm start
 - OLL・PLLの追加手順とお気に入り
 - 表示言語
 
-データは利用中のブラウザとオリジンに紐づきます。ブラウザのサイトデータを削除すると、CubeStrideの記録も削除されます。現在、クラウド同期やエクスポート機能はありません。
+データは利用中のブラウザとオリジンに紐づきます。ブラウザのサイトデータを削除すると、CubeRepsの記録も削除されます。現在、クラウド同期やエクスポート機能はありません。
 
 ## 技術構成
 
