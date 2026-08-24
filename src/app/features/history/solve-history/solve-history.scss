@@ -7,7 +7,7 @@ $muted: var(--text-muted-color);
 
 .history {
   display: grid;
-  grid-template-columns: 56px 90px 70px 70px 120px minmax(72px, 1fr) max-content;
+  grid-template-columns: 56px 90px 70px 70px 120px 120px minmax(260px, 1fr);
   overflow: hidden;
   border: 1px solid $line;
   border-radius: 9px;

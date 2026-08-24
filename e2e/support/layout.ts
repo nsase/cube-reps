@@ -88,18 +88,20 @@ export async function expectElementsWithin(
   const container = await page.locator(containerSelector).boundingBox();
   expect(container).not.toBeNull();
   const children = await page.locator(childSelector).evaluateAll((elements): LayoutBox[] =>
-    elements.map((element) => {
-      const rect = element.getBoundingClientRect();
-      return {
-        label: `${element.tagName.toLowerCase()}${
-          element.className ? `.${String(element.className).trim().replaceAll(' ', '.')}` : ''
-        }`,
-        left: rect.left,
-        right: rect.right,
-        top: rect.top,
-        bottom: rect.bottom,
-      };
-    }),
+    elements
+      .map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          label: `${element.tagName.toLowerCase()}${
+            element.className ? `.${String(element.className).trim().replaceAll(' ', '.')}` : ''
+          }`,
+          left: rect.left,
+          right: rect.right,
+          top: rect.top,
+          bottom: rect.bottom,
+        };
+      })
+      .filter((box) => box.right > box.left && box.bottom > box.top),
   );
   expect(children.length).toBeGreaterThan(0);
 

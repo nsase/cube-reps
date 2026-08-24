@@ -106,8 +106,8 @@
     "recordGroup": "Record group",
     "recordedAt": "Recorded at",
     "scramble": "Scramble",
-    "retrySolve": "Retry solve",
-    "deleteSolve": "Delete solve",
+    "retrySolve": "Retry",
+    "deleteSolve": "Delete",
     "deleteSolveTitle": "Delete this solve?",
     "deleteSolveMessage": "The selected solve will be deleted.\nThis action cannot be undone."
   }

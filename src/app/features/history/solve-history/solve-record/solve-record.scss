@@ -34,6 +34,7 @@ $muted: var(--text-muted-color);
 
 .row-actions {
   display: flex;
+  container-type: inline-size;
   grid-column: 7;
   align-items: center;
   justify-content: flex-end;
