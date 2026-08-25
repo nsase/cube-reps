@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+/** 全端末で実行するレスポンシブテストを識別するタグ。 */
+const responsiveTestTag = /@responsive/;
 /** CubeRepsの実ブラウザテスト設定。 */
 const config = defineConfig({
   testDir: './e2e',
@@ -20,26 +22,32 @@ const config = defineConfig({
     },
     {
       name: 'ipad-mini',
+      grep: responsiveTestTag,
       use: { ...devices['iPad Mini'], browserName: 'chromium' },
     },
     {
       name: 'ipad-mini-landscape',
+      grep: responsiveTestTag,
       use: { ...devices['iPad Mini landscape'], browserName: 'chromium' },
     },
     {
       name: 'ipad-pro-11',
+      grep: responsiveTestTag,
       use: { ...devices['iPad Pro 11'], browserName: 'chromium' },
     },
     {
       name: 'ipad-pro-11-landscape',
+      grep: responsiveTestTag,
       use: { ...devices['iPad Pro 11 landscape'], browserName: 'chromium' },
     },
     {
       name: 'pixel-7',
+      grep: responsiveTestTag,
       use: { ...devices['Pixel 7'] },
     },
     {
       name: 'pixel-7-landscape',
+      grep: responsiveTestTag,
       use: { ...devices['Pixel 7 landscape'] },
     },
   ],
