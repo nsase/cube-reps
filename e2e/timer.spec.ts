@@ -10,22 +10,24 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('app-timer')).toBeVisible();
 });
 
-test('レスポンシブ配置が画面内に収まる', async ({ page }) => {
-  await expectNoHorizontalOverflow(page);
-  await expectResponsiveLayout(page, layoutItems);
-});
+test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
+  test('レスポンシブ配置が画面内に収まる', async ({ page }) => {
+    await expectNoHorizontalOverflow(page);
+    await expectResponsiveLayout(page, layoutItems);
+  });
 
-test('時計文字が割り当て領域へ収まる', async ({ page }) => {
-  const clock = page.locator('app-timer-clock');
-  const time = clock.locator('strong');
+  test('時計文字が割り当て領域へ収まる', async ({ page }) => {
+    const clock = page.locator('app-timer-clock');
+    const time = clock.locator('strong');
 
-  await expect(time).toHaveText('0.00');
+    await expect(time).toHaveText('0.00');
 
-  const [clockBox, timeBox] = await Promise.all([clock.boundingBox(), time.boundingBox()]);
-  expect(clockBox).not.toBeNull();
-  expect(timeBox).not.toBeNull();
-  expect(timeBox!.width).toBeLessThanOrEqual(clockBox!.width);
-  expect(timeBox!.height).toBeLessThanOrEqual(clockBox!.height);
+    const [clockBox, timeBox] = await Promise.all([clock.boundingBox(), time.boundingBox()]);
+    expect(clockBox).not.toBeNull();
+    expect(timeBox).not.toBeNull();
+    expect(timeBox!.width).toBeLessThanOrEqual(clockBox!.width);
+    expect(timeBox!.height).toBeLessThanOrEqual(clockBox!.height);
+  });
 });
 
 test('スクランブル再作成後のSpace操作でタイマーを開始する', async ({ page }) => {
