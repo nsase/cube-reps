@@ -86,6 +86,11 @@ main {
   min-width: 0;
   padding: 38px 54px 60px;
 }
+main:has(app-timer) {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
 header {
   max-width: 1120px;
   margin: 0 auto 27px;
