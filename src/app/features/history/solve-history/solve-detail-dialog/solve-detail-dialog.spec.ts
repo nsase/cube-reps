@@ -39,7 +39,14 @@ describe('SolveDetailDialog', () => {
     expect(fixture.nativeElement.querySelector('code').textContent).toContain('R U F');
     expect(fixture.nativeElement.querySelector('app-solve-pattern')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('.solve-actions app-solve-actions')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('.solve-actions').textContent).toContain('Retry');
+    const actions = fixture.nativeElement.querySelector('.solve-actions') as HTMLElement;
+    expect(actions.textContent).toContain('Retry');
+    expect(actions.querySelector('.compact-action.row-retry')?.getAttribute('aria-label')).toBe(
+      'Retry',
+    );
+    expect(actions.querySelector('.compact-action.row-delete')?.getAttribute('aria-label')).toBe(
+      'Delete',
+    );
     expect(fixture.nativeElement.querySelector('mat-dialog-actions app-solve-actions')).toBeNull();
     expect(fixture.nativeElement.querySelectorAll('mat-dialog-actions button')).toHaveLength(1);
     expect(fixture.nativeElement.querySelector('.record-number').textContent).toContain('1234');
