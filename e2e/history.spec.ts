@@ -28,7 +28,7 @@ test('TimerとHistoryで選択中のグループを共有する', async ({ page 
   }, groups);
   await page.reload();
 
-  const historyGroup = page.locator('.history-filter select').nth(1);
+  const historyGroup = page.getByTestId('history-group-filter');
   await expect(historyGroup).toHaveValue('competition');
   await expect(historyGroup.locator('option')).toHaveCount(2);
 
