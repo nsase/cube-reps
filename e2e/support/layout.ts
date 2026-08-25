@@ -32,6 +32,28 @@ export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
  * @param selector 兄弟関係にある主要レイアウト要素のセレクター
  */
 export async function expectResponsiveLayout(page: Page, selector: string): Promise<void> {
+  const headerLayout = await page.locator('header').evaluate((header) => {
+    const headerBox = header.getBoundingClientRect();
+    const main = header.closest('main');
+    const mainBox = main?.getBoundingClientRect();
+    const mainStyle = main ? getComputedStyle(main) : undefined;
+    const headingBox = header.querySelector('h1')?.getBoundingClientRect();
+    const toolsBox = header.querySelector('.header-tools')?.getBoundingClientRect();
+    const mainContentWidth =
+      (mainBox?.width ?? 0) -
+      Number.parseFloat(mainStyle?.paddingLeft ?? '0') -
+      Number.parseFloat(mainStyle?.paddingRight ?? '0');
+    return {
+      width: headerBox.width,
+      expectedWidth: Math.min(1120, mainContentWidth),
+      headingOffset: (headingBox?.left ?? 0) - headerBox.left,
+      toolsOffset: headerBox.right - (toolsBox?.right ?? 0),
+    };
+  });
+  expect(Math.abs(headerLayout.width - headerLayout.expectedWidth)).toBeLessThanOrEqual(1);
+  expect(Math.abs(headerLayout.headingOffset)).toBeLessThanOrEqual(1);
+  expect(Math.abs(headerLayout.toolsOffset)).toBeLessThanOrEqual(1);
+
   const viewportWidth = await page.evaluate(() => document.documentElement.clientWidth);
   const boxes = await page.locator(selector).evaluateAll((elements): LayoutBox[] =>
     elements
