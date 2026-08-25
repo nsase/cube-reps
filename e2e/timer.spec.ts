@@ -16,6 +16,20 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
     await expectResponsiveLayout(page, layoutItems);
   });
 
+  test('内容が収まる高さでは不要な縦スクロールが発生しない', async ({ page }) => {
+    const viewportHeight = await page.evaluate(() => window.innerHeight);
+    const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+
+    if (viewportHeight >= 600) {
+      expect(pageHeight).toBeLessThanOrEqual(viewportHeight);
+      return;
+    }
+
+    expect(pageHeight).toBeGreaterThan(viewportHeight);
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  });
+
   test('時計文字が割り当て領域へ収まる', async ({ page }) => {
     const clock = page.locator('app-timer-clock');
     const time = clock.locator('strong');
