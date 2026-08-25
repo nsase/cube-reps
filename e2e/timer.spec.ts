@@ -44,6 +44,20 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
   });
 });
 
+test('OLL・PLL Drillではランダムをケース選択肢の先頭に表示する', async ({ page }) => {
+  await page.getByRole('button', { name: /OLL/ }).click();
+  const caseSelect = page.getByTestId('timer-drill-case-filter');
+
+  await expect(caseSelect.locator('option')).toHaveCount(58);
+  await expect(caseSelect.locator('option').first()).toHaveText(/ランダム|Random/);
+  await expect(caseSelect.locator('option:checked')).toHaveText(/ランダム|Random/);
+
+  await page.getByRole('button', { name: /PLL/ }).click();
+
+  await expect(caseSelect.locator('option')).toHaveCount(22);
+  await expect(caseSelect.locator('option:checked')).toHaveText(/ランダム|Random/);
+});
+
 test('スクランブル再作成後のSpace操作でタイマーを開始する', async ({ page }) => {
   const refreshButton = page.getByRole('button', { name: /スクランブルを更新|Refresh scramble/ });
   const clock = page.locator('app-timer-clock .clock');
