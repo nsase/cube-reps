@@ -98,11 +98,28 @@ describe('TimerStore', () => {
     expect(store.state()).toBe('idle');
   });
 
-  it('PLLモードでは選択中のケース番号を記録へ保存する', () => {
+  it('履歴のリトライ対象からスクランブルと計測条件を復元する', () => {
+    const cube = TestBed.inject(CubeService);
+    const group = cube.addGroup('Retry group')!;
+    const solve = cube.addSolve(1234, 'R U F', 'pll', 'Aa');
+    cube.prepareRetry(solve);
+
+    const store = TestBed.inject(TimerStore);
+
+    expect(store.category()).toBe('pll');
+    expect(store.currentDrillCase().number).toBe('Aa');
+    expect(store.scramble()).toBe('R U F');
+    expect(store.scrambleGenerating()).toBe(false);
+    expect(cube.activeGroupId()).toBe(group.id);
+    expect(cube.createScramble).not.toHaveBeenCalled();
+  });
+
+  it('PLLのランダムモードでは出題したケース番号を記録へ保存する', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const store = TestBed.inject(TimerStore);
     const cube = TestBed.inject(CubeService);
     store.setCategory('pll');
-    store.selectedCase.set(0);
+    const expectedCase = store.currentDrillCase().number;
 
     store.state.set('ready');
     store.release();
@@ -110,23 +127,38 @@ describe('TimerStore', () => {
     store.press();
 
     expect(cube.solves()[0].category).toBe('pll');
-    expect(cube.solves()[0].caseName).toBe(store.drillCases()[0].number);
+    expect(cube.solves()[0].caseName).toBe(expectedCase);
   });
 
-  it('PLLケースは一覧の先頭を初期選択する', () => {
+  it('PLLモードではランダムを初期選択する', () => {
     const store = TestBed.inject(TimerStore);
+    store.setCategory('pll');
 
-    expect(store.selectedCase()).toBe(0);
-    expect(store.drillCases()[store.selectedCase()].number).toBe('Aa');
+    expect(store.selectedCase()).toBe('random');
+    expect(store.drillCases()).toContain(store.currentDrillCase());
+  });
+
+  it('ランダムモードではスクランブル更新ごとに出題ケースを選ぶ', () => {
+    vi.spyOn(Math, 'random').mockReturnValueOnce(0).mockReturnValueOnce(0.999);
+    const store = TestBed.inject(TimerStore);
+    store.setCategory('pll');
+
+    expect(store.currentDrillCase()).toBe(store.drillCases()[0]);
+    expect(store.scramble()).toBe(invertAlgorithm(store.drillCases()[0].algorithms[0]));
+
+    store.newScramble();
+
+    expect(store.currentDrillCase()).toBe(store.drillCases().at(-1));
+    expect(store.scramble()).toBe(invertAlgorithm(store.drillCases().at(-1)!.algorithms[0]));
   });
 
   it('PLLモードでは選択ケースの代表手順を反転した固定スクランブルを使う', () => {
     const store = TestBed.inject(TimerStore);
     store.setCategory('pll');
+    store.selectedCase.set(0);
+    store.newScramble();
 
-    expect(store.scramble()).toBe(
-      invertAlgorithm(store.drillCases()[store.selectedCase()].algorithms[0]),
-    );
+    expect(store.scramble()).toBe(invertAlgorithm(store.currentDrillCase().algorithms[0]));
 
     store.selectedCase.set(0);
     store.newScramble();
@@ -156,6 +188,8 @@ describe('TimerStore', () => {
     const store = TestBed.inject(TimerStore);
     const cube = TestBed.inject(CubeService);
     store.setCategory('oll');
+    store.selectedCase.set(0);
+    store.newScramble();
     const item = store.drillCases()[0];
 
     expect(item.number).toBe('01');

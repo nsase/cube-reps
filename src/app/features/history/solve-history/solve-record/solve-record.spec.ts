@@ -1,7 +1,11 @@
 import { TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
+import { provideRouter } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
 import { of } from 'rxjs';
 import { CubeService } from '../../../../core/cube';
 import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
+import { SolveDetailDialog } from '../solve-detail-dialog/solve-detail-dialog';
 import { SolveRecord } from './solve-record';
 
 describe('SolveRecord', () => {
@@ -9,14 +13,23 @@ describe('SolveRecord', () => {
   const confirm = {
     delete: vi.fn(() => of(true)),
   };
+  /** 詳細ダイアログを開くMatDialogのテスト用代替。 */
+  const dialog = {
+    open: vi.fn(),
+  };
 
   beforeEach(async () => {
     localStorage.clear();
     confirm.delete.mockClear();
+    dialog.open.mockClear();
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [SolveRecord],
-      providers: [{ provide: ConfirmService, useValue: confirm }],
+      providers: [
+        provideRouter([]),
+        { provide: ConfirmService, useValue: confirm },
+        { provide: MatDialog, useValue: dialog },
+      ],
     }).compileComponents();
   });
 
@@ -24,44 +37,43 @@ describe('SolveRecord', () => {
   function createFixture() {
     const cube = TestBed.inject(CubeService);
     cube.addSolve(1234, 'R U', 'full');
-    const solve = cube.solves()[0];
+    const solve = { ...cube.solves()[0], date: '2026-08-24T09:28:00.000Z' };
+    cube.solves.set([solve]);
     const fixture = TestBed.createComponent(SolveRecord);
     fixture.componentRef.setInput('solve', solve);
     fixture.componentRef.setInput('recordNumber', 1);
+    fixture.componentRef.setInput('ao5', 2000);
+    fixture.componentRef.setInput('ao12', 3000);
     fixture.detectChanges();
     return { cube, fixture, solve };
   }
 
-  it('+2ボタンでペナルティの適用と解除を切り替える', () => {
-    const { cube, fixture, solve } = createFixture();
-    const button = fixture.nativeElement.querySelectorAll(
-      '.row-actions button',
-    )[0] as HTMLButtonElement;
+  it('ヘッダーに対応する値だけを表示し、スクランブルは詳細ダイアログで開く', () => {
+    const { fixture, solve } = createFixture();
 
-    button.click();
-    expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('+2');
-    button.click();
-    expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('none');
+    expect(fixture.nativeElement.querySelector('.ao5').textContent).toContain('2.00');
+    expect(fixture.nativeElement.querySelector('.ao12').textContent).toContain('3.00');
+    expect(fixture.nativeElement.textContent).not.toContain('Ao5');
+    expect(fixture.nativeElement.textContent).not.toContain('フルソルブ');
+    expect(fixture.nativeElement.querySelector('time')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('code')).toBeNull();
+    (fixture.nativeElement.querySelector('.row-details') as HTMLButtonElement).click();
+
+    expect(dialog.open).toHaveBeenCalledWith(SolveDetailDialog, {
+      data: { solve, recordNumber: 1 },
+    });
   });
 
-  it('DNFボタンでペナルティの適用と解除を切り替える', () => {
-    const { cube, fixture, solve } = createFixture();
-    const button = fixture.nativeElement.querySelectorAll(
-      '.row-actions button',
-    )[1] as HTMLButtonElement;
+  it('言語に応じて年なしの短い計測日時を表示する', () => {
+    const i18n = TestBed.inject(TranslocoService);
+    i18n.setActiveLang('en');
+    const { fixture } = createFixture();
+    const date = fixture.nativeElement.querySelector('time') as HTMLElement;
+    expect(date.textContent).toBe('Aug 24, 09:28');
 
-    button.click();
-    expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('DNF');
-    button.click();
-    expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('none');
-  });
+    i18n.setActiveLang('ja');
+    fixture.detectChanges();
 
-  it('削除確認後に計測記録を削除する', () => {
-    const { cube, fixture, solve } = createFixture();
-
-    (fixture.nativeElement.querySelector('.row-delete') as HTMLButtonElement).click();
-
-    expect(confirm.delete).toHaveBeenCalledOnce();
-    expect(cube.solves().some(({ id }) => id === solve.id)).toBe(false);
+    expect(date.textContent).toBe('08/24 09:28');
   });
 });

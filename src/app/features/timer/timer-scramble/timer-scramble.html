@@ -1,12 +1,19 @@
 <span
   >{{ 'timer.scramble' | transloco }}
-  @if (store.category() === 'full') {
+  @if (store.category() === 'full' || store.selectedCase() === 'random') {
     <button
       mat-icon-button
-      [attr.aria-label]="'timer.refreshScramble' | transloco"
-      [title]="'timer.refreshScramble' | transloco"
+      data-testid="timer-scramble-refresh"
+      [attr.aria-label]="
+        (store.category() === 'full' ? 'timer.refreshScramble' : 'timer.selectRandomCase')
+          | transloco
+      "
+      [title]="
+        (store.category() === 'full' ? 'timer.refreshScramble' : 'timer.selectRandomCase')
+          | transloco
+      "
       [disabled]="store.scrambleGenerating()"
-      (click)="store.newScramble()"
+      (click)="newScramble($event)"
     >
       <mat-icon>refresh</mat-icon>
     </button>

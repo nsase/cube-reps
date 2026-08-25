@@ -84,7 +84,6 @@ export class RecordGroup {
       .subscribe((confirmed) => {
         if (!confirmed) return;
         this.cube.removeGroup(group.id);
-        if (this.store.selectedGroup() === group.id) this.store.selectedGroup.set('all');
       });
   }
 }
