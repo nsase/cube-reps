@@ -26,11 +26,16 @@
 @if (store.category() !== 'full') {
   <div class="case-select">
     {{ 'timer.practiceCase' | transloco }}
-    <select [(ngModel)]="store.selectedCase" (change)="store.newScramble()">
+    <select
+      data-testid="timer-drill-case-filter"
+      [(ngModel)]="store.selectedCase"
+      (change)="store.newScramble()"
+    >
+      <option [ngValue]="'random'">{{ 'timer.randomCase' | transloco }}</option>
       @for (item of store.drillCases(); track item.number; let index = $index) {
         <option [ngValue]="index">{{ item.number }} — {{ item.name }}</option>
       }
     </select>
-    <code>{{ algorithmLibrary.primaryNotation(store.drillCases()[store.selectedCase()]) }}</code>
+    <code>{{ algorithmLibrary.primaryNotation(store.currentDrillCase()) }}</code>
   </div>
 }
