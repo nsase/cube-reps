@@ -9,8 +9,7 @@
   >
   <label
     >{{ 'history.recordFilter' | transloco
-    }}<select [(ngModel)]="store.selectedGroup">
-      <option value="all">{{ 'history.allGroups' | transloco }}</option>
+    }}<select data-testid="history-group-filter" [(ngModel)]="store.selectedGroup">
       @for (group of cube.groups(); track group.id) {
         <option [value]="group.id">{{ cube.groupName(group.id) }}</option>
       }
