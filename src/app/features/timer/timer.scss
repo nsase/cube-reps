@@ -1,7 +1,7 @@
 :host {
   display: block;
   width: min(100%, 1400px);
-  height: calc(100dvh - 178px);
+  height: 100%;
   margin: auto;
 }
 
@@ -58,18 +58,6 @@ app-timer-stats {
       'stats stats';
     grid-template-columns: minmax(0, 1fr) clamp(260px, 28vw, 350px);
     grid-template-rows: auto minmax(0, 1fr) auto;
-  }
-}
-
-@media (max-width: 900px) {
-  :host {
-    height: calc(100dvh - 140px);
-  }
-}
-
-@media (max-width: 620px) {
-  :host {
-    height: calc(100dvh - 179px);
   }
 }
 

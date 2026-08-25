@@ -1,0 +1,40 @@
+<button
+  mat-button
+  [class.on]="currentSolve().penalty === '+2'"
+  (click)="cube.togglePenalty(currentSolve().id, '+2')"
+>
+  +2
+</button>
+<button
+  mat-button
+  [class.on]="currentSolve().penalty === 'DNF'"
+  (click)="cube.togglePenalty(currentSolve().id, 'DNF')"
+>
+  DNF
+</button>
+<button
+  mat-icon-button
+  class="compact-action row-retry"
+  [attr.aria-label]="'history.retrySolve' | transloco"
+  [title]="'history.retrySolve' | transloco"
+  (click)="retry()"
+>
+  <mat-icon>replay</mat-icon>
+</button>
+<button
+  mat-icon-button
+  class="compact-action row-delete"
+  [attr.aria-label]="'history.deleteSolve' | transloco"
+  [title]="'history.deleteSolve' | transloco"
+  (click)="delete()"
+>
+  <mat-icon>delete</mat-icon>
+</button>
+<button mat-button class="wide-action row-retry" (click)="retry()">
+  <mat-icon>replay</mat-icon>
+  {{ 'history.retrySolve' | transloco }}
+</button>
+<button mat-button class="wide-action row-delete" (click)="delete()">
+  <mat-icon>delete</mat-icon>
+  {{ 'history.deleteSolve' | transloco }}
+</button>

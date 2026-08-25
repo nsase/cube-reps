@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { OLL_CASES, PLL_CASES } from '../../core/algorithm-cases';
 import { CubeService } from '../../core/cube';
-import { Penalty, Solve, SolveCategory } from '../../core/cube.models';
+import { AlgorithmCase, Penalty, Solve, SolveCategory } from '../../core/cube.models';
 import { invertAlgorithm } from '../../core/cube-state';
 
 /** Timerコンポーネントツリー内で計測状態と操作を共有するStore。 */
@@ -24,10 +24,12 @@ export class TimerStore implements OnDestroy {
   readonly scrambleGenerationFailed = signal(false);
   /** 操作対象として表示する直前の計測結果。 */
   readonly completedSolve = signal<Solve | undefined>(undefined);
-  /** OLL・PLL練習で選択中のケース位置。 */
-  readonly selectedCase = signal(0);
+  /** OLL・PLL練習で選択中のケースまたはランダムモード。 */
+  readonly selectedCase = signal<number | 'random'>('random');
   /** 現在のドリル種別に対応するケース選択肢。 */
   readonly drillCases = computed(() => (this.category() === 'oll' ? OLL_CASES : PLL_CASES));
+  /** 現在のスクランブルで出題しているOLL・PLLケース。 */
+  readonly currentDrillCase = signal<AlgorithmCase>(PLL_CASES[0]);
 
   /** 計測表示を更新するタイマーID。 */
   private interval?: number;
@@ -53,11 +55,24 @@ export class TimerStore implements OnDestroy {
   /** 計測開始を許可するまでの長押し時間（ミリ秒）。 */
   private static readonly START_HOLD_DURATION = 500;
 
-  /** 初期カテゴリーをrootサービスへ同期し、最初のスクランブル生成を開始する。 */
+  /**
+   * 初期カテゴリーをrootサービスへ同期し、最初のスクランブルを設定する。
+   * 履歴からのリトライでは元記録の条件を復元し、通常表示では新しいスクランブルを生成する。
+   */
   constructor() {
+    const retrySolve = this.cube.takeRetrySolve();
+    if (retrySolve) {
+      this.category.set(retrySolve.category);
+      const selectedCase = this.drillCases().findIndex(
+        ({ number }) => number === retrySolve.caseName,
+      );
+      this.selectedCase.set(Math.max(selectedCase, 0));
+      this.currentDrillCase.set(this.drillCases()[Math.max(selectedCase, 0)]);
+      this.scramble.set(retrySolve.scramble);
+    }
     this.cube.activeSolveCategory.set(this.category());
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
-    this.updateScramble();
+    if (!retrySolve) this.updateScramble();
   }
 
   /** スペース押下で長押し状態へ入り、計測中の場合は停止する。 */
@@ -96,7 +111,7 @@ export class TimerStore implements OnDestroy {
   /** solveカテゴリーを変更してタイマーを初期状態へ戻す。 */
   setCategory(category: SolveCategory): void {
     this.category.set(category);
-    this.selectedCase.set(0);
+    this.selectedCase.set('random');
     this.cube.activeSolveCategory.set(category);
     this.reset();
     this.updateScramble();
@@ -186,7 +201,7 @@ export class TimerStore implements OnDestroy {
       this.elapsed(),
       this.scramble(),
       this.category(),
-      this.category() === 'full' ? undefined : this.drillCases()[this.selectedCase()].number,
+      this.category() === 'full' ? undefined : this.currentDrillCase().number,
     );
     this.state.set('idle');
     this.updateScramble();
@@ -254,9 +269,14 @@ export class TimerStore implements OnDestroy {
       });
   }
 
-  /** @returns 選択中のOLL・PLLケースを作る固定スクランブル */
+  /** @returns 選択中、またはランダムに選んだOLL・PLLケースを作る固定スクランブル */
   private createDrillScramble(): string {
-    const item = this.drillCases()[this.selectedCase()];
+    const cases = this.drillCases();
+    const selectedCase = this.selectedCase();
+    const index =
+      selectedCase === 'random' ? Math.floor(Math.random() * cases.length) : selectedCase;
+    const item = cases[index];
+    this.currentDrillCase.set(item);
     return invertAlgorithm(item.algorithms[0]);
   }
 

@@ -15,11 +15,13 @@ CubeReps is a browser-based Rubik's Cube timer and training app for full solves,
 - Timers for full solves, OLL, and PLL
 - Random-state scrambles with a cube net preview
 - Searchable references for all 57 OLL cases and 21 PLL cases
-- Case-specific drills with scrambles for the selected case
+- Case-specific drills with scrambles for a selected or random case
 - Add, delete, copy, and favorite algorithms
-- Create, rename, and delete record groups
-- Statistics for best, overall average, Ao5, Ao12, Ao50, and Ao100
+- Create, rename, and delete record groups, with one shared selection across timer and history
+- Per-group statistics for best, overall average, Ao5, Ao12, Ao50, and Ao100
 - `+2` and `DNF` penalties for solve records
+- Retry any solve from history with its original scramble, category, and record group
+- History rows with point-in-time Ao5/Ao12 and details for scrambles and cube previews
 - English and Japanese interfaces
 - Responsive layouts for desktop, tablet, and mobile devices
 

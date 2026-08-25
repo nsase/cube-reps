@@ -16,4 +16,13 @@ import { TranslocoPipe } from '@jsverse/transloco';
 export class TimerScramble {
   /** Timerコンポーネントツリー内で共有する計測状態。 */
   protected readonly store = inject(TimerStore);
+
+  /**
+   * スクランブルを再作成する。
+   * 次のスペース操作で、再スクランブル作成ではなくタイマーを開始できるように、ボタンからフォーカスを外す。
+   */
+  protected newScramble(event: MouseEvent): void {
+    (event.currentTarget as HTMLButtonElement).blur();
+    this.store.newScramble();
+  }
 }
