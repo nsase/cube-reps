@@ -77,7 +77,6 @@
     "deleteGroupMessage": "Delete “{{name}}”?\nThis action cannot be undone.",
     "recordFilter": "Records to show",
     "solveCategory": "Solve category",
-    "allGroups": "All groups",
     "targetSolves": "Solves",
     "progressChart": "SOLVE PROGRESS",
     "chartRange": "Range",

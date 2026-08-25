@@ -77,7 +77,6 @@
     "deleteGroupMessage": "「{{name}}」を削除します。\nこの操作は取り消せません。",
     "recordFilter": "表示する記録",
     "solveCategory": "ソルブカテゴリー",
-    "allGroups": "すべてのグループ",
     "targetSolves": "対象ソルブ",
     "progressChart": "記録の推移",
     "chartRange": "表示範囲",
