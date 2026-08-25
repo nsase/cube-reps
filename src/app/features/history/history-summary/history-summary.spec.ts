@@ -24,12 +24,17 @@ describe('HistorySummary', () => {
     await fixture.whenStable();
 
     const select = fixture.nativeElement.querySelectorAll('select')[1] as HTMLSelectElement;
+    expect(Array.from(select.options, (option) => option.value)).toEqual([
+      'unclassified',
+      group.id,
+    ]);
     select.value = group.id;
     select.dispatchEvent(new Event('change'));
     fixture.detectChanges();
     await fixture.whenStable();
 
     expect(TestBed.inject(HistoryStore).selectedGroup()).toBe(group.id);
+    expect(cube.activeGroupId()).toBe(group.id);
     expect(fixture.nativeElement.querySelector('.summaries article strong')?.textContent).toBe(
       '2.00',
     );

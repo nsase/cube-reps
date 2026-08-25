@@ -58,7 +58,7 @@ describe('RecordGroup', () => {
     expect(fixture.nativeElement.querySelector('.group-edit-form')).toBeNull();
   });
 
-  it('削除確認後にカテゴリーを削除し、絞り込みをallへ戻す', () => {
+  it('削除確認後にカテゴリーを削除し、既定グループへ戻す', () => {
     const cube = TestBed.inject(CubeService);
     const store = TestBed.inject(HistoryStore);
     const group = cube.addGroup('削除対象')!;
@@ -71,6 +71,6 @@ describe('RecordGroup', () => {
 
     expect(confirm.delete).toHaveBeenCalledOnce();
     expect(cube.groups().some(({ id }) => id === group.id)).toBe(false);
-    expect(store.selectedGroup()).toBe('all');
+    expect(store.selectedGroup()).toBe('unclassified');
   });
 });
