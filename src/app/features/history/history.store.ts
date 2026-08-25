@@ -21,8 +21,8 @@ export class HistoryStore {
   /** 計測記録を参照するrootサービス。 */
   private readonly cube = inject(CubeService);
 
-  /** 履歴の絞り込み対象。`all`の場合は全グループを表示する。 */
-  readonly selectedGroup = signal('all');
+  /** Timerの記録先と共有する、履歴の表示・集計対象グループ。 */
+  readonly selectedGroup = this.cube.activeGroupId;
   /** 履歴と集計に表示するsolveカテゴリー。 */
   readonly selectedCategory = signal<SolveCategory>('full');
 
@@ -37,9 +37,7 @@ export class HistoryStore {
     const category = this.selectedCategory();
     return this.cube
       .solves()
-      .filter(
-        (solve) => solve.category === category && (groupId === 'all' || solve.groupId === groupId),
-      );
+      .filter((solve) => solve.category === category && solve.groupId === groupId);
   });
 
   /** 現在のページに表示する計測記録。 */

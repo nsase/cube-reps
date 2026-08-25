@@ -20,6 +20,24 @@ test('レスポンシブ配置が画面内に収まる', { tag: '@responsive' },
   await expectResponsiveLayout(page, layoutItems);
 });
 
+test('TimerとHistoryで選択中のグループを共有する', async ({ page }) => {
+  const groups = [{ id: 'competition', name: '大会', createdAt: new Date(1).toISOString() }];
+  await page.evaluate((storedGroups) => {
+    localStorage.setItem('cube-reps.groups', JSON.stringify(storedGroups));
+    localStorage.setItem('cube-reps.active-group', 'competition');
+  }, groups);
+  await page.reload();
+
+  const historyGroup = page.getByTestId('history-group-filter');
+  await expect(historyGroup).toHaveValue('competition');
+  await expect(historyGroup.locator('option')).toHaveCount(2);
+
+  await historyGroup.selectOption('unclassified');
+  await page.getByRole('link', { name: /Timer/ }).click();
+
+  await expect(page.locator('.record-context select')).toHaveValue('unclassified');
+});
+
 test('途中のDNFを飛ばして前後の結果を線でつなぐ', async ({ page }) => {
   const solves = Array.from({ length: 6 }, (_, index) => ({
     id: String(index + 1),

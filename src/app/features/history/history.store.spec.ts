@@ -9,26 +9,24 @@ describe('HistoryStore', () => {
     TestBed.configureTestingModule({ providers: [HistoryStore] });
   });
 
-  it('allではすべての計測記録を返す', () => {
+  it('TimerとHistoryで選択中のグループを共有する', () => {
     const cube = TestBed.inject(CubeService);
     const store = TestBed.inject(HistoryStore);
-    cube.addSolve(1000, 'R U', 'full');
     const group = cube.addGroup('大会')!;
-    cube.addSolve(2000, 'U R', 'full');
 
-    expect(store.selectedGroup()).toBe('all');
-    expect(store.filteredSolves()).toHaveLength(2);
-    expect(store.filteredSolves().some((solve) => solve.groupId === group.id)).toBe(true);
+    expect(store.selectedGroup()).toBe(group.id);
+
+    store.selectedGroup.set('unclassified');
+
+    expect(cube.activeGroupId()).toBe('unclassified');
   });
 
-  it('選択したカテゴリーの計測記録だけを返す', () => {
+  it('選択したグループの計測記録だけを返す', () => {
     const cube = TestBed.inject(CubeService);
     const store = TestBed.inject(HistoryStore);
     cube.addSolve(1000, 'R U', 'full');
     const group = cube.addGroup('大会')!;
     cube.addSolve(2000, 'U R', 'full');
-
-    store.selectedGroup.set(group.id);
 
     expect(store.filteredSolves()).toHaveLength(1);
     expect(store.filteredSolves()[0].groupId).toBe(group.id);
