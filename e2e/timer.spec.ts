@@ -51,15 +51,21 @@ test('OLL・PLL Drillではランダムをケース選択肢の先頭に表示�
   await expect(caseSelect.locator('option')).toHaveCount(58);
   await expect(caseSelect.locator('option').first()).toHaveText(/ランダム|Random/);
   await expect(caseSelect.locator('option:checked')).toHaveText(/ランダム|Random/);
+  await expect(page.getByTestId('timer-scramble-refresh')).toBeVisible();
+
+  await caseSelect.selectOption({ index: 1 });
+
+  await expect(page.getByTestId('timer-scramble-refresh')).toBeHidden();
 
   await page.getByRole('button', { name: /PLL/ }).click();
 
   await expect(caseSelect.locator('option')).toHaveCount(22);
   await expect(caseSelect.locator('option:checked')).toHaveText(/ランダム|Random/);
+  await expect(page.getByTestId('timer-scramble-refresh')).toBeVisible();
 });
 
 test('スクランブル再作成後のSpace操作でタイマーを開始する', async ({ page }) => {
-  const refreshButton = page.getByRole('button', { name: /スクランブルを更新|Refresh scramble/ });
+  const refreshButton = page.getByTestId('timer-scramble-refresh');
   const clock = page.locator('app-timer-clock .clock');
   const time = clock.locator('strong');
   await expect(refreshButton).toBeEnabled();
