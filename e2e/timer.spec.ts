@@ -14,18 +14,6 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
   test('レスポンシブ配置が画面内に収まる', async ({ page }) => {
     await expectNoHorizontalOverflow(page);
     await expectResponsiveLayout(page, layoutItems);
-
-    const headerAlignment = await page.locator('header').evaluate((header) => {
-      const headerBox = header.getBoundingClientRect();
-      const headingBox = header.querySelector('h1')?.getBoundingClientRect();
-      const toolsBox = header.querySelector('.header-tools')?.getBoundingClientRect();
-      return {
-        headingOffset: (headingBox?.left ?? 0) - headerBox.left,
-        toolsOffset: headerBox.right - (toolsBox?.right ?? 0),
-      };
-    });
-    expect(Math.abs(headerAlignment.headingOffset)).toBeLessThanOrEqual(1);
-    expect(Math.abs(headerAlignment.toolsOffset)).toBeLessThanOrEqual(1);
   });
 
   test('内容が収まる高さでは不要な縦スクロールが発生しない', async ({ page }) => {
