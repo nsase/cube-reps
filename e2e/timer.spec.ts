@@ -14,6 +14,32 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
   test('レスポンシブ配置が画面内に収まる', async ({ page }) => {
     await expectNoHorizontalOverflow(page);
     await expectResponsiveLayout(page, layoutItems);
+
+    const headerAlignment = await page.locator('header').evaluate((header) => {
+      const headerBox = header.getBoundingClientRect();
+      const headingBox = header.querySelector('h1')?.getBoundingClientRect();
+      const toolsBox = header.querySelector('.header-tools')?.getBoundingClientRect();
+      return {
+        headingOffset: (headingBox?.left ?? 0) - headerBox.left,
+        toolsOffset: headerBox.right - (toolsBox?.right ?? 0),
+      };
+    });
+    expect(Math.abs(headerAlignment.headingOffset)).toBeLessThanOrEqual(1);
+    expect(Math.abs(headerAlignment.toolsOffset)).toBeLessThanOrEqual(1);
+  });
+
+  test('内容が収まる高さでは不要な縦スクロールが発生しない', async ({ page }) => {
+    const viewportHeight = await page.evaluate(() => window.innerHeight);
+    const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+
+    if (viewportHeight >= 600) {
+      expect(pageHeight).toBeLessThanOrEqual(viewportHeight);
+      return;
+    }
+
+    expect(pageHeight).toBeGreaterThan(viewportHeight);
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
   });
 
   test('時計文字が割り当て領域へ収まる', async ({ page }) => {
