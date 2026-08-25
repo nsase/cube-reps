@@ -76,7 +76,7 @@
     "deleteGroup": "Delete group",
     "renameGroup": "Rename group",
     "deleteGroupTitle": "Delete this group?",
-    "deleteGroupMessage": "Delete “{{name}}”?\nThis action cannot be undone.",
+    "deleteGroupMessage": "Delete “{{name}}”?\nRecords in this group ({{count}}) will be moved to “Unclassified”.\nThis action cannot be undone.",
     "recordFilter": "Records to show",
     "solveCategory": "Solve category",
     "targetSolves": "Solves",
