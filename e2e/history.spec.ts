@@ -159,6 +159,23 @@ test(
     await expect(dialog.getByRole('button', { name: 'DNF' })).toBeVisible();
     await expect(dialog.getByRole('button', { name: /リトライ|Retry/ })).toBeVisible();
     await expect(dialog.getByRole('button', { name: /削除|Delete/ })).toBeVisible();
+    if (testInfo.project.name === 'desktop-wide') {
+      await expect(dialog.locator('.wide-action.row-retry')).toBeVisible();
+      await expect(dialog.locator('.compact-action.row-retry')).toBeHidden();
+    }
+    if (testInfo.project.name === 'pixel-7') {
+      await expect(dialog.locator('.wide-action.row-retry')).toBeHidden();
+      await expect(dialog.locator('.compact-action.row-retry')).toBeVisible();
+    }
+    const actionCenters = await dialog
+      .locator('.solve-actions button:visible')
+      .evaluateAll((buttons) =>
+        buttons.map((button) => {
+          const box = button.getBoundingClientRect();
+          return box.top + box.height / 2;
+        }),
+      );
+    expect(Math.max(...actionCenters) - Math.min(...actionCenters)).toBeLessThanOrEqual(1);
 
     await dialog.getByRole('button', { name: '+2' }).click();
     await expect(dialog.locator('.result')).toHaveText('3.00+');
