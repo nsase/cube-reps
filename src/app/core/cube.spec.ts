@@ -86,6 +86,25 @@ describe('CubeService record statistics', () => {
     expect(cube.groupName('unclassified')).not.toBe('変更不可');
   });
 
+  it('ユーザー作成カテゴリーの削除時に所属記録を未分類へ移動する', () => {
+    const cube = TestBed.inject(CubeService);
+    const target = cube.addGroup('削除対象')!;
+    const first = cube.addSolve(1000, 'R U', 'full');
+    const second = cube.addSolve(2000, 'U R', 'full');
+    const other = cube.addGroup('別グループ')!;
+    const untouched = cube.addSolve(3000, 'F R', 'full');
+    cube.activeGroupId.set(target.id);
+
+    cube.removeGroup(target.id);
+
+    expect(cube.groups()).not.toContainEqual(expect.objectContaining({ id: target.id }));
+    expect(cube.solves().find(({ id }) => id === first.id)?.groupId).toBe('unclassified');
+    expect(cube.solves().find(({ id }) => id === second.id)?.groupId).toBe('unclassified');
+    expect(cube.solves().find(({ id }) => id === untouched.id)?.groupId).toBe(other.id);
+    expect(cube.activeGroupId()).toBe('unclassified');
+    expect(cube.activeSolves().map(({ id }) => id)).toEqual([second.id, first.id]);
+  });
+
   it('リトライ対象と元の計測条件を次のタイマーへ一度だけ引き渡す', () => {
     const cube = TestBed.inject(CubeService);
     const group = cube.addGroup('Retry group')!;
