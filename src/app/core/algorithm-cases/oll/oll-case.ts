@@ -1,4 +1,4 @@
-import { AlgorithmCase, CubePattern } from '../../cube.models';
+import { AlgorithmCase, BuiltInAlgorithm, CubePattern } from '../../cube.models';
 
 /** OLLケース生成時に必要な元データ。 */
 interface OllCaseDefinition {
@@ -9,7 +9,7 @@ interface OllCaseDefinition {
   /** OLL形状による分類。 */
   group: string;
   /** 組み込み手順。 */
-  algorithms: readonly string[];
+  algorithms: readonly BuiltInAlgorithm[];
   /** 黄色の向きを示す5行5列パターン。 */
   pattern: CubePattern;
 }

@@ -5,7 +5,10 @@ export const OLL_15_CASE = defineOllCase({
   number: '15',
   names: ['Squeegee'],
   group: 'Knight Move Shape',
-  algorithms: ["Lw' U' Lw L' U' L U Lw' U Lw", "(y2) Rw' U' Rw R' U' R U Rw' U Rw"],
+  algorithms: [
+    { id: '14929b16-bf22-4a37-adfb-6c50c8f08a8f', notation: "Lw' U' Lw L' U' L U Lw' U Lw" },
+    { id: '19044b5d-1875-4337-8d1d-2e6fe944ae84', notation: "(y2) Rw' U' Rw R' U' R U Rw' U Rw" },
+  ],
   pattern: [
     ['none', 'none', 'yellow', 'none', 'none'],
     ['none', 'yellow', 'none', 'none', 'yellow'],

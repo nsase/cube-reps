@@ -6,11 +6,23 @@ export const OLL_56_CASE = defineOllCase({
   names: ['Streetlights', 'Dead Man'],
   group: 'I Shape',
   algorithms: [
-    "(Rw' U' Rw) U' R' U R U' R' U R Rw' U Rw",
-    "(Rw U Rw') U R U' R' U R U' R' (Rw U' Rw')",
-    "(Rw U Rw') U R U' R' U R U' M' U' Rw'",
-    "Rw U Rw' U R U' R' U R U' R' Rw U' Rw'",
-    "Rw U Rw' U R U' R' M' U R U2 Rw'",
+    {
+      id: 'fabbf521-df97-43dc-b5cf-e7945860b6c3',
+      notation: "(Rw' U' Rw) U' R' U R U' R' U R Rw' U Rw",
+    },
+    {
+      id: 'c6edda6d-1a1f-4673-b6aa-9fbe099c24ca',
+      notation: "(Rw U Rw') U R U' R' U R U' R' (Rw U' Rw')",
+    },
+    {
+      id: '060204cd-218a-475c-8295-25f9478db08c',
+      notation: "(Rw U Rw') U R U' R' U R U' M' U' Rw'",
+    },
+    {
+      id: 'cb254693-6102-448e-bae7-f4eb59bf1d5d',
+      notation: "Rw U Rw' U R U' R' U R U' R' Rw U' Rw'",
+    },
+    { id: '7e7185c2-eab3-4ac2-a0ea-bf965e7c78c8', notation: "Rw U Rw' U R U' R' M' U R U2 Rw'" },
   ],
   pattern: [
     ['none', 'none', 'yellow', 'none', 'none'],

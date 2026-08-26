@@ -24,8 +24,8 @@ describe('algorithm cases', () => {
   it('solves the U face from each OLL pattern with every algorithm', () => {
     for (const item of OLL_CASES) {
       for (const algorithm of item.algorithms) {
-        const actual = topLayerPatternAfterAlgorithm(item.pattern, algorithm);
-        expect.soft(isSolvedUFace(actual), `OLL ${item.number}: ${algorithm}`).toBe(true);
+        const actual = topLayerPatternAfterAlgorithm(item.pattern, algorithm.notation);
+        expect.soft(isSolvedUFace(actual), `OLL ${item.number}: ${algorithm.notation}`).toBe(true);
       }
     }
   });
@@ -33,8 +33,8 @@ describe('algorithm cases', () => {
   it('solves the top layer from each PLL pattern with every algorithm', () => {
     for (const item of PLL_CASES) {
       for (const algorithm of item.algorithms) {
-        const actual = topLayerPatternAfterAlgorithm(item.pattern, algorithm);
-        expect.soft(isSolvedTopLayer(actual), `PLL ${item.number}: ${algorithm}`).toBe(true);
+        const actual = topLayerPatternAfterAlgorithm(item.pattern, algorithm.notation);
+        expect.soft(isSolvedTopLayer(actual), `PLL ${item.number}: ${algorithm.notation}`).toBe(true);
       }
     }
   });
@@ -66,13 +66,24 @@ describe('algorithm cases', () => {
   });
 
   it('does not include unsupported grouping symbols in algorithms', () => {
-    const notation = cases.flatMap((item) => item.algorithms).join(' ');
+    const notation = cases.flatMap((item) => item.algorithms.map(({ notation }) => notation)).join(' ');
     expect(notation).not.toMatch(/[\[\]{}]/);
   });
 
   it('uses w notation for wide moves', () => {
-    const notation = cases.flatMap((item) => item.algorithms).join(' ');
+    const notation = cases.flatMap((item) => item.algorithms.map(({ notation }) => notation)).join(' ');
     expect(notation).not.toMatch(/(?:^|[^A-Za-z])[udrlfb](?:2|'|\s)/m);
+  });
+
+  it('uses a unique UUID for every built-in algorithm', () => {
+    const ids = cases.flatMap((item) => item.algorithms.map(({ id }) => id));
+
+    expect(
+      ids.every((id) =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id),
+      ),
+    ).toBe(true);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 
   it('uses a 5x5 matrix for every OLL and PLL case', () => {

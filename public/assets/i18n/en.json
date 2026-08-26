@@ -5,7 +5,7 @@
     "algorithms": "ALGORITHM LIBRARY",
     "history": "YOUR PROGRESS"
   },
-  "nav": { "timer": "Timer", "history": "History", "todaySolves": "Today's solves" },
+  "nav": { "timer": "Timer", "history": "History", "totalSolves": "Total Solves" },
   "solveCategories": { "full": "Full solve", "oll": "OLL drill", "pll": "PLL drill" },
   "common": {
     "ok": "OK",
@@ -76,7 +76,7 @@
     "deleteGroup": "Delete group",
     "renameGroup": "Rename group",
     "deleteGroupTitle": "Delete this group?",
-    "deleteGroupMessage": "Delete “{{name}}”?\nThis action cannot be undone.",
+    "deleteGroupMessage": "Delete “{{name}}”?\nRecords in this group ({{count}}) will be moved to “Unclassified”.\nThis action cannot be undone.",
     "recordFilter": "Records to show",
     "solveCategory": "Solve category",
     "targetSolves": "Solves",

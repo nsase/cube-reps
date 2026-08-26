@@ -5,7 +5,7 @@
     "algorithms": "ALGORITHM LIBRARY",
     "history": "YOUR PROGRESS"
   },
-  "nav": { "timer": "タイマー", "history": "記録", "todaySolves": "今日のソルブ" },
+  "nav": { "timer": "タイマー", "history": "記録", "totalSolves": "総ソルブ数" },
   "solveCategories": { "full": "フルソルブ", "oll": "OLL練習", "pll": "PLL練習" },
   "common": {
     "ok": "OK",
@@ -76,7 +76,7 @@
     "deleteGroup": "グループを削除",
     "renameGroup": "グループ名を変更",
     "deleteGroupTitle": "グループを削除しますか？",
-    "deleteGroupMessage": "「{{name}}」を削除します。\nこの操作は取り消せません。",
+    "deleteGroupMessage": "「{{name}}」を削除します。\nこのグループの記録（{{count}}件）は「未分類」へ移動します。\nこの操作は取り消せません。",
     "recordFilter": "表示する記録",
     "solveCategory": "ソルブカテゴリー",
     "targetSolves": "対象ソルブ",
