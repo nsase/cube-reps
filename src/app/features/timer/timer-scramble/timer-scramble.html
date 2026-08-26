@@ -19,10 +19,10 @@
     </button>
   }
 </span>
-@if (store.scrambleGenerating()) {
-  <p>{{ 'timer.generatingScramble' | transloco }}</p>
-} @else if (store.scrambleGenerationFailed()) {
+@if (store.scrambleGenerationFailed()) {
   <p>{{ 'timer.scrambleGenerationFailed' | transloco }}</p>
+} @else if (!store.scramble()) {
+  <p>{{ 'timer.generatingScramble' | transloco }}</p>
 } @else {
   <p>{{ store.scramble() }}</p>
   <app-solve-pattern [category]="store.category()" [scramble]="store.scramble()" />
