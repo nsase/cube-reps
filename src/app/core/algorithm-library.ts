@@ -98,9 +98,8 @@ export class AlgorithmLibraryService {
 
   /** @returns ケース定義を表示用の組み込み手順へ変換した一覧 */
   private defaultsFor(item: AlgorithmCase): CaseAlgorithm[] {
-    return item.algorithms.map((notation, index) => ({
-      id: `built-in-${index}`,
-      notation,
+    return item.algorithms.map((algorithm) => ({
+      ...algorithm,
       builtIn: true,
     }));
   }

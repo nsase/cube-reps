@@ -144,12 +144,14 @@ describe('TimerStore', () => {
     store.setCategory('pll');
 
     expect(store.currentDrillCase()).toBe(store.drillCases()[0]);
-    expect(store.scramble()).toBe(invertAlgorithm(store.drillCases()[0].algorithms[0]));
+    expect(store.scramble()).toBe(invertAlgorithm(store.drillCases()[0].algorithms[0].notation));
 
     store.newScramble();
 
     expect(store.currentDrillCase()).toBe(store.drillCases().at(-1));
-    expect(store.scramble()).toBe(invertAlgorithm(store.drillCases().at(-1)!.algorithms[0]));
+    expect(store.scramble()).toBe(
+      invertAlgorithm(store.drillCases().at(-1)!.algorithms[0].notation),
+    );
   });
 
   it('PLLモードでは選択ケースの代表手順を反転した固定スクランブルを使う', () => {
@@ -158,14 +160,14 @@ describe('TimerStore', () => {
     store.selectedCase.set(0);
     store.newScramble();
 
-    expect(store.scramble()).toBe(invertAlgorithm(store.currentDrillCase().algorithms[0]));
+    expect(store.scramble()).toBe(invertAlgorithm(store.currentDrillCase().algorithms[0].notation));
 
     store.selectedCase.set(0);
     store.newScramble();
     const scramble = store.scramble();
     store.newScramble();
 
-    expect(scramble).toBe(invertAlgorithm(store.drillCases()[0].algorithms[0]));
+    expect(scramble).toBe(invertAlgorithm(store.drillCases()[0].algorithms[0].notation));
     expect(store.scramble()).toBe(scramble);
   });
 
@@ -179,7 +181,10 @@ describe('TimerStore', () => {
       store.newScramble();
       const scrambledPattern = topLayerPatternFromScramble(store.scramble());
       expect
-        .soft(topLayerPatternAfterAlgorithm(scrambledPattern, item.algorithms[0]), item.number)
+        .soft(
+          topLayerPatternAfterAlgorithm(scrambledPattern, item.algorithms[0].notation),
+          item.number,
+        )
         .toEqual(solvedPattern);
     }
   });
@@ -193,7 +198,7 @@ describe('TimerStore', () => {
     const item = store.drillCases()[0];
 
     expect(item.number).toBe('01');
-    expect(store.scramble()).toBe(invertAlgorithm(item.algorithms[0]));
+    expect(store.scramble()).toBe(invertAlgorithm(item.algorithms[0].notation));
 
     store.state.set('ready');
     store.release();
@@ -214,7 +219,10 @@ describe('TimerStore', () => {
       store.newScramble();
       const scrambledPattern = topLayerPatternFromScramble(store.scramble());
       expect
-        .soft(topLayerPatternAfterAlgorithm(scrambledPattern, item.algorithms[0]), item.number)
+        .soft(
+          topLayerPatternAfterAlgorithm(scrambledPattern, item.algorithms[0].notation),
+          item.number,
+        )
         .toEqual(solvedPattern);
     }
   });
