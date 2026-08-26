@@ -79,7 +79,10 @@ export class RecordGroup {
     this.confirm
       .delete(
         this.i18n.translate('history.deleteGroupTitle'),
-        this.i18n.translate('history.deleteGroupMessage', { name: group.name }),
+        this.i18n.translate('history.deleteGroupMessage', {
+          name: group.name,
+          count: this.solveCount(),
+        }),
       )
       .subscribe((confirmed) => {
         if (!confirmed) return;
