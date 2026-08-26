@@ -18,11 +18,11 @@ describe('AlgorithmLibraryService', () => {
   it('keeps built-in algorithms in source order and defaults the favorite to the first', () => {
     const service = createService();
 
-    expect(service.algorithmsFor(item).map((algorithm) => algorithm.notation)).toEqual(
+    expect(service.algorithmsFor(item).map(({ id, notation }) => ({ id, notation }))).toEqual(
       item.algorithms,
     );
-    expect(service.favoriteFor(item)?.id).toBe('built-in-0');
-    expect(service.primaryNotation(item)).toBe(item.algorithms[0]);
+    expect(service.favoriteFor(item)?.id).toBe(item.algorithms[0].id);
+    expect(service.primaryNotation(item)).toBe(item.algorithms[0].notation);
   });
 
   it('appends user algorithms and allows exactly one favorite', () => {
@@ -32,17 +32,37 @@ describe('AlgorithmLibraryService', () => {
     const algorithms = service.algorithmsFor(item);
     const custom = algorithms.at(-1)!;
 
-    expect(algorithms.slice(0, item.algorithms.length).map(({ notation }) => notation)).toEqual(
-      item.algorithms,
-    );
+    expect(
+      algorithms.slice(0, item.algorithms.length).map(({ id, notation }) => ({ id, notation })),
+    ).toEqual(item.algorithms);
     expect(custom.builtIn).toBe(false);
 
     service.setFavorite(item, custom.id);
     expect(service.favoriteFor(item)?.id).toBe(custom.id);
     expect(service.primaryNotation(item)).toBe('custom algorithm');
 
-    service.setFavorite(item, 'built-in-1');
-    expect(service.favoriteFor(item)?.id).toBe('built-in-1');
+    service.setFavorite(item, item.algorithms[1].id);
+    expect(service.favoriteFor(item)?.id).toBe(item.algorithms[1].id);
+  });
+
+  it('keeps the favorite when built-in algorithms are reordered or corrected', () => {
+    const service = createService();
+    const favorite = item.algorithms[1];
+    service.setFavorite(item, favorite.id);
+    const changedItem = {
+      ...item,
+      algorithms: [
+        { ...favorite, notation: favorite.notation + ' corrected' },
+        item.algorithms[0],
+        ...item.algorithms.slice(2),
+      ],
+    };
+
+    expect(service.favoriteFor(changedItem)).toEqual({
+      id: favorite.id,
+      notation: favorite.notation + ' corrected',
+      builtIn: true,
+    });
   });
 
   it('falls back to the first built-in when the favorite user algorithm is removed', () => {
@@ -54,6 +74,6 @@ describe('AlgorithmLibraryService', () => {
     service.remove(item, custom.id);
 
     expect(service.algorithmsFor(item).some((algorithm) => algorithm.id === custom.id)).toBe(false);
-    expect(service.favoriteFor(item)?.id).toBe('built-in-0');
+    expect(service.favoriteFor(item)?.id).toBe(item.algorithms[0].id);
   });
 });

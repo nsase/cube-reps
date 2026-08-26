@@ -277,7 +277,7 @@ export class TimerStore implements OnDestroy {
       selectedCase === 'random' ? Math.floor(Math.random() * cases.length) : selectedCase;
     const item = cases[index];
     this.currentDrillCase.set(item);
-    return invertAlgorithm(item.algorithms[0]);
+    return invertAlgorithm(item.algorithms[0].notation);
   }
 
   /** @returns 完成したスクランブルがあり、計測開始できる場合は`true` */
