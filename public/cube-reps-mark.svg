@@ -1,6 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
   <title id="title">CubeReps</title>
-  <path fill="#c9ef46" d="M32 4 57 18 32 32 7 18 32 4Z"/>
-  <path fill="#55aaff" d="M7 22 30 35v25L7 47V22Z"/>
-  <path fill="#ff6960" d="m34 35 23-13v25L34 60V35Z"/>
+
+  <!-- One strong silhouette keeps the timer recognizable at favicon size. -->
+  <g stroke="#f4f7f8" stroke-linejoin="round">
+    <path fill="#c9ef46" stroke-width="4" d="M26 5h12v8H26z"/>
+    <circle cx="32" cy="36" r="23" fill="#152c3d" stroke-width="4.5"/>
+
+    <!-- Three uninterrupted faces suggest a cube without a dense tile grid. -->
+    <path fill="#ffd83d" stroke-width="2.5" d="m32 19 13 7.5L32 34l-13-7.5L32 19Z"/>
+    <path fill="#3195ee" stroke-width="2.5" d="M19 26.5 32 34v15L19 41.5v-15Z"/>
+    <path fill="#ef3e43" stroke-width="2.5" d="m32 34 13-7.5v15L32 49V34Z"/>
+  </g>
 </svg>
