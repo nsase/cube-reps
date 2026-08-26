@@ -5,7 +5,7 @@
     "algorithms": "ALGORITHM LIBRARY",
     "history": "YOUR PROGRESS"
   },
-  "nav": { "timer": "タイマー", "history": "記録", "todaySolves": "今日のソルブ" },
+  "nav": { "timer": "タイマー", "history": "記録", "totalSolves": "総ソルブ数" },
   "solveCategories": { "full": "フルソルブ", "oll": "OLL練習", "pll": "PLL練習" },
   "common": {
     "ok": "OK",
