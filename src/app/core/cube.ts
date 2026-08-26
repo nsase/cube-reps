@@ -115,12 +115,19 @@ export class CubeService {
   }
 
   /**
-   * 指定したユーザー作成グループを削除する。既定グループは削除しない。
+   * 指定したユーザー作成グループを削除し、所属する記録を未分類へ移動する。既定グループは削除しない。
+   * グループ整理で計測記録を失わず、削除後も履歴と集計から参照できる状態を守る。
    *
    * @param id 削除対象のグループID
    */
   removeGroup(id: string): void {
     if (DEFAULT_GROUPS.some((group) => group.id === id)) return;
+    if (!this.userGroups().some((group) => group.id === id)) return;
+    this.solves.update((solves) =>
+      solves.map((solve) =>
+        solve.groupId === id ? { ...solve, groupId: DEFAULT_GROUP.id } : solve,
+      ),
+    );
     this.userGroups.update((groups) => groups.filter((group) => group.id !== id));
     if (this.activeGroupId() === id) this.activeGroupId.set(DEFAULT_GROUP.id);
   }

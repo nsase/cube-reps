@@ -62,6 +62,7 @@ describe('RecordGroup', () => {
     const cube = TestBed.inject(CubeService);
     const store = TestBed.inject(HistoryStore);
     const group = cube.addGroup('削除対象')!;
+    const solve = cube.addSolve(1234, 'R U', 'full');
     store.selectedGroup.set(group.id);
     const fixture = TestBed.createComponent(RecordGroup);
     fixture.componentRef.setInput('group', group);
@@ -69,8 +70,12 @@ describe('RecordGroup', () => {
 
     (fixture.nativeElement.querySelector('.group-delete') as HTMLButtonElement).click();
 
-    expect(confirm.delete).toHaveBeenCalledOnce();
+    expect(confirm.delete).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.stringMatching(/1.*(?:未分類|Unclassified)/s),
+    );
     expect(cube.groups().some(({ id }) => id === group.id)).toBe(false);
     expect(store.selectedGroup()).toBe('unclassified');
+    expect(cube.solves().find(({ id }) => id === solve.id)?.groupId).toBe('unclassified');
   });
 });
