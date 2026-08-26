@@ -196,12 +196,18 @@ test(
     });
     expect(actionGap).toBeLessThanOrEqual(8);
 
-    await firstRecord
-      .getByRole('button', { name: /計測記録の詳細を表示|View solve details/ })
-      .click();
+    const detailsButton = firstRecord.getByRole('button', {
+      name: /計測記録の詳細を表示|View solve details/,
+    });
+    await detailsButton.scrollIntoViewIfNeeded();
+    const sidebarPositionBeforeDialog = await page.locator('aside').boundingBox();
+
+    await detailsButton.click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
+    const sidebarPositionAfterDialog = await page.locator('aside').boundingBox();
+    expect(sidebarPositionAfterDialog).toEqual(sidebarPositionBeforeDialog);
     await expectElementsWithin(page, '[role="dialog"]', '.solve-actions button');
     await expect(dialog.locator('.record-number')).toHaveText('1234');
     await expect(dialog.locator('.result')).toHaveText('1.00');
