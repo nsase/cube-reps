@@ -10,7 +10,8 @@ $line: var(--border-color);
 
 aside {
   height: 100vh;
-  position: sticky;
+  width: 236px;
+  position: fixed;
   top: 0;
   background: $ink;
   color: var(--surface-color);
@@ -83,6 +84,7 @@ nav {
 }
 
 main {
+  grid-column: 2;
   display: grid;
   min-width: 0;
   min-height: 100dvh;
@@ -139,6 +141,7 @@ header p {
     grid-template-columns: 75px 1fr;
   }
   aside {
+    width: 75px;
     padding: 28px 12px;
   }
   .brand {
@@ -196,6 +199,7 @@ header p {
     font-size: var(--font-size-small);
   }
   main {
+    grid-column: auto;
     padding: 23px 14px 80px;
   }
   header p {
