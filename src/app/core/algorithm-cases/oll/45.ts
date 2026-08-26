@@ -5,7 +5,7 @@ export const OLL_45_CASE = defineOllCase({
   number: '45',
   names: ['Suit up', 'T'],
   group: 'T Shape',
-  algorithms: ["F R U R' U' F'"],
+  algorithms: [{ id: '65925568-96c2-4828-b8b9-310330b546cb', notation: "F R U R' U' F'" }],
   pattern: [
     ['none', 'none', 'yellow', 'none', 'none'],
     ['yellow', 'none', 'none', 'yellow', 'none'],
