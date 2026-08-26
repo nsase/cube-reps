@@ -38,6 +38,40 @@ test('TimerとHistoryで選択中のグループを共有する', async ({ page 
   await expect(page.locator('.record-context select')).toHaveValue('unclassified');
 });
 
+test('記録グループの削除後も所属記録を未分類で表示する', async ({ page }) => {
+  const group = { id: 'competition', name: '大会', createdAt: new Date(1).toISOString() };
+  const solve = {
+    id: 'competition-solve',
+    time: 1234,
+    scramble: 'R U',
+    date: new Date(2).toISOString(),
+    category: 'full',
+    groupId: group.id,
+    penalty: 'none',
+  };
+  await page.evaluate(
+    ({ storedGroup, storedSolve }) => {
+      localStorage.setItem('cube-reps.groups', JSON.stringify([storedGroup]));
+      localStorage.setItem('cube-reps.solves', JSON.stringify([storedSolve]));
+      localStorage.setItem('cube-reps.active-group', storedGroup.id);
+    },
+    { storedGroup: group, storedSolve: solve },
+  );
+  await page.reload();
+
+  const targetGroup = page.locator('app-record-group').filter({ hasText: '大会' });
+  await targetGroup.getByTestId('record-group-delete').click();
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toContainText(/1.*(?:未分類|Unclassified)/s);
+  await dialog.getByRole('button', { name: /削除|Delete/ }).click();
+
+  await expect(targetGroup).toHaveCount(0);
+  await expect(page.getByTestId('history-group-filter')).toHaveValue('unclassified');
+  await expect(page.locator('app-solve-record')).toHaveCount(1);
+  await expect(page.locator('app-solve-record .group-badge')).toHaveText(/未分類|Unclassified/);
+});
+
 test('途中のDNFを飛ばして前後の結果を線でつなぐ', async ({ page }) => {
   const solves = Array.from({ length: 6 }, (_, index) => ({
     id: String(index + 1),
@@ -162,12 +196,18 @@ test(
     });
     expect(actionGap).toBeLessThanOrEqual(8);
 
-    await firstRecord
-      .getByRole('button', { name: /計測記録の詳細を表示|View solve details/ })
-      .click();
+    const detailsButton = firstRecord.getByRole('button', {
+      name: /計測記録の詳細を表示|View solve details/,
+    });
+    await detailsButton.scrollIntoViewIfNeeded();
+    const sidebarPositionBeforeDialog = await page.locator('aside').boundingBox();
+
+    await detailsButton.click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
+    const sidebarPositionAfterDialog = await page.locator('aside').boundingBox();
+    expect(sidebarPositionAfterDialog).toEqual(sidebarPositionBeforeDialog);
     await expectElementsWithin(page, '[role="dialog"]', '.solve-actions button');
     await expect(dialog.locator('.record-number')).toHaveText('1234');
     await expect(dialog.locator('.result')).toHaveText('1.00');

@@ -11,5 +11,11 @@ export const JB_CASE = definePllCase({
     ['red', 'yellow', 'yellow', 'yellow', 'blue'],
     ['none', 'green', 'orange', 'orange', 'none'],
   ],
-  algorithms: ["R U R' F' R U R' U' R' F R2 U' R' U'", "R U2 R' U' R U2 L' U R' U' L"],
+  algorithms: [
+    {
+      id: 'ae618e98-e934-4d65-aa19-d7bda58cf947',
+      notation: "R U R' F' R U R' U' R' F R2 U' R' U'",
+    },
+    { id: '0ecba8e0-cd8f-4e43-8d2c-8a137c708337', notation: "R U2 R' U' R U2 L' U R' U' L" },
+  ],
 });

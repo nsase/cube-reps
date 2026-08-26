@@ -5,7 +5,7 @@ export const OLL_46_CASE = defineOllCase({
   number: '46',
   names: ["Seein' Headlights (C and headlights)"],
   group: 'C Shape',
-  algorithms: ["R' U' R' F R F' U R"],
+  algorithms: [{ id: '188814e2-5a0a-429c-ab5d-1f771da22899', notation: "R' U' R' F R F' U R" }],
   pattern: [
     ['none', 'none', 'none', 'none', 'none'],
     ['none', 'yellow', 'yellow', 'none', 'yellow'],
