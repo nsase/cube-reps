@@ -11,5 +11,10 @@ export const Y_CASE = definePllCase({
     ['red', 'yellow', 'yellow', 'yellow', 'red'],
     ['none', 'green', 'green', 'blue', 'none'],
   ],
-  algorithms: ["F R U' R' U' R U R' F' R U R' U' R' F R F'"],
+  algorithms: [
+    {
+      id: '6c8a1780-261e-4a9e-9069-ba8a01148d43',
+      notation: "F R U' R' U' R U R' F' R U R' U' R' F R F'",
+    },
+  ],
 });

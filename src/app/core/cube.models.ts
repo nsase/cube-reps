@@ -49,6 +49,14 @@ export type StickerColor = 'yellow' | 'white' | 'green' | 'blue' | 'red' | 'oran
 /** OLL/PLL表示用の読み取り専用ステッカー配列。 */
 export type CubePattern = ReadonlyArray<ReadonlyArray<StickerColor>>;
 
+/** アプリに組み込まれたOLLまたはPLL手順。 */
+export interface BuiltInAlgorithm {
+  /** 表示順や手順表記に依存しない固定UUID。 */
+  id: string;
+  /** キューブ記法による手順文字列。 */
+  notation: string;
+}
+
 /** OLLまたはPLLのケースと登録済み手順。 */
 export interface AlgorithmCase {
   /** ケースの種別。 */
@@ -60,7 +68,7 @@ export interface AlgorithmCase {
   /** ケースの分類名。 */
   group: string;
   /** 組み込み手順の一覧。 */
-  algorithms: readonly string[];
+  algorithms: readonly BuiltInAlgorithm[];
   /** ケースを表すステッカーパターン。 */
   pattern: CubePattern;
 }

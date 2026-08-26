@@ -1,4 +1,4 @@
-import { AlgorithmCase, CubePattern, StickerColor } from '../../cube.models';
+import { AlgorithmCase, BuiltInAlgorithm, CubePattern, StickerColor } from '../../cube.models';
 
 /** 5行5列パターンの外周を時計回りに並べた座標。 */
 const OUTER_RING: ReadonlyArray<readonly [number, number]> = [
@@ -23,7 +23,7 @@ interface PllCaseDefinition {
   /** 置換対象による分類。 */
   group: string;
   /** 組み込み手順。 */
-  algorithms: readonly string[];
+  algorithms: readonly BuiltInAlgorithm[];
   /** 任意の5行5列ステッカーパターン。 */
   pattern?: CubePattern;
   /** パターン未指定時の仮パターン生成に使うシード。 */

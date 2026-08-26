@@ -6,12 +6,21 @@ export const OLL_18_CASE = defineOllCase({
   names: ['Crown'],
   group: 'Dot',
   algorithms: [
-    "Rw U R' U R U2 Rw' Rw' U' R U' R' U2 Rw",
-    "(y) R U2 R' R' F R F' U2 M' (U R U' Rw')",
-    "(y) R U2 R2 F R F' U2 M' U R U' Rw'",
-    "(y2) R U R2 F' U' F U R U2 R' F R F'",
-    "(y2) F R U R' Dw R' U2 (R' F R F')",
-    "Rw U R' U R U2 Rw2 U' R U' R' U2 Rw",
+    {
+      id: '39179d8d-7117-46c7-b96d-81f35b688f54',
+      notation: "Rw U R' U R U2 Rw' Rw' U' R U' R' U2 Rw",
+    },
+    {
+      id: 'c9592422-7f49-4c09-9bf3-be68d12fcbc6',
+      notation: "(y) R U2 R' R' F R F' U2 M' (U R U' Rw')",
+    },
+    { id: '38a7c662-eead-46d3-b75f-3ddfb6b718fe', notation: "(y) R U2 R2 F R F' U2 M' U R U' Rw'" },
+    {
+      id: '8d71e401-29ac-40dd-ae46-20064e22c14e',
+      notation: "(y2) R U R2 F' U' F U R U2 R' F R F'",
+    },
+    { id: '97bf7943-3653-4b7b-be4f-3bf3380a5d96', notation: "(y2) F R U R' Dw R' U2 (R' F R F')" },
+    { id: '351bf7fb-d248-407a-8d13-cf30500132b6', notation: "Rw U R' U R U2 Rw2 U' R U' R' U2 Rw" },
   ],
   pattern: [
     ['none', 'none', 'yellow', 'none', 'none'],
