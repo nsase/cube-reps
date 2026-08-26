@@ -1,16 +1,18 @@
 $ink: var(--text-color);
 $lime: var(--primary-color);
 $line: var(--border-color);
+$sidebar-width: 236px;
+$sidebar-compact-width: 75px;
 
 .shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 236px 1fr;
+  grid-template-columns: $sidebar-width 1fr;
 }
 
 aside {
   height: 100vh;
-  width: 236px;
+  width: $sidebar-width;
   position: fixed;
   top: 0;
   background: $ink;
@@ -138,10 +140,10 @@ header p {
 
 @media (max-width: 900px) {
   .shell {
-    grid-template-columns: 75px 1fr;
+    grid-template-columns: $sidebar-compact-width 1fr;
   }
   aside {
-    width: 75px;
+    width: $sidebar-compact-width;
     padding: 28px 12px;
   }
   .brand {
