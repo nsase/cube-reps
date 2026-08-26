@@ -5,7 +5,7 @@
     "algorithms": "ALGORITHM LIBRARY",
     "history": "YOUR PROGRESS"
   },
-  "nav": { "timer": "Timer", "history": "History", "todaySolves": "Today's solves" },
+  "nav": { "timer": "Timer", "history": "History", "totalSolves": "Total Solves" },
   "solveCategories": { "full": "Full solve", "oll": "OLL drill", "pll": "PLL drill" },
   "common": {
     "ok": "OK",

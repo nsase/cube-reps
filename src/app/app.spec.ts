@@ -179,6 +179,47 @@ describe('App', () => {
     expect(nextPage.getAttribute('aria-label')).toBe('次のページ');
   });
 
+  it('保存済みSolveの総数を日英のラベルとともに表示する', async () => {
+    const cube = TestBed.inject(CubeService);
+    cube.solves.set([
+      {
+        id: 'past-solve',
+        time: 1000,
+        scramble: 'R U',
+        date: new Date(0).toISOString(),
+        category: 'full',
+        groupId: 'unclassified',
+        penalty: 'none',
+      },
+      {
+        id: 'recent-solve',
+        time: 2000,
+        scramble: 'F R',
+        date: new Date().toISOString(),
+        category: 'full',
+        groupId: 'unclassified',
+        penalty: 'none',
+      },
+    ]);
+    const fixture = TestBed.createComponent(App);
+    await firstValueFrom(TestBed.inject(TranslocoService).load('en'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const solveTotal = fixture.nativeElement.querySelector('.today') as HTMLElement;
+    expect(solveTotal.textContent).toContain('Total Solves');
+    expect(solveTotal.querySelector('strong')?.textContent).toBe('2');
+
+    const i18n = TestBed.inject(TranslocoService);
+    await firstValueFrom(i18n.load('ja'));
+    i18n.setActiveLang('ja');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(solveTotal.textContent).toContain('総ソルブ数');
+    expect(solveTotal.querySelector('strong')?.textContent).toBe('2');
+  });
+
   it('表示言語を日本語へ切り替えて選択を保存する', async () => {
     const fixture = TestBed.createComponent(App);
     await TestBed.inject(Router).navigateByUrl('/timer');
