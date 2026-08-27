@@ -8,6 +8,8 @@ interface OllCaseDefinition {
   names: readonly string[];
   /** OLL形状による分類。 */
   group: string;
+  /** Timerでケースを固定出題するためのSetup。 */
+  setup: string;
   /** 組み込み手順。 */
   algorithms: readonly BuiltInAlgorithm[];
   /** 黄色の向きを示す5行5列パターン。 */
@@ -26,6 +28,7 @@ export function defineOllCase(definition: OllCaseDefinition): AlgorithmCase {
     number: definition.number,
     name: definition.names.join(' / ') || `OLL ${Number(definition.number)}`,
     group: definition.group,
+    setup: definition.setup,
     algorithms: definition.algorithms,
     pattern: definition.pattern,
   };

@@ -4,6 +4,7 @@ import { definePllCase } from './pll-case';
 export const NA_CASE = definePllCase({
   number: 'Na',
   group: 'Mixed',
+  setup: "R U' L U2 R' U L' R U' L U2 R' U L'",
   pattern: [
     ['none', 'orange', 'orange', 'red', 'none'],
     ['blue', 'yellow', 'yellow', 'yellow', 'blue'],

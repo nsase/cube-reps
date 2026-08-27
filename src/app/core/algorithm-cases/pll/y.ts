@@ -4,6 +4,7 @@ import { definePllCase } from './pll-case';
 export const Y_CASE = definePllCase({
   number: 'Y',
   group: 'Mixed',
+  setup: "F R' F' R U R U' R' F R U' R' U R U R' F'",
   pattern: [
     ['none', 'green', 'red', 'blue', 'none'],
     ['orange', 'yellow', 'yellow', 'yellow', 'orange'],
