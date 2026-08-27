@@ -71,6 +71,4 @@ export interface AlgorithmCase {
   setup: string;
   /** 組み込み手順の一覧。 */
   algorithms: readonly BuiltInAlgorithm[];
-  /** ケースを表すステッカーパターン。 */
-  pattern: CubePattern;
 }

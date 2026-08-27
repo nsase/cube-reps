@@ -5,13 +5,6 @@ export const NA_CASE = definePllCase({
   number: 'Na',
   group: 'Mixed',
   setup: "R U' L U2 R' U L' R U' L U2 R' U L'",
-  pattern: [
-    ['none', 'orange', 'orange', 'red', 'none'],
-    ['blue', 'yellow', 'yellow', 'yellow', 'blue'],
-    ['green', 'yellow', 'yellow', 'yellow', 'blue'],
-    ['green', 'yellow', 'yellow', 'yellow', 'green'],
-    ['none', 'orange', 'red', 'red', 'none'],
-  ],
   algorithms: [
     {
       id: 'f69dc97b-1fc8-4489-8023-429abdefa6c9',

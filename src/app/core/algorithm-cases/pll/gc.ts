@@ -5,13 +5,6 @@ export const GC_CASE = definePllCase({
   number: 'Gc',
   group: 'Mixed',
   setup: "D' R U R' U' D R2 U' R U' R' U R' U R2",
-  pattern: [
-    ['none', 'blue', 'orange', 'orange', 'none'],
-    ['red', 'yellow', 'yellow', 'yellow', 'green'],
-    ['green', 'yellow', 'yellow', 'yellow', 'red'],
-    ['red', 'yellow', 'yellow', 'yellow', 'blue'],
-    ['none', 'green', 'blue', 'orange', 'none'],
-  ],
   algorithms: [
     {
       id: '9a30d550-21a8-40d6-b707-396b95b0bfac',

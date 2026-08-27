@@ -7,11 +7,4 @@ export const OLL_40_CASE = defineOllCase({
   group: 'Big Lightning Bolt',
   setup: "R' U' F U R U' R' F' R",
   algorithms: [{ id: 'b25d7081-db91-4305-9831-07f4dbd96212', notation: "R' F R U R' U' F' U R" }],
-  pattern: [
-    ['none', 'none', 'yellow', 'yellow', 'none'],
-    ['none', 'yellow', 'none', 'none', 'none'],
-    ['none', 'yellow', 'yellow', 'yellow', 'none'],
-    ['yellow', 'none', 'none', 'yellow', 'none'],
-    ['none', 'none', 'yellow', 'none', 'none'],
-  ],
 });

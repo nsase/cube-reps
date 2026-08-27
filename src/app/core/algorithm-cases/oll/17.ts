@@ -18,11 +18,4 @@ export const OLL_17_CASE = defineOllCase({
       notation: "(y2) Fw R U R' U' Fw' U' R U R' U' R' F R F'",
     },
   ],
-  pattern: [
-    ['none', 'none', 'yellow', 'none', 'none'],
-    ['none', 'yellow', 'none', 'none', 'yellow'],
-    ['yellow', 'none', 'yellow', 'none', 'yellow'],
-    ['none', 'none', 'none', 'yellow', 'none'],
-    ['none', 'yellow', 'yellow', 'none', 'none'],
-  ],
 });
