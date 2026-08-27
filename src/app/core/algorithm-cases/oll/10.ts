@@ -5,6 +5,7 @@ export const OLL_10_CASE = defineOllCase({
   number: '10',
   names: ['Anti-Kite'],
   group: 'Fish Shape',
+  setup: "R' F R U R' F' R F U' F'",
   algorithms: [
     { id: '47cda92c-1734-4597-ab5a-d07e3e3efd3c', notation: "R U R' U R' F R F' R U2 R'" },
     {
@@ -12,12 +13,5 @@ export const OLL_10_CASE = defineOllCase({
       notation: "(y2) Rw U R' U R U' R' U' Rw' R (U R U' R')",
     },
     { id: '6134b011-118f-478c-bd40-881a3a52acb2', notation: "(y) F U F' R' F R U' R' F' R" },
-  ],
-  pattern: [
-    ['none', 'yellow', 'yellow', 'none', 'none'],
-    ['none', 'none', 'none', 'yellow', 'none'],
-    ['none', 'yellow', 'yellow', 'none', 'yellow'],
-    ['yellow', 'none', 'yellow', 'none', 'none'],
-    ['none', 'none', 'none', 'yellow', 'none'],
   ],
 });

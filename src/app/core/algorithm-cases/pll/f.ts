@@ -4,13 +4,7 @@ import { definePllCase } from './pll-case';
 export const F_CASE = definePllCase({
   number: 'F',
   group: 'Mixed',
-  pattern: [
-    ['none', 'blue', 'green', 'orange', 'none'],
-    ['red', 'yellow', 'yellow', 'yellow', 'green'],
-    ['red', 'yellow', 'yellow', 'yellow', 'orange'],
-    ['red', 'yellow', 'yellow', 'yellow', 'blue'],
-    ['none', 'green', 'blue', 'orange', 'none'],
-  ],
+  setup: "R' U' R U' R' U R U R2 F' R U R U' R' F U R",
   algorithms: [
     {
       id: '66c85580-78ad-4333-a395-06c878f4a188',
