@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { OLL_CASES, PLL_CASES } from './algorithm-cases';
-import { topLayerPatternAfterAlgorithm } from './cube-state';
+import {
+  cubeFacesFromScramble,
+  topLayerPatternAfterAlgorithm,
+  topLayerPatternFromScramble,
+} from './cube-state';
 
 const cases = [...OLL_CASES, ...PLL_CASES];
 
@@ -34,7 +38,9 @@ describe('algorithm cases', () => {
     for (const item of PLL_CASES) {
       for (const algorithm of item.algorithms) {
         const actual = topLayerPatternAfterAlgorithm(item.pattern, algorithm.notation);
-        expect.soft(isSolvedTopLayer(actual), `PLL ${item.number}: ${algorithm.notation}`).toBe(true);
+        expect
+          .soft(isSolvedTopLayer(actual), `PLL ${item.number}: ${algorithm.notation}`)
+          .toBe(true);
       }
     }
   });
@@ -66,12 +72,16 @@ describe('algorithm cases', () => {
   });
 
   it('does not include unsupported grouping symbols in algorithms', () => {
-    const notation = cases.flatMap((item) => item.algorithms.map(({ notation }) => notation)).join(' ');
+    const notation = cases
+      .flatMap((item) => item.algorithms.map(({ notation }) => notation))
+      .join(' ');
     expect(notation).not.toMatch(/[\[\]{}]/);
   });
 
   it('uses w notation for wide moves', () => {
-    const notation = cases.flatMap((item) => item.algorithms.map(({ notation }) => notation)).join(' ');
+    const notation = cases
+      .flatMap((item) => item.algorithms.map(({ notation }) => notation))
+      .join(' ');
     expect(notation).not.toMatch(/(?:^|[^A-Za-z])[udrlfb](?:2|'|\s)/m);
   });
 
@@ -91,6 +101,50 @@ describe('algorithm cases', () => {
     for (const item of cases) {
       expect(item.pattern).toHaveLength(5);
       item.pattern.forEach((row) => expect(row).toHaveLength(5));
+    }
+  });
+
+  it('provides a fixed Setup using only outer moves and the allowed M slice move', () => {
+    for (const item of cases) {
+      expect
+        .soft(item.setup, `${item.kind} ${item.number}`)
+        .toMatch(/^(?:[UDLRFBM](?:2|')?)(?: [UDLRFBM](?:2|')?)*$/);
+    }
+  });
+
+  it('uses M moves only in the intentionally selected Setup cases', () => {
+    expect(cases.filter(({ setup }) => /(?:^| )M(?:2|')?(?: |$)/.test(setup)).map(itemKey)).toEqual(
+      ['OLL 19', 'PLL H'],
+    );
+  });
+
+  it('creates an OLL state solved by a corresponding algorithm while preserving F2L', () => {
+    for (const item of OLL_CASES) {
+      const pattern = topLayerPatternFromScramble(item.setup);
+      expect
+        .soft(
+          item.algorithms.some(({ notation }) =>
+            isSolvedUFace(topLayerPatternAfterAlgorithm(pattern, withoutInitialY(notation))),
+          ),
+          `OLL ${item.number}`,
+        )
+        .toBe(true);
+      expect.soft(hasSolvedF2L(item.setup), `OLL ${item.number}`).toBe(true);
+    }
+  });
+
+  it('creates a PLL state solved by a corresponding algorithm while preserving F2L', () => {
+    for (const item of PLL_CASES) {
+      const pattern = topLayerPatternFromScramble(item.setup);
+      expect
+        .soft(
+          item.algorithms.some(({ notation }) =>
+            isSolvedTopLayer(topLayerPatternAfterAlgorithm(pattern, withoutInitialY(notation))),
+          ),
+          `PLL ${item.number}`,
+        )
+        .toBe(true);
+      expect.soft(hasSolvedF2L(item.setup), `PLL ${item.number}`).toBe(true);
     }
   });
 
@@ -127,4 +181,27 @@ function isSolvedTopLayer(pattern: import('./cube.models').CubePattern): boolean
 
 function isSolvedUFace(pattern: import('./cube.models').CubePattern): boolean {
   return pattern.slice(1, 4).every((row) => row.slice(1, 4).every((color) => color === 'yellow'));
+}
+
+/** @returns ケース種別と識別子を結合したテスト表示用のキー */
+function itemKey(item: import('./cube.models').AlgorithmCase): string {
+  return `${item.kind} ${item.number}`;
+}
+
+/** @returns 解法開始前の持ち替えとして記録された先頭のy回転を除いた手順 */
+function withoutInitialY(notation: string): string {
+  return notation.replace(/^\s*(?:(?:\(\s*y(?:2|')?\s*\)|y(?:2|')?)\s*)+/, '');
+}
+
+/** @returns Setup適用後も下面と側面下2段が完成している場合は`true` */
+function hasSolvedF2L(setup: string): boolean {
+  const faces = cubeFacesFromScramble(setup);
+  const downIsSolved = faces.D.flat().every((color) => color === faces.D[1][1]);
+  const sidesAreSolved = (['F', 'R', 'B', 'L'] as const).every((face) =>
+    faces[face]
+      .slice(1)
+      .flat()
+      .every((color) => color === faces[face][1][1]),
+  );
+  return downIsSolved && sidesAreSolved;
 }

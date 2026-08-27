@@ -4,6 +4,7 @@ import { definePllCase } from './pll-case';
 export const GA_CASE = definePllCase({
   number: 'Ga',
   group: 'Mixed',
+  setup: "D R' U' R U D' R2 U R' U R U' R U' R2",
   pattern: [
     ['none', 'green', 'blue', 'red', 'none'],
     ['orange', 'yellow', 'yellow', 'yellow', 'blue'],

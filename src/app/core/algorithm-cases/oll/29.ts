@@ -5,6 +5,7 @@ export const OLL_29_CASE = defineOllCase({
   number: '29',
   names: ['Spotted Chameleon'],
   group: 'Awkward Shape',
+  setup: "R U' R' F' U F R U R' U R U' R'",
   algorithms: [
     { id: 'df2110a7-6622-4ce8-8e5d-97556208f726', notation: "R U R' U' R U' R' F' U' F R U R'" },
     {

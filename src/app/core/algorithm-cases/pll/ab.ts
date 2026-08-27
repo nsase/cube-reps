@@ -4,6 +4,7 @@ import { definePllCase } from './pll-case';
 export const AB_CASE = definePllCase({
   number: 'Ab',
   group: 'Corner',
+  setup: "R2 F2 R' B' R F2 R' B R'",
   pattern: [
     ['none', 'orange', 'orange', 'red', 'none'],
     ['blue', 'yellow', 'yellow', 'yellow', 'blue'],
