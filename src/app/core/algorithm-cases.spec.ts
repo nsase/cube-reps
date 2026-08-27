@@ -112,7 +112,7 @@ describe('algorithm cases', () => {
     }
   });
 
-  it('uses M moves only for cases where an outer-move Setup is impractical', () => {
+  it('uses M moves only in the intentionally selected Setup cases', () => {
     expect(cases.filter(({ setup }) => /(?:^| )M(?:2|')?(?: |$)/.test(setup)).map(itemKey)).toEqual(
       ['OLL 19', 'PLL H'],
     );
