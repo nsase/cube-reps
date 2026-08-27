@@ -1,4 +1,4 @@
-import { AlgorithmCase, BuiltInAlgorithm, CubePattern } from '../../cube.models';
+import { AlgorithmCase, BuiltInAlgorithm } from '../../cube.models';
 
 /** OLLケース生成時に必要な元データ。 */
 interface OllCaseDefinition {
@@ -12,8 +12,6 @@ interface OllCaseDefinition {
   setup: string;
   /** 組み込み手順。 */
   algorithms: readonly BuiltInAlgorithm[];
-  /** 黄色の向きを示す5行5列パターン。 */
-  pattern: CubePattern;
 }
 
 /**
@@ -30,6 +28,5 @@ export function defineOllCase(definition: OllCaseDefinition): AlgorithmCase {
     group: definition.group,
     setup: definition.setup,
     algorithms: definition.algorithms,
-    pattern: definition.pattern,
   };
 }

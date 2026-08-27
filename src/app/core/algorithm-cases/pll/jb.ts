@@ -5,13 +5,6 @@ export const JB_CASE = definePllCase({
   number: 'Jb',
   group: 'Mixed',
   setup: "L' U R U' L U2 R' U R U2 R'",
-  pattern: [
-    ['none', 'blue', 'blue', 'orange', 'none'],
-    ['red', 'yellow', 'yellow', 'yellow', 'green'],
-    ['red', 'yellow', 'yellow', 'yellow', 'green'],
-    ['red', 'yellow', 'yellow', 'yellow', 'blue'],
-    ['none', 'green', 'orange', 'orange', 'none'],
-  ],
   algorithms: [
     {
       id: 'ae618e98-e934-4d65-aa19-d7bda58cf947',
