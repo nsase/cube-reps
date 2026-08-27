@@ -5,13 +5,6 @@ export const E_CASE = definePllCase({
   number: 'E',
   group: 'Corner',
   setup: "R' F R U R' D' U' R' D F' D' R D U R",
-  pattern: [
-    ['none', 'red', 'blue', 'orange', 'none'],
-    ['green', 'yellow', 'yellow', 'yellow', 'green'],
-    ['red', 'yellow', 'yellow', 'yellow', 'orange'],
-    ['blue', 'yellow', 'yellow', 'yellow', 'blue'],
-    ['none', 'red', 'green', 'orange', 'none'],
-  ],
   algorithms: [
     {
       id: 'c80d734d-27f3-4aa4-9103-168e36b55c13',

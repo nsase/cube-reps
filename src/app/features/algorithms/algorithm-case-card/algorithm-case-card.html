@@ -3,7 +3,7 @@
   ><small>{{ item().kind }}</small>
 </div>
 <app-cube-pattern
-  [pattern]="item().pattern"
+  [pattern]="pattern()"
   [label]="'algorithms.pattern' | transloco: { name: item().name }"
 />
 <div>

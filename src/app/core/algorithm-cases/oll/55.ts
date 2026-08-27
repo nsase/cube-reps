@@ -18,11 +18,4 @@ export const OLL_55_CASE = defineOllCase({
       notation: "Rw U2 R' U' Rw' R2 U R' U' Rw U' Rw'",
     },
   ],
-  pattern: [
-    ['none', 'yellow', 'yellow', 'yellow', 'none'],
-    ['none', 'none', 'none', 'none', 'none'],
-    ['none', 'yellow', 'yellow', 'yellow', 'none'],
-    ['none', 'none', 'none', 'none', 'none'],
-    ['none', 'yellow', 'yellow', 'yellow', 'none'],
-  ],
 });
