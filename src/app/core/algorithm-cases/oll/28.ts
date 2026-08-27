@@ -11,11 +11,4 @@ export const OLL_28_CASE = defineOllCase({
     { id: '854ae8f7-4e36-4da8-bb61-519eb95db6f5', notation: "(y2) M' U Lw L' U2 M' U Lw L'" },
     { id: '1d2cc119-4c68-49f4-8ef5-f4eac7086346', notation: "(y2) M' U M U2 M' U M" },
   ],
-  pattern: [
-    ['none', 'none', 'none', 'none', 'none'],
-    ['none', 'yellow', 'yellow', 'yellow', 'none'],
-    ['none', 'yellow', 'yellow', 'none', 'yellow'],
-    ['none', 'yellow', 'none', 'yellow', 'none'],
-    ['none', 'none', 'yellow', 'none', 'none'],
-  ],
 });

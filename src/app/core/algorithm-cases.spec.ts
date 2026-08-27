@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { OLL_CASES, PLL_CASES } from './algorithm-cases';
 import {
   cubeFacesFromScramble,
-  topLayerPatternAfterAlgorithm,
+  topLayerOrientationPatternFromScramble,
   topLayerPatternFromScramble,
 } from './cube-state';
 
@@ -20,28 +20,9 @@ describe('algorithm cases', () => {
       expect(item.kind).toBe('OLL');
       expect(item.name.length).toBeGreaterThan(0);
       expect(item.algorithms.length).toBeGreaterThan(0);
-      const yellowCount = item.pattern.flat().filter((color) => color === 'yellow').length;
+      const pattern = topLayerOrientationPatternFromScramble(item.setup);
+      const yellowCount = pattern.flat().filter((color) => color === 'yellow').length;
       expect(yellowCount).toBe(9);
-    }
-  });
-
-  it('solves the U face from each OLL pattern with every algorithm', () => {
-    for (const item of OLL_CASES) {
-      for (const algorithm of item.algorithms) {
-        const actual = topLayerPatternAfterAlgorithm(item.pattern, algorithm.notation);
-        expect.soft(isSolvedUFace(actual), `OLL ${item.number}: ${algorithm.notation}`).toBe(true);
-      }
-    }
-  });
-
-  it('solves the top layer from each PLL pattern with every algorithm', () => {
-    for (const item of PLL_CASES) {
-      for (const algorithm of item.algorithms) {
-        const actual = topLayerPatternAfterAlgorithm(item.pattern, algorithm.notation);
-        expect
-          .soft(isSolvedTopLayer(actual), `PLL ${item.number}: ${algorithm.notation}`)
-          .toBe(true);
-      }
     }
   });
 
@@ -96,11 +77,15 @@ describe('algorithm cases', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('uses a 5x5 matrix for every OLL and PLL case', () => {
+  it('generates a 5x5 display pattern from every OLL and PLL Setup', () => {
     expect(cases).toHaveLength(78);
     for (const item of cases) {
-      expect(item.pattern).toHaveLength(5);
-      item.pattern.forEach((row) => expect(row).toHaveLength(5));
+      const pattern =
+        item.kind === 'OLL'
+          ? topLayerOrientationPatternFromScramble(item.setup)
+          : topLayerPatternFromScramble(item.setup);
+      expect(pattern).toHaveLength(5);
+      pattern.forEach((row) => expect(row).toHaveLength(5));
     }
   });
 
@@ -118,69 +103,43 @@ describe('algorithm cases', () => {
     );
   });
 
-  it('creates an OLL state solved by a corresponding algorithm while preserving F2L', () => {
-    for (const item of OLL_CASES) {
-      const pattern = topLayerPatternFromScramble(item.setup);
-      expect
-        .soft(
-          item.algorithms.some(({ notation }) =>
-            isSolvedUFace(topLayerPatternAfterAlgorithm(pattern, withoutInitialY(notation))),
-          ),
-          `OLL ${item.number}`,
-        )
-        .toBe(true);
-      expect.soft(hasSolvedF2L(item.setup), `OLL ${item.number}`).toBe(true);
-    }
-  });
-
-  it('creates a PLL state solved by a corresponding algorithm while preserving F2L', () => {
-    for (const item of PLL_CASES) {
-      const pattern = topLayerPatternFromScramble(item.setup);
-      expect
-        .soft(
-          item.algorithms.some(({ notation }) =>
-            isSolvedTopLayer(topLayerPatternAfterAlgorithm(pattern, withoutInitialY(notation))),
-          ),
-          `PLL ${item.number}`,
-        )
-        .toBe(true);
-      expect.soft(hasSolvedF2L(item.setup), `PLL ${item.number}`).toBe(true);
-    }
-  });
-
-  it('leaves the four outer corners empty', () => {
+  it('creates a complete cube state solved by a corresponding algorithm while preserving F2L', () => {
     for (const item of cases) {
-      expect(item.pattern[0][0]).toBe('none');
-      expect(item.pattern[0][4]).toBe('none');
-      expect(item.pattern[4][0]).toBe('none');
-      expect(item.pattern[4][4]).toBe('none');
+      expect
+        .soft(
+          item.algorithms.some(({ notation }) =>
+            isSolvedCube(`${item.setup} ${withoutInitialY(notation)}`),
+          ),
+          itemKey(item),
+        )
+        .toBe(true);
+      expect.soft(hasSolvedF2L(item.setup), itemKey(item)).toBe(true);
     }
   });
 
-  it('uses only yellow and none for OLL patterns', () => {
+  it('leaves the four generated pattern corners empty', () => {
+    for (const item of cases) {
+      const pattern = topLayerPatternFromScramble(item.setup);
+      expect(pattern[0][0]).toBe('none');
+      expect(pattern[0][4]).toBe('none');
+      expect(pattern[4][0]).toBe('none');
+      expect(pattern[4][4]).toBe('none');
+    }
+  });
+
+  it('uses only yellow and none for OLL patterns generated from Setup', () => {
     for (const item of OLL_CASES) {
-      const colors = new Set(item.pattern.flat());
+      const colors = new Set(topLayerOrientationPatternFromScramble(item.setup).flat());
       expect([...colors].every((color) => color === 'yellow' || color === 'none')).toBe(true);
       expect(colors.has('none')).toBe(true);
     }
   });
 });
 
-function isSolvedTopLayer(pattern: import('./cube.models').CubePattern): boolean {
-  const topIsYellow = pattern
-    .slice(1, 4)
-    .every((row) => row.slice(1, 4).every((color) => color === 'yellow'));
-  const strips = [
-    pattern[0].slice(1, 4),
-    pattern.slice(1, 4).map((row) => row[0]),
-    pattern.slice(1, 4).map((row) => row[4]),
-    pattern[4].slice(1, 4),
-  ];
-  return topIsYellow && strips.every((strip) => strip.every((color) => color === strip[0]));
-}
-
-function isSolvedUFace(pattern: import('./cube.models').CubePattern): boolean {
-  return pattern.slice(1, 4).every((row) => row.slice(1, 4).every((color) => color === 'yellow'));
+/** @returns 手順適用後に6面すべてが完成している場合は`true` */
+function isSolvedCube(algorithm: string): boolean {
+  const faces = cubeFacesFromScramble(algorithm);
+  return Object.values(faces).every((face) => face.flat().every((color) => color === face[1][1]));
 }
 
 /** @returns ケース種別と識別子を結合したテスト表示用のキー */

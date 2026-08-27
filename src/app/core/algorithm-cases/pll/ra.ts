@@ -5,13 +5,6 @@ export const RA_CASE = definePllCase({
   number: 'Ra',
   group: 'Mixed',
   setup: "U' L2 F' L' U' L' U L F L' U2 L U2 L'",
-  pattern: [
-    ['none', 'orange', 'blue', 'red', 'none'],
-    ['blue', 'yellow', 'yellow', 'yellow', 'blue'],
-    ['green', 'yellow', 'yellow', 'yellow', 'orange'],
-    ['red', 'yellow', 'yellow', 'yellow', 'orange'],
-    ['none', 'green', 'red', 'green', 'none'],
-  ],
   algorithms: [
     { id: '8d455d1a-3498-40be-b4e7-2df366506882', notation: "L U2 L' U2 L F' L' U' L U L F L2' U" },
     {

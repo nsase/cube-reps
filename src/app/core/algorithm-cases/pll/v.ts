@@ -5,13 +5,6 @@ export const V_CASE = definePllCase({
   number: 'V',
   group: 'Mixed',
   setup: "R' B' R' B U' B U B2 R B U R U' R",
-  pattern: [
-    ['none', 'red', 'green', 'orange', 'none'],
-    ['green', 'yellow', 'yellow', 'yellow', 'green'],
-    ['blue', 'yellow', 'yellow', 'yellow', 'orange'],
-    ['blue', 'yellow', 'yellow', 'yellow', 'blue'],
-    ['none', 'red', 'red', 'orange', 'none'],
-  ],
   algorithms: [
     {
       id: '567e7908-4980-455f-9b4d-19c5213203cd',
