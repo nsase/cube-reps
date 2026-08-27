@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { PLL_CASES } from '../../core/algorithm-cases';
+import { topLayerPatternFromScramble } from '../../core/cube-state';
 import { routes } from '../../app.routes';
 import { Algorithms } from './algorithms';
 
@@ -21,6 +23,16 @@ describe('Algorithms', () => {
     expect(fixture.nativeElement.querySelectorAll('app-algorithm-case-card')).toHaveLength(21);
   });
 
+  it('PLL一覧の認識図をケースのSetupから生成する', async () => {
+    const fixture = TestBed.createComponent(Algorithms);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const expected = topLayerPatternFromScramble(PLL_CASES[0].setup);
+    const sticker = fixture.nativeElement.querySelector(
+      `app-algorithm-case-card app-cube-pattern [data-x="1"][data-y="0"]`,
+    ) as HTMLElement;
+    expect(sticker.dataset['color']).toBe(expected[0][1]);
+  });
   it('検索文字列に一致しない場合は空表示を描画する', async () => {
     const fixture = TestBed.createComponent(Algorithms);
     fixture.detectChanges();

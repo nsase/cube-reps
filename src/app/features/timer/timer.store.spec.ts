@@ -1,10 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { CubeService } from '../../core/cube';
-import {
-  invertAlgorithm,
-  topLayerPatternAfterAlgorithm,
-  topLayerPatternFromScramble,
-} from '../../core/cube-state';
+import type { BuiltInAlgorithm } from '../../core/cube.models';
 import { TimerStore } from './timer.store';
 
 describe('TimerStore', () => {
@@ -144,48 +140,47 @@ describe('TimerStore', () => {
     store.setCategory('pll');
 
     expect(store.currentDrillCase()).toBe(store.drillCases()[0]);
-    expect(store.scramble()).toBe(invertAlgorithm(store.drillCases()[0].algorithms[0].notation));
+    expect(store.scramble()).toBe(store.drillCases()[0].setup);
 
     store.newScramble();
 
     expect(store.currentDrillCase()).toBe(store.drillCases().at(-1));
-    expect(store.scramble()).toBe(
-      invertAlgorithm(store.drillCases().at(-1)!.algorithms[0].notation),
-    );
+    expect(store.scramble()).toBe(store.drillCases().at(-1)!.setup);
   });
 
-  it('PLLモードでは選択ケースの代表手順を反転した固定スクランブルを使う', () => {
+  it('PLLモードでは選択ケースの固定Setupを使う', () => {
     const store = TestBed.inject(TimerStore);
     store.setCategory('pll');
     store.selectedCase.set(0);
     store.newScramble();
 
-    expect(store.scramble()).toBe(invertAlgorithm(store.currentDrillCase().algorithms[0].notation));
+    expect(store.scramble()).toBe(store.currentDrillCase().setup);
 
     store.selectedCase.set(0);
     store.newScramble();
     const scramble = store.scramble();
     store.newScramble();
 
-    expect(scramble).toBe(invertAlgorithm(store.drillCases()[0].algorithms[0].notation));
+    expect(scramble).toBe(store.drillCases()[0].setup);
     expect(store.scramble()).toBe(scramble);
   });
 
-  it('PLLの固定スクランブルは全ケースで代表手順により完成状態へ戻る', () => {
+  it('解法の並び順を変更してもPLLの固定Setupは変わらない', () => {
     const store = TestBed.inject(TimerStore);
     store.setCategory('pll');
-    const solvedPattern = topLayerPatternFromScramble('');
+    const item = store.drillCases().find(({ number }) => number === 'E')!;
+    store.selectedCase.set(store.drillCases().indexOf(item));
+    store.newScramble();
+    const setup = store.scramble();
+    const algorithms = item.algorithms as BuiltInAlgorithm[];
 
-    for (const item of store.drillCases()) {
-      store.selectedCase.set(store.drillCases().indexOf(item));
+    algorithms.reverse();
+    try {
       store.newScramble();
-      const scrambledPattern = topLayerPatternFromScramble(store.scramble());
-      expect
-        .soft(
-          topLayerPatternAfterAlgorithm(scrambledPattern, item.algorithms[0].notation),
-          item.number,
-        )
-        .toEqual(solvedPattern);
+      expect(store.scramble()).toBe(setup);
+      expect(store.scramble()).toBe(item.setup);
+    } finally {
+      algorithms.reverse();
     }
   });
 
@@ -198,7 +193,7 @@ describe('TimerStore', () => {
     const item = store.drillCases()[0];
 
     expect(item.number).toBe('01');
-    expect(store.scramble()).toBe(invertAlgorithm(item.algorithms[0].notation));
+    expect(store.scramble()).toBe(item.setup);
 
     store.state.set('ready');
     store.release();
@@ -209,21 +204,17 @@ describe('TimerStore', () => {
     expect(cube.solves()[0].caseName).toBe('01');
   });
 
-  it('OLLの固定スクランブルは全ケースで代表手順により完成状態へ戻る', () => {
+  it('OLL・PLLの全ケースで定義済みSetupをスクランブルに使う', () => {
     const store = TestBed.inject(TimerStore);
-    store.setCategory('oll');
-    const solvedPattern = topLayerPatternFromScramble('');
 
-    for (const item of store.drillCases()) {
-      store.selectedCase.set(store.drillCases().indexOf(item));
-      store.newScramble();
-      const scrambledPattern = topLayerPatternFromScramble(store.scramble());
-      expect
-        .soft(
-          topLayerPatternAfterAlgorithm(scrambledPattern, item.algorithms[0].notation),
-          item.number,
-        )
-        .toEqual(solvedPattern);
+    for (const category of ['oll', 'pll'] as const) {
+      store.setCategory(category);
+      for (const [index, item] of store.drillCases().entries()) {
+        store.selectedCase.set(index);
+        store.newScramble();
+        expect.soft(store.currentDrillCase(), `${category} ${item.number}`).toBe(item);
+        expect.soft(store.scramble(), `${category} ${item.number}`).toBe(item.setup);
+      }
     }
   });
 

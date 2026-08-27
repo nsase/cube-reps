@@ -4,13 +4,7 @@ import { definePllCase } from './pll-case';
 export const GD_CASE = definePllCase({
   number: 'Gd',
   group: 'Mixed',
-  pattern: [
-    ['none', 'green', 'blue', 'red', 'none'],
-    ['orange', 'yellow', 'yellow', 'yellow', 'blue'],
-    ['red', 'yellow', 'yellow', 'yellow', 'green'],
-    ['orange', 'yellow', 'yellow', 'yellow', 'green'],
-    ['none', 'blue', 'orange', 'red', 'none'],
-  ],
+  setup: "D R2 U' R U' R U R' U R2 D' U R U' R'",
   algorithms: [
     {
       id: '36a63a83-e563-4908-8cc3-d4c0784a1ef1',

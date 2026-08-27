@@ -5,6 +5,7 @@ export const OLL_55_CASE = defineOllCase({
   number: '55',
   names: ['Highway', 'Freeway'],
   group: 'I Shape',
+  setup: "F R' F' U2 R U R' U R2 U2 R'",
   algorithms: [
     {
       id: 'e0f34029-552e-415a-8c1b-a40702e2c307',
@@ -16,12 +17,5 @@ export const OLL_55_CASE = defineOllCase({
       id: '75826015-b973-494d-9fe9-6deb65ce6302',
       notation: "Rw U2 R' U' Rw' R2 U R' U' Rw U' Rw'",
     },
-  ],
-  pattern: [
-    ['none', 'yellow', 'yellow', 'yellow', 'none'],
-    ['none', 'none', 'none', 'none', 'none'],
-    ['none', 'yellow', 'yellow', 'yellow', 'none'],
-    ['none', 'none', 'none', 'none', 'none'],
-    ['none', 'yellow', 'yellow', 'yellow', 'none'],
   ],
 });

@@ -158,23 +158,6 @@ export function topLayerPatternFromScramble(scramble: string): CubePattern {
 }
 
 /**
- * 上段パターンへ手順を適用した結果を返す。
- *
- * @param pattern 手順適用前の上段パターン
- * @param algorithm 適用するキューブ手順
- * @returns 手順適用後の上段パターン
- */
-export function topLayerPatternAfterAlgorithm(
-  pattern: CubePattern,
-  algorithm: string,
-): CubePattern {
-  const stickers = createSolvedStickers();
-  applyTopLayerPattern(stickers, pattern);
-  for (const parsedMove of parseAlgorithm(algorithm)) applyMove(stickers, parsedMove);
-  return topLayerPatternFromStickers(stickers);
-}
-
-/**
  * 上段パターンから黄色面の向きだけを抽出する。
  *
  * @param scramble 適用するキューブ手順
@@ -184,40 +167,6 @@ export function topLayerOrientationPatternFromScramble(scramble: string): CubePa
   return topLayerPatternFromScramble(scramble).map((row) =>
     row.map((color) => (color === 'yellow' ? 'yellow' : 'none')),
   );
-}
-
-/**
- * 5行5列の上段パターンを3次元ステッカーへ反映する。
- *
- * @param stickers 更新対象のステッカー
- * @param pattern 反映する上段パターン
- */
-function applyTopLayerPattern(stickers: Sticker[], pattern: CubePattern): void {
-  for (const sticker of stickers) {
-    const face = faceForNormal(sticker.normal);
-    const [row, column] = faceCoordinates(face, sticker.position);
-    let color: StickerColor | undefined;
-
-    if (face === 'U') color = pattern[row + 1][column + 1];
-    else if (row === 0 && face === 'F') color = pattern[4][column + 1];
-    else if (row === 0 && face === 'B') color = pattern[0][3 - column];
-    else if (row === 0 && face === 'L') color = pattern[column + 1][0];
-    else if (row === 0 && face === 'R') color = pattern[3 - column][4];
-
-    if (color) sticker.color = color === 'none' ? 'white' : color;
-  }
-}
-
-/** @returns 3次元ステッカーから抽出した5行5列の上段パターン */
-function topLayerPatternFromStickers(stickers: Sticker[]): CubePattern {
-  const faces = stickersToFaces(stickers);
-  return [
-    ['none', ...[...faces.B[0]].reverse(), 'none'],
-    [faces.L[0][0], ...faces.U[0], faces.R[0][2]],
-    [faces.L[0][1], ...faces.U[1], faces.R[0][1]],
-    [faces.L[0][2], ...faces.U[2], faces.R[0][0]],
-    ['none', ...faces.F[0], 'none'],
-  ];
 }
 
 /**

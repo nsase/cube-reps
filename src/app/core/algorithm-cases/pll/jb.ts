@@ -4,13 +4,7 @@ import { definePllCase } from './pll-case';
 export const JB_CASE = definePllCase({
   number: 'Jb',
   group: 'Mixed',
-  pattern: [
-    ['none', 'blue', 'blue', 'orange', 'none'],
-    ['red', 'yellow', 'yellow', 'yellow', 'green'],
-    ['red', 'yellow', 'yellow', 'yellow', 'green'],
-    ['red', 'yellow', 'yellow', 'yellow', 'blue'],
-    ['none', 'green', 'orange', 'orange', 'none'],
-  ],
+  setup: "L' U R U' L U2 R' U R U2 R'",
   algorithms: [
     {
       id: 'ae618e98-e934-4d65-aa19-d7bda58cf947',

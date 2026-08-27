@@ -5,26 +5,20 @@ export const OLL_18_CASE = defineOllCase({
   number: '18',
   names: ['Crown'],
   group: 'Dot',
+  setup: "F R' F' R U2 R' U' F' U F R2 U' R'",
   algorithms: [
     {
       id: '39179d8d-7117-46c7-b96d-81f35b688f54',
       notation: "Rw U R' U R U2 Rw2 U' R U' R' U2 Rw",
     },
     {
-      id: '38a7c662-eead-46d3-b75f-3ddfb6b718fe',
-      notation: "(y) R U2 R2 F R F' U2 M' (U R U' Rw')",
+      id: 'c9592422-7f49-4c09-9bf3-be68d12fcbc6',
+      notation: "(y) R U2 R2 F R F' U2 M' U R U' Rw'",
     },
     {
       id: '8d71e401-29ac-40dd-ae46-20064e22c14e',
-      notation: "(y2) R U R2 F' U' F U R U2 (R' F R F')",
+      notation: "(y2) R U R2 F' U' F U R U2 R' F R F'",
     },
-    { id: '97bf7943-3653-4b7b-be4f-3bf3380a5d96', notation: "(y2) F R U R' Dw R' U2 (R' F R F')" },
-  ],
-  pattern: [
-    ['none', 'none', 'yellow', 'none', 'none'],
-    ['none', 'yellow', 'none', 'yellow', 'none'],
-    ['yellow', 'none', 'yellow', 'none', 'yellow'],
-    ['none', 'none', 'none', 'none', 'none'],
-    ['none', 'yellow', 'yellow', 'yellow', 'none'],
+    { id: '97bf7943-3653-4b7b-be4f-3bf3380a5d96', notation: "(y2) F R U R' Dw R' U2 R' F R F'" },
   ],
 });
