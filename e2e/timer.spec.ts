@@ -54,6 +54,7 @@ test('OLL・PLL Drillではランダムをケース選択肢の先頭に表示�
   await expect(page.getByTestId('timer-scramble-refresh')).toBeVisible();
 
   await caseSelect.selectOption({ index: 1 });
+  await expect(page.locator('app-timer-scramble p')).toHaveText("F R' F' R U2 F R' F' R2 U2 R'");
 
   await expect(page.getByTestId('timer-scramble-refresh')).toBeHidden();
 

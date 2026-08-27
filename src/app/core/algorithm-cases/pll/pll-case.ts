@@ -22,6 +22,8 @@ interface PllCaseDefinition {
   number: string;
   /** 置換対象による分類。 */
   group: string;
+  /** Timerでケースを固定出題するためのSetup。 */
+  setup: string;
   /** 組み込み手順。 */
   algorithms: readonly BuiltInAlgorithm[];
   /** 任意の5行5列ステッカーパターン。 */
@@ -42,6 +44,7 @@ export function definePllCase(definition: PllCaseDefinition): AlgorithmCase {
     number: definition.number,
     name: definition.number + '-perm',
     group: definition.group,
+    setup: definition.setup,
     algorithms: definition.algorithms,
     pattern: definition.pattern ?? createPlaceholderPattern(definition.patternSeed ?? 0),
   };

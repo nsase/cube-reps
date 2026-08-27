@@ -5,6 +5,7 @@ export const OLL_17_CASE = defineOllCase({
   number: '17',
   names: ['Slash', 'Diagonal'],
   group: 'Dot',
+  setup: "F R' F' R U2 F R' F' R U' R U' R'",
   algorithms: [
     { id: 'e04925c1-10b4-4fb0-96a3-96e5fece3450', notation: "F R' F' R2 Rw' U R U' R' U' M'" },
     {
@@ -12,6 +13,10 @@ export const OLL_17_CASE = defineOllCase({
       notation: "(y2) R U R' U R' F R F' U2 R' F R F'",
     },
     { id: 'd256bc9f-2123-4136-8535-310a7bdad773', notation: "F R' F' R U S' R U' R' S" },
+    {
+      id: '3dbb9515-d264-496e-9363-e5891164fa6a',
+      notation: "(y2) Fw R U R' U' Fw' U' R U R' U' R' F R F'",
+    },
   ],
   pattern: [
     ['none', 'none', 'yellow', 'none', 'none'],

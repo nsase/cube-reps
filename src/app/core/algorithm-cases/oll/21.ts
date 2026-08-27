@@ -5,6 +5,7 @@ export const OLL_21_CASE = defineOllCase({
   number: '21',
   names: ['H', 'Double Sune', 'Flip', 'Cross'],
   group: 'Cross',
+  setup: "R U R' U R U' R' U R U2 R'",
   algorithms: [
     { id: 'c7fa9119-7fe4-40e1-914d-165adcae3bf0', notation: "R U2 R' U' R U R' U' R U' R'" },
     { id: '951da85a-b370-4d74-a215-37d6e9b88c8e', notation: "(y) R U R' U R U' R' U R U2 R'" },

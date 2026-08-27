@@ -5,6 +5,7 @@ export const OLL_34_CASE = defineOllCase({
   number: '34',
   names: ['City (C and T)'],
   group: 'C Shape',
+  setup: "B' F R' F' R B U R U' R'",
   algorithms: [
     { id: '4f0498cc-240d-4e02-bac1-b19248fec84e', notation: "R U R2 U' R' F R U R U' F'" },
     { id: '08e1c0b8-ad63-4c83-bea2-a8b99692c487', notation: "R U R' U' B' R' F R F' B" },

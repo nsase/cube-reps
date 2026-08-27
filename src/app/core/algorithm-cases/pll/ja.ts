@@ -4,6 +4,7 @@ import { definePllCase } from './pll-case';
 export const JA_CASE = definePllCase({
   number: 'Ja',
   group: 'Mixed',
+  setup: "U L' R' U2 R U R' U2 L U' R",
   pattern: [
     ['none', 'blue', 'green', 'green', 'none'],
     ['red', 'yellow', 'yellow', 'yellow', 'red'],

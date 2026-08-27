@@ -2,7 +2,6 @@ import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { OLL_CASES, PLL_CASES } from '../../core/algorithm-cases';
 import { CubeService } from '../../core/cube';
 import { AlgorithmCase, Penalty, Solve, SolveCategory } from '../../core/cube.models';
-import { invertAlgorithm } from '../../core/cube-state';
 
 /** Timerコンポーネントツリー内で計測状態と操作を共有するStore。 */
 @Injectable()
@@ -277,7 +276,7 @@ export class TimerStore implements OnDestroy {
       selectedCase === 'random' ? Math.floor(Math.random() * cases.length) : selectedCase;
     const item = cases[index];
     this.currentDrillCase.set(item);
-    return invertAlgorithm(item.algorithms[0].notation);
+    return item.setup;
   }
 
   /** @returns 完成したスクランブルがあり、計測開始できる場合は`true` */

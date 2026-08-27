@@ -5,6 +5,7 @@ export const OLL_36_CASE = defineOllCase({
   number: '36',
   names: ['Sea-Mew', 'Wario', 'Anti-Moustache'],
   group: 'W Shape',
+  setup: "R' F R U R' U' F2 U F R",
   algorithms: [
     { id: '73357e37-b2dc-41b3-aef5-aaf136148cbc', notation: "L' U' L U' L' U L U L F' L' F" },
     { id: '2681cc58-cc40-4793-a65d-a66cf6ac63b1', notation: "(y2) R' U' R U' R' U R U R B' R' B" },

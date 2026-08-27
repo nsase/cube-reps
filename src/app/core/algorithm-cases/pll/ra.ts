@@ -4,6 +4,7 @@ import { definePllCase } from './pll-case';
 export const RA_CASE = definePllCase({
   number: 'Ra',
   group: 'Mixed',
+  setup: "U' L2 F' L' U' L' U L F L' U2 L U2 L'",
   pattern: [
     ['none', 'orange', 'blue', 'red', 'none'],
     ['blue', 'yellow', 'yellow', 'yellow', 'blue'],

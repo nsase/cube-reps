@@ -67,6 +67,8 @@ export interface AlgorithmCase {
   name: string;
   /** ケースの分類名。 */
   group: string;
+  /** Timerでケースを固定出題するためのSetup。 */
+  setup: string;
   /** 組み込み手順の一覧。 */
   algorithms: readonly BuiltInAlgorithm[];
   /** ケースを表すステッカーパターン。 */

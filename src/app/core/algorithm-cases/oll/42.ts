@@ -5,6 +5,7 @@ export const OLL_42_CASE = defineOllCase({
   number: '42',
   names: ['Lefty Awkward Fish', 'Anti-Dalmation'],
   group: 'Awkward Shape',
+  setup: "F U R U' R' F' R' U2 R U R' U R",
   algorithms: [
     { id: '38a6794e-3c4f-4cde-82bb-bc27b4431b45', notation: "R' U' R U' R' U2 R F R U R' U' F'" },
     { id: '3143364b-21be-446d-af29-e0b7a4d1d51d', notation: "R' U' R U' R' U2 R U R' F' U' F U R" },
