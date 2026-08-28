@@ -12,7 +12,111 @@ const layoutItems =
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/#/history');
+
   await expect(page.locator('app-history')).toBeVisible();
+});
+
+test('旧localStorageの記録をIndexedDBへ移行して履歴に表示する', async ({ page }) => {
+  await page.evaluate(() => {
+    localStorage.setItem(
+      'cube-reps.solves',
+      JSON.stringify([
+        {
+          time: 1234,
+          scramble: 'R U',
+          date: '2026-01-01T00:00:00.000Z',
+          category: 'full',
+          penalty: 'none',
+        },
+      ]),
+    );
+    localStorage.setItem(
+      'cube-reps.groups',
+      JSON.stringify([
+        {
+          id: 'competition',
+          name: 'Competition',
+          createdAt: '2026-01-02T00:00:00.000Z',
+        },
+      ]),
+    );
+    localStorage.setItem(
+      'cube-reps.algorithm-preferences',
+      JSON.stringify({
+        'PLL-Aa': {
+          custom: [{ id: 'user-1', notation: 'R U', builtIn: false }],
+          favoriteId: 'user-1',
+        },
+      }),
+    );
+  });
+  await page.reload();
+
+  await expect(page.locator('app-solve-record')).toHaveCount(1);
+  const migrated = await page.evaluate(
+    () =>
+      new Promise<{
+        id: string;
+        ownerType: string;
+        ownerId: string;
+        updatedAt: string;
+        schemaVersion: number;
+      }>((resolve, reject) => {
+        const request = indexedDB.open('cube-reps');
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const transaction = request.result.transaction('solves', 'readonly');
+          const getAll = transaction.objectStore('solves').getAll();
+          getAll.onerror = () => reject(getAll.error);
+          getAll.onsuccess = () => resolve(getAll.result[0]);
+        };
+      }),
+  );
+
+  expect(migrated.id).toMatch(/^[0-9a-f-]{36}$/i);
+  expect(migrated.ownerType).toBe('guest');
+  expect(migrated.ownerId).toMatch(/^[0-9a-f-]{36}$/i);
+  expect(migrated.updatedAt).toBe('2026-01-01T00:00:00.000Z');
+  expect(migrated.schemaVersion).toBe(1);
+  expect(await page.evaluate(() => localStorage.getItem('cube-reps.solves'))).toBeNull();
+  const related = await page.evaluate(
+    () =>
+      new Promise<{
+        groups: Array<Record<string, unknown>>;
+        preferences: Array<Record<string, unknown>>;
+      }>((resolve, reject) => {
+        const request = indexedDB.open('cube-reps');
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const transaction = request.result.transaction(
+            ['groups', 'algorithmPreferences'],
+            'readonly',
+          );
+          const groups = transaction.objectStore('groups').getAll();
+          const preferences = transaction.objectStore('algorithmPreferences').getAll();
+          transaction.onerror = () => reject(transaction.error);
+          transaction.oncomplete = () =>
+            resolve({ groups: groups.result, preferences: preferences.result });
+        };
+      }),
+  );
+  expect(related.groups[0]).toMatchObject({
+    id: 'competition',
+    ownerId: migrated.ownerId,
+    schemaVersion: 1,
+  });
+  expect(related.preferences[0]).toMatchObject({
+    caseKey: 'PLL-Aa',
+    ownerId: migrated.ownerId,
+    schemaVersion: 1,
+  });
+  const custom = related.preferences[0]['custom'] as Array<{ id: string }>;
+  expect(custom[0].id).toMatch(/^[0-9a-f-]{36}$/i);
+  expect(related.preferences[0]['favoriteId']).toBe(custom[0].id);
+  expect(await page.evaluate(() => localStorage.getItem('cube-reps.groups'))).toBeNull();
+  expect(
+    await page.evaluate(() => localStorage.getItem('cube-reps.algorithm-preferences')),
+  ).toBeNull();
 });
 
 test('レスポンシブ配置が画面内に収まる', { tag: '@responsive' }, async ({ page }) => {

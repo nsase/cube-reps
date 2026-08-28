@@ -18,9 +18,8 @@ describe('AlgorithmLibraryService', () => {
   it('keeps built-in algorithms in source order and defaults the favorite to the first', () => {
     const service = createService();
 
-    expect(service.algorithmsFor(item).map(({ id, notation }) => ({ id, notation }))).toEqual(
-      item.algorithms,
-    );
+    expect(service.algorithmsFor(item)).toEqual(item.algorithms);
+    expect(item.algorithms.every((algorithm) => algorithm.builtIn)).toBe(true);
     expect(service.favoriteFor(item)?.id).toBe(item.algorithms[0].id);
     expect(service.primaryNotation(item)).toBe(item.algorithms[0].notation);
   });
@@ -32,9 +31,7 @@ describe('AlgorithmLibraryService', () => {
     const algorithms = service.algorithmsFor(item);
     const custom = algorithms.at(-1)!;
 
-    expect(
-      algorithms.slice(0, item.algorithms.length).map(({ id, notation }) => ({ id, notation })),
-    ).toEqual(item.algorithms);
+    expect(algorithms.slice(0, item.algorithms.length)).toEqual(item.algorithms);
     expect(custom.builtIn).toBe(false);
 
     service.setFavorite(item, custom.id);
