@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   cubeFacesFromScramble,
   invertAlgorithm,
+  isCubeSolved,
+  isOllSolved,
   topLayerOrientationPatternFromScramble,
   cubeNetFromScramble,
   topLayerPatternFromScramble,
@@ -67,6 +69,26 @@ describe('cube state', () => {
       ['none', 'yellow', 'yellow', 'none', 'none'],
       ['none', 'none', 'none', 'yellow', 'none'],
     ]);
+  });
+
+  it('judges OLL completion from the face with the yellow center after cube rotations', () => {
+    for (const rotation of ["x'", 'x', 'y', 'z']) {
+      expect(isOllSolved(cubeFacesFromScramble(rotation))).toBe(true);
+    }
+  });
+
+  it('rejects OLL completion when the yellow-center face contains another color', () => {
+    expect(isOllSolved(cubeFacesFromScramble("x' R"))).toBe(false);
+  });
+
+  it('judges cube completion from each center color after cube rotations', () => {
+    for (const rotation of ["x'", 'x', 'y', 'z']) {
+      expect(isCubeSolved(cubeFacesFromScramble(rotation))).toBe(true);
+    }
+  });
+
+  it('rejects cube completion when a face contains a color different from its center', () => {
+    expect(isCubeSolved(cubeFacesFromScramble('z R'))).toBe(false);
   });
 
   it('creates a 9x12 cube net with the conventional face layout', () => {
