@@ -5,7 +5,7 @@ export const OLL_18_CASE = defineOllCase({
   number: '18',
   names: ['Crown'],
   group: 'Dot',
-  setup: "F R' F' R U2 R' U' F' U F R2 U' R'",
+  setup: "F R' F' R U2 R' U' F' U F R2 U' R' U2",
   algorithms: [
     {
       id: '39179d8d-7117-46c7-b96d-81f35b688f54',

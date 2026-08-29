@@ -61,11 +61,15 @@ Build output is written to `dist/cube-reps`.
 
 ## Data storage
 
-The following data is stored in your browser's `localStorage`:
+The following synchronization-ready user data is stored in your browser's `IndexedDB`:
 
 - Solve records and penalties
-- Record groups and the active record destination
+- Record groups
 - Custom and favorite OLL and PLL algorithms
+
+Existing data previously stored in `localStorage` is migrated automatically when the app starts. The following device-specific settings remain in `localStorage`:
+
+- Active record destination
 - Display language
 
 Data is tied to the browser and origin in use. Clearing the site's browser data also deletes CubeReps records. Cloud synchronization and data export are not currently available.

@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CubeService } from '../../../../core/cube';
-import { RecordGroup as RecordGroupModel } from '../../../../core/cube.models';
+import { DisplayRecordGroup as RecordGroupModel } from '../../../../core/cube.models';
 import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
 import { HistoryStore } from '../../history.store';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';

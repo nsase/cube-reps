@@ -5,7 +5,7 @@ export const OLL_17_CASE = defineOllCase({
   number: '17',
   names: ['Slash', 'Diagonal'],
   group: 'Dot',
-  setup: "F R' F' R U2 F R' F' R U' R U' R'",
+  setup: "F R' F' R U2 F R' F' R U' R U' R' U2",
   algorithms: [
     { id: 'e04925c1-10b4-4fb0-96a3-96e5fece3450', notation: "F R' F' R2 Rw' U R U' R' U' M'" },
     {

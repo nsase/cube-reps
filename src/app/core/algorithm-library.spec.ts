@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { PLL_CASES } from './algorithm-cases';
+import { UserDataRepository } from './user-data-repository';
 import { AlgorithmLibraryService } from './algorithm-library';
 
 describe('AlgorithmLibraryService', () => {
@@ -18,9 +19,8 @@ describe('AlgorithmLibraryService', () => {
   it('keeps built-in algorithms in source order and defaults the favorite to the first', () => {
     const service = createService();
 
-    expect(service.algorithmsFor(item).map(({ id, notation }) => ({ id, notation }))).toEqual(
-      item.algorithms,
-    );
+    expect(service.algorithmsFor(item)).toEqual(item.algorithms);
+    expect(item.algorithms.every((algorithm) => algorithm.builtIn)).toBe(true);
     expect(service.favoriteFor(item)?.id).toBe(item.algorithms[0].id);
     expect(service.primaryNotation(item)).toBe(item.algorithms[0].notation);
   });
@@ -32,9 +32,7 @@ describe('AlgorithmLibraryService', () => {
     const algorithms = service.algorithmsFor(item);
     const custom = algorithms.at(-1)!;
 
-    expect(
-      algorithms.slice(0, item.algorithms.length).map(({ id, notation }) => ({ id, notation })),
-    ).toEqual(item.algorithms);
+    expect(algorithms.slice(0, item.algorithms.length)).toEqual(item.algorithms);
     expect(custom.builtIn).toBe(false);
 
     service.setFavorite(item, custom.id);
@@ -75,5 +73,24 @@ describe('AlgorithmLibraryService', () => {
 
     expect(service.algorithmsFor(item).some((algorithm) => algorithm.id === custom.id)).toBe(false);
     expect(service.favoriteFor(item)?.id).toBe(item.algorithms[0].id);
+  });
+
+  it('変更したケースだけを保存し、空になった設定だけを削除する', async () => {
+    const service = createService();
+    const repository = TestBed.inject(UserDataRepository);
+    await service.ready;
+    const putPreference = vi.spyOn(repository, 'putAlgorithmPreference');
+    const deletePreference = vi.spyOn(repository, 'deleteAlgorithmPreference');
+
+    service.add(item, 'temporary algorithm');
+    const custom = service.algorithmsFor(item).at(-1)!;
+
+    expect(putPreference).toHaveBeenCalledWith(
+      expect.objectContaining({ caseKey: service.caseKey(item), custom: [custom] }),
+    );
+
+    service.remove(item, custom.id);
+
+    expect(deletePreference).toHaveBeenCalledWith(service.caseKey(item));
   });
 });
