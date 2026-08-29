@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { OLL_CASES, PLL_CASES } from './algorithm-cases';
 import {
   cubeFacesFromScramble,
-  isCubeSolved,
   isOllSolved,
+  isPllSolved,
   topLayerOrientationPatternFromScramble,
   topLayerPatternFromScramble,
 } from './cube-state';
@@ -105,17 +105,17 @@ describe('algorithm cases', () => {
     );
   });
 
-  it('solves every complete Setup state with a corresponding algorithm while preserving F2L', () => {
+  it('solves every complete Setup state with every built-in algorithm while preserving F2L', () => {
     for (const item of cases) {
-      expect
-        .soft(
-          item.algorithms.some(({ notation }) => {
-            const faces = cubeFacesFromScramble(`${item.setup} ${withoutInitialY(notation)}`);
-            return item.kind === 'OLL' ? isOllSolved(faces) : isCubeSolved(faces);
-          }),
-          itemKey(item),
-        )
-        .toBe(true);
+      for (const algorithm of item.algorithms) {
+        const faces = cubeFacesFromScramble(`${item.setup} ${algorithm.notation}`);
+        expect
+          .soft(
+            item.kind === 'OLL' ? isOllSolved(faces) : isPllSolved(faces),
+            `${itemKey(item)} / ${algorithm.id}`,
+          )
+          .toBe(true);
+      }
       expect.soft(hasSolvedF2L(item.setup), itemKey(item)).toBe(true);
     }
   });
@@ -142,11 +142,6 @@ describe('algorithm cases', () => {
 /** @returns ケース種別と識別子を結合したテスト表示用のキー */
 function itemKey(item: import('./cube.models').AlgorithmCase): string {
   return `${item.kind} ${item.number}`;
-}
-
-/** @returns 解法開始前の持ち替えとして記録された先頭のy回転を除いた手順 */
-function withoutInitialY(notation: string): string {
-  return notation.replace(/^\s*(?:(?:\(\s*y(?:2|')?\s*\)|y(?:2|')?)\s*)+/, '');
 }
 
 /** @returns Setup適用後も下面と側面下2段が完成している場合は`true` */

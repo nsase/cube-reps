@@ -4,7 +4,7 @@ import { definePllCase } from './pll-case';
 export const E_CASE = definePllCase({
   number: 'E',
   group: 'Corner',
-  setup: "R' F R U R' D' U' R' D F' D' R D U R",
+  setup: "R' F R U R' D' U' R' D F' D' R D U R U'",
   algorithms: [
     {
       id: 'c80d734d-27f3-4aa4-9103-168e36b55c13',
@@ -16,7 +16,7 @@ export const E_CASE = definePllCase({
     },
     {
       id: '078401d9-baba-48d8-b22e-6a6abe61dcfb',
-      notation: "y R' U' D' R' D F D' R U D R U' R' F' R",
+      notation: "(U) R' U' D' R' D F D' R U D R U' R' F' R",
     },
   ],
 });
