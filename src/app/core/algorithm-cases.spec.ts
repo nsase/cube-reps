@@ -124,9 +124,9 @@ describe('algorithm cases', () => {
     const item = OLL_CASES.find(({ number }) => number === '11');
     expect(item).toBeDefined();
     expect(item?.algorithms.map(({ notation }) => notation)).toEqual([
-      "Rw U R' U R' F R F' R U2 Rw'",
-      "(y2) Rw' R2 U R' U R U2 R' U M'",
-      "(y') F' L' U' L U F U F R U R' U' F'",
+      "F' L' U' L U F U F R U R' U' F'",
+      "(y) Rw U R' U R' F R F' R U2 Rw'",
+      "(y') Rw' R2 U R' U R U2 R' U M'",
     ]);
 
     for (const algorithm of item?.algorithms ?? []) {
