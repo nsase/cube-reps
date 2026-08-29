@@ -12,7 +12,7 @@ export const NB_CASE = definePllCase({
     },
     {
       id: '62cd32f4-d88c-4202-8f49-aebb9a7aef2e',
-      notation: "R' U R U' R' F' U' F R U R' F R' F' R U' R",
+      notation: "R' U R U' R' F' U' F R U R' F R' F' R U' R U2",
     },
   ],
 });

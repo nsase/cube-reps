@@ -105,18 +105,31 @@ describe('algorithm cases', () => {
     );
   });
 
-  it('solves every complete Setup state with a corresponding algorithm while preserving F2L', () => {
+  it('solves every complete Setup state with every built-in algorithm while preserving F2L', () => {
     for (const item of cases) {
-      expect
-        .soft(
-          item.algorithms.some(({ notation }) => {
-            const faces = cubeFacesFromScramble(`${item.setup} ${withoutInitialY(notation)}`);
-            return item.kind === 'OLL' ? isOllSolved(faces) : isCubeSolved(faces);
-          }),
-          itemKey(item),
-        )
-        .toBe(true);
+      for (const algorithm of item.algorithms) {
+        const faces = cubeFacesFromScramble(`${item.setup} ${algorithm.notation}`);
+        expect
+          .soft(
+            item.kind === 'OLL' ? isOllSolved(faces) : isCubeSolved(faces),
+            `${itemKey(item)} / ${algorithm.id}`,
+          )
+          .toBe(true);
+      }
       expect.soft(hasSolvedF2L(item.setup), itemKey(item)).toBe(true);
+    }
+  });
+
+  it('solves OLL 11 in its reference orientation with both documented algorithms', () => {
+    const item = OLL_CASES.find(({ number }) => number === '11');
+    expect(item).toBeDefined();
+    expect(item?.algorithms.map(({ notation }) => notation)).toEqual([
+      "Rw U R' U R' F R F' R U2 Rw'",
+      "(y2) Rw' R2 U R' U R U2 R' U M'",
+    ]);
+
+    for (const algorithm of item?.algorithms ?? []) {
+      expect(isOllSolved(cubeFacesFromScramble(`${item?.setup} ${algorithm.notation}`))).toBe(true);
     }
   });
 
@@ -142,11 +155,6 @@ describe('algorithm cases', () => {
 /** @returns ケース種別と識別子を結合したテスト表示用のキー */
 function itemKey(item: import('./cube.models').AlgorithmCase): string {
   return `${item.kind} ${item.number}`;
-}
-
-/** @returns 解法開始前の持ち替えとして記録された先頭のy回転を除いた手順 */
-function withoutInitialY(notation: string): string {
-  return notation.replace(/^\s*(?:(?:\(\s*y(?:2|')?\s*\)|y(?:2|')?)\s*)+/, '');
 }
 
 /** @returns Setup適用後も下面と側面下2段が完成している場合は`true` */
