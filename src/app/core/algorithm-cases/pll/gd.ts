@@ -12,7 +12,7 @@ export const GD_CASE = definePllCase({
     },
     {
       id: '6bb35e6b-5df1-45fe-9413-88a0fbdf9ddf',
-      notation: "R U R' y' R2 Uw' R U' R' U R' Uw R2 U'",
+      notation: "R U R' y' R2 Uw' R U' R' U R' Uw R2",
     },
   ],
 });

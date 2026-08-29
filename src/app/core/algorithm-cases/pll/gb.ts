@@ -12,7 +12,7 @@ export const GB_CASE = definePllCase({
     },
     {
       id: '5bb73f61-da45-4710-857d-d431c8a77f05',
-      notation: "R' U' R y R2 Uw R' U R U' R Uw' R2 U",
+      notation: "R' U' R y R2 Uw R' U R U' R Uw' R2",
     },
   ],
 });
