@@ -107,13 +107,35 @@ describe('IndexedDbUserDataRepository', () => {
     expect(localStorage.getItem(IndexedDbUserDataRepository.legacyAlgorithmsStorageKey)).toBeNull();
 
     const updated = { ...migrated.solves[0], penalty: 'DNF' as const };
-    await firstRepository.replaceSolves([updated, migrated.solves[1]]);
+    const addedGroup = { ...migrated.groups[0], id: 'other-group', name: 'Other' };
+    const addedPreference = { ...preference, caseKey: 'OLL-01' };
+    await Promise.all([
+      firstRepository.putSolve(updated),
+      firstRepository.putRecordGroup(addedGroup),
+      firstRepository.putAlgorithmPreference(addedPreference),
+    ]);
     const secondRepository = new IndexedDbUserDataRepository();
     const restored = await secondRepository.load();
 
     expect(restored.guestOwnerId).toBe(migrated.guestOwnerId);
     expect(restored.solves).toEqual([updated, migrated.solves[1]]);
-    expect(restored.groups).toEqual(migrated.groups);
-    expect(restored.algorithmPreferences).toEqual(migrated.algorithmPreferences);
+    expect(restored.groups).toEqual(expect.arrayContaining([...migrated.groups, addedGroup]));
+    expect(restored.algorithmPreferences).toEqual(
+      expect.arrayContaining([...migrated.algorithmPreferences, addedPreference]),
+    );
+
+    const latest = { ...updated, penalty: 'none' as const };
+    await Promise.all([
+      secondRepository.putSolve(latest),
+      secondRepository.deleteSolve(latest.id),
+      secondRepository.deleteRecordGroup(addedGroup.id),
+      secondRepository.deleteAlgorithmPreference(addedPreference.caseKey),
+    ]);
+    const finalRepository = new IndexedDbUserDataRepository();
+    const finalData = await finalRepository.load();
+
+    expect(finalData.solves).toEqual([migrated.solves[1]]);
+    expect(finalData.groups).toEqual(migrated.groups);
+    expect(finalData.algorithmPreferences).toEqual(migrated.algorithmPreferences);
   });
 });

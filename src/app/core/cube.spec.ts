@@ -56,17 +56,15 @@ describe('CubeService record statistics', () => {
 
   it('Repositoryからユーザー作成カテゴリーだけを復元する', async () => {
     const repository = TestBed.inject(UserDataRepository);
-    await repository.replaceGroups([
-      {
-        id: 'user-group',
-        name: 'Competition',
-        createdAt: new Date(1).toISOString(),
-        updatedAt: new Date(1).toISOString(),
-        ownerType: 'guest',
-        ownerId: 'guest-test',
-        schemaVersion: 1,
-      },
-    ]);
+    await repository.putRecordGroup({
+      id: 'user-group',
+      name: 'Competition',
+      createdAt: new Date(1).toISOString(),
+      updatedAt: new Date(1).toISOString(),
+      ownerType: 'guest',
+      ownerId: 'guest-test',
+      schemaVersion: 1,
+    });
     const cube = TestBed.inject(CubeService);
     await cube.ready;
 
@@ -80,11 +78,11 @@ describe('CubeService record statistics', () => {
     const cube = TestBed.inject(CubeService);
     const repository = TestBed.inject(UserDataRepository);
     await cube.ready;
-    const replaceGroups = vi.spyOn(repository, 'replaceGroups');
+    const putRecordGroup = vi.spyOn(repository, 'putRecordGroup');
     const group = cube.addGroup('Competition')!;
     TestBed.tick();
 
-    expect(replaceGroups).toHaveBeenCalledWith([group]);
+    expect(putRecordGroup).toHaveBeenCalledWith(group);
     expect(group).toMatchObject({
       ownerType: 'guest',
       schemaVersion: 1,
@@ -184,5 +182,34 @@ describe('CubeService record statistics', () => {
     expect(cube.ao12()).toBe(6500);
     expect(cube.ao50()).toBeUndefined();
     expect(cube.ao100()).toBeUndefined();
+  });
+
+  it('通常操作で変更対象のレコードだけをRepositoryへ渡す', async () => {
+    const cube = TestBed.inject(CubeService);
+    const repository = TestBed.inject(UserDataRepository);
+    await cube.ready;
+    const putSolve = vi.spyOn(repository, 'putSolve');
+    const deleteSolve = vi.spyOn(repository, 'deleteSolve');
+    const putRecordGroup = vi.spyOn(repository, 'putRecordGroup');
+    const deleteRecordGroup = vi.spyOn(repository, 'deleteRecordGroup');
+
+    const group = cube.addGroup('大会')!;
+    cube.renameGroup(group.id, '公式大会');
+    const first = cube.addSolve(1000, 'R U', 'full');
+    const second = cube.addSolve(2000, 'U R', 'full');
+    cube.togglePenalty(first.id, '+2');
+    cube.removeSolve(second.id);
+    cube.removeGroup(group.id);
+
+    expect(putRecordGroup).toHaveBeenCalledWith(group);
+    expect(putRecordGroup).toHaveBeenCalledWith(
+      expect.objectContaining({ id: group.id, name: '公式大会' }),
+    );
+    expect(deleteRecordGroup).toHaveBeenCalledWith(group.id);
+    expect(putSolve).toHaveBeenCalledWith(first);
+    expect(putSolve).toHaveBeenCalledWith(
+      expect.objectContaining({ id: first.id, groupId: 'unclassified' }),
+    );
+    expect(deleteSolve).toHaveBeenCalledWith(second.id);
   });
 });

@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { PLL_CASES } from './algorithm-cases';
+import { UserDataRepository } from './user-data-repository';
 import { AlgorithmLibraryService } from './algorithm-library';
 
 describe('AlgorithmLibraryService', () => {
@@ -72,5 +73,24 @@ describe('AlgorithmLibraryService', () => {
 
     expect(service.algorithmsFor(item).some((algorithm) => algorithm.id === custom.id)).toBe(false);
     expect(service.favoriteFor(item)?.id).toBe(item.algorithms[0].id);
+  });
+
+  it('変更したケースだけを保存し、空になった設定だけを削除する', async () => {
+    const service = createService();
+    const repository = TestBed.inject(UserDataRepository);
+    await service.ready;
+    const putPreference = vi.spyOn(repository, 'putAlgorithmPreference');
+    const deletePreference = vi.spyOn(repository, 'deleteAlgorithmPreference');
+
+    service.add(item, 'temporary algorithm');
+    const custom = service.algorithmsFor(item).at(-1)!;
+
+    expect(putPreference).toHaveBeenCalledWith(
+      expect.objectContaining({ caseKey: service.caseKey(item), custom: [custom] }),
+    );
+
+    service.remove(item, custom.id);
+
+    expect(deletePreference).toHaveBeenCalledWith(service.caseKey(item));
   });
 });

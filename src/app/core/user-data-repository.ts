@@ -22,14 +22,23 @@ export abstract class UserDataRepository {
   /** @returns 移行を完了したローカルデータ */
   abstract load(): Promise<StoredUserData>;
 
-  /** @param solves 現在の全計測記録 */
-  abstract replaceSolves(solves: readonly Solve[]): Promise<void>;
+  /** @param solve 追加または更新する計測記録 */
+  abstract putSolve(solve: Solve): Promise<void>;
 
-  /** @param groups 現在の全ユーザー定義グループ */
-  abstract replaceGroups(groups: readonly RecordGroup[]): Promise<void>;
+  /** @param id 削除する計測記録ID */
+  abstract deleteSolve(id: string): Promise<void>;
 
-  /** @param preferences 現在の全ユーザー追加手順とお気に入り */
-  abstract replaceAlgorithmPreferences(preferences: readonly AlgorithmPreference[]): Promise<void>;
+  /** @param group 追加または更新するユーザー定義グループ */
+  abstract putRecordGroup(group: RecordGroup): Promise<void>;
+
+  /** @param id 削除するユーザー定義グループID */
+  abstract deleteRecordGroup(id: string): Promise<void>;
+
+  /** @param preference 追加または更新するユーザー手順設定 */
+  abstract putAlgorithmPreference(preference: AlgorithmPreference): Promise<void>;
+
+  /** @param caseKey 削除するユーザー手順設定のケースキー */
+  abstract deleteAlgorithmPreference(caseKey: string): Promise<void>;
 }
 
 interface CubeRepsDatabase extends DBSchema {
@@ -69,6 +78,8 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
   private readonly database = this.openDatabase();
   /** 複数サービスから同時に要求された初期移行を1回にまとめるPromise。 */
   private loadedData?: Promise<StoredUserData>;
+  /** 通常操作の実行順を維持し、古い書き込みによるデータ復活を防ぐキュー。 */
+  private writeQueue: Promise<void> = Promise.resolve();
 
   /** @returns localStorage移行を完了したIndexedDB内のデータ */
   load(): Promise<StoredUserData> {
@@ -98,31 +109,54 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
       algorithmPreferences,
     };
   }
-  /** 現在の全Solveを1トランザクションで置き換える。 */
-  async replaceSolves(solves: readonly Solve[]): Promise<void> {
-    const database = await this.database;
-    const transaction = database.transaction('solves', 'readwrite');
-    await transaction.store.clear();
-    await Promise.all(solves.map((solve) => transaction.store.put(solve)));
-    await transaction.done;
+  /** 記録を既存データへ影響させず追加または更新する。 */
+  putSolve(solve: Solve): Promise<void> {
+    return this.enqueueWrite(async (database) => {
+      await database.put('solves', solve);
+    });
   }
 
-  /** 現在の全ユーザー定義グループを1トランザクションで置き換える。 */
-  async replaceGroups(groups: readonly RecordGroup[]): Promise<void> {
-    const database = await this.database;
-    const transaction = database.transaction('groups', 'readwrite');
-    await transaction.store.clear();
-    await Promise.all(groups.map((group) => transaction.store.put(group)));
-    await transaction.done;
+  /** 指定IDの記録だけを削除する。 */
+  deleteSolve(id: string): Promise<void> {
+    return this.enqueueWrite(async (database) => {
+      await database.delete('solves', id);
+    });
   }
 
-  /** 現在の全ユーザー手順設定を1トランザクションで置き換える。 */
-  async replaceAlgorithmPreferences(preferences: readonly AlgorithmPreference[]): Promise<void> {
-    const database = await this.database;
-    const transaction = database.transaction('algorithmPreferences', 'readwrite');
-    await transaction.store.clear();
-    await Promise.all(preferences.map((preference) => transaction.store.put(preference)));
-    await transaction.done;
+  /** グループを既存データへ影響させず追加または更新する。 */
+  putRecordGroup(group: RecordGroup): Promise<void> {
+    return this.enqueueWrite(async (database) => {
+      await database.put('groups', group);
+    });
+  }
+
+  /** 指定IDのグループだけを削除する。 */
+  deleteRecordGroup(id: string): Promise<void> {
+    return this.enqueueWrite(async (database) => {
+      await database.delete('groups', id);
+    });
+  }
+
+  /** ケース設定を既存データへ影響させず追加または更新する。 */
+  putAlgorithmPreference(preference: AlgorithmPreference): Promise<void> {
+    return this.enqueueWrite(async (database) => {
+      await database.put('algorithmPreferences', preference);
+    });
+  }
+
+  /** 指定ケースの設定だけを削除する。 */
+  deleteAlgorithmPreference(caseKey: string): Promise<void> {
+    return this.enqueueWrite(async (database) => {
+      await database.delete('algorithmPreferences', caseKey);
+    });
+  }
+  /** 通常の書き込みを呼び出し順に実行する。 */
+  private enqueueWrite(
+    operation: (database: IDBPDatabase<CubeRepsDatabase>) => Promise<void>,
+  ): Promise<void> {
+    const result = this.writeQueue.then(async () => operation(await this.database));
+    this.writeQueue = result.catch(() => undefined);
+    return result;
   }
   /** @returns 必要なストアと検索インデックスを持つデータベース */
   private openDatabase(): Promise<IDBPDatabase<CubeRepsDatabase>> {
