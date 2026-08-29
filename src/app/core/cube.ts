@@ -80,16 +80,8 @@ export class CubeService {
   /** 現在のグループにある直近100件のAverage。 */
   readonly ao100 = computed(() => this.averageOf(this.activeSolves(), 100));
 
-  /** 画面設定を復元し、Solve変更をIndexedDBへ永続化する。 */
+  /** 端末固有の選択グループだけをlocalStorageへ保存する。 */
   constructor() {
-    effect(() => {
-      const solves = this.solves();
-      if (this.storageReady()) void this.userDataRepository.replaceSolves(solves);
-    });
-    effect(() => {
-      const groups = this.userGroups();
-      if (this.storageReady()) void this.userDataRepository.replaceGroups(groups);
-    });
     effect(() => localStorage.setItem('cube-reps.active-group', this.activeGroupId()));
   }
 
@@ -114,6 +106,7 @@ export class CubeService {
     };
     this.userGroups.update((groups) => [...groups, group]);
     this.activeGroupId.set(group.id);
+    if (this.storageReady()) void this.userDataRepository.putRecordGroup(group);
     return group;
   }
 
@@ -127,14 +120,11 @@ export class CubeService {
   renameGroup(id: string, name: string): boolean {
     const trimmedName = name.trim();
     if (!trimmedName || DEFAULT_GROUPS.some((group) => group.id === id)) return false;
-    if (!this.userGroups().some((group) => group.id === id)) return false;
-    this.userGroups.update((groups) =>
-      groups.map((group) =>
-        group.id === id
-          ? { ...group, name: trimmedName, updatedAt: new Date().toISOString() }
-          : group,
-      ),
-    );
+    const current = this.userGroups().find((group) => group.id === id);
+    if (!current) return false;
+    const updated = { ...current, name: trimmedName, updatedAt: new Date().toISOString() };
+    this.userGroups.update((groups) => groups.map((group) => (group.id === id ? updated : group)));
+    if (this.storageReady()) void this.userDataRepository.putRecordGroup(updated);
     return true;
   }
 
@@ -148,12 +138,16 @@ export class CubeService {
     if (DEFAULT_GROUPS.some((group) => group.id === id)) return;
     if (!this.userGroups().some((group) => group.id === id)) return;
     const updatedAt = new Date().toISOString();
-    this.solves.update((solves) =>
-      solves.map((solve) =>
-        solve.groupId === id ? { ...solve, groupId: DEFAULT_GROUP.id, updatedAt } : solve,
-      ),
-    );
+    const affectedSolves = this.solves()
+      .filter((solve) => solve.groupId === id)
+      .map((solve) => ({ ...solve, groupId: DEFAULT_GROUP.id, updatedAt }));
+    const affectedById = new Map(affectedSolves.map((solve) => [solve.id, solve]));
+    this.solves.update((solves) => solves.map((solve) => affectedById.get(solve.id) ?? solve));
     this.userGroups.update((groups) => groups.filter((group) => group.id !== id));
+    if (this.storageReady()) {
+      for (const solve of affectedSolves) void this.userDataRepository.putSolve(solve);
+      void this.userDataRepository.deleteRecordGroup(id);
+    }
     if (this.activeGroupId() === id) this.activeGroupId.set(DEFAULT_GROUP.id);
   }
 
@@ -194,6 +188,7 @@ export class CubeService {
       penalty: 'none',
     };
     this.solves.update((solves) => [solve, ...solves]);
+    if (this.storageReady()) void this.userDataRepository.putSolve(solve);
     return solve;
   }
 
@@ -204,23 +199,22 @@ export class CubeService {
    * @param penalty 切り替えるペナルティ
    */
   togglePenalty(id: string, penalty: Exclude<Penalty, 'none'>): void {
-    const updatedAt = new Date().toISOString();
-    this.solves.update((solves) =>
-      solves.map((solve) =>
-        solve.id === id
-          ? {
-              ...solve,
-              penalty: solve.penalty === penalty ? 'none' : penalty,
-              updatedAt,
-            }
-          : solve,
-      ),
-    );
+    const current = this.solves().find((solve) => solve.id === id);
+    if (!current) return;
+    const updated: Solve = {
+      ...current,
+      penalty: current.penalty === penalty ? 'none' : penalty,
+      updatedAt: new Date().toISOString(),
+    };
+    this.solves.update((solves) => solves.map((solve) => (solve.id === id ? updated : solve)));
+    if (this.storageReady()) void this.userDataRepository.putSolve(updated);
   }
 
   /** @param id 削除する計測記録ID */
   removeSolve(id: string): void {
+    if (!this.solves().some((solve) => solve.id === id)) return;
     this.solves.update((solves) => solves.filter((solve) => solve.id !== id));
+    if (this.storageReady()) void this.userDataRepository.deleteSolve(id);
   }
 
   /**
@@ -335,6 +329,10 @@ export class CubeService {
     if (!this.groups().some(({ id }) => id === this.activeGroupId())) {
       this.activeGroupId.set(DEFAULT_GROUP.id);
     }
+    await Promise.all([
+      ...current.map((solve) => this.userDataRepository.putSolve(solve)),
+      ...currentGroups.map((group) => this.userDataRepository.putRecordGroup(group)),
+    ]);
     this.storageReady.set(true);
   }
 

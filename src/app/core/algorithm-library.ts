@@ -1,4 +1,4 @@
-import { Injectable, effect, inject, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { AlgorithmCase, AlgorithmPreference, CaseAlgorithm } from './cube.models';
 import { USER_DATA_SCHEMA_VERSION, UserDataRepository } from './user-data-repository';
 export type { CaseAlgorithm } from './cube.models';
@@ -21,14 +21,6 @@ export class AlgorithmLibraryService {
   private readonly storageReady = signal(false);
   /** 旧データ移行とIndexedDBからの復元が完了したときに解決するPromise。 */
   readonly ready = this.initializeStorage();
-
-  /** 設定変更をIndexedDBへ同期する。 */
-  constructor() {
-    effect(() => {
-      const preferences = Object.values(this.preferences());
-      if (this.storageReady()) void this.repository.replaceAlgorithmPreferences(preferences);
-    });
-  }
 
   /** @returns 種別と番号を組み合わせたケース固有キー */
   caseKey(item: AlgorithmCase): string {
@@ -113,20 +105,27 @@ export class AlgorithmLibraryService {
     );
   }
 
-  /** 指定ケースの設定を状態へ保存し、変更日時と所有者を更新する。 */
+  /** 指定ケースの設定を状態へ保存し、変更されたケースだけを永続化する。 */
   private save(item: AlgorithmCase, preference: AlgorithmPreference): void {
     const caseKey = this.caseKey(item);
-    this.preferences.update((preferences) => ({
-      ...preferences,
-      [caseKey]: {
-        ...preference,
-        caseKey,
-        updatedAt: new Date().toISOString(),
-        ownerType: 'guest',
-        ownerId: this.guestOwnerId(),
-        schemaVersion: USER_DATA_SCHEMA_VERSION,
-      },
-    }));
+    const updated: AlgorithmPreference = {
+      ...preference,
+      caseKey,
+      updatedAt: new Date().toISOString(),
+      ownerType: 'guest',
+      ownerId: this.guestOwnerId(),
+      schemaVersion: USER_DATA_SCHEMA_VERSION,
+    };
+    const shouldDelete = updated.custom.length === 0 && !updated.favoriteId;
+    this.preferences.update((preferences) => {
+      if (!shouldDelete) return { ...preferences, [caseKey]: updated };
+      const remaining = { ...preferences };
+      delete remaining[caseKey];
+      return remaining;
+    });
+    if (!this.storageReady()) return;
+    if (shouldDelete) void this.repository.deleteAlgorithmPreference(caseKey);
+    else void this.repository.putAlgorithmPreference(updated);
   }
 
   /** IndexedDBの復元値と起動直後の変更をケースキー単位で統合する。 */
@@ -146,6 +145,9 @@ export class AlgorithmLibraryService {
           ...stored.algorithmPreferences.filter(({ caseKey }) => !currentKeys.has(caseKey)),
         ].map((preference) => [preference.caseKey, preference]),
       ),
+    );
+    await Promise.all(
+      current.map((preference) => this.repository.putAlgorithmPreference(preference)),
     );
     this.storageReady.set(true);
   }

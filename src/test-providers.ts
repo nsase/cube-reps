@@ -24,21 +24,39 @@ class TestUserDataRepository extends UserDataRepository {
     };
   }
 
-  /** @param solves Signalから保存される現在の計測記録 */
-  override async replaceSolves(solves: readonly Solve[]): Promise<void> {
-    this.solves = [...solves];
+  /** @param solve 追加または更新する計測記録 */
+  override async putSolve(solve: Solve): Promise<void> {
+    this.solves = [...this.solves.filter(({ id }) => id !== solve.id), solve];
   }
 
-  /** @param groups Signalから保存される現在のユーザー定義グループ */
-  override async replaceGroups(groups: readonly RecordGroup[]): Promise<void> {
-    this.groups = [...groups];
+  /** @param id 削除する計測記録ID */
+  override async deleteSolve(id: string): Promise<void> {
+    this.solves = this.solves.filter((solve) => solve.id !== id);
   }
 
-  /** @param preferences Signalから保存される現在のユーザー手順設定 */
-  override async replaceAlgorithmPreferences(
-    preferences: readonly AlgorithmPreference[],
-  ): Promise<void> {
-    this.algorithmPreferences = [...preferences];
+  /** @param group 追加または更新するユーザー定義グループ */
+  override async putRecordGroup(group: RecordGroup): Promise<void> {
+    this.groups = [...this.groups.filter(({ id }) => id !== group.id), group];
+  }
+
+  /** @param id 削除するユーザー定義グループID */
+  override async deleteRecordGroup(id: string): Promise<void> {
+    this.groups = this.groups.filter((group) => group.id !== id);
+  }
+
+  /** @param preference 追加または更新するユーザー手順設定 */
+  override async putAlgorithmPreference(preference: AlgorithmPreference): Promise<void> {
+    this.algorithmPreferences = [
+      ...this.algorithmPreferences.filter(({ caseKey }) => caseKey !== preference.caseKey),
+      preference,
+    ];
+  }
+
+  /** @param caseKey 削除するユーザー手順設定のケースキー */
+  override async deleteAlgorithmPreference(caseKey: string): Promise<void> {
+    this.algorithmPreferences = this.algorithmPreferences.filter(
+      (preference) => preference.caseKey !== caseKey,
+    );
   }
 }
 
