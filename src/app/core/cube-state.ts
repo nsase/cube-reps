@@ -129,6 +129,25 @@ export function isOllSolved(faces: CubeFaces): boolean {
 }
 
 /**
+ * 黄色面と、その面へ隣接する側面12枚が最上層として揃っているか判定する。
+ * PLLでは最終層の21枚だけを対象とし、反対面や側面の残りは完成判定に含めない。
+ * AUFには依存せず、隣接する各3枚が同色であればセンター色との位置関係は問わない。
+ *
+ * @param faces 判定するキューブの6面
+ * @returns 黄色面9枚と隣接する側面12枚が揃っている場合は`true`
+ */
+export function isPllSolved(faces: CubeFaces): boolean {
+  const yellowFace = (Object.keys(faces) as CubeFace[]).find(
+    (face) => faces[face][1][1] === 'yellow',
+  );
+  if (!yellowFace || !faces[yellowFace].flat().every((color) => color === 'yellow')) return false;
+
+  return adjacentLayerStrips(faces, yellowFace).every(({ colors }) =>
+    colors.every((color) => color === colors[0]),
+  );
+}
+
+/**
  * 6面それぞれのステッカーが、その面のセンター色で統一されているか判定する。
  * キューブ全体の向きや配色方向に依存せず完成状態を認識するため、各面のセンター色を基準にする。
  *
@@ -137,6 +156,54 @@ export function isOllSolved(faces: CubeFaces): boolean {
  */
 export function isCubeSolved(faces: CubeFaces): boolean {
   return Object.values(faces).every((face) => face.flat().every((color) => color === face[1][1]));
+}
+
+/**
+ * 基準面に直接接する4面のステッカー列を返す。
+ *
+ * @param faces 判定するキューブの6面
+ * @param referenceFace 隣接層を特定する基準面
+ * @returns 隣接面と基準面に接する3枚の組
+ */
+function adjacentLayerStrips(
+  faces: CubeFaces,
+  referenceFace: CubeFace,
+): Array<{ face: CubeFace; colors: CubeColor[] }> {
+  const row = (face: CubeFace, index: number): CubeColor[] => [...faces[face][index]];
+  const column = (face: CubeFace, index: number): CubeColor[] =>
+    faces[face].map((faceRow) => faceRow[index]);
+
+  if (referenceFace === 'U')
+    return (['F', 'R', 'B', 'L'] as const).map((face) => ({ face, colors: row(face, 0) }));
+  if (referenceFace === 'D')
+    return (['F', 'R', 'B', 'L'] as const).map((face) => ({ face, colors: row(face, 2) }));
+  if (referenceFace === 'F')
+    return [
+      { face: 'U', colors: row('U', 2) },
+      { face: 'R', colors: column('R', 0) },
+      { face: 'D', colors: row('D', 0) },
+      { face: 'L', colors: column('L', 2) },
+    ];
+  if (referenceFace === 'B')
+    return [
+      { face: 'U', colors: row('U', 0) },
+      { face: 'R', colors: column('R', 2) },
+      { face: 'D', colors: row('D', 2) },
+      { face: 'L', colors: column('L', 0) },
+    ];
+  if (referenceFace === 'R')
+    return [
+      { face: 'U', colors: column('U', 2) },
+      { face: 'F', colors: column('F', 2) },
+      { face: 'D', colors: column('D', 2) },
+      { face: 'B', colors: column('B', 0) },
+    ];
+  return [
+    { face: 'U', colors: column('U', 0) },
+    { face: 'F', colors: column('F', 0) },
+    { face: 'D', colors: column('D', 0) },
+    { face: 'B', colors: column('B', 2) },
+  ];
 }
 
 /**

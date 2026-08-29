@@ -5,7 +5,7 @@ export const OLL_25_CASE = defineOllCase({
   number: '25',
   names: ['L', 'Bowtie', 'Triple-Sune', 'Side-winder', 'Diagonals', 'Spaceship'],
   group: 'Cross',
-  setup: "B' R' F R B R' F' R",
+  setup: "B' R' F R B R' F' R U",
   algorithms: [
     { id: '6b956ab3-e3a1-4baa-803f-929c61a71556', notation: "F' Rw U R' U' Rw' F R" },
     { id: 'e85edb79-132b-44b5-accb-fd1347fa611f', notation: "(y') x R' U R D' R' U' R D x'" },
