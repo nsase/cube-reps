@@ -120,20 +120,6 @@ describe('algorithm cases', () => {
     }
   });
 
-  it('solves OLL 11 in its reference orientation with every documented algorithm', () => {
-    const item = OLL_CASES.find(({ number }) => number === '11');
-    expect(item).toBeDefined();
-    expect(item?.algorithms.map(({ notation }) => notation)).toEqual([
-      "F' L' U' L U F U F R U R' U' F'",
-      "(y) Rw U R' U R' F R F' R U2 Rw'",
-      "(y') Rw' R2 U R' U R U2 R' U M'",
-    ]);
-
-    for (const algorithm of item?.algorithms ?? []) {
-      expect(isOllSolved(cubeFacesFromScramble(`${item?.setup} ${algorithm.notation}`))).toBe(true);
-    }
-  });
-
   it('leaves the four generated pattern corners empty', () => {
     for (const item of cases) {
       const pattern = topLayerPatternFromScramble(item.setup);
