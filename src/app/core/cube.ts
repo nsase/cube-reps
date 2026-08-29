@@ -1,10 +1,11 @@
-import { Injectable, Signal, computed, effect, signal } from '@angular/core';
+import { Injectable, Signal, computed, effect, inject, signal } from '@angular/core';
 import { translateSignal } from '@jsverse/transloco';
-import { Penalty, RecordGroup, Solve, SolveCategory } from './cube.models';
+import { Penalty, DisplayRecordGroup, RecordGroup, Solve, SolveCategory } from './cube.models';
 import { average, mean } from './cube-statistics';
+import { USER_DATA_SCHEMA_VERSION, UserDataRepository } from './user-data-repository';
 
 /** ユーザーデータとは分離して常に先頭へ表示する既定の記録グループ。 */
-const DEFAULT_GROUPS: readonly RecordGroup[] = [
+const DEFAULT_GROUPS: readonly DisplayRecordGroup[] = [
   {
     id: 'unclassified',
     name: 'Unclassified',
@@ -19,18 +20,28 @@ const DEFAULT_GROUP = DEFAULT_GROUPS[0];
 /** 計測記録、グループ、スクランブル生成を管理するアプリケーションサービス。 */
 @Injectable({ providedIn: 'root' })
 export class CubeService {
+  /** 同期対象ユーザーデータの永続化を画面とドメイン処理から分離するRepository。 */
+  private readonly userDataRepository = inject(UserDataRepository);
+  /** Repository初期化前に作成する記録でも使用できる一時ゲストUUID。 */
+  private readonly initialGuestOwnerId = crypto.randomUUID();
+  /** 現在のゲスト所有者UUID。 */
+  private readonly guestOwnerId = signal<string>(this.initialGuestOwnerId);
+  /** IndexedDB初期化後の変更だけを保存するフラグ。 */
+  private readonly storageReady = signal(false);
   /** アプリ定義グループIDに対応する、ロード完了後の翻訳済み表示名。 */
   private readonly defaultGroupNames = new Map<string, Signal<string>>(
     DEFAULT_GROUPS.flatMap((group) =>
-      group.nameKey ? [[group.id, translateSignal(group.nameKey)] as const] : [],
+      'nameKey' in group ? [[group.id, translateSignal(group.nameKey)] as const] : [],
     ),
   );
   /** 新しい順に保持する全計測記録。 */
-  readonly solves = signal<Solve[]>(this.loadSolves());
-  /** 作成順に保持し、localStorageへ保存するユーザー作成グループ。 */
-  private readonly userGroups = signal<RecordGroup[]>(this.loadUserGroups());
+  readonly solves = signal<Solve[]>([]);
+  /** 旧データ移行とIndexedDBからの復元が完了したときに解決するPromise。 */
+  readonly ready = this.initializeStorage();
+  /** 作成順に保持し、IndexedDBへ保存するユーザー作成グループ。 */
+  private readonly userGroups = signal<RecordGroup[]>([]);
   /** 既定グループの後ろへユーザー作成グループを連結した表示用一覧。 */
-  readonly groups = computed<RecordGroup[]>(() => [...DEFAULT_GROUPS, ...this.userGroups()]);
+  readonly groups = computed<DisplayRecordGroup[]>(() => [...DEFAULT_GROUPS, ...this.userGroups()]);
   /** 現在の記録先グループID。 */
   readonly activeGroupId = signal(this.loadActiveGroupId());
   /** タイマーで現在選択しているsolveカテゴリー。 */
@@ -69,12 +80,16 @@ export class CubeService {
   /** 現在のグループにある直近100件のAverage。 */
   readonly ao100 = computed(() => this.averageOf(this.activeSolves(), 100));
 
-  /** 保存済みデータを初期化し、以後の変更をlocalStorageへ同期する。 */
+  /** 画面設定を復元し、Solve変更をIndexedDBへ永続化する。 */
   constructor() {
-    if (!this.groups().some((group) => group.id === this.activeGroupId()))
-      this.activeGroupId.set(DEFAULT_GROUP.id);
-    effect(() => localStorage.setItem('cube-reps.solves', JSON.stringify(this.solves())));
-    effect(() => localStorage.setItem('cube-reps.groups', JSON.stringify(this.userGroups())));
+    effect(() => {
+      const solves = this.solves();
+      if (this.storageReady()) void this.userDataRepository.replaceSolves(solves);
+    });
+    effect(() => {
+      const groups = this.userGroups();
+      if (this.storageReady()) void this.userDataRepository.replaceGroups(groups);
+    });
     effect(() => localStorage.setItem('cube-reps.active-group', this.activeGroupId()));
   }
 
@@ -87,10 +102,15 @@ export class CubeService {
   addGroup(name: string): RecordGroup | undefined {
     const trimmedName = name.trim();
     if (!trimmedName) return undefined;
+    const now = new Date().toISOString();
     const group: RecordGroup = {
       id: crypto.randomUUID(),
       name: trimmedName,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
+      ownerType: 'guest',
+      ownerId: this.guestOwnerId(),
+      schemaVersion: USER_DATA_SCHEMA_VERSION,
     };
     this.userGroups.update((groups) => [...groups, group]);
     this.activeGroupId.set(group.id);
@@ -109,7 +129,11 @@ export class CubeService {
     if (!trimmedName || DEFAULT_GROUPS.some((group) => group.id === id)) return false;
     if (!this.userGroups().some((group) => group.id === id)) return false;
     this.userGroups.update((groups) =>
-      groups.map((group) => (group.id === id ? { ...group, name: trimmedName } : group)),
+      groups.map((group) =>
+        group.id === id
+          ? { ...group, name: trimmedName, updatedAt: new Date().toISOString() }
+          : group,
+      ),
     );
     return true;
   }
@@ -123,9 +147,10 @@ export class CubeService {
   removeGroup(id: string): void {
     if (DEFAULT_GROUPS.some((group) => group.id === id)) return;
     if (!this.userGroups().some((group) => group.id === id)) return;
+    const updatedAt = new Date().toISOString();
     this.solves.update((solves) =>
       solves.map((solve) =>
-        solve.groupId === id ? { ...solve, groupId: DEFAULT_GROUP.id } : solve,
+        solve.groupId === id ? { ...solve, groupId: DEFAULT_GROUP.id, updatedAt } : solve,
       ),
     );
     this.userGroups.update((groups) => groups.filter((group) => group.id !== id));
@@ -153,11 +178,16 @@ export class CubeService {
    * @returns 保存した計測記録
    */
   addSolve(time: number, scramble: string, category: SolveCategory, caseName?: string): Solve {
+    const now = new Date().toISOString();
     const solve: Solve = {
       id: crypto.randomUUID(),
       time,
       scramble,
-      date: new Date().toISOString(),
+      date: now,
+      updatedAt: now,
+      ownerType: 'guest',
+      ownerId: this.guestOwnerId(),
+      schemaVersion: USER_DATA_SCHEMA_VERSION,
       category,
       caseName,
       groupId: this.activeGroupId(),
@@ -174,10 +204,15 @@ export class CubeService {
    * @param penalty 切り替えるペナルティ
    */
   togglePenalty(id: string, penalty: Exclude<Penalty, 'none'>): void {
+    const updatedAt = new Date().toISOString();
     this.solves.update((solves) =>
       solves.map((solve) =>
         solve.id === id
-          ? { ...solve, penalty: solve.penalty === penalty ? 'none' : penalty }
+          ? {
+              ...solve,
+              penalty: solve.penalty === penalty ? 'none' : penalty,
+              updatedAt,
+            }
           : solve,
       ),
     );
@@ -276,39 +311,36 @@ export class CubeService {
     return average(solves.slice(0, count).map((solve) => this.statTime(solve)));
   }
 
-  /** @returns 保存データを現行グループ形式へ移行した計測記録 */
-  private loadSolves(): Solve[] {
-    return this.load<Solve[]>('cube-reps.solves', []).map((solve) => ({
-      ...solve,
-      groupId: solve.groupId || DEFAULT_GROUP.id,
-    }));
-  }
-
-  /** @returns 保存済みデータから既定グループを除外したユーザー作成グループ */
-  private loadUserGroups(): RecordGroup[] {
-    return this.load<RecordGroup[]>('cube-reps.groups', [])
-      .filter((group) => !DEFAULT_GROUPS.some(({ id }) => id === group.id))
-      .map((group) => ({ id: group.id, name: group.name, createdAt: group.createdAt }));
+  /** IndexedDBの復元値と起動直後に作成された記録をID単位で統合する。 */
+  private async initializeStorage(): Promise<void> {
+    const stored = await this.userDataRepository.load();
+    this.guestOwnerId.set(stored.guestOwnerId);
+    const current = this.solves().map((solve) =>
+      solve.ownerId === this.initialGuestOwnerId
+        ? { ...solve, ownerId: stored.guestOwnerId }
+        : solve,
+    );
+    const currentIds = new Set(current.map(({ id }) => id));
+    this.solves.set([...current, ...stored.solves.filter(({ id }) => !currentIds.has(id))]);
+    const currentGroups = this.userGroups().map((group) =>
+      group.ownerId === this.initialGuestOwnerId
+        ? { ...group, ownerId: stored.guestOwnerId }
+        : group,
+    );
+    const currentGroupIds = new Set(currentGroups.map(({ id }) => id));
+    this.userGroups.set([
+      ...currentGroups,
+      ...stored.groups.filter(({ id }) => !currentGroupIds.has(id)),
+    ]);
+    if (!this.groups().some(({ id }) => id === this.activeGroupId())) {
+      this.activeGroupId.set(DEFAULT_GROUP.id);
+    }
+    this.storageReady.set(true);
   }
 
   /** @returns 保存済みの記録先ID。未設定時は既定グループID */
   private loadActiveGroupId(): string {
     const stored = localStorage.getItem('cube-reps.active-group');
     return stored || DEFAULT_GROUP.id;
-  }
-
-  /**
-   * localStorageのJSON値を安全に読み込む。
-   *
-   * @param key 読み込むストレージキー
-   * @param fallback 未保存または不正なJSONの場合の値
-   * @returns 復元した値またはフォールバック
-   */
-  private load<T>(key: string, fallback: T): T {
-    try {
-      return JSON.parse(localStorage.getItem(key) ?? JSON.stringify(fallback));
-    } catch {
-      return fallback;
-    }
   }
 }

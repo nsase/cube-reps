@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { CubeService } from '../../core/cube';
-import type { BuiltInAlgorithm } from '../../core/cube.models';
+import type { CaseAlgorithm } from '../../core/cube.models';
 import { TimerStore } from './timer.store';
 
 describe('TimerStore', () => {
@@ -172,7 +172,7 @@ describe('TimerStore', () => {
     store.selectedCase.set(store.drillCases().indexOf(item));
     store.newScramble();
     const setup = store.scramble();
-    const algorithms = item.algorithms as BuiltInAlgorithm[];
+    const algorithms = item.algorithms as CaseAlgorithm[];
 
     algorithms.reverse();
     try {
