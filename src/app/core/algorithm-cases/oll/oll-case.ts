@@ -1,4 +1,4 @@
-import { AlgorithmCase, BuiltInAlgorithm } from '../../cube.models';
+import { AlgorithmCase, CaseAlgorithm } from '../../cube.models';
 
 /** OLLケース生成時に必要な元データ。 */
 interface OllCaseDefinition {
@@ -11,7 +11,7 @@ interface OllCaseDefinition {
   /** Timerでケースを固定出題するためのSetup。 */
   setup: string;
   /** 組み込み手順。 */
-  algorithms: readonly BuiltInAlgorithm[];
+  algorithms: readonly Omit<CaseAlgorithm, 'builtIn'>[];
 }
 
 /**
@@ -27,6 +27,6 @@ export function defineOllCase(definition: OllCaseDefinition): AlgorithmCase {
     name: definition.names.join(' / ') || `OLL ${Number(definition.number)}`,
     group: definition.group,
     setup: definition.setup,
-    algorithms: definition.algorithms,
+    algorithms: definition.algorithms.map((algorithm) => ({ ...algorithm, builtIn: true })),
   };
 }

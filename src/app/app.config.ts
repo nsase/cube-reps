@@ -6,6 +6,7 @@ import { provideTransloco } from '@jsverse/transloco';
 
 import { routes } from './app.routes';
 import { TranslocoHttpLoader } from './core/i18n/transloco-loader';
+import { IndexedDbUserDataRepository, UserDataRepository } from './core/user-data-repository';
 
 /** ルーター、エラーハンドリング、Material Iconを構成するアプリケーション設定。 */
 export const appConfig: ApplicationConfig = {
@@ -23,6 +24,7 @@ export const appConfig: ApplicationConfig = {
       },
       loader: TranslocoHttpLoader,
     }),
+    { provide: UserDataRepository, useClass: IndexedDbUserDataRepository },
     {
       provide: MAT_ICON_DEFAULT_OPTIONS,
       useValue: { fontSet: 'material-symbols-outlined' },
