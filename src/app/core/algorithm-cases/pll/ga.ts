@@ -12,7 +12,7 @@ export const GA_CASE = definePllCase({
     },
     {
       id: 'b14d099e-9771-4f4a-9be1-e84bb052eff4',
-      notation: "R2 Uw R' U R' U' R Uw' R2 y' R' U R U'",
+      notation: "R2 Uw R' U R' U' R Uw' R2 y' R' U R",
     },
   ],
 });

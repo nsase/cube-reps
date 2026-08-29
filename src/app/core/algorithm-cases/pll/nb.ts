@@ -8,11 +8,11 @@ export const NB_CASE = definePllCase({
   algorithms: [
     {
       id: '2282922a-6c78-4a33-87d0-7ddd27812a87',
-      notation: "R' U L' U2 R U' L R' U L' U2 R U' L U'",
+      notation: "R' U L' U2 R U' L R' U L' U2 R U' L",
     },
     {
       id: '62cd32f4-d88c-4202-8f49-aebb9a7aef2e',
-      notation: "R' U R U' R' F' U' F R U R' F R' F' R U' R U2",
+      notation: "R' U R U' R' F' U' F R U R' F R' F' R U' R",
     },
   ],
 });

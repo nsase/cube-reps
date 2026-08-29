@@ -12,7 +12,7 @@ export const RB_CASE = definePllCase({
     },
     {
       id: 'de6cedec-8f50-4bbb-912d-8d209f64d4c8',
-      notation: "(y) R2 F R U R U' R' F' R U2 R' U2 R U",
+      notation: "(y) R2 F R U R U' R' F' R U2 R' U2 R",
     },
   ],
 });
