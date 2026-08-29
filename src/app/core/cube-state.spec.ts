@@ -92,16 +92,16 @@ describe('cube state', () => {
     expect(isCubeSolved(cubeFacesFromScramble('z R'))).toBe(false);
   });
 
-  it('judges PLL completion from the yellow face and its 12 adjacent stickers', () => {
+  it('judges PLL completion from the yellow face and four adjacent color bars', () => {
     for (const rotation of ["x'", 'x', 'y', 'z']) {
       expect(isPllSolved(cubeFacesFromScramble(rotation))).toBe(true);
     }
+    expect(isPllSolved(cubeFacesFromScramble('U'))).toBe(true);
     expect(isPllSolved(cubeFacesFromScramble('D'))).toBe(true);
     expect(isCubeSolved(cubeFacesFromScramble('D'))).toBe(false);
   });
 
-  it('rejects PLL completion when the yellow face or an adjacent sticker is unsolved', () => {
-    expect(isPllSolved(cubeFacesFromScramble('U'))).toBe(false);
+  it('rejects PLL completion when the yellow face or an adjacent color bar is unsolved', () => {
     expect(isPllSolved(cubeFacesFromScramble('R'))).toBe(false);
   });
 
