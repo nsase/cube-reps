@@ -120,12 +120,13 @@ describe('algorithm cases', () => {
     }
   });
 
-  it('solves OLL 11 in its reference orientation with both documented algorithms', () => {
+  it('solves OLL 11 in its reference orientation with every documented algorithm', () => {
     const item = OLL_CASES.find(({ number }) => number === '11');
     expect(item).toBeDefined();
     expect(item?.algorithms.map(({ notation }) => notation)).toEqual([
       "Rw U R' U R' F R F' R U2 Rw'",
       "(y2) Rw' R2 U R' U R U2 R' U M'",
+      "(y') F' L' U' L U F U F R U R' U' F'",
     ]);
 
     for (const algorithm of item?.algorithms ?? []) {
