@@ -4,6 +4,7 @@ import {
   invertAlgorithm,
   isCubeSolved,
   isOllSolved,
+  isPllSolved,
   topLayerOrientationPatternFromScramble,
   cubeNetFromScramble,
   topLayerPatternFromScramble,
@@ -89,6 +90,19 @@ describe('cube state', () => {
 
   it('rejects cube completion when a face contains a color different from its center', () => {
     expect(isCubeSolved(cubeFacesFromScramble('z R'))).toBe(false);
+  });
+
+  it('judges PLL completion from the yellow face and its 12 adjacent stickers', () => {
+    for (const rotation of ["x'", 'x', 'y', 'z']) {
+      expect(isPllSolved(cubeFacesFromScramble(rotation))).toBe(true);
+    }
+    expect(isPllSolved(cubeFacesFromScramble('D'))).toBe(true);
+    expect(isCubeSolved(cubeFacesFromScramble('D'))).toBe(false);
+  });
+
+  it('rejects PLL completion when the yellow face or an adjacent sticker is unsolved', () => {
+    expect(isPllSolved(cubeFacesFromScramble('U'))).toBe(false);
+    expect(isPllSolved(cubeFacesFromScramble('R'))).toBe(false);
   });
 
   it('creates a 9x12 cube net with the conventional face layout', () => {
