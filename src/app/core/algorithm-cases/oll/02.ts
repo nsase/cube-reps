@@ -5,7 +5,7 @@ export const OLL_02_CASE = defineOllCase({
   number: '02',
   names: ['Zamboni'],
   group: 'Dot',
-  setup: "B U2 B' U2 F U2 R2 F R F' R2 U2 R' F'",
+  setup: "B U2 B' U2 F U2 R2 F R F' R2 U2 R' F' U",
   algorithms: [
     { id: 'bbdfd618-8a43-4990-a24d-edb65e9240be', notation: "Rw U Rw' U2 Rw U2 R' U2 R U' Rw'" },
     {

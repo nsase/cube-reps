@@ -5,7 +5,7 @@ export const OLL_04_CASE = defineOllCase({
   number: '04',
   names: ['Pinwheel', 'Mouse'],
   group: 'Dot',
-  setup: "R' F2 R2 U2 R' F R U2 R2 F2 R",
+  setup: "R' F2 R2 U2 R' F R U2 R2 F2 R U",
   algorithms: [
     { id: 'f698e2fd-96c5-4251-9b33-77a2ed8dcb11', notation: "M U' Rw U2 Rw' U' R U' R' M'" },
     {

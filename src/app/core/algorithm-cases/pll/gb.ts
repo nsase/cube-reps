@@ -10,6 +10,9 @@ export const GB_CASE = definePllCase({
       id: '1d4f3f0b-a52f-4ef6-a8b3-1243af4e44ff',
       notation: "R' U' R U D' R2 U R' U R U' R U' R2 D",
     },
-    { id: '5bb73f61-da45-4710-857d-d431c8a77f05', notation: "R' U' R y R2 Uw R' U R U' R Uw' R2" },
+    {
+      id: '5bb73f61-da45-4710-857d-d431c8a77f05',
+      notation: "R' U' R y R2 Uw R' U R U' R Uw' R2 U",
+    },
   ],
 });
