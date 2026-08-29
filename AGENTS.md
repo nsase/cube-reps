@@ -16,6 +16,7 @@
 - リリース用Pull Requestには、そのリリースで完了する各Issueの`Closes #<Issue番号>`を記載し、`main`へのmerge時にIssueを閉じる。
 - リリース用Pull Requestでも、`npm run build`、`npm test`、`npm run test:e2e`、`git diff --check`が成功していることを確認してからmergeする。
 - `main`へmergeしてリリースした後も、`develop`は削除せず常設ブランチとして維持する。
+- ユーザーから依頼されたPull Request以外に、同期用を含む追加のブランチやPull Requestを独断で作成しない。追加が必要と判断した場合は、作成前に理由を説明してユーザーの了承を得る。
 
 ## Angular
 
