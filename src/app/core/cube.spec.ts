@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { CubeService } from './cube';
 import { Penalty, Solve } from './cube.models';
+import { UserDataRepository } from './user-data-repository';
 
 describe('CubeService record statistics', () => {
   beforeEach(() => {
@@ -16,6 +17,10 @@ describe('CubeService record statistics', () => {
       time,
       scramble: 'R U',
       date: new Date(id).toISOString(),
+      updatedAt: new Date(id).toISOString(),
+      ownerType: 'guest',
+      ownerId: 'guest-test',
+      schemaVersion: 1,
       category: 'full',
       groupId: 'unclassified',
       penalty,
@@ -49,31 +54,41 @@ describe('CubeService record statistics', () => {
     expect(cube.groupName('missing')).toBe('Unclassified');
   });
 
-  it('既定カテゴリーを保存対象から除外してユーザー作成カテゴリーだけを復元する', () => {
-    localStorage.setItem(
-      'cube-reps.groups',
-      JSON.stringify([
-        { id: 'unclassified', name: 'Stored default', createdAt: new Date(0).toISOString() },
-        { id: 'user-group', name: 'Competition', createdAt: new Date(1).toISOString() },
-      ]),
-    );
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({});
+  it('Repositoryからユーザー作成カテゴリーだけを復元する', async () => {
+    const repository = TestBed.inject(UserDataRepository);
+    await repository.putRecordGroup({
+      id: 'user-group',
+      name: 'Competition',
+      createdAt: new Date(1).toISOString(),
+      updatedAt: new Date(1).toISOString(),
+      ownerType: 'guest',
+      ownerId: 'guest-test',
+      schemaVersion: 1,
+    });
+    const cube = TestBed.inject(CubeService);
+    await cube.ready;
 
-    expect(TestBed.inject(CubeService).groups()).toEqual([
+    expect(cube.groups()).toEqual([
       expect.objectContaining({ id: 'unclassified', name: 'Unclassified' }),
       expect.objectContaining({ id: 'user-group', name: 'Competition' }),
     ]);
   });
 
-  it('localStorageにはユーザー作成カテゴリーだけを保存する', () => {
+  it('ユーザー作成カテゴリーをRepositoryへ保存してlocalStorageへ残さない', async () => {
     const cube = TestBed.inject(CubeService);
-    cube.addGroup('Competition');
+    const repository = TestBed.inject(UserDataRepository);
+    await cube.ready;
+    const putRecordGroup = vi.spyOn(repository, 'putRecordGroup');
+    const group = cube.addGroup('Competition')!;
     TestBed.tick();
 
-    expect(JSON.parse(localStorage.getItem('cube-reps.groups') ?? '[]')).toEqual([
-      expect.objectContaining({ name: 'Competition' }),
-    ]);
+    expect(putRecordGroup).toHaveBeenCalledWith(group);
+    expect(group).toMatchObject({
+      ownerType: 'guest',
+      schemaVersion: 1,
+      updatedAt: group.createdAt,
+    });
+    expect(localStorage.getItem('cube-reps.groups')).toBeNull();
   });
 
   it('ユーザー作成カテゴリーの名前を変更し、既定カテゴリーは変更しない', () => {
@@ -167,5 +182,34 @@ describe('CubeService record statistics', () => {
     expect(cube.ao12()).toBe(6500);
     expect(cube.ao50()).toBeUndefined();
     expect(cube.ao100()).toBeUndefined();
+  });
+
+  it('通常操作で変更対象のレコードだけをRepositoryへ渡す', async () => {
+    const cube = TestBed.inject(CubeService);
+    const repository = TestBed.inject(UserDataRepository);
+    await cube.ready;
+    const putSolve = vi.spyOn(repository, 'putSolve');
+    const deleteSolve = vi.spyOn(repository, 'deleteSolve');
+    const putRecordGroup = vi.spyOn(repository, 'putRecordGroup');
+    const deleteRecordGroup = vi.spyOn(repository, 'deleteRecordGroup');
+
+    const group = cube.addGroup('大会')!;
+    cube.renameGroup(group.id, '公式大会');
+    const first = cube.addSolve(1000, 'R U', 'full');
+    const second = cube.addSolve(2000, 'U R', 'full');
+    cube.togglePenalty(first.id, '+2');
+    cube.removeSolve(second.id);
+    cube.removeGroup(group.id);
+
+    expect(putRecordGroup).toHaveBeenCalledWith(group);
+    expect(putRecordGroup).toHaveBeenCalledWith(
+      expect.objectContaining({ id: group.id, name: '公式大会' }),
+    );
+    expect(deleteRecordGroup).toHaveBeenCalledWith(group.id);
+    expect(putSolve).toHaveBeenCalledWith(first);
+    expect(putSolve).toHaveBeenCalledWith(
+      expect.objectContaining({ id: first.id, groupId: 'unclassified' }),
+    );
+    expect(deleteSolve).toHaveBeenCalledWith(second.id);
   });
 });

@@ -1,40 +1,26 @@
-import { Injectable, effect, signal } from '@angular/core';
-import { AlgorithmCase } from './cube.models';
-
-/** 画面に表示する組み込みまたはユーザー登録手順。 */
-export interface CaseAlgorithm {
-  /** ケース内で手順を識別するID。 */
-  id: string;
-  /** キューブ記法による手順文字列。 */
-  notation: string;
-  /** アプリに組み込まれた削除不可の手順かどうか。 */
-  builtIn: boolean;
-}
-
-/** 1ケース分のユーザー設定。 */
-interface CasePreferences {
-  /** ユーザーが追加した手順。 */
-  custom: CaseAlgorithm[];
-  /** お気に入り手順のID。 */
-  favoriteId?: string;
-}
-
-/** 手順設定を保存するlocalStorageキー。 */
-const STORAGE_KEY = 'cube-reps.algorithm-preferences';
+import { Injectable, inject, signal } from '@angular/core';
+import { AlgorithmCase, AlgorithmPreference, CaseAlgorithm } from './cube.models';
+import { USER_DATA_SCHEMA_VERSION, UserDataRepository } from './user-data-repository';
+export type { CaseAlgorithm } from './cube.models';
 
 /** ケースキーごとのユーザー設定。 */
-type AlgorithmPreferences = Record<string, CasePreferences>;
+type AlgorithmPreferences = Record<string, AlgorithmPreference>;
 
 /** OLL/PLL手順のお気に入りとユーザー追加手順を管理するサービス。 */
 @Injectable({ providedIn: 'root' })
 export class AlgorithmLibraryService {
-  /** 保存済みユーザー設定。 */
-  private readonly preferences = signal<AlgorithmPreferences>(this.load());
-
-  /** 設定変更をlocalStorageへ同期する。 */
-  constructor() {
-    effect(() => localStorage.setItem(STORAGE_KEY, JSON.stringify(this.preferences())));
-  }
+  /** ユーザー設定の永続化を画面から分離するRepository。 */
+  private readonly repository = inject(UserDataRepository);
+  /** Repository初期化前の操作でも使用できる一時ゲストUUID。 */
+  private readonly initialGuestOwnerId = crypto.randomUUID();
+  /** 現在のゲスト所有者UUID。 */
+  private readonly guestOwnerId = signal<string>(this.initialGuestOwnerId);
+  /** ケースキーごとの保存済みユーザー設定。 */
+  private readonly preferences = signal<AlgorithmPreferences>({});
+  /** IndexedDB初期化後の変更だけを保存するフラグ。 */
+  private readonly storageReady = signal(false);
+  /** 旧データ移行とIndexedDBからの復元が完了したときに解決するPromise。 */
+  readonly ready = this.initializeStorage();
 
   /** @returns 種別と番号を組み合わせたケース固有キー */
   caseKey(item: AlgorithmCase): string {
@@ -43,7 +29,7 @@ export class AlgorithmLibraryService {
 
   /** @returns 組み込み手順の後ろにユーザー手順を連結した一覧 */
   algorithmsFor(item: AlgorithmCase): CaseAlgorithm[] {
-    return [...this.defaultsFor(item), ...this.preferenceFor(item).custom];
+    return [...item.algorithms, ...this.preferenceFor(item).custom];
   }
 
   /** @returns お気に入り手順。未設定または不明なIDの場合は先頭手順 */
@@ -72,6 +58,8 @@ export class AlgorithmLibraryService {
   /**
    * 重複していないユーザー手順を追加する。
    *
+   * @param item 対象ケース
+   * @param notation 追加する手順
    * @returns 追加できた場合は`true`
    */
   add(item: AlgorithmCase, notation: string): boolean {
@@ -81,48 +69,86 @@ export class AlgorithmLibraryService {
     const preference = this.preferenceFor(item);
     this.save(item, {
       ...preference,
-      custom: [...preference.custom, { id: `user-${Date.now()}`, notation: value, builtIn: false }],
+      custom: [...preference.custom, { id: crypto.randomUUID(), notation: value, builtIn: false }],
     });
     return true;
   }
 
-  /** ユーザーが追加した手順だけを削除する。 */
+  /**
+   * ユーザーが追加した手順だけを削除する。
+   *
+   * @param item 対象ケース
+   * @param id 削除するユーザー手順ID
+   */
   remove(item: AlgorithmCase, id: string): void {
     const preference = this.preferenceFor(item);
     if (!preference.custom.some((algorithm) => algorithm.id === id)) return;
     this.save(item, {
+      ...preference,
       custom: preference.custom.filter((algorithm) => algorithm.id !== id),
       favoriteId: preference.favoriteId === id ? undefined : preference.favoriteId,
     });
   }
 
-  /** @returns ケース定義を表示用の組み込み手順へ変換した一覧 */
-  private defaultsFor(item: AlgorithmCase): CaseAlgorithm[] {
-    return item.algorithms.map((algorithm) => ({
-      ...algorithm,
-      builtIn: true,
-    }));
+  /** @returns ケースの保存済み設定。未保存の場合は同期情報付きの空設定 */
+  private preferenceFor(item: AlgorithmCase): AlgorithmPreference {
+    const caseKey = this.caseKey(item);
+    return (
+      this.preferences()[caseKey] ?? {
+        caseKey,
+        custom: [],
+        updatedAt: new Date(0).toISOString(),
+        ownerType: 'guest',
+        ownerId: this.guestOwnerId(),
+        schemaVersion: USER_DATA_SCHEMA_VERSION,
+      }
+    );
   }
 
-  /** @returns ケースの保存済み設定。未保存の場合は空の設定 */
-  private preferenceFor(item: AlgorithmCase): CasePreferences {
-    return this.preferences()[this.caseKey(item)] ?? { custom: [] };
+  /** 指定ケースの設定を状態へ保存し、変更されたケースだけを永続化する。 */
+  private save(item: AlgorithmCase, preference: AlgorithmPreference): void {
+    const caseKey = this.caseKey(item);
+    const updated: AlgorithmPreference = {
+      ...preference,
+      caseKey,
+      updatedAt: new Date().toISOString(),
+      ownerType: 'guest',
+      ownerId: this.guestOwnerId(),
+      schemaVersion: USER_DATA_SCHEMA_VERSION,
+    };
+    const shouldDelete = updated.custom.length === 0 && !updated.favoriteId;
+    this.preferences.update((preferences) => {
+      if (!shouldDelete) return { ...preferences, [caseKey]: updated };
+      const remaining = { ...preferences };
+      delete remaining[caseKey];
+      return remaining;
+    });
+    if (!this.storageReady()) return;
+    if (shouldDelete) void this.repository.deleteAlgorithmPreference(caseKey);
+    else void this.repository.putAlgorithmPreference(updated);
   }
 
-  /** 指定ケースの設定を状態へ保存する。 */
-  private save(item: AlgorithmCase, preference: CasePreferences): void {
-    this.preferences.update((preferences) => ({
-      ...preferences,
-      [this.caseKey(item)]: preference,
-    }));
-  }
-
-  /** @returns localStorageから復元した設定。不正なJSONの場合は空の設定 */
-  private load(): AlgorithmPreferences {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as AlgorithmPreferences;
-    } catch {
-      return {};
-    }
+  /** IndexedDBの復元値と起動直後の変更をケースキー単位で統合する。 */
+  private async initializeStorage(): Promise<void> {
+    const stored = await this.repository.load();
+    this.guestOwnerId.set(stored.guestOwnerId);
+    const current = Object.values(this.preferences()).map((preference) =>
+      preference.ownerId === this.initialGuestOwnerId
+        ? { ...preference, ownerId: stored.guestOwnerId }
+        : preference,
+    );
+    const currentKeys = new Set(current.map(({ caseKey }) => caseKey));
+    this.preferences.set(
+      Object.fromEntries(
+        [
+          ...current,
+          ...stored.algorithmPreferences.filter(({ caseKey }) => !currentKeys.has(caseKey)),
+        ].map((preference) => [preference.caseKey, preference]),
+      ),
+    );
+    await Promise.all(
+      current.map((preference) => this.repository.putAlgorithmPreference(preference)),
+    );
+    this.storageReady.set(true);
   }
 }

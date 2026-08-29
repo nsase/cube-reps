@@ -5,7 +5,7 @@ export const OLL_55_CASE = defineOllCase({
   number: '55',
   names: ['Highway', 'Freeway'],
   group: 'I Shape',
-  setup: "F R' F' U2 R U R' U R2 U2 R'",
+  setup: "F R' F' U2 R U R' U R2 U2 R' U",
   algorithms: [
     {
       id: 'e0f34029-552e-415a-8c1b-a40702e2c307',
