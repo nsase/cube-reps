@@ -117,6 +117,29 @@ export function cubeFacesFromScramble(
 }
 
 /**
+ * 黄色センターが存在する面のステッカーがすべて黄色か判定する。
+ * キューブ回転後も空間上の面位置に依存せずOLLの完成を認識するため、センター色を基準にする。
+ *
+ * @param faces 判定するキューブの6面
+ * @returns 黄色センターの面が黄色で揃っている場合は`true`
+ */
+export function isOllSolved(faces: CubeFaces): boolean {
+  const yellowFace = Object.values(faces).find((face) => face[1][1] === 'yellow');
+  return yellowFace?.flat().every((color) => color === 'yellow') ?? false;
+}
+
+/**
+ * 6面それぞれのステッカーが、その面のセンター色で統一されているか判定する。
+ * キューブ全体の向きや配色方向に依存せず完成状態を認識するため、各面のセンター色を基準にする。
+ *
+ * @param faces 判定するキューブの6面
+ * @returns すべての面が各センター色で揃っている場合は`true`
+ */
+export function isCubeSolved(faces: CubeFaces): boolean {
+  return Object.values(faces).every((face) => face.flat().every((color) => color === face[1][1]));
+}
+
+/**
  * スクランブル適用後の状態を9行12列の展開図へ変換する。
  *
  * @param scramble 適用するキューブ手順
