@@ -129,8 +129,9 @@ export function isOllSolved(faces: CubeFaces): boolean {
 }
 
 /**
- * 黄色面と、その面へ隣接する側面12枚が各センター色で揃っているか判定する。
+ * 黄色面と、その面へ隣接する側面12枚が最上層として揃っているか判定する。
  * PLLでは最終層の21枚だけを対象とし、反対面や側面の残りは完成判定に含めない。
+ * AUFには依存せず、隣接する各3枚が同色であればセンター色との位置関係は問わない。
  *
  * @param faces 判定するキューブの6面
  * @returns 黄色面9枚と隣接する側面12枚が揃っている場合は`true`
@@ -141,8 +142,8 @@ export function isPllSolved(faces: CubeFaces): boolean {
   );
   if (!yellowFace || !faces[yellowFace].flat().every((color) => color === 'yellow')) return false;
 
-  return adjacentLayerStrips(faces, yellowFace).every(({ face, colors }) =>
-    colors.every((color) => color === faces[face][1][1]),
+  return adjacentLayerStrips(faces, yellowFace).every(({ colors }) =>
+    colors.every((color) => color === colors[0]),
   );
 }
 
