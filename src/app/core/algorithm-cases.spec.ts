@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { OLL_CASES, PLL_CASES } from './algorithm-cases';
 import {
   cubeFacesFromScramble,
+  isCubeSolved,
+  isOllSolved,
   topLayerOrientationPatternFromScramble,
   topLayerPatternFromScramble,
 } from './cube-state';
@@ -103,13 +105,14 @@ describe('algorithm cases', () => {
     );
   });
 
-  it('creates a complete cube state solved by a corresponding algorithm while preserving F2L', () => {
+  it('solves every complete Setup state with a corresponding algorithm while preserving F2L', () => {
     for (const item of cases) {
       expect
         .soft(
-          item.algorithms.some(({ notation }) =>
-            isSolvedCube(`${item.setup} ${withoutInitialY(notation)}`),
-          ),
+          item.algorithms.some(({ notation }) => {
+            const faces = cubeFacesFromScramble(`${item.setup} ${withoutInitialY(notation)}`);
+            return item.kind === 'OLL' ? isOllSolved(faces) : isCubeSolved(faces);
+          }),
           itemKey(item),
         )
         .toBe(true);
@@ -135,12 +138,6 @@ describe('algorithm cases', () => {
     }
   });
 });
-
-/** @returns 手順適用後に6面すべてが完成している場合は`true` */
-function isSolvedCube(algorithm: string): boolean {
-  const faces = cubeFacesFromScramble(algorithm);
-  return Object.values(faces).every((face) => face.flat().every((color) => color === face[1][1]));
-}
 
 /** @returns ケース種別と識別子を結合したテスト表示用のキー */
 function itemKey(item: import('./cube.models').AlgorithmCase): string {
