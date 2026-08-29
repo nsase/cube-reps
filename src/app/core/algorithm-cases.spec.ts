@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { OLL_CASES, PLL_CASES } from './algorithm-cases';
 import {
   cubeFacesFromScramble,
-  isCubeSolved,
   isOllSolved,
+  isPllSolved,
   topLayerOrientationPatternFromScramble,
   topLayerPatternFromScramble,
 } from './cube-state';
@@ -111,7 +111,7 @@ describe('algorithm cases', () => {
         const faces = cubeFacesFromScramble(`${item.setup} ${algorithm.notation}`);
         expect
           .soft(
-            item.kind === 'OLL' ? isOllSolved(faces) : isCubeSolved(faces),
+            item.kind === 'OLL' ? isOllSolved(faces) : isPllSolved(faces),
             `${itemKey(item)} / ${algorithm.id}`,
           )
           .toBe(true);
