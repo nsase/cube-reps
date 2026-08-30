@@ -6,30 +6,6 @@ $muted: var(--text-muted-color);
   display: block;
 }
 
-.history-filter {
-  display: flex;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 10px;
-
-  label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: $muted;
-    font-size: var(--font-size-small);
-  }
-
-  select {
-    padding: 7px 30px 7px 9px;
-    border: 1px solid $line;
-    border-radius: 5px;
-    background: var(--surface-color);
-    font-weight: 600;
-  }
-}
-
 .summaries {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
