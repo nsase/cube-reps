@@ -8,7 +8,7 @@ import {
 
 /** 履歴画面で独立して配置される主要コンポーネント。 */
 const layoutItems =
-  'app-history-group-panel, app-history-summary, app-history-progress-chart, app-solve-history';
+  'app-history-group-panel, app-history-filter, app-history-summary, app-history-progress-chart, app-solve-history';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/#/history');
@@ -122,6 +122,31 @@ test('旧localStorageの記録をIndexedDBへ移行して履歴に表示する',
 test('レスポンシブ配置が画面内に収まる', { tag: '@responsive' }, async ({ page }) => {
   await expectNoHorizontalOverflow(page);
   await expectResponsiveLayout(page, layoutItems);
+});
+
+test('フィルターをスクロール中も画面上部に表示する', { tag: '@responsive' }, async ({ page }) => {
+  const solves = Array.from({ length: 120 }, (_, index) => ({
+    id: String(index),
+    time: 1000 + index,
+    scramble: 'R U',
+    date: new Date(index).toISOString(),
+    category: 'full',
+    groupId: 'unclassified',
+    penalty: 'none',
+  }));
+  await page.evaluate((storedSolves) => {
+    localStorage.setItem('cube-reps.solves', JSON.stringify(storedSolves));
+  }, solves);
+  await page.reload();
+
+  const filter = page.getByTestId('history-filter');
+  await expect(filter).toBeVisible();
+  await expect(page.locator('app-solve-record')).toHaveCount(100);
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+
+  await expect.poll(async () => (await filter.boundingBox())?.y).toBeLessThanOrEqual(1);
+  expect((await filter.boundingBox())?.y).toBeGreaterThanOrEqual(0);
+  await expectNoHorizontalOverflow(page);
 });
 
 test('TimerとHistoryで選択中のグループを共有する', async ({ page }) => {

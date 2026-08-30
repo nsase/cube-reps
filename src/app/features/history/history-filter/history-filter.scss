@@ -1,0 +1,52 @@
+$line: var(--border-color);
+$muted: var(--text-muted-color);
+
+:host {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 8px 0;
+  background: var(--background-color);
+  box-shadow: 0 1px 0 $line;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: $muted;
+  font-size: var(--font-size-small);
+}
+
+select {
+  min-width: 0;
+  padding: 7px 30px 7px 9px;
+  border: 1px solid $line;
+  border-radius: 5px;
+  background: var(--surface-color);
+  font-weight: 600;
+}
+
+@media (max-width: 620px) {
+  :host {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  label {
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 3px;
+  }
+
+  select {
+    width: 100%;
+  }
+}
