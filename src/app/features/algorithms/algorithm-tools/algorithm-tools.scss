@@ -4,12 +4,19 @@ $line: var(--border-color);
 $muted: var(--text-muted-color);
 
 :host {
+  position: sticky;
+  z-index: 2;
+  top: 0;
   display: flex;
   justify-content: space-between;
+  padding: 8px 0;
+  background: var(--background-color);
+  box-shadow: 0 1px 0 $line;
 }
 
 .kind-selector {
   display: flex;
+  flex: 0 0 auto;
 }
 
 button {
@@ -17,6 +24,7 @@ button {
   border: 1px solid $line;
   background: var(--surface-color);
   font-weight: 700;
+  white-space: nowrap;
 }
 
 button:first-child {
@@ -35,7 +43,9 @@ button.on {
 
 label {
   display: flex;
+  min-width: 0;
   align-items: center;
+  flex: 0 1 360px;
   width: 360px;
   padding: 0 13px;
   border: 1px solid $line;
@@ -59,12 +69,27 @@ input {
 
 @media (max-width: 620px) {
   :host {
-    flex-direction: column;
-    gap: 10px;
+    gap: 6px;
+  }
+
+  button {
+    padding-inline: 12px;
+  }
+
+  button small {
+    display: none;
   }
 
   label {
-    width: 100%;
+    min-width: 0;
+    width: auto;
+    flex: 1;
     height: 42px;
+    padding-inline: 8px;
+  }
+
+  input {
+    min-width: 0;
+    padding-inline: 7px;
   }
 }
