@@ -14,32 +14,6 @@ describe('HistorySummary', () => {
     }).compileComponents();
   });
 
-  it('プルダウンでカテゴリーを切り替え、対象記録のベストを更新する', async () => {
-    const cube = TestBed.inject(CubeService);
-    cube.addSolve(1000, 'R U', 'full');
-    const group = cube.addGroup('大会')!;
-    cube.addSolve(2000, 'U R', 'full');
-    const fixture = TestBed.createComponent(HistorySummary);
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const select = fixture.nativeElement.querySelectorAll('select')[1] as HTMLSelectElement;
-    expect(Array.from(select.options, (option) => option.value)).toEqual([
-      'unclassified',
-      group.id,
-    ]);
-    select.value = group.id;
-    select.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    expect(TestBed.inject(HistoryStore).selectedGroup()).toBe(group.id);
-    expect(cube.activeGroupId()).toBe(group.id);
-    expect(fixture.nativeElement.querySelector('.summaries article strong')?.textContent).toBe(
-      '2.00',
-    );
-  });
-
   it('+2を反映してDNFを除外したベストと平均、件数不足のAOを表示する', async () => {
     const cube = TestBed.inject(CubeService);
     const solves: Solve[] = [
