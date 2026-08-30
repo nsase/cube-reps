@@ -16,6 +16,7 @@ $muted: var(--text-muted-color);
 
 .kind-selector {
   display: flex;
+  flex: 0 0 auto;
 }
 
 button {
@@ -23,6 +24,7 @@ button {
   border: 1px solid $line;
   background: var(--surface-color);
   font-weight: 700;
+  white-space: nowrap;
 }
 
 button:first-child {
@@ -41,7 +43,9 @@ button.on {
 
 label {
   display: flex;
+  min-width: 0;
   align-items: center;
+  flex: 0 1 360px;
   width: 360px;
   padding: 0 13px;
   border: 1px solid $line;
