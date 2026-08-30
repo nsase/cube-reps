@@ -1,0 +1,16 @@
+<label
+  >{{ 'history.solveCategory' | transloco
+  }}<select [(ngModel)]="store.selectedCategory">
+    @for (category of solveCategories; track category.id) {
+      <option [value]="category.id">{{ category.labelKey | transloco }}</option>
+    }
+  </select></label
+>
+<label
+  >{{ 'history.recordFilter' | transloco
+  }}<select data-testid="history-group-filter" [(ngModel)]="store.selectedGroup">
+    @for (group of cube.groups(); track group.id) {
+      <option [value]="group.id">{{ cube.groupName(group.id) }}</option>
+    }
+  </select></label
+>
