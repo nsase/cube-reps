@@ -17,11 +17,13 @@ export const RELOAD_PAGE = new InjectionToken<() => void>('RELOAD_PAGE', {
 export class AppUpdateService {
   /** ユーザーへ更新操作を案内できる状態。 */
   readonly updateAvailable = signal(false);
+  /** 同じ起動中にユーザーが更新通知を閉じたか。 */
+  private readonly updateDismissed = signal(false);
   /** タイマー計測など、操作を妨げてはならない状態で更新通知を抑止するか。 */
   private readonly notificationSuppressed = signal(false);
   /** 新版が利用可能で、現在の操作を妨げない場合に更新通知を表示する。 */
   readonly showUpdateNotice = computed(
-    () => this.updateAvailable() && !this.notificationSuppressed(),
+    () => this.updateAvailable() && !this.updateDismissed() && !this.notificationSuppressed(),
   );
   /** Angular Service Workerの更新イベントを提供するサービス。 */
   private readonly swUpdate = inject(SwUpdate);
@@ -38,7 +40,15 @@ export class AppUpdateService {
             event.type === 'VERSION_READY',
         ),
       )
-      .subscribe(() => this.updateAvailable.set(true));
+      .subscribe(() => {
+        this.updateDismissed.set(false);
+        this.updateAvailable.set(true);
+      });
+  }
+
+  /** 現在待機中のバージョンに対する通知をユーザー操作で閉じる。 */
+  dismissUpdate(): void {
+    this.updateDismissed.set(true);
   }
 
   /** 更新通知が現在の主要操作を妨げないよう表示可否を切り替える。

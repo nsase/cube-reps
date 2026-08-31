@@ -99,6 +99,12 @@ button {
   cursor: pointer;
 }
 
+@media (max-width: 620px) {
+  .app-update-snackbar-container.mat-mdc-snack-bar-container {
+    margin-bottom: 70px;
+  }
+}
+
 button[mat-icon-button] {
   line-height: normal;
 }

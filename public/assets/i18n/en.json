@@ -3,7 +3,8 @@
     "offline": "Saved offline",
     "language": "Language",
     "updateAvailable": "A new version of CubeReps is ready.",
-    "updateNow": "Update now"
+    "updateNow": "Update now",
+    "dismissUpdate": "Dismiss update notification"
   },
   "routes": {
     "timer": "PRACTICE SESSION",

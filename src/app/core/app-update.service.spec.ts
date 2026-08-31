@@ -34,6 +34,15 @@ describe('AppUpdateService', () => {
       latestVersion: { hash: 'next', appData: undefined },
     });
     expect(service.updateAvailable()).toBe(true);
+
+    service.dismissUpdate();
+    expect(service.showUpdateNotice()).toBe(false);
+    versionUpdates.next({
+      type: 'VERSION_READY',
+      currentVersion: { hash: 'next', appData: undefined },
+      latestVersion: { hash: 'newer', appData: undefined },
+    });
+    expect(service.showUpdateNotice()).toBe(true);
   });
 
   it('ユーザー操作で新版を有効化してから再読み込みする', async () => {
