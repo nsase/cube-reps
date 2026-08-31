@@ -1,0 +1,89 @@
+@use '@angular/material' as mat;
+
+// CubeRepsのブランド色と画面で共有するセマンティックカラー。
+$primary-color: #c9ef46;
+$primary-color-dark: #a6c92e;
+$primary-contrast-color: #181a17;
+$text-color: #181a17;
+$text-muted-color: #7d8078;
+$background-color: #f4f3ef;
+$surface-color: #ffffff;
+$surface-muted-color: #f4f4f0;
+$border-color: #d9d8d2;
+$sidebar-color: #181a17;
+$success-color: #69935e;
+$danger-color: #ff6960;
+$info-color: #55aaff;
+
+/// CubeReps共通のAngular Materialテーマを出力する。
+/// Materialコンポーネントの配色はこのmixinへ集約し、各画面での個別上書きを避ける。
+@mixin material-theme() {
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: mat.$chartreuse-palette,
+        tertiary: mat.$red-palette,
+      ),
+      typography: Outfit,
+      density: 0,
+    ),
+    (
+      primary: $primary-color,
+      on-primary: $primary-contrast-color,
+      surface: $surface-color,
+      surface-container: $surface-muted-color,
+      on-surface: $text-color,
+      on-surface-variant: $text-muted-color,
+      outline: $border-color,
+      error: $danger-color,
+    )
+  );
+
+  // CubeRepsの主要操作は、濃色の背景にブランド色のラベルを使用する。
+  @include mat.button-overrides(
+    (
+      filled-container-color: $primary-contrast-color,
+      filled-label-text-color: $primary-color,
+      filled-state-layer-color: $primary-color,
+      filled-ripple-color: rgba($primary-color, 0.16),
+    )
+  );
+
+  // 更新通知を含むSnack Barで、本文と操作を濃色の背景から判別できるようにする。
+  @include mat.snack-bar-overrides(
+    (
+      container-color: $primary-contrast-color,
+      supporting-text-color: $surface-color,
+      button-color: $primary-color,
+    )
+  );
+
+  .app-update-snackbar-container {
+    @include mat.icon-button-overrides(
+      (
+        icon-color: $primary-color,
+        state-layer-color: $primary-color,
+        ripple-color: rgba($primary-color, 0.16),
+      )
+    );
+  }
+}
+
+/// Material以外の画面スタイルが参照する共通カラー変数を出力する。
+/// 色の実値はMaterialテーマと共有し、ブランドカラーの変更箇所を一つに保つ。
+@mixin app-color-variables() {
+  --primary-color: #{$primary-color};
+  --primary-color-dark: #{$primary-color-dark};
+  --primary-contrast-color: #{$primary-contrast-color};
+  --text-color: #{$text-color};
+  --text-muted-color: #{$text-muted-color};
+  --background-color: #{$background-color};
+  --surface-color: #{$surface-color};
+  --surface-muted-color: #{$surface-muted-color};
+  --border-color: #{$border-color};
+  --sidebar-color: #{$sidebar-color};
+  --success-color: #{$success-color};
+  --danger-color: #{$danger-color};
+  --info-color: #{$info-color};
+}
