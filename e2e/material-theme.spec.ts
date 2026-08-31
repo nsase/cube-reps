@@ -1,41 +1,30 @@
 import { expect, test } from '@playwright/test';
 
-test('MaterialコンポーネントへCubeReps共通テーマを適用する', async ({ page }) => {
+test('生成したカスタムテーマをMaterialコンポーネントへ適用する', async ({ page }) => {
   await page.goto('/#/timer');
 
   const theme = await page.evaluate(() => {
-    const rootStyles = getComputedStyle(document.documentElement);
-    const updateContainer = document.createElement('div');
-    updateContainer.className = 'app-update-snackbar-container';
-    document.body.append(updateContainer);
-    const updateStyles = getComputedStyle(updateContainer);
-
-    const values = {
-      primary: rootStyles.getPropertyValue('--mat-sys-primary').trim(),
-      onPrimary: rootStyles.getPropertyValue('--mat-sys-on-primary').trim(),
-      surface: rootStyles.getPropertyValue('--mat-sys-surface').trim(),
-      onSurface: rootStyles.getPropertyValue('--mat-sys-on-surface').trim(),
-      filledButton: rootStyles.getPropertyValue('--mat-button-filled-container-color').trim(),
-      filledButtonLabel: rootStyles.getPropertyValue('--mat-button-filled-label-text-color').trim(),
-      snackBar: rootStyles.getPropertyValue('--mat-snack-bar-container-color').trim(),
-      snackBarText: rootStyles.getPropertyValue('--mat-snack-bar-supporting-text-color').trim(),
-      snackBarAction: rootStyles.getPropertyValue('--mat-snack-bar-button-color').trim(),
-      updateCloseIcon: updateStyles.getPropertyValue('--mat-icon-button-icon-color').trim(),
+    const styles = getComputedStyle(document.documentElement);
+    return {
+      primary: styles.getPropertyValue('--mat-sys-primary').trim(),
+      onPrimary: styles.getPropertyValue('--mat-sys-on-primary').trim(),
+      surface: styles.getPropertyValue('--mat-sys-surface').trim(),
+      onSurface: styles.getPropertyValue('--mat-sys-on-surface').trim(),
+      inversePrimary: styles.getPropertyValue('--mat-sys-inverse-primary').trim(),
+      inverseSurface: styles.getPropertyValue('--mat-sys-inverse-surface').trim(),
+      inverseOnSurface: styles.getPropertyValue('--mat-sys-inverse-on-surface').trim(),
+      snackBarText: styles.getPropertyValue('--mat-snack-bar-supporting-text-color').trim(),
     };
-    updateContainer.remove();
-    return values;
   });
 
   expect(theme).toEqual({
-    primary: '#c9ef46',
-    onPrimary: '#181a17',
-    surface: '#ffffff',
-    onSurface: '#181a17',
-    filledButton: '#181a17',
-    filledButtonLabel: '#c9ef46',
-    snackBar: '#181a17',
+    primary: 'light-dark(#006e16, #68df65)',
+    onPrimary: 'light-dark(#ffffff, #003907)',
+    surface: 'light-dark(#f4fced, #0f150d)',
+    onSurface: 'light-dark(#171d15, #dde5d7)',
+    inversePrimary: 'light-dark(#68df65, #006e16)',
+    inverseSurface: 'light-dark(#2b3229, #dde5d7)',
+    inverseOnSurface: 'light-dark(#ecf3e5, #2b3229)',
     snackBarText: '#ffffff',
-    snackBarAction: '#c9ef46',
-    updateCloseIcon: '#c9ef46',
   });
 });
