@@ -1,4 +1,4 @@
-$line: var(--border-color);
+$line: var(--outline-color);
 $muted: var(--text-muted-color);
 
 :host {
@@ -30,9 +30,9 @@ $muted: var(--text-muted-color);
   gap: 6px;
   min-width: 0;
   padding: 8px;
-  border: 1px solid var(--primary-color-dark);
+  border: 1px solid var(--outline-color);
   border-radius: 5px;
-  background: color-mix(in srgb, var(--primary-color) 12%, var(--surface-color));
+  background: var(--mat-sys-surface-container-low);
 
   code {
     min-height: 0;

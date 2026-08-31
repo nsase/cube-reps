@@ -1,0 +1,15 @@
+<span matSnackBarLabel>{{ 'app.updateAvailable' | transloco }}</span>
+<span matSnackBarActions>
+  <button mat-button matSnackBarAction type="button" (click)="applyUpdate()">
+    {{ 'app.updateNow' | transloco }}
+  </button>
+  <button
+    mat-icon-button
+    type="button"
+    (click)="dismiss()"
+    [attr.aria-label]="'app.dismissUpdate' | transloco"
+    [title]="'app.dismissUpdate' | transloco"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+</span>

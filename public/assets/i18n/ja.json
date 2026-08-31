@@ -1,5 +1,11 @@
 {
-  "app": { "offline": "オフライン保存", "language": "表示言語" },
+  "app": {
+    "offline": "オフライン保存",
+    "language": "表示言語",
+    "updateAvailable": "CubeRepsの新しいバージョンを利用できます。",
+    "updateNow": "今すぐ更新",
+    "dismissUpdate": "更新通知を閉じる"
+  },
   "routes": {
     "timer": "PRACTICE SESSION",
     "algorithms": "ALGORITHM LIBRARY",
