@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { filter, map } from 'rxjs';
 import { CubeService } from './core/cube';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AppUpdate } from './shared/app-update/app-update';
 
 /** 共通レイアウトとルーターOutletを表示するルートコンポーネント。 */

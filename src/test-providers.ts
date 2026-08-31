@@ -1,11 +1,11 @@
 import { importProvidersFrom } from '@angular/core';
+import { SwUpdate } from '@angular/service-worker';
 import { TranslocoTestingModule } from '@jsverse/transloco';
+import { NEVER } from 'rxjs';
 import en from '../public/assets/i18n/en.json';
 import ja from '../public/assets/i18n/ja.json';
-import { AlgorithmPreference, Solve, RecordGroup } from './app/core/cube.models';
-import { UserDataRepository, StoredUserData } from './app/core/user-data-repository';
-import { SwUpdate } from '@angular/service-worker';
-import { NEVER } from 'rxjs';
+import { AlgorithmPreference, RecordGroup, Solve } from './app/core/cube.models';
+import { StoredUserData, UserDataRepository } from './app/core/user-data-repository';
 
 /** コンポーネントテスト間でIndexedDB状態を共有しないメモリRepository。 */
 class TestUserDataRepository extends UserDataRepository {
