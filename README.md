@@ -94,6 +94,8 @@ Data is tied to the browser and origin in use. Clearing the site's browser data 
 
 Each page uses standalone components and route-level lazy loading. Persistent application data is managed by root services, while temporary timer and history state is managed by screen-scoped Signal Stores.
 
+The shared Angular Material theme and application color variables are defined in `src/styles/_material-theme.scss`. Material component colors should be customized through that theme instead of being overridden in individual component styles.
+
 ## Project structure
 
 ```text

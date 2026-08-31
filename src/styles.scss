@@ -1,4 +1,4 @@
-@use '@angular/material' as mat;
+@use 'styles/material-theme' as cube-reps-theme;
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0');
@@ -12,37 +12,12 @@
 }
 
 html {
-  @include mat.theme(
-    (
-      color: (
-        primary: mat.$chartreuse-palette,
-        tertiary: mat.$red-palette,
-      ),
-      typography: Outfit,
-      density: 0,
-    )
-  );
+  @include cube-reps-theme.material-theme();
 }
 
 :root {
   // Brand and semantic colors
-  --primary-color: #c9ef46;
-  --primary-color-dark: #a6c92e;
-  --primary-contrast-color: #181a17;
-  --text-color: #181a17;
-  --text-muted-color: #7d8078;
-  --background-color: #f4f3ef;
-  --surface-color: #ffffff;
-  --surface-muted-color: #f4f4f0;
-  --border-color: #d9d8d2;
-  --sidebar-color: #181a17;
-  --success-color: #69935e;
-  --danger-color: #ff6960;
-  --info-color: #55aaff;
-
-  // Angular Material buttons
-  --mat-button-filled-label-text-color: var(--primary-color);
-  --mat-button-filled-container-color: var(--primary-contrast-color);
+  @include cube-reps-theme.app-color-variables();
 
   // Cube sticker colors
   --cube-yellow: #ffe624;
