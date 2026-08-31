@@ -6,7 +6,7 @@
 
 **English** | [日本語](README.ja.md)
 
-CubeReps is a browser-based Rubik's Cube timer and training app for full solves, OLL, and PLL. Solve records and preferences are stored in your browser, so no account or server connection is required.
+CubeReps is a browser-based Rubik's Cube timer and training tool. Solve records and preferences are stored in your browser, so no account or server connection is required.
 
 [Open CubeReps](https://nsase.github.io/cube-reps/)
 
