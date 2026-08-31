@@ -20,6 +20,7 @@ describe('AppUpdateSnackbar', () => {
 
     expect(fixture.nativeElement.textContent).toContain('A new version of CubeReps is ready.');
     expect(fixture.nativeElement.textContent).toContain('Update now');
+    expect(fixture.nativeElement.querySelector('[matSnackBarAction]')).toBeTruthy();
     expect(
       fixture.nativeElement.querySelector('[aria-label="Dismiss update notification"]'),
     ).toBeTruthy();

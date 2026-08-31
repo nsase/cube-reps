@@ -94,6 +94,8 @@ npm start
 
 各画面はStandalone Componentとして構成し、ルート単位で遅延読み込みしています。アプリ全体の永続データはrootサービス、タイマーや履歴画面の一時状態は画面スコープのSignal Storeで管理しています。
 
+Angular Materialの共通テーマとアプリ用のカラー変数は、`src/styles/_material-theme.scss`で定義しています。Materialコンポーネントの配色は、個別コンポーネントのスタイルで上書きせず、このテーマで調整します。
+
 ## ディレクトリ構成
 
 ```text
