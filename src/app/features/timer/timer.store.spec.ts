@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { CubeService } from '../../core/cube';
+import { AppUpdateService } from '../../core/app-update.service';
 import type { CaseAlgorithm } from '../../core/cube.models';
 import { TimerStore } from './timer.store';
 
@@ -40,10 +41,14 @@ describe('TimerStore', () => {
     expect(store.state()).toBe('ready');
     store.release();
     expect(store.state()).toBe('running');
+    const updates = TestBed.inject(AppUpdateService);
+    updates.updateAvailable.set(true);
+    expect(updates.showUpdateNotice()).toBe(false);
     store.elapsed.set(1234);
     store.press();
 
     expect(store.state()).toBe('idle');
+    expect(updates.showUpdateNotice()).toBe(true);
     expect(cube.solves()[0].time).toBe(1234);
     expect(cube.solves()[0].category).toBe('full');
     expect(store.completedSolve()?.id).toBe(cube.solves()[0].id);

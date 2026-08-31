@@ -93,7 +93,8 @@ describe('App', () => {
     const timer = fixture.debugElement.query(By.directive(Timer));
     const store = timer.injector.get(TimerStore);
     store.setCategory('pll');
-    store.state.set('running');
+    store.state.set('ready');
+    store.release();
     store.elapsed.set(1234);
     fixture.detectChanges();
 
