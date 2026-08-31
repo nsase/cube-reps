@@ -2,7 +2,7 @@
   "id": "./",
   "name": "CubeReps",
   "short_name": "CubeReps",
-  "description": "Rubik's Cube timer and OLL/PLL training app",
+  "description": "Rubik's Cube timer and training tool",
   "lang": "en",
   "start_url": "./#/timer",
   "scope": "./",
