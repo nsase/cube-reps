@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use 'styles/theme-colors' as cube-reps-theme;
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0');
@@ -15,8 +16,7 @@ html {
   @include mat.theme(
     (
       color: (
-        primary: mat.$chartreuse-palette,
-        tertiary: mat.$red-palette,
+        primary: cube-reps-theme.$primary-palette,
       ),
       typography: Outfit,
       density: 0,
@@ -26,23 +26,21 @@ html {
 
 :root {
   // Brand and semantic colors
-  --primary-color: #c9ef46;
-  --primary-color-dark: #a6c92e;
-  --primary-contrast-color: #181a17;
-  --text-color: #181a17;
-  --text-muted-color: #7d8078;
+  --primary-color: var(--mat-sys-secondary-fixed);
   --background-color: #f4f3ef;
-  --surface-color: #ffffff;
-  --surface-muted-color: #f4f4f0;
-  --border-color: #d9d8d2;
-  --sidebar-color: #181a17;
+  --surface-color: var(--mat-sys-surface-container-lowest);
+  --text-color: #181a17;
+  --danger-color: var(--mat-sys-error);
+  --outline-color-active: var(--mat-sys-outline);
+  --outline-color: var(--mat-sys-outline-variant);
   --success-color: #69935e;
-  --danger-color: #ff6960;
-  --info-color: #55aaff;
+  --text-muted-color: #7d8078;
 
   // Angular Material buttons
-  --mat-button-filled-label-text-color: var(--primary-color);
-  --mat-button-filled-container-color: var(--primary-contrast-color);
+  --mat-sys-outline: #52bf52;
+  --mat-dialog-container-color: var(--background-color);
+  --mat-sys-surface-container-low: #e9f0e9;
+  --mat-snack-bar-supporting-text-color: #ffffff;
 
   // Cube sticker colors
   --cube-yellow: #ffe624;
@@ -97,6 +95,12 @@ textarea {
 
 button {
   cursor: pointer;
+}
+
+@media (max-width: 620px) {
+  .app-update-snackbar-container.mat-mdc-snack-bar-container {
+    margin-bottom: 70px;
+  }
 }
 
 button[mat-icon-button] {

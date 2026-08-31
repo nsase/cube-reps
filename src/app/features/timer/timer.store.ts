@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { OLL_CASES, PLL_CASES } from '../../core/algorithm-cases';
 import { CubeService } from '../../core/cube';
+import { AppUpdateService } from '../../core/app-update.service';
 import { AlgorithmCase, Penalty, Solve, SolveCategory } from '../../core/cube.models';
 
 /** Timerコンポーネントツリー内で計測状態と操作を共有するStore。 */
@@ -8,6 +9,8 @@ import { AlgorithmCase, Penalty, Solve, SolveCategory } from '../../core/cube.mo
 export class TimerStore implements OnDestroy {
   /** 計測記録とスクランブルを管理するサービス。 */
   private readonly cube = inject(CubeService);
+  /** 計測中に更新通知を抑止するアプリ更新サービス。 */
+  private readonly appUpdates = inject(AppUpdateService);
 
   /** 現在のsolveカテゴリー。 */
   readonly category = signal<SolveCategory>('full');
@@ -151,6 +154,7 @@ export class TimerStore implements OnDestroy {
 
   /** Store破棄時に計測用タイマーとWake Lockを停止する。 */
   ngOnDestroy(): void {
+    this.appUpdates.setNotificationSuppressed(false);
     clearInterval(this.interval);
     clearTimeout(this.holdTimer);
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
@@ -185,6 +189,7 @@ export class TimerStore implements OnDestroy {
     this.elapsed.set(0);
     this.completedSolve.set(undefined);
     this.state.set('running');
+    this.appUpdates.setNotificationSuppressed(true);
     this.requestWakeLock();
     this.interval = window.setInterval(
       () => this.elapsed.set(performance.now() - this.started),
@@ -196,6 +201,7 @@ export class TimerStore implements OnDestroy {
   private stop(): void {
     clearInterval(this.interval);
     this.releaseWakeLock();
+    this.appUpdates.setNotificationSuppressed(false);
     const solve = this.cube.addSolve(
       this.elapsed(),
       this.scramble(),
@@ -209,6 +215,7 @@ export class TimerStore implements OnDestroy {
 
   /** 保存せずに計測状態と経過時間を初期化する。 */
   private reset(): void {
+    this.appUpdates.setNotificationSuppressed(false);
     clearInterval(this.interval);
     this.releaseWakeLock();
     clearTimeout(this.holdTimer);

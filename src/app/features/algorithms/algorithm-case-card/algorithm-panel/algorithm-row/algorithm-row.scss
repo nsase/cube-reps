@@ -1,6 +1,5 @@
-$ink: var(--text-color);
-$line: var(--border-color);
-$muted: var(--text-muted-color);
+$line: var(--outline-color);
+$muted: var(--mat-sys-surface-container-highest);
 
 :host {
   display: grid;
@@ -13,12 +12,12 @@ $muted: var(--text-muted-color);
   padding: 7px;
   border: 1px solid $line;
   border-radius: 5px;
-  background: var(--surface-muted-color);
+  background: var(--mat-sys-surface-container-low);
 }
 
 :host(.preferred) {
-  border-color: var(--primary-color-dark);
-  box-shadow: inset 3px 0 0 var(--primary-color);
+  border-color: var(--outline-color-active);
+  box-shadow: inset 3px 0 0 var(--outline-color-active);
 }
 
 code {
@@ -41,10 +40,6 @@ code {
   display: flex;
   align-items: center;
   gap: 2px;
-
-  button {
-    color: $ink;
-  }
 
   .star {
     color: var(--text-muted-color);

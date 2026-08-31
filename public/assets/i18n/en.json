@@ -1,5 +1,11 @@
 {
-  "app": { "offline": "Saved offline", "language": "Language" },
+  "app": {
+    "offline": "Saved offline",
+    "language": "Language",
+    "updateAvailable": "A new version of CubeReps is ready.",
+    "updateNow": "Update now",
+    "dismissUpdate": "Dismiss update notification"
+  },
   "routes": {
     "timer": "PRACTICE SESSION",
     "algorithms": "ALGORITHM LIBRARY",
