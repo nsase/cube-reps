@@ -8,6 +8,7 @@ import { firstValueFrom } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { Timer } from './features/timer/timer';
 import { TimerStore } from './features/timer/timer.store';
+import { AppUpdateService } from './core/app-update.service';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -92,8 +93,13 @@ describe('App', () => {
 
     const timer = fixture.debugElement.query(By.directive(Timer));
     const store = timer.injector.get(TimerStore);
+    const updates = TestBed.inject(AppUpdateService);
+    updates.updateAvailable.set(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[data-testid="update-notice"]')).toBeTruthy();
     store.setCategory('pll');
-    store.state.set('running');
+    store.state.set('ready');
+    store.release();
     store.elapsed.set(1234);
     fixture.detectChanges();
 
@@ -104,6 +110,7 @@ describe('App', () => {
     expect(timer.nativeElement.querySelector('app-timer-stats')).toBeNull();
     expect(timer.nativeElement.querySelector('app-timer-clock small')).toBeNull();
     expect(timer.nativeElement.querySelector('app-timer-clock i')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="update-notice"]')).toBeNull();
 
     runningArea.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
     fixture.detectChanges();
@@ -111,6 +118,7 @@ describe('App', () => {
     expect(store.state()).toBe('idle');
     expect(timer.nativeElement.querySelector('section.running')).toBeNull();
     expect(timer.nativeElement.querySelector('app-timer-settings')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('[data-testid="update-notice"]')).toBeTruthy();
   });
 
   it('履歴のURLへ移動してルートdataの見出しを表示する', async () => {

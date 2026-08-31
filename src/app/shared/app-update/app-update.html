@@ -1,4 +1,4 @@
-@if (updates.updateAvailable()) {
+@if (updates.showUpdateNotice()) {
   <aside class="update-notice" role="status" data-testid="update-notice">
     <span>{{ 'app.updateAvailable' | transloco }}</span>
     <button mat-flat-button type="button" (click)="updates.applyUpdate()">

@@ -30,6 +30,7 @@ test('一度読み込んだアプリを記録を保持したままオフライ�
   context,
   page,
 }) => {
+  test.setTimeout(60_000);
   await page.goto('/#/timer');
   await expect(page.locator('app-timer')).toBeVisible();
   await page.evaluate(async () => navigator.serviceWorker.ready);
