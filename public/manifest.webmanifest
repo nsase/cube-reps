@@ -1,0 +1,22 @@
+{
+  "id": "./",
+  "name": "CubeReps",
+  "short_name": "CubeReps",
+  "description": "Rubik's Cube timer and OLL/PLL training app",
+  "lang": "en",
+  "start_url": "./#/timer",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f3ef",
+  "theme_color": "#181a17",
+  "icons": [
+    { "src": "icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    {
+      "src": "icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
