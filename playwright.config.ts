@@ -52,7 +52,7 @@ const config = defineConfig({
     },
   ],
   webServer: {
-    command: 'npm start -- --port 4200',
+    command: 'npm run start:e2e',
     url: 'http://127.0.0.1:4200',
     reuseExistingServer: !process.env['CI'],
     timeout: 120_000,

@@ -4,11 +4,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs';
 import { CubeService } from './core/cube';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { AppUpdate } from './shared/app-update/app-update';
 
 /** 共通レイアウトとルーターOutletを表示するルートコンポーネント。 */
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, TranslocoPipe],
+  imports: [AppUpdate, RouterLink, RouterLinkActive, RouterOutlet, TranslocoPipe],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -4,6 +4,8 @@ import en from '../public/assets/i18n/en.json';
 import ja from '../public/assets/i18n/ja.json';
 import { AlgorithmPreference, Solve, RecordGroup } from './app/core/cube.models';
 import { UserDataRepository, StoredUserData } from './app/core/user-data-repository';
+import { SwUpdate } from '@angular/service-worker';
+import { NEVER } from 'rxjs';
 
 /** コンポーネントテスト間でIndexedDB状態を共有しないメモリRepository。 */
 class TestUserDataRepository extends UserDataRepository {
@@ -63,6 +65,10 @@ class TestUserDataRepository extends UserDataRepository {
 /** コンポーネントテストでHTTP通信せず利用する翻訳プロバイダー。 */
 export default [
   { provide: UserDataRepository, useClass: TestUserDataRepository },
+  {
+    provide: SwUpdate,
+    useValue: { isEnabled: false, versionUpdates: NEVER, activateUpdate: async () => false },
+  },
   importProvidersFrom(
     TranslocoTestingModule.forRoot({
       langs: { ja, en },
