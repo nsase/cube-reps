@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Injectable, InjectionToken, inject, signal } from '@angular/core';
+import { computed, Injectable, InjectionToken, inject, signal } from '@angular/core';
 import { SwUpdate, VersionEvent } from '@angular/service-worker';
 import { filter } from 'rxjs';
 
@@ -17,6 +17,12 @@ export const RELOAD_PAGE = new InjectionToken<() => void>('RELOAD_PAGE', {
 export class AppUpdateService {
   /** ユーザーへ更新操作を案内できる状態。 */
   readonly updateAvailable = signal(false);
+  /** タイマー計測など、操作を妨げてはならない状態で更新通知を抑止するか。 */
+  private readonly notificationSuppressed = signal(false);
+  /** 新版が利用可能で、現在の操作を妨げない場合に更新通知を表示する。 */
+  readonly showUpdateNotice = computed(
+    () => this.updateAvailable() && !this.notificationSuppressed(),
+  );
   /** Angular Service Workerの更新イベントを提供するサービス。 */
   private readonly swUpdate = inject(SwUpdate);
   /** 適用済みの新版を表示するためにページを再読み込みする処理。 */
@@ -33,6 +39,14 @@ export class AppUpdateService {
         ),
       )
       .subscribe(() => this.updateAvailable.set(true));
+  }
+
+  /** 更新通知が現在の主要操作を妨げないよう表示可否を切り替える。
+   *
+   *  suppressed 更新通知を一時的に非表示にする場合はtrue
+   */
+  setNotificationSuppressed(suppressed: boolean): void {
+    this.notificationSuppressed.set(suppressed);
   }
 
   /** 待機中の新版を有効化し、同じURLを新版で読み直す。 */

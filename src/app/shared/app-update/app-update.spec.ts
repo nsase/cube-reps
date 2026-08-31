@@ -20,6 +20,18 @@ describe('AppUpdate', () => {
     expect(notice?.querySelector('button')?.textContent).toContain('Update now');
   });
 
+  it('タイマー計測中など通知を抑止する状態では表示しない', () => {
+    updates.updateAvailable.set(true);
+    updates.setNotificationSuppressed(true);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[data-testid="update-notice"]')).toBeNull();
+
+    updates.setNotificationSuppressed(false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[data-testid="update-notice"]')).toBeTruthy();
+  });
+
   it('更新ボタンで新版の適用を開始する', () => {
     const applyUpdate = vi.spyOn(updates, 'applyUpdate').mockResolvedValue();
     updates.updateAvailable.set(true);

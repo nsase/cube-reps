@@ -11,7 +11,7 @@ const config = defineConfig({
   workers: process.env['CI'] ? 1 : undefined,
   reporter: process.env['CI'] ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: 'http://127.0.0.1:4200',
+    baseURL: 'http://127.0.0.1:4300',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
   },
@@ -53,7 +53,7 @@ const config = defineConfig({
   ],
   webServer: {
     command: 'npm run start:e2e',
-    url: 'http://127.0.0.1:4200',
+    url: 'http://127.0.0.1:4300',
     reuseExistingServer: !process.env['CI'],
     timeout: 120_000,
   },
