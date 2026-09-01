@@ -23,6 +23,7 @@ CubeReps is a browser-based Rubik's Cube timer and training tool. Solve records 
 - Retry any solve from history with its original scramble, category, and record group
 - History rows with point-in-time Ao5/Ao12 and details for scrambles and cube previews
 - English and Japanese interfaces
+- Optional sign-in with a Google account
 - Responsive layouts for desktop, tablet, and mobile devices
 
 ## Using the timer
@@ -43,6 +44,12 @@ After the first online load completes, the installed app can be started and relo
 
 Browser storage is separated by browser and installation context. In particular, Safari and a Home Screen web app on iOS/iPadOS may not share existing data, so records created in Safari might not appear in the installed app. Installing or updating CubeReps does not itself delete browser data.
 
+## Google account sign-in
+
+Select **Sign in with Google** in the page header to sign in. Signing in is optional: Timer, History, and locally saved algorithms remain available without an account, including while offline after the app has been loaded.
+
+This version only establishes the account identity needed for future device synchronization. Signing in does not upload, replace, delete, or synchronize existing local data. Signing out also leaves local data on the device. The sign-in and sign-out operations themselves require an internet connection.
+
 ## Setup
 
 Install Node.js and npm, then run the following commands in the repository:
@@ -55,6 +62,10 @@ npm start
 
 The development server normally starts at [http://localhost:4200](http://localhost:4200).
 
+The Firebase Web configuration in `src/app/core/auth/firebase.config.ts` contains public identifiers used by the browser to connect to the CubeReps Firebase project. Do not add service-account JSON files, private keys, access tokens, or other administrator credentials to the frontend or repository; the browser application does not require them.
+
+Firestore development requires Java 21 or later. `npm run test:firestore` starts the Firestore Emulator with the local-only `demo-cube-reps` project ID and verifies CRUD operations and Security Rules without connecting to production data. Rules and indexes are managed in `firestore.rules`, `firestore.indexes.json`, and `firebase.json`. To publish them, first confirm the target Firebase project and then run `firebase deploy --only firestore:rules,firestore:indexes`.
+
 ## Development commands
 
 | Command                   | Description                       |
@@ -62,6 +73,7 @@ The development server normally starts at [http://localhost:4200](http://localho
 | `npm start`               | Start the development server      |
 | `npm run build`           | Create a production build         |
 | `npm test`                | Run tests with Vitest             |
+| `npm run test:firestore`  | Test Firestore with the Emulator  |
 | `npm run test:e2e`        | Run browser tests with Playwright |
 | `npm run prettier:format` | Format the project with Prettier  |
 
@@ -82,12 +94,18 @@ Existing data previously stored in `localStorage` is migrated automatically when
 
 Data is tied to the browser and origin in use. Clearing the site's browser data also deletes CubeReps records. Cloud synchronization and data export are not currently available.
 
+In preparation for future synchronization, a Firestore data-access foundation can safely CRUD only the signed-in user's `users/{userId}/solves/{solveId}` documents. It is not connected to Timer or History yet, so signing in and normal app operations never automatically upload, modify, or delete local records.
+
+Google sign-in does not change the owner or storage location of existing local records at this stage.
+
 ## Technology
 
 - Angular 21
 - Angular Material
 - Angular Signals / Signal Store
 - Transloco
+- Firebase Authentication
+- Cloud Firestore / Firebase Emulator Suite
 - Vitest
 - Playwright
 - SCSS

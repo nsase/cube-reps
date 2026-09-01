@@ -6,6 +6,13 @@
     "updateNow": "今すぐ更新",
     "dismissUpdate": "更新通知を閉じる"
   },
+  "auth": {
+    "checking": "ログイン状態を確認しています…",
+    "signIn": "Googleでログイン",
+    "signingIn": "ログインしています…",
+    "signOut": "ログアウト",
+    "failed": "認証に失敗しました。もう一度お試しください。"
+  },
   "routes": {
     "timer": "PRACTICE SESSION",
     "algorithms": "ALGORITHM LIBRARY",

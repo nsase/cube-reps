@@ -120,6 +120,7 @@ header p {
   display: flex;
   align-items: center;
   gap: 14px;
+  min-width: 0;
 
   select {
     border: 1px solid $line;
@@ -203,6 +204,13 @@ header p {
   main {
     grid-column: auto;
     padding: 23px 14px 80px;
+  }
+  header {
+    align-items: center;
+    gap: 8px;
+  }
+  .header-tools {
+    gap: 4px;
   }
   header p {
     display: none;
