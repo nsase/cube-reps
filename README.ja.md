@@ -64,6 +64,8 @@ npm start
 
 `src/app/core/auth/firebase.config.ts`のFirebase Web設定には、ブラウザからCubeRepsのFirebaseプロジェクトへ接続するための公開識別情報が含まれます。サービスアカウントJSON、秘密鍵、アクセストークンなどの管理者認証情報はフロントエンドやリポジトリへ追加しないでください。ブラウザアプリでは必要ありません。
 
+Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`は`demo-cube-reps`というローカル専用プロジェクトIDでFirestore Emulatorを起動し、CRUDとSecurity Rulesを検証します。本番データへは接続しません。ルールとインデックスは`firestore.rules`、`firestore.indexes.json`、`firebase.json`で管理しています。本番へ反映するときは、Firebase CLIで対象プロジェクトを確認してから`firebase deploy --only firestore:rules,firestore:indexes`を実行します。
+
 ## 開発コマンド
 
 | コマンド                  | 内容                             |
@@ -71,6 +73,7 @@ npm start
 | `npm start`               | 開発サーバーを起動               |
 | `npm run build`           | プロダクションビルドを作成       |
 | `npm test`                | Vitestでテストを実行             |
+| `npm run test:firestore`  | EmulatorでFirestoreをテスト      |
 | `npm run test:e2e`        | Playwrightでブラウザテストを実行 |
 | `npm run prettier:format` | プロジェクト全体をPrettierで整形 |
 
@@ -91,6 +94,8 @@ npm start
 
 データは利用中のブラウザとオリジンに紐づきます。ブラウザのサイトデータを削除すると、CubeRepsの記録も削除されます。現在、クラウド同期やエクスポート機能はありません。
 
+将来の同期に備え、ログインユーザー本人の`users/{userId}/solves/{solveId}`だけを安全にCRUDできるFirestoreデータアクセス基盤を用意しています。この基盤はまだTimerや履歴へ接続しておらず、ログインや通常操作によってローカル記録が自動的にアップロード、変更、削除されることはありません。
+
 現段階では、Googleアカウントへログインしても既存ローカル記録の所有者や保存場所は変更されません。
 
 ## 技術構成
@@ -100,6 +105,7 @@ npm start
 - Angular Signals / Signal Store
 - Transloco
 - Firebase Authentication
+- Cloud Firestore / Firebase Emulator Suite
 - Vitest
 - Playwright
 - SCSS
