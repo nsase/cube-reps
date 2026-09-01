@@ -14,6 +14,21 @@ export interface AuthenticatedUser {
   photoURL: string | null;
 }
 
+/**
+ * Firebase Authenticationのエラーがユーザーによるポップアップ終了か判定する。
+ *
+ * @param error Firebase SDKから返された認証エラー
+ * @returns ユーザーがログインを取りやめた場合はtrue
+ */
+export function isPopupSignInCancelled(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'auth/popup-closed-by-user'
+  );
+}
+
 /** Firebase SDKへの依存をアプリの認証状態から分離する境界。 */
 export abstract class AuthGateway {
   /**
@@ -76,7 +91,12 @@ export class FirebaseAuthGateway extends AuthGateway {
     ]);
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    await signInWithPopup(auth, provider);
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      if (isPopupSignInCancelled(error)) return;
+      throw error;
+    }
   }
 
   /** @inheritdoc */
