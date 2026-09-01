@@ -4,6 +4,7 @@ import { TranslocoTestingModule } from '@jsverse/transloco';
 import { NEVER } from 'rxjs';
 import en from '../public/assets/i18n/en.json';
 import ja from '../public/assets/i18n/ja.json';
+import { AuthenticatedUser, AuthGateway } from './app/core/auth/auth.gateway';
 import { AlgorithmPreference, RecordGroup, Solve } from './app/core/cube.models';
 import { StoredUserData, UserDataRepository } from './app/core/user-data-repository';
 
@@ -62,8 +63,24 @@ class TestUserDataRepository extends UserDataRepository {
   }
 }
 
+/** コンポーネントテストでFirebaseへ接続せず未ログイン状態を返すGateway。 */
+class TestAuthGateway extends AuthGateway {
+  /**  */
+  override observe(next: (user: AuthenticatedUser | null) => void): () => void {
+    next(null);
+    return () => undefined;
+  }
+
+  /**  */
+  override async signIn(): Promise<void> {}
+
+  /**  */
+  override async signOut(): Promise<void> {}
+}
+
 /** コンポーネントテストでHTTP通信せず利用する翻訳プロバイダー。 */
 export default [
+  { provide: AuthGateway, useClass: TestAuthGateway },
   { provide: UserDataRepository, useClass: TestUserDataRepository },
   {
     provide: SwUpdate,

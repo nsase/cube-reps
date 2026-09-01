@@ -6,6 +6,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { provideTransloco } from '@jsverse/transloco';
 
 import { routes } from './app.routes';
+import { AuthGateway, FirebaseAuthGateway } from './core/auth/auth.gateway';
 import { TranslocoHttpLoader } from './core/i18n/transloco-loader';
 import { IndexedDbUserDataRepository, UserDataRepository } from './core/user-data-repository';
 
@@ -29,6 +30,7 @@ export const appConfig: ApplicationConfig = {
       },
       loader: TranslocoHttpLoader,
     }),
+    { provide: AuthGateway, useExisting: FirebaseAuthGateway },
     { provide: UserDataRepository, useClass: IndexedDbUserDataRepository },
     {
       provide: MAT_ICON_DEFAULT_OPTIONS,

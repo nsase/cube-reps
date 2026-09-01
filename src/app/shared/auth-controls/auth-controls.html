@@ -1,0 +1,42 @@
+<div class="auth-controls">
+  @if (auth.initializing()) {
+    <span class="auth-status" role="status">{{ 'auth.checking' | transloco }}</span>
+  } @else if (auth.user(); as user) {
+    <div class="account" data-testid="authenticated-account">
+      @if (user.photoURL) {
+        <img [src]="user.photoURL" alt="" referrerpolicy="no-referrer" />
+      } @else {
+        <mat-icon aria-hidden="true">account_circle</mat-icon>
+      }
+      <span>
+        <strong>{{ user.displayName || user.email }}</strong>
+        @if (user.displayName && user.email) {
+          <small>{{ user.email }}</small>
+        }
+      </span>
+    </div>
+    <button
+      mat-icon-button
+      type="button"
+      [disabled]="auth.pending()"
+      [attr.aria-label]="'auth.signOut' | transloco"
+      (click)="signOut()"
+    >
+      <mat-icon>logout</mat-icon>
+    </button>
+  } @else {
+    <button
+      mat-button
+      type="button"
+      data-testid="google-sign-in"
+      [disabled]="auth.pending()"
+      (click)="signIn()"
+    >
+      <mat-icon>login</mat-icon>
+      {{ (auth.pending() ? 'auth.signingIn' : 'auth.signIn') | transloco }}
+    </button>
+  }
+</div>
+@if (auth.failed()) {
+  <p class="auth-error" role="alert">{{ 'auth.failed' | transloco }}</p>
+}
