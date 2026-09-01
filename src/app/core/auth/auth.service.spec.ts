@@ -94,6 +94,14 @@ describe('AuthService', () => {
     expect(service.user()).toBeNull();
   });
 
+  it('Gatewayが通常キャンセルとして完了した場合は認証失敗を表示しない', async () => {
+    await service.signIn();
+
+    expect(service.pending()).toBe(false);
+    expect(service.failed()).toBe(false);
+    expect(service.user()).toBeNull();
+  });
+
   it('ログアウト操作をGatewayへ委譲する', async () => {
     const signOut = vi.fn(async () => undefined);
     gateway.signOutResult = signOut;
