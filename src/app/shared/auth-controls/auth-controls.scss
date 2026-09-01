@@ -1,0 +1,58 @@
+:host {
+  display: grid;
+  justify-items: end;
+  min-width: 0;
+}
+
+.auth-controls,
+.account {
+  display: flex;
+  align-items: center;
+}
+
+.auth-controls {
+  gap: 6px;
+  min-width: 0;
+}
+
+.auth-status,
+.auth-error,
+.account small {
+  font-size: var(--font-size-small);
+}
+
+.account {
+  gap: 8px;
+  min-width: 0;
+
+  img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+  }
+
+  > span {
+    display: grid;
+    min-width: 0;
+    max-width: 190px;
+  }
+
+  strong,
+  small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.auth-error {
+  color: var(--danger-color);
+  margin: 2px 0 0;
+}
+
+@media (max-width: 620px) {
+  .account > span,
+  .auth-status {
+    display: none;
+  }
+}

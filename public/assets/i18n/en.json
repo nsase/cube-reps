@@ -6,6 +6,13 @@
     "updateNow": "Update now",
     "dismissUpdate": "Dismiss update notification"
   },
+  "auth": {
+    "checking": "Checking sign-in…",
+    "signIn": "Sign in with Google",
+    "signingIn": "Signing in…",
+    "signOut": "Sign out",
+    "failed": "Authentication failed. Please try again."
+  },
   "routes": {
     "timer": "PRACTICE SESSION",
     "algorithms": "ALGORITHM LIBRARY",

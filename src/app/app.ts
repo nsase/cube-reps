@@ -5,11 +5,12 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { filter, map } from 'rxjs';
 import { CubeService } from './core/cube';
 import { AppUpdate } from './shared/app-update/app-update';
+import { AuthControls } from './shared/auth-controls/auth-controls';
 
 /** 共通レイアウトとルーターOutletを表示するルートコンポーネント。 */
 @Component({
   selector: 'app-root',
-  imports: [AppUpdate, RouterLink, RouterLinkActive, RouterOutlet, TranslocoPipe],
+  imports: [AppUpdate, AuthControls, RouterLink, RouterLinkActive, RouterOutlet, TranslocoPipe],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
