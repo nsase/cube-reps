@@ -249,6 +249,9 @@ describe('App', () => {
     await fixture.whenStable();
 
     expect(fixture.nativeElement.querySelector('nav a em')?.textContent).toContain('タイマー');
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="google-sign-in"]')?.textContent,
+    ).toContain('Googleでログイン');
     expect(fixture.nativeElement.querySelector('app-timer-settings strong')?.textContent).toContain(
       '未分類',
     );
