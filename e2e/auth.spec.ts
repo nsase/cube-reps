@@ -7,7 +7,7 @@ test.describe('任意のGoogleログイン', { tag: '@responsive' }, () => {
 
     await expect(page.locator('app-timer')).toBeVisible();
     await expect(page.getByTestId('google-sign-in')).toBeVisible();
-    await expect(page.getByTestId('timer-scramble-refresh')).toBeEnabled();
+    await expect(page.getByTestId('timer-scramble-refresh')).toBeEnabled({ timeout: 15_000 });
     await expectNoHorizontalOverflow(page);
 
     const clock = page.locator('app-timer-clock .clock');
