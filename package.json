@@ -9,7 +9,8 @@
     "test": "ng test",
     "test:e2e": "playwright test",
     "start:e2e": "npm run build && http-server dist/cube-reps/browser -p 4300 -c-1",
-    "prettier:format": "prettier --write ."
+    "prettier:format": "prettier --write .",
+    "prepare": "husky"
   },
   "private": true,
   "license": "0BSD",
@@ -37,6 +38,7 @@
     "@playwright/test": "^1.62.1",
     "fake-indexeddb": "^6.2.5",
     "http-server": "^14.1.1",
+    "husky": "^9.1.7",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2",
