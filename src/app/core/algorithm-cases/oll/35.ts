@@ -6,8 +6,5 @@ export const OLL_35_CASE = defineOllCase({
   names: ['Fish Salad'],
   group: 'Fish Shape',
   setup: "R U2 R' F R' F' R2 U2 R'",
-  algorithms: [
-    { id: '20b7426b-0d33-43bd-8aba-a54fb1cfdc35', notation: "R U2 R' R' F R F' R U2 R'" },
-    { id: 'b243d251-3806-4a7e-affe-2a3dce47b30f', notation: "R U2 R2 F R F' R U2 R'" },
-  ],
+  algorithms: [{ id: 'b243d251-3806-4a7e-affe-2a3dce47b30f', notation: "R U2 R2 F R F' R U2 R'" }],
 });
