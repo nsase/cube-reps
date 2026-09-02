@@ -13,16 +13,24 @@ export type SolveMigrationPhase =
 export interface SolveMigrationState {
   /** 現在の処理段階。 */
   readonly phase: SolveMigrationPhase;
-  /** 端末に保持されているSolve総数。 */
+  /** 端末に保持されている移行対象Solve数。 */
   readonly localCount: number;
-  /** クラウドへの書き込みが必要なSolve数。 */
+  /** 現在の移行対象Solve数。 */
   readonly targetCount: number;
-  /** 今回の操作で書き込みを確認できたSolve数。 */
+  /** 今回の操作で処理を確認できたSolve数。 */
   readonly uploadedCount: number;
-  /** 同一内容またはクラウド優先により書き込まないSolve数。 */
+  /** 更新日時の比較によりFirestoreへ書き込まないSolve数。 */
   readonly skippedCount: number;
-  /** 書き込みに失敗し、再試行できるSolve数。 */
+  /** 処理に失敗し、再試行できるSolve数。 */
   readonly failedCount: number;
+}
+
+/** 1件のローカルSolveに必要な初回移行操作。 */
+interface MigrationCandidate {
+  /** 移行判断時点のゲスト所有Solve。 */
+  readonly solve: Solve;
+  /** Firestoreへの書き込みが必要か。 */
+  readonly upload: boolean;
 }
 
 const INITIAL_STATE: SolveMigrationState = {
@@ -43,23 +51,40 @@ export class SolveMigrationService {
   private readonly cube = inject(CubeService);
   /** アカウント別のFirestore Solveを読み書きするRepository。 */
   private readonly cloud = inject(FirestoreSolveRepository);
+  /** 最後に確認したログインアカウントのFirestore Solve。未確認時はnull。 */
+  private readonly cloudById = signal<ReadonlyMap<string, Solve> | null>(null);
+  /** 直前の操作で失敗し、同じ内容で再試行する候補。 */
+  private readonly failedCandidates = signal<readonly MigrationCandidate[]>([]);
+  /** Cloudスナップショットと現在のguest Solveから常に再計算する移行候補。 */
+  private readonly migrationCandidates = computed<readonly MigrationCandidate[]>(() => {
+    const cloudById = this.cloudById();
+    if (!cloudById) return [];
+    return this.cube.guestSolves().map((solve) => ({
+      solve,
+      upload: this.shouldUpload(solve, cloudById.get(solve.id)),
+    }));
+  });
+  /** 現在もguest所有かつ未変更で、再試行可能な失敗候補。 */
+  private readonly retryCandidates = computed(() =>
+    this.failedCandidates().filter(({ solve }) => this.cube.isCurrentGuestSolve(solve)),
+  );
+
   /** 画面に表示する移行状態。 */
   readonly state = signal<SolveMigrationState>(INITIAL_STATE);
   /** 確認対象となるログインアカウント。 */
   readonly account = signal<AuthenticatedUser | null>(null);
   /** ログイン中かつ端末データの確認結果を表示すべきか。 */
   readonly visible = computed(() => this.state().phase !== 'hidden');
-  /** 現在アップロード対象または再試行対象のSolve。 */
-  private pendingSolves: Array<{ readonly solve: Solve; readonly upload: boolean }> = [];
   /** 古いアカウント向けの非同期結果を破棄するための連番。 */
   private inspectionId = 0;
 
-  /** 認証アカウントが変わるたびに、書き込みを行わず移行対象を再確認する。 */
+  /** 認証アカウントが変わるたびに、書き込みを行わずCloud状態を再確認する。 */
   private readonly inspectOnAccountChange = effect(() => {
     const user = this.auth.user();
     const inspectionId = ++this.inspectionId;
     this.account.set(user);
-    this.pendingSolves = [];
+    this.cloudById.set(null);
+    this.failedCandidates.set([]);
     if (!user) {
       this.state.set(INITIAL_STATE);
       return;
@@ -67,7 +92,56 @@ export class SolveMigrationService {
     void this.inspect(user, inspectionId);
   });
 
-  /** 現在のアカウントと端末Solveを再取得して移行候補を更新する。 */
+  /** 移行前のguest Solve変更を候補件数と画面表示へ即時反映する。 */
+  private readonly reflectCandidateChanges = effect(() => {
+    const user = this.account();
+    const cloudById = this.cloudById();
+    const candidates = this.migrationCandidates();
+    const retryCandidates = this.retryCandidates();
+    const current = this.state();
+    if (!user || !cloudById || this.auth.user()?.uid !== user.uid) return;
+    if (current.phase === 'migrating' || current.phase === 'completed') return;
+
+    if (current.phase === 'partial-failure') {
+      if (retryCandidates.length === 0) {
+        this.state.set({ ...current, phase: 'completed', failedCount: 0 });
+      } else if (
+        current.failedCount !== retryCandidates.length ||
+        current.targetCount !== retryCandidates.length
+      ) {
+        this.state.set({
+          ...current,
+          targetCount: retryCandidates.length,
+          failedCount: retryCandidates.length,
+        });
+      }
+      return;
+    }
+
+    const next: SolveMigrationState =
+      candidates.length === 0
+        ? INITIAL_STATE
+        : {
+            phase: 'ready',
+            localCount: candidates.length,
+            targetCount: candidates.length,
+            uploadedCount: 0,
+            skippedCount: candidates.filter(({ upload }) => !upload).length,
+            failedCount: 0,
+          };
+    if (
+      current.phase !== next.phase ||
+      current.localCount !== next.localCount ||
+      current.targetCount !== next.targetCount ||
+      current.uploadedCount !== next.uploadedCount ||
+      current.skippedCount !== next.skippedCount ||
+      current.failedCount !== next.failedCount
+    ) {
+      this.state.set(next);
+    }
+  });
+
+  /** 現在のアカウントとFirestore Solveを再取得して移行候補を更新する。 */
   retryInspection(): void {
     const user = this.auth.user();
     if (!user) return;
@@ -75,24 +149,28 @@ export class SolveMigrationService {
     void this.inspect(user, inspectionId);
   }
 
-  /** 明示的に確認された候補だけを、アカウント変更を監視しながら順番に保存する。 */
+  /** 明示的に確認された開始時点の候補だけを、アカウント変更を監視しながら順番に処理する。 */
   async migrate(): Promise<void> {
     const user = this.account();
+    const phase = this.state().phase;
+    const candidates =
+      phase === 'partial-failure' ? this.retryCandidates() : this.migrationCandidates();
     if (
       !user ||
       this.auth.user()?.uid !== user.uid ||
-      this.pendingSolves.length === 0 ||
-      !['ready', 'partial-failure'].includes(this.state().phase)
+      candidates.length === 0 ||
+      !['ready', 'partial-failure'].includes(phase)
     )
       return;
-    const candidates = [...this.pendingSolves];
-    const base = {
+
+    const base: SolveMigrationState = {
       ...this.state(),
+      localCount: candidates.length,
       targetCount: candidates.length,
       skippedCount: candidates.filter(({ upload }) => !upload).length,
     };
     this.state.set({ ...base, phase: 'migrating', uploadedCount: 0, failedCount: 0 });
-    const failed: Array<{ readonly solve: Solve; readonly upload: boolean }> = [];
+    const failed: MigrationCandidate[] = [];
     let uploadedCount = 0;
 
     for (const [index, candidate] of candidates.entries()) {
@@ -102,12 +180,10 @@ export class SolveMigrationService {
         break;
       }
       try {
-        if (!this.cube.isCurrentGuestSolve(solve)) {
-          uploadedCount++;
-          continue;
+        if (this.cube.isCurrentGuestSolve(solve)) {
+          if (upload) await this.cloud.put(user.uid, solve);
+          await this.cube.assignSolveToAccount(solve, user.uid);
         }
-        if (upload) await this.cloud.put(user.uid, solve);
-        await this.cube.assignSolveToAccount(solve, user.uid);
         uploadedCount++;
       } catch {
         failed.push(candidate);
@@ -118,44 +194,43 @@ export class SolveMigrationService {
     }
 
     if (this.auth.user()?.uid !== user.uid || this.account()?.uid !== user.uid) return;
-    this.pendingSolves = failed;
-    this.state.set({
-      ...base,
-      phase: failed.length === 0 ? 'completed' : 'partial-failure',
-      uploadedCount,
-      failedCount: failed.length,
-    });
+    this.failedCandidates.set(failed);
+    if (failed.length > 0) {
+      this.state.set({
+        ...base,
+        phase: 'partial-failure',
+        uploadedCount,
+        failedCount: failed.length,
+      });
+      return;
+    }
+
+    const remaining = this.migrationCandidates();
+    this.state.set(
+      remaining.length === 0
+        ? { ...base, phase: 'completed', uploadedCount, failedCount: 0 }
+        : {
+            phase: 'ready',
+            localCount: remaining.length,
+            targetCount: remaining.length,
+            uploadedCount: 0,
+            skippedCount: remaining.filter(({ upload }) => !upload).length,
+            failedCount: 0,
+          },
+    );
   }
 
-  /** ローカルとクラウドをUUID単位で比較し、必要な書き込みだけを候補化する。 */
+  /** Firestore一覧を取得し、現在のguest Solveと組み合わせられるスナップショットとして保持する。 */
   private async inspect(user: AuthenticatedUser, inspectionId: number): Promise<void> {
     this.state.set({ ...INITIAL_STATE, phase: 'checking' });
     try {
       await this.cube.ready;
-      const local = [...this.cube.guestSolves()];
-      if (local.length === 0) {
-        if (inspectionId === this.inspectionId) this.state.set(INITIAL_STATE);
-        return;
-      }
       const cloud = await this.cloud.list(user.uid);
       if (inspectionId !== this.inspectionId || this.auth.user()?.uid !== user.uid) return;
-      const cloudById = new Map(cloud.map((solve) => [solve.id, solve]));
-      this.pendingSolves = local.map((solve) => ({
-        solve,
-        upload: this.shouldUpload(solve, cloudById.get(solve.id)),
-      }));
-      const skippedCount = this.pendingSolves.filter(({ upload }) => !upload).length;
-      this.state.set({
-        phase: 'ready',
-        localCount: local.length,
-        targetCount: this.pendingSolves.length,
-        uploadedCount: 0,
-        skippedCount,
-        failedCount: 0,
-      });
+      this.cloudById.set(new Map(cloud.map((solve) => [solve.id, solve])));
     } catch {
       if (inspectionId !== this.inspectionId) return;
-      this.pendingSolves = [];
+      this.cloudById.set(null);
       this.state.set({ ...INITIAL_STATE, phase: 'check-failure' });
     }
   }

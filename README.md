@@ -48,7 +48,7 @@ Browser storage is separated by browser and installation context. In particular,
 
 Select **Sign in with Google** in the page header to sign in. Signing in is optional: Timer, History, and locally saved algorithms remain available without an account, including while offline after the app has been loaded.
 
-After signing in, CubeReps compares guest-owned local solve IDs with the signed-in account’s Firestore records and shows the destination account and number of records that need uploading. Nothing is uploaded until you select **Upload**. The operation is idempotent by solve UUID, can retry only failed records after an interruption, and keeps the local records and marks successful migrations as owned by that account.
+After signing in, CubeReps compares guest-owned local solve IDs with the signed-in account’s Firestore records and shows the destination account and number of records that need uploading. Nothing is uploaded until you select **Upload**. If guest records are added, edited, or deleted before migration starts, the displayed count and migration candidates update automatically. The operation is idempotent by solve UUID, can retry only failed records after an interruption, and keeps the local records and marks successful migrations as owned by that account.
 
 When the same UUID exists in both places, the newer `updatedAt` value determines the synchronization direction. Equal timestamps are not uploaded automatically, even if the contents differ. Signing in does not continuously synchronize later changes, and signing out leaves local data on the device. The sign-in and sign-out operations themselves require an internet connection.
 
