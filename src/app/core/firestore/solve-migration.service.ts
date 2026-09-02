@@ -160,30 +160,9 @@ export class SolveMigrationService {
     }
   }
 
-  /** @returns クラウドに存在しないか、ローカル側を優先できる場合はtrue */
+  /** @returns クラウドに存在しないか、ローカルの更新日時が新しい場合はtrue */
   private shouldUpload(local: Solve, cloud: Solve | undefined): boolean {
     if (!cloud) return true;
-    if (this.sameSolve(local, cloud)) return false;
-    const timeDifference = Date.parse(local.updatedAt) - Date.parse(cloud.updatedAt);
-    if (timeDifference !== 0) return timeDifference > 0;
-    if (local.schemaVersion !== cloud.schemaVersion)
-      return local.schemaVersion > cloud.schemaVersion;
-    return false;
-  }
-
-  /** 所有者だけを除いたユーザー向けSolve内容が一致するか判定する。 */
-  private sameSolve(left: Solve, right: Solve): boolean {
-    return (
-      left.id === right.id &&
-      left.time === right.time &&
-      left.scramble === right.scramble &&
-      left.date === right.date &&
-      left.updatedAt === right.updatedAt &&
-      left.schemaVersion === right.schemaVersion &&
-      left.category === right.category &&
-      left.caseName === right.caseName &&
-      left.groupId === right.groupId &&
-      left.penalty === right.penalty
-    );
+    return Date.parse(local.updatedAt) > Date.parse(cloud.updatedAt);
   }
 }

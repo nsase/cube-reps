@@ -191,4 +191,38 @@ describe('SolveMigrationService', () => {
     expect(cloud.put).toHaveBeenCalledTimes(1);
     expect(migration.account()?.uid).toBe('account-2');
   });
+  it('内容が同じでもローカルのupdatedAtが新しければアップロードする', async () => {
+    const solve = localSolve();
+    solves.set([solve]);
+    cloud.list.mockResolvedValue([
+      {
+        ...solve,
+        updatedAt: '2026-09-01T10:00:00.000Z',
+        ownerType: 'account',
+        ownerId: account.uid,
+      },
+    ]);
+    const migration = TestBed.inject(SolveMigrationService);
+    user.set(account);
+    TestBed.flushEffects();
+    await vi.waitFor(() => expect(migration.state().phase).toBe('ready'));
+
+    await migration.migrate();
+    expect(cloud.put).toHaveBeenCalledWith(account.uid, solve);
+  });
+
+  it('updatedAtが同じなら内容が違っても自動アップロードしない', async () => {
+    const solve = localSolve();
+    solves.set([solve]);
+    cloud.list.mockResolvedValue([
+      { ...solve, penalty: '+2', ownerType: 'account', ownerId: account.uid },
+    ]);
+    const migration = TestBed.inject(SolveMigrationService);
+    user.set(account);
+    TestBed.flushEffects();
+    await vi.waitFor(() => expect(migration.state().phase).toBe('ready'));
+
+    await migration.migrate();
+    expect(cloud.put).not.toHaveBeenCalled();
+  });
 });
