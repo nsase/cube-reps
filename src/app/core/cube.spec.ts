@@ -27,6 +27,27 @@ describe('CubeService record statistics', () => {
     };
   }
 
+  it('移行を確認したguest Solveを内容を保ったままaccount所有として永続化する', async () => {
+    const cube = TestBed.inject(CubeService);
+    const repository = TestBed.inject(UserDataRepository);
+    await cube.ready;
+    const migrated = cube.addSolve(12345, 'R U', 'full');
+    await cube.assignSolveToAccount(migrated, 'account-1');
+
+    expect(cube.guestSolves()).toHaveLength(0);
+    expect(cube.solves()[0]).toMatchObject({
+      id: migrated.id,
+      time: migrated.time,
+      ownerType: 'account',
+      ownerId: 'account-1',
+    });
+    expect((await repository.load()).solves).toContainEqual({
+      ...migrated,
+      ownerType: 'account',
+      ownerId: 'account-1',
+    });
+  });
+
   it('現在のカテゴリーに属する記録件数を返す', () => {
     const cube = TestBed.inject(CubeService);
     const other = cube.addGroup('別カテゴリー')!;

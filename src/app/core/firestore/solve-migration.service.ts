@@ -50,7 +50,7 @@ export class SolveMigrationService {
   /** ログイン中かつ端末データの確認結果を表示すべきか。 */
   readonly visible = computed(() => this.state().phase !== 'hidden');
   /** 現在アップロード対象または再試行対象のSolve。 */
-  private pendingSolves: Solve[] = [];
+  private pendingSolves: Array<{ readonly solve: Solve; readonly upload: boolean }> = [];
   /** 古いアカウント向けの非同期結果を破棄するための連番。 */
   private inspectionId = 0;
 
@@ -86,21 +86,31 @@ export class SolveMigrationService {
     )
       return;
     const candidates = [...this.pendingSolves];
-    const base = this.state();
+    const base = {
+      ...this.state(),
+      targetCount: candidates.length,
+      skippedCount: candidates.filter(({ upload }) => !upload).length,
+    };
     this.state.set({ ...base, phase: 'migrating', uploadedCount: 0, failedCount: 0 });
-    const failed: Solve[] = [];
+    const failed: Array<{ readonly solve: Solve; readonly upload: boolean }> = [];
     let uploadedCount = 0;
 
-    for (const [index, solve] of candidates.entries()) {
+    for (const [index, candidate] of candidates.entries()) {
+      const { solve, upload } = candidate;
       if (this.auth.user()?.uid !== user.uid) {
         failed.push(...candidates.slice(index));
         break;
       }
       try {
-        await this.cloud.put(user.uid, solve);
+        if (!this.cube.isCurrentGuestSolve(solve)) {
+          uploadedCount++;
+          continue;
+        }
+        if (upload) await this.cloud.put(user.uid, solve);
+        await this.cube.assignSolveToAccount(solve, user.uid);
         uploadedCount++;
       } catch {
-        failed.push(solve);
+        failed.push(candidate);
       }
       if (this.auth.user()?.uid === user.uid) {
         this.state.set({ ...base, phase: 'migrating', uploadedCount, failedCount: failed.length });
@@ -122,7 +132,7 @@ export class SolveMigrationService {
     this.state.set({ ...INITIAL_STATE, phase: 'checking' });
     try {
       await this.cube.ready;
-      const local = [...this.cube.solves()];
+      const local = [...this.cube.guestSolves()];
       if (local.length === 0) {
         if (inspectionId === this.inspectionId) this.state.set(INITIAL_STATE);
         return;
@@ -130,12 +140,13 @@ export class SolveMigrationService {
       const cloud = await this.cloud.list(user.uid);
       if (inspectionId !== this.inspectionId || this.auth.user()?.uid !== user.uid) return;
       const cloudById = new Map(cloud.map((solve) => [solve.id, solve]));
-      this.pendingSolves = local.filter((solve) =>
-        this.shouldUpload(solve, cloudById.get(solve.id)),
-      );
-      const skippedCount = local.length - this.pendingSolves.length;
+      this.pendingSolves = local.map((solve) => ({
+        solve,
+        upload: this.shouldUpload(solve, cloudById.get(solve.id)),
+      }));
+      const skippedCount = this.pendingSolves.filter(({ upload }) => !upload).length;
       this.state.set({
-        phase: this.pendingSolves.length === 0 ? 'completed' : 'ready',
+        phase: 'ready',
         localCount: local.length,
         targetCount: this.pendingSolves.length,
         uploadedCount: 0,
