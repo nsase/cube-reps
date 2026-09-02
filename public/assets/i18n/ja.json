@@ -41,10 +41,10 @@
   "migration": {
     "checking": "端末とクラウドの計測記録を確認しています…",
     "title": "計測記録をクラウドへ保存",
-    "ready": "端末内の{{count}}件をアップロードできます。",
+    "ready": "この端末のゲスト記録{{count}}件を移行できます。",
     "destination": "保存先: {{account}}",
     "localRetained": "移行後も端末内の記録は削除されません。",
-    "upload": "{{count}}件をアップロード",
+    "upload": "{{count}}件を移行",
     "migrating": "計測記録をアップロードしています",
     "progress": "{{uploaded}} / {{total}}件を保存しました",
     "completed": "クラウドへの保存を確認しました",

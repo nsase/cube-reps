@@ -41,10 +41,10 @@
   "migration": {
     "checking": "Checking records on this device and in the cloud…",
     "title": "Save solve records to the cloud",
-    "ready": "{{count}} records on this device are ready to upload.",
+    "ready": "{{count}} guest records on this device are ready to migrate.",
     "destination": "Destination: {{account}}",
     "localRetained": "Records on this device will not be deleted after migration.",
-    "upload": "Upload {{count}} records",
+    "upload": "Migrate {{count}} records",
     "migrating": "Uploading solve records",
     "progress": "Saved {{uploaded}} of {{total}} records",
     "completed": "Cloud storage verified",
