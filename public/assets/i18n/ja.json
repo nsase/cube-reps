@@ -46,11 +46,11 @@
     "localRetained": "移行後も端末内の記録は削除されません。",
     "upload": "{{count}}件を移行",
     "migrating": "計測記録をアップロードしています",
-    "progress": "{{uploaded}} / {{total}}件を保存しました",
+    "progress": "{{processed}} / {{total}}件を処理しました",
     "completed": "クラウドへの保存を確認しました",
     "completedDetail": "端末内の{{count}}件はクラウド上にも存在します。",
     "partialFailure": "一部の記録を保存できませんでした",
-    "partialFailureDetail": "{{uploaded}}件を保存し、{{failed}}件は未保存です。",
+    "partialFailureDetail": "{{processed}}件を処理し、{{failed}}件は未処理です。",
     "retryFailed": "失敗した{{count}}件を再試行",
     "checkFailure": "クラウドの記録を確認できませんでした",
     "checkFailureDetail": "通信状態を確認して再試行してください。"

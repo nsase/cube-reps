@@ -46,11 +46,11 @@
     "localRetained": "Records on this device will not be deleted after migration.",
     "upload": "Migrate {{count}} records",
     "migrating": "Uploading solve records",
-    "progress": "Saved {{uploaded}} of {{total}} records",
+    "progress": "Processed {{processed}} of {{total}} records",
     "completed": "Cloud storage verified",
     "completedDetail": "All {{count}} records on this device also exist in the cloud.",
     "partialFailure": "Some records could not be saved",
-    "partialFailureDetail": "Saved {{uploaded}} records; {{failed}} remain unsaved.",
+    "partialFailureDetail": "Processed {{processed}} records; {{failed}} remain unprocessed.",
     "retryFailed": "Retry {{count}} failed records",
     "checkFailure": "Could not check cloud records",
     "checkFailureDetail": "Check your connection and try again."

@@ -18,7 +18,7 @@ export interface SolveMigrationState {
   /** 現在の移行対象Solve数。 */
   readonly targetCount: number;
   /** 今回の操作で処理を確認できたSolve数。 */
-  readonly uploadedCount: number;
+  readonly processedCount: number;
   /** 更新日時の比較によりFirestoreへ書き込まないSolve数。 */
   readonly skippedCount: number;
   /** 処理に失敗し、再試行できるSolve数。 */
@@ -37,7 +37,7 @@ const INITIAL_STATE: SolveMigrationState = {
   phase: 'hidden',
   localCount: 0,
   targetCount: 0,
-  uploadedCount: 0,
+  processedCount: 0,
   skippedCount: 0,
   failedCount: 0,
 };
@@ -65,9 +65,12 @@ export class SolveMigrationService {
     }));
   });
   /** 現在もguest所有かつ未変更で、再試行可能な失敗候補。 */
-  private readonly retryCandidates = computed(() =>
-    this.failedCandidates().filter(({ solve }) => this.cube.isCurrentGuestSolve(solve)),
-  );
+  private readonly retryCandidates = computed(() => {
+    const solves = this.cube.guestSolves();
+    return this.failedCandidates().filter(({ solve }) =>
+      this.cube.isCurrentGuestSolveIn(solves, solve),
+    );
+  });
 
   /** 画面に表示する移行状態。 */
   readonly state = signal<SolveMigrationState>(INITIAL_STATE);
@@ -125,7 +128,7 @@ export class SolveMigrationService {
             phase: 'ready',
             localCount: candidates.length,
             targetCount: candidates.length,
-            uploadedCount: 0,
+            processedCount: 0,
             skippedCount: candidates.filter(({ upload }) => !upload).length,
             failedCount: 0,
           };
@@ -133,7 +136,7 @@ export class SolveMigrationService {
       current.phase !== next.phase ||
       current.localCount !== next.localCount ||
       current.targetCount !== next.targetCount ||
-      current.uploadedCount !== next.uploadedCount ||
+      current.processedCount !== next.processedCount ||
       current.skippedCount !== next.skippedCount ||
       current.failedCount !== next.failedCount
     ) {
@@ -169,9 +172,9 @@ export class SolveMigrationService {
       targetCount: candidates.length,
       skippedCount: candidates.filter(({ upload }) => !upload).length,
     };
-    this.state.set({ ...base, phase: 'migrating', uploadedCount: 0, failedCount: 0 });
+    this.state.set({ ...base, phase: 'migrating', processedCount: 0, failedCount: 0 });
     const failed: MigrationCandidate[] = [];
-    let uploadedCount = 0;
+    let processedCount = 0;
 
     for (const [index, candidate] of candidates.entries()) {
       const { solve, upload } = candidate;
@@ -184,12 +187,13 @@ export class SolveMigrationService {
           if (upload) await this.cloud.put(user.uid, solve);
           await this.cube.assignSolveToAccount(solve, user.uid);
         }
-        uploadedCount++;
       } catch {
         failed.push(candidate);
+      } finally {
+        processedCount++;
       }
       if (this.auth.user()?.uid === user.uid) {
-        this.state.set({ ...base, phase: 'migrating', uploadedCount, failedCount: failed.length });
+        this.state.set({ ...base, phase: 'migrating', processedCount, failedCount: failed.length });
       }
     }
 
@@ -199,7 +203,7 @@ export class SolveMigrationService {
       this.state.set({
         ...base,
         phase: 'partial-failure',
-        uploadedCount,
+        processedCount,
         failedCount: failed.length,
       });
       return;
@@ -208,12 +212,12 @@ export class SolveMigrationService {
     const remaining = this.migrationCandidates();
     this.state.set(
       remaining.length === 0
-        ? { ...base, phase: 'completed', uploadedCount, failedCount: 0 }
+        ? { ...base, phase: 'completed', processedCount, failedCount: 0 }
         : {
             phase: 'ready',
             localCount: remaining.length,
             targetCount: remaining.length,
-            uploadedCount: 0,
+            processedCount: 0,
             skippedCount: remaining.filter(({ upload }) => !upload).length,
             failedCount: 0,
           },
