@@ -225,4 +225,33 @@ describe('SolveMigrationService', () => {
     await migration.migrate();
     expect(cloud.put).not.toHaveBeenCalled();
   });
+  it('移行前の追加・変更・削除を候補へ即時反映し、開始時点のSolveだけを処理する', async () => {
+    const first = localSolve();
+    const removed = localSolve({ id: 'removed' });
+    solves.set([first, removed]);
+    const migration = TestBed.inject(SolveMigrationService);
+    user.set(account);
+    TestBed.flushEffects();
+    await vi.waitFor(() => expect(migration.state().targetCount).toBe(2));
+
+    const updated = {
+      ...first,
+      penalty: '+2' as const,
+      updatedAt: '2026-09-01T10:02:00.000Z',
+    };
+    const added = localSolve({ id: 'added' });
+    solves.set([updated, added]);
+    TestBed.flushEffects();
+    await vi.waitFor(() => expect(migration.state().targetCount).toBe(2));
+
+    await migration.migrate();
+
+    expect(cloud.put).toHaveBeenCalledTimes(2);
+    expect(cloud.put).toHaveBeenCalledWith(account.uid, updated);
+    expect(cloud.put).toHaveBeenCalledWith(account.uid, added);
+    expect(cloud.put).not.toHaveBeenCalledWith(
+      account.uid,
+      expect.objectContaining({ id: 'removed' }),
+    );
+  });
 });
