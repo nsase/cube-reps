@@ -50,7 +50,7 @@ Select **Sign in with Google** in the page header to sign in. Signing in is opti
 
 After signing in, CubeReps compares guest-owned local solve IDs with the signed-in account’s Firestore records and shows the destination account and number of records that need uploading. Nothing is uploaded until you select **Upload**. The operation is idempotent by solve UUID, can retry only failed records after an interruption, and keeps the local records and marks successful migrations as owned by that account.
 
-When the same UUID exists in both places with different contents, the newer `updatedAt` value wins; a higher schema version breaks timestamp ties, and the cloud copy is preserved if the conflict is still tied. Signing in does not continuously synchronize later changes, and signing out leaves local data on the device. The sign-in and sign-out operations themselves require an internet connection.
+When the same UUID exists in both places, the newer `updatedAt` value determines the synchronization direction. Equal timestamps are not uploaded automatically, even if the contents differ. Signing in does not continuously synchronize later changes, and signing out leaves local data on the device. The sign-in and sign-out operations themselves require an internet connection.
 
 ## Setup
 
