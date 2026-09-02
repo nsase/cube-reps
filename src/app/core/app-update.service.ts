@@ -21,6 +21,8 @@ export class AppUpdateService {
   private readonly updateDismissed = signal(false);
   /** タイマー計測など、操作を妨げてはならない状態で更新通知を抑止するか。 */
   private readonly notificationSuppressed = signal(false);
+  /** タイマー計測など主要操作中でなく、補助通知を表示できるか。 */
+  readonly showNonEssentialNotices = computed(() => !this.notificationSuppressed());
   /** 新版が利用可能で、現在の操作を妨げない場合に更新通知を表示する。 */
   readonly showUpdateNotice = computed(
     () => this.updateAvailable() && !this.updateDismissed() && !this.notificationSuppressed(),

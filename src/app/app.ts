@@ -4,13 +4,23 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { filter, map } from 'rxjs';
 import { CubeService } from './core/cube';
+import { AppUpdateService } from './core/app-update.service';
 import { AppUpdate } from './shared/app-update/app-update';
 import { AuthControls } from './shared/auth-controls/auth-controls';
+import { SolveMigration } from './shared/solve-migration/solve-migration';
 
 /** 共通レイアウトとルーターOutletを表示するルートコンポーネント。 */
 @Component({
   selector: 'app-root',
-  imports: [AppUpdate, AuthControls, RouterLink, RouterLinkActive, RouterOutlet, TranslocoPipe],
+  imports: [
+    AppUpdate,
+    AuthControls,
+    SolveMigration,
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+    TranslocoPipe,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +28,8 @@ import { AuthControls } from './shared/auth-controls/auth-controls';
 export class App {
   /** ヘッダーで計測件数を表示するキューブ状態サービス。 */
   protected readonly cube = inject(CubeService);
+  /** タイマー計測中に補助通知を隠すための共通表示状態。 */
+  protected readonly appUpdates = inject(AppUpdateService);
   /** 現在のルートとナビゲーションイベントを提供するサービス。 */
   private readonly router = inject(Router);
   /** 翻訳辞書と言語変更を管理するサービス。 */
