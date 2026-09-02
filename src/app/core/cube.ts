@@ -217,19 +217,30 @@ export class CubeService {
   }
 
   /**
-   * 指定Solveが現在もこの端末のゲスト所有で、移行時から更新されていないか判定する。
+   * 指定Solve一覧に、現在の端末ゲストが所有する未変更の移行対象があるか判定する。
    *
+   * @param solves 判定対象のSolve一覧
    * @param migratedSolve クラウドとの比較に使用したSolve
    * @returns 同じ内容を現在のゲストデータとして移行できる場合はtrue
    */
-  isCurrentGuestSolve(migratedSolve: Solve): boolean {
-    const current = this.solves().find(({ id }) => id === migratedSolve.id);
+  isCurrentGuestSolveIn(solves: readonly Solve[], migratedSolve: Solve): boolean {
+    const current = solves.find(({ id }) => id === migratedSolve.id);
     return Boolean(
       current &&
       current.ownerType === 'guest' &&
       current.ownerId === this.guestOwnerId() &&
       current.updatedAt === migratedSolve.updatedAt,
     );
+  }
+
+  /**
+   * 指定Solveが現在もこの端末のゲスト所有で、移行時から更新されていないか判定する。
+   *
+   * @param migratedSolve クラウドとの比較に使用したSolve
+   * @returns 同じ内容を現在のゲストデータとして移行できる場合はtrue
+   */
+  isCurrentGuestSolve(migratedSolve: Solve): boolean {
+    return this.isCurrentGuestSolveIn(this.solves(), migratedSolve);
   }
 
   /**

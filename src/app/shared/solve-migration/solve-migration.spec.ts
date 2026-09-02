@@ -11,7 +11,7 @@ describe('SolveMigration', () => {
     phase: 'ready',
     localCount: 3,
     targetCount: 2,
-    uploadedCount: 0,
+    processedCount: 0,
     skippedCount: 1,
     failedCount: 0,
   });
@@ -31,7 +31,7 @@ describe('SolveMigration', () => {
       phase: 'ready',
       localCount: 3,
       targetCount: 2,
-      uploadedCount: 0,
+      processedCount: 0,
       skippedCount: 1,
       failedCount: 0,
     });
@@ -68,7 +68,7 @@ describe('SolveMigration', () => {
       phase: 'partial-failure',
       localCount: 3,
       targetCount: 3,
-      uploadedCount: 2,
+      processedCount: 2,
       skippedCount: 0,
       failedCount: 1,
     });

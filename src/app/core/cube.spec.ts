@@ -48,6 +48,25 @@ describe('CubeService record statistics', () => {
     });
   });
 
+  it('指定一覧に同じ端末guestの未変更Solveがある場合だけ移行可能と判定する', () => {
+    const cube = TestBed.inject(CubeService);
+    const current = cube.addSolve(12345, 'R U', 'full');
+
+    expect(cube.isCurrentGuestSolveIn([current], current)).toBe(true);
+    expect(
+      cube.isCurrentGuestSolveIn(
+        [current],
+        { ...current, updatedAt: new Date(Date.parse(current.updatedAt) + 1).toISOString() },
+      ),
+    ).toBe(false);
+    expect(
+      cube.isCurrentGuestSolveIn(
+        [{ ...current, ownerType: 'account', ownerId: 'account-1' }],
+        current,
+      ),
+    ).toBe(false);
+  });
+
   it('現在のカテゴリーに属する記録件数を返す', () => {
     const cube = TestBed.inject(CubeService);
     const other = cube.addGroup('別カテゴリー')!;

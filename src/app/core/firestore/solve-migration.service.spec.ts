@@ -59,6 +59,14 @@ describe('SolveMigrationService', () => {
               solves().filter(
                 (solve) => solve.ownerType === 'guest' && solve.ownerId === 'guest-1',
               ),
+            isCurrentGuestSolveIn: (currentSolves: readonly Solve[], solve: Solve) =>
+              currentSolves.some(
+                (item) =>
+                  item.id === solve.id &&
+                  item.ownerType === 'guest' &&
+                  item.ownerId === 'guest-1' &&
+                  item.updatedAt === solve.updatedAt,
+              ),
             isCurrentGuestSolve: (solve: Solve) =>
               solves().some(
                 (item) =>
@@ -158,7 +166,7 @@ describe('SolveMigrationService', () => {
     await migration.migrate();
     expect(migration.state()).toMatchObject({
       phase: 'partial-failure',
-      uploadedCount: 1,
+      processedCount: 2,
       failedCount: 1,
     });
 

@@ -31,7 +31,7 @@
               'migration.progress'
                 | transloco
                   : {
-                      uploaded: migration.state().uploadedCount,
+                      processed: migration.state().processedCount,
                       total: migration.state().targetCount,
                     }
             }}
@@ -41,7 +41,7 @@
           mode="determinate"
           [value]="
             migration.state().targetCount
-              ? (migration.state().uploadedCount / migration.state().targetCount) * 100
+              ? (migration.state().processedCount / migration.state().targetCount) * 100
               : 0
           "
         />
@@ -63,7 +63,7 @@
               'migration.partialFailureDetail'
                 | transloco
                   : {
-                      uploaded: migration.state().uploadedCount,
+                      processed: migration.state().processedCount,
                       failed: migration.state().failedCount,
                     }
             }}
