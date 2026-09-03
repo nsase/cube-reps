@@ -341,10 +341,12 @@ export class CubeService {
     if (changedSolves.length === 0) return;
 
     const currentIds = new Set(currentSolves.map(({ id }) => id));
-    this.storedSolves.set([
-      ...currentSolves.map((solve) => mergedById.get(solve.id) as Solve),
-      ...changedSolves.filter(({ id }) => !currentIds.has(id)),
-    ]);
+    this.storedSolves.set(
+      [
+        ...currentSolves.map((solve) => mergedById.get(solve.id) as Solve),
+        ...changedSolves.filter(({ id }) => !currentIds.has(id)),
+      ].sort((left, right) => right.date.localeCompare(left.date)),
+    );
     await Promise.all(changedSolves.map((solve) => this.userDataRepository.putSolve(solve)));
   }
 

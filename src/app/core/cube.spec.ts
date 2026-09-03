@@ -346,7 +346,27 @@ describe('CubeService record statistics', () => {
     await cube.mergeAccountSolves('account-1', [first, second]);
 
     expect(setSolves).toHaveBeenCalledTimes(1);
-    expect(cube.storedSolves()).toEqual([first, second]);
+    expect(cube.storedSolves()).toEqual([second, first]);
+  });
+
+  it('別端末で追加された最新Solveを計測日時順の先頭へ取り込む', async () => {
+    const cube = TestBed.inject(CubeService);
+    await cube.ready;
+    const local = {
+      ...solve(30, 1000),
+      ownerType: 'account' as const,
+      ownerId: 'account-1',
+    };
+    const remote = {
+      ...solve(31, 2000),
+      ownerType: 'account' as const,
+      ownerId: 'account-1',
+    };
+    cube.storedSolves.set([local]);
+
+    await cube.mergeAccountSolves('account-1', [remote]);
+
+    expect(cube.storedSolves().map(({ id }) => id)).toEqual([remote.id, local.id]);
   });
 
   it('ローカルに存在しないFirestoreのtombstoneを保存しない', async () => {
