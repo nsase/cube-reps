@@ -328,20 +328,65 @@ export class CubeService {
    * @param remoteSolves Firestoreから受信した全Solve
    */
   async mergeAccountSolves(accountId: string, remoteSolves: readonly Solve[]): Promise<void> {
+    const currentSolves = this.storedSolves();
+    const mergedById = new Map(currentSolves.map((solve) => [solve.id, solve]));
+    const changedSolves: Solve[] = [];
     for (const remote of remoteSolves) {
       if (remote.ownerType !== 'account' || remote.ownerId !== accountId) continue;
-      const local = this.storedSolves().find(({ id }) => id === remote.id);
-      const remoteWins =
-        !local ||
-        Boolean(remote.deletedAt) ||
-        (!local.deletedAt && Date.parse(remote.updatedAt) >= Date.parse(local.updatedAt));
-      if (!remoteWins) continue;
-      this.storedSolves.update((solves) => [
-        ...solves.filter(({ id }) => id !== remote.id),
-        remote,
-      ]);
-      await this.userDataRepository.putSolve(remote);
+      const local = mergedById.get(remote.id);
+      if (!this.remoteSolveWins(local, remote) || (local && this.sameSolve(local, remote)))
+        continue;
+      mergedById.set(remote.id, remote);
+      changedSolves.push(remote);
     }
+    if (changedSolves.length === 0) return;
+
+    const currentIds = new Set(currentSolves.map(({ id }) => id));
+    this.storedSolves.set([
+      ...currentSolves.map((solve) => mergedById.get(solve.id) as Solve),
+      ...changedSolves.filter(({ id }) => !currentIds.has(id)),
+    ]);
+    await Promise.all(changedSolves.map((solve) => this.userDataRepository.putSolve(solve)));
+  }
+
+  /**
+   * ローカルの削除を古い通常更新から守りつつ、リモートを採用すべきか判定する。
+   * tombstone同士は更新日時で比較し、同一削除を通知のたびに再適用しない。
+   *
+   * @param local 同じIDで端末に保存されているSolve
+   * @param remote Firestoreから受信したSolve
+   * @returns リモートをマージ候補にする場合はtrue
+   */
+  private remoteSolveWins(local: Solve | undefined, remote: Solve): boolean {
+    if (!local) return true;
+    if (local.deletedAt && !remote.deletedAt) return false;
+    if (remote.deletedAt && !local.deletedAt) return true;
+    return Date.parse(remote.updatedAt) >= Date.parse(local.updatedAt);
+  }
+
+  /**
+   * Firestoreのメタデータ通知で同一Solveを新しい参照へ置換しないため内容を比較する。
+   *
+   * @param left 比較する端末側Solve
+   * @param right 比較するFirestore側Solve
+   * @returns 永続化対象の全フィールドが一致する場合はtrue
+   */
+  private sameSolve(left: Solve, right: Solve): boolean {
+    return (
+      left.id === right.id &&
+      left.time === right.time &&
+      left.scramble === right.scramble &&
+      left.date === right.date &&
+      left.updatedAt === right.updatedAt &&
+      left.ownerType === right.ownerType &&
+      left.ownerId === right.ownerId &&
+      left.schemaVersion === right.schemaVersion &&
+      left.category === right.category &&
+      left.caseName === right.caseName &&
+      left.groupId === right.groupId &&
+      left.penalty === right.penalty &&
+      left.deletedAt === right.deletedAt
+    );
   }
 
   /**
