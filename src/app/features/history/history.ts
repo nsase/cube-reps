@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, Injectable } from '@angular
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { TranslocoService } from '@jsverse/transloco';
+import { SolveSyncService } from '../../core/firestore/solve-sync.service';
 import { HistoryFilter } from './history-filter/history-filter';
 import { HistoryGroupPanel } from './history-group-panel/history-group-panel';
 import { HistoryProgressChart } from './history-progress-chart/history-progress-chart';
@@ -47,4 +48,12 @@ export class HistoryPaginatorIntl extends MatPaginatorIntl {
   styleUrl: './history.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class History {}
+export class History {
+  /** History表示時に現在のアカウントの最新Solveを取り込む同期サービス。 */
+  private readonly sync = inject(SolveSyncService);
+
+  /** 画面を開くたびにクラウドの変更を端末データへ取り込む。 */
+  constructor() {
+    this.sync.refresh();
+  }
+}

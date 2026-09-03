@@ -309,6 +309,108 @@ describe('CubeService record statistics', () => {
     expect(cube.solves()).toHaveLength(0);
   });
 
+  it('同一内容のFirestore通知ではSolve一覧とIndexedDBを更新しない', async () => {
+    const cube = TestBed.inject(CubeService);
+    const repository = TestBed.inject(UserDataRepository);
+    await cube.ready;
+    const accountSolve = {
+      ...solve(10, 1000),
+      ownerType: 'account' as const,
+      ownerId: 'account-1',
+    };
+    cube.storedSolves.set([accountSolve]);
+    const storedReference = cube.storedSolves();
+    const putSolve = vi.spyOn(repository, 'putSolve');
+
+    await cube.mergeAccountSolves('account-1', [{ ...accountSolve }]);
+
+    expect(cube.storedSolves()).toBe(storedReference);
+    expect(putSolve).not.toHaveBeenCalled();
+  });
+
+  it('Firestoreの複数変更をSolve一覧へ一括反映する', async () => {
+    const cube = TestBed.inject(CubeService);
+    await cube.ready;
+    const first = {
+      ...solve(11, 1000),
+      ownerType: 'account' as const,
+      ownerId: 'account-1',
+    };
+    const second = {
+      ...solve(12, 2000),
+      ownerType: 'account' as const,
+      ownerId: 'account-1',
+    };
+    const setSolves = vi.spyOn(cube.storedSolves, 'set');
+
+    await cube.mergeAccountSolves('account-1', [first, second]);
+
+    expect(setSolves).toHaveBeenCalledTimes(1);
+    expect(cube.storedSolves()).toEqual([second, first]);
+  });
+
+  it('別端末で追加された最新Solveを計測日時順の先頭へ取り込む', async () => {
+    const cube = TestBed.inject(CubeService);
+    await cube.ready;
+    const local = {
+      ...solve(30, 1000),
+      ownerType: 'account' as const,
+      ownerId: 'account-1',
+    };
+    const remote = {
+      ...solve(31, 2000),
+      ownerType: 'account' as const,
+      ownerId: 'account-1',
+    };
+    cube.storedSolves.set([local]);
+
+    await cube.mergeAccountSolves('account-1', [remote]);
+
+    expect(cube.storedSolves().map(({ id }) => id)).toEqual([remote.id, local.id]);
+  });
+
+  it('ローカルに存在しないFirestoreのtombstoneを保存しない', async () => {
+    const cube = TestBed.inject(CubeService);
+    const repository = TestBed.inject(UserDataRepository);
+    await cube.ready;
+    const deletedAt = new Date(19).toISOString();
+    const remoteTombstone = {
+      ...solve(19, 1000),
+      updatedAt: deletedAt,
+      deletedAt,
+      ownerType: 'account' as const,
+      ownerId: 'account-1',
+    };
+    const putSolve = vi.spyOn(repository, 'putSolve');
+
+    await cube.mergeAccountSolves('account-1', [remoteTombstone]);
+
+    expect(cube.storedSolves()).toEqual([]);
+    expect(putSolve).not.toHaveBeenCalled();
+  });
+
+  it('同一tombstoneを繰り返し受信しても再適用しない', async () => {
+    const cube = TestBed.inject(CubeService);
+    const repository = TestBed.inject(UserDataRepository);
+    await cube.ready;
+    const deletedAt = new Date(20).toISOString();
+    const tombstone = {
+      ...solve(20, 1000),
+      updatedAt: deletedAt,
+      deletedAt,
+      ownerType: 'account' as const,
+      ownerId: 'account-1',
+    };
+    cube.storedSolves.set([tombstone]);
+    const storedReference = cube.storedSolves();
+    const putSolve = vi.spyOn(repository, 'putSolve');
+
+    await cube.mergeAccountSolves('account-1', [{ ...tombstone }]);
+
+    expect(cube.storedSolves()).toBe(storedReference);
+    expect(putSolve).not.toHaveBeenCalled();
+  });
+
   it('ログアウト時にアカウントSolveを非表示にしゲストSolveだけを残す', async () => {
     const auth = TestBed.inject(AuthService);
     const cube = TestBed.inject(CubeService);

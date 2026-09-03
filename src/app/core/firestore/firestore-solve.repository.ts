@@ -28,43 +28,6 @@ export class FirestoreSolveRepository {
   }
 
   /**
-   * ユーザーのSolve変更をFirestoreのローカルキャッシュを含めて継続購読する。
-   *
-   * @param userId Firebase AuthenticationのUID
-   * @param next 最新スナップショットと書き込み状態を受け取る処理
-   * @param error 購読を継続できない場合の処理
-   * @returns 購読解除処理を解決するPromise
-   */
-  async watch(
-    userId: string,
-    next: (solves: Solve[], pending: boolean, fromCache: boolean) => void,
-    error: () => void,
-  ): Promise<() => void> {
-    const [firestore, { collection, onSnapshot, orderBy, query }] = await Promise.all([
-      this.firestoreClient(),
-      import('firebase/firestore'),
-    ]);
-    return onSnapshot(
-      query(collection(firestore, 'users', userId, 'solves'), orderBy('date', 'desc')),
-      { includeMetadataChanges: true },
-      (snapshot) =>
-        next(
-          snapshot.docs.flatMap((item) => {
-            const solve = fromFirestoreSolve(
-              item.id,
-              item.data({ serverTimestamps: 'estimate' }),
-              userId,
-            );
-            return solve ? [solve] : [];
-          }),
-          snapshot.metadata.hasPendingWrites,
-          snapshot.metadata.fromCache,
-        ),
-      error,
-    );
-  }
-
-  /**
    * アカウント所有Solveを物理削除せずtombstoneへ更新する。
    *
    * @param userId Firebase AuthenticationのUID
