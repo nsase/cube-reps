@@ -3,14 +3,23 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "21"
+    }
+  },
   "runArgs": ["--name", "cube-reps-dev", "--ipc=host"],
   "mounts": ["source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached"],
   "postCreateCommand": "npm ci",
-  "forwardPorts": [4200],
+  "forwardPorts": [4200, 8080],
   "portsAttributes": {
     "4200": {
       "label": "Angular development server",
       "onAutoForward": "openPreview"
+    },
+    "8080": {
+      "label": "Firestore Emulator",
+      "onAutoForward": "silent"
     }
   },
   "customizations": {
