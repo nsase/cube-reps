@@ -36,6 +36,11 @@
         </label>
       </div>
     </header>
+    @defer {
+      @if (appUpdates.showNonEssentialNotices()) {
+        <app-solve-migration />
+      }
+    }
     <div class="route-content">
       <router-outlet />
     </div>

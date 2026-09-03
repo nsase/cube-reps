@@ -29,6 +29,7 @@
     "no": "No",
     "delete": "Delete",
     "add": "Add",
+    "retry": "Retry",
     "best": "Best",
     "mean": "Mean",
     "ao5": "Ao5",
@@ -36,6 +37,23 @@
     "ao50": "Ao50",
     "ao100": "Ao100",
     "recentAverage": "Last 5 average"
+  },
+  "migration": {
+    "checking": "Checking records on this device and in the cloud…",
+    "title": "Save solve records to the cloud",
+    "ready": "{{count}} guest records on this device are ready to migrate.",
+    "destination": "Destination: {{account}}",
+    "localRetained": "Records on this device will not be deleted after migration.",
+    "upload": "Migrate {{count}} records",
+    "migrating": "Uploading solve records",
+    "progress": "Processed {{processed}} of {{total}} records",
+    "completed": "Cloud storage verified",
+    "completedDetail": "All {{count}} records on this device also exist in the cloud.",
+    "partialFailure": "Some records could not be saved",
+    "partialFailureDetail": "Processed {{processed}} records; {{failed}} remain unprocessed.",
+    "retryFailed": "Retry {{count}} failed records",
+    "checkFailure": "Could not check cloud records",
+    "checkFailureDetail": "Check your connection and try again."
   },
   "timer": {
     "recordGroup": "RECORD GROUP",

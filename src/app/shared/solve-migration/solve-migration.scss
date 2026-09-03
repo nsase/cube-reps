@@ -1,0 +1,31 @@
+.migration {
+  width: 100%;
+  max-width: 1120px;
+  margin: -10px auto 24px;
+  padding: 16px 18px;
+  border: 1px solid var(--outline-color);
+  border-left: 4px solid var(--primary-color);
+  border-radius: 8px;
+  background: var(--surface-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.migration p,
+.migration small {
+  margin: 4px 0 0;
+}
+.migration small {
+  display: block;
+  color: var(--text-color);
+}
+mat-progress-bar {
+  flex: 1 1 240px;
+}
+@media (max-width: 620px) {
+  .migration {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

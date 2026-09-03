@@ -23,7 +23,7 @@ CubeReps is a browser-based Rubik's Cube timer and training tool. Solve records 
 - Retry any solve from history with its original scramble, category, and record group
 - History rows with point-in-time Ao5/Ao12 and details for scrambles and cube previews
 - English and Japanese interfaces
-- Optional sign-in with a Google account
+- Optional Google sign-in and a confirmation-based first upload of local solve records
 - Responsive layouts for desktop, tablet, and mobile devices
 
 ## Using the timer
@@ -48,7 +48,9 @@ Browser storage is separated by browser and installation context. In particular,
 
 Select **Sign in with Google** in the page header to sign in. Signing in is optional: Timer, History, and locally saved algorithms remain available without an account, including while offline after the app has been loaded.
 
-This version only establishes the account identity needed for future device synchronization. Signing in does not upload, replace, delete, or synchronize existing local data. Signing out also leaves local data on the device. The sign-in and sign-out operations themselves require an internet connection.
+After signing in, CubeReps compares guest-owned local solve IDs with the signed-in account’s Firestore records and shows the destination account and number of records that need uploading. Nothing is uploaded until you select **Upload**. If guest records are added, edited, or deleted before migration starts, the displayed count and migration candidates update automatically. The operation is idempotent by solve UUID, can retry only failed records after an interruption, and keeps the local records and marks successful migrations as owned by that account.
+
+When the same UUID exists in both places, the newer `updatedAt` value determines the synchronization direction. Equal timestamps are not uploaded automatically, even if the contents differ. Signing in does not continuously synchronize later changes, and signing out leaves local data on the device. The sign-in and sign-out operations themselves require an internet connection.
 
 ## Setup
 
@@ -92,11 +94,9 @@ Existing data previously stored in `localStorage` is migrated automatically when
 - Active record destination
 - Display language
 
-Data is tied to the browser and origin in use. Clearing the site's browser data also deletes CubeReps records. Cloud synchronization and data export are not currently available.
+Data is tied to the browser and origin in use. Clearing the site's browser data also deletes CubeReps records. Continuous cloud synchronization and data export are not currently available.
 
-In preparation for future synchronization, a Firestore data-access foundation can safely CRUD only the signed-in user's `users/{userId}/solves/{solveId}` documents. It is not connected to Timer or History yet, so signing in and normal app operations never automatically upload, modify, or delete local records.
-
-Google sign-in does not change the owner or storage location of existing local records at this stage.
+The initial migration writes only to the signed-in user’s `users/{userId}/solves/{solveId}` documents after explicit confirmation. Repeating or retrying the migration does not duplicate records because the fixed solve UUID is used as the document ID. Local records remain the data used by Timer and History until continuous synchronization is implemented.
 
 ## Technology
 

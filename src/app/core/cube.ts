@@ -36,6 +36,12 @@ export class CubeService {
   );
   /** 新しい順に保持する全計測記録。 */
   readonly solves = signal<Solve[]>([]);
+  /** 現在の端末ゲストが所有し、初回移行の対象になり得る計測記録。 */
+  readonly guestSolves = computed(() =>
+    this.solves().filter(
+      (solve) => solve.ownerType === 'guest' && solve.ownerId === this.guestOwnerId(),
+    ),
+  );
   /** 旧データ移行とIndexedDBからの復元が完了したときに解決するPromise。 */
   readonly ready = this.initializeStorage();
   /** 作成順に保持し、IndexedDBへ保存するユーザー作成グループ。 */
@@ -208,6 +214,50 @@ export class CubeService {
     };
     this.solves.update((solves) => solves.map((solve) => (solve.id === id ? updated : solve)));
     if (this.storageReady()) void this.userDataRepository.putSolve(updated);
+  }
+
+  /**
+   * 指定Solve一覧に、現在の端末ゲストが所有する未変更の移行対象があるか判定する。
+   *
+   * @param solves 判定対象のSolve一覧
+   * @param migratedSolve クラウドとの比較に使用したSolve
+   * @returns 同じ内容を現在のゲストデータとして移行できる場合はtrue
+   */
+  isCurrentGuestSolveIn(solves: readonly Solve[], migratedSolve: Solve): boolean {
+    const current = solves.find(({ id }) => id === migratedSolve.id);
+    return Boolean(
+      current &&
+      current.ownerType === 'guest' &&
+      current.ownerId === this.guestOwnerId() &&
+      current.updatedAt === migratedSolve.updatedAt,
+    );
+  }
+
+  /**
+   * 指定Solveが現在もこの端末のゲスト所有で、移行時から更新されていないか判定する。
+   *
+   * @param migratedSolve クラウドとの比較に使用したSolve
+   * @returns 同じ内容を現在のゲストデータとして移行できる場合はtrue
+   */
+  isCurrentGuestSolve(migratedSolve: Solve): boolean {
+    return this.isCurrentGuestSolveIn(this.solves(), migratedSolve);
+  }
+
+  /**
+   * Firestoreへの保存を確認したSolveを、内容を変えずアカウント所有として永続化する。
+   * 移行中に同じSolveが編集された場合は所有者を変えず、最新内容を再試行できる状態に保つ。
+   *
+   * @param migratedSolve クラウドとの比較と保存に使用したSolve
+   * @param accountId 保存先FirebaseアカウントのUID
+   */
+  async assignSolveToAccount(migratedSolve: Solve, accountId: string): Promise<void> {
+    if (!this.isCurrentGuestSolve(migratedSolve)) {
+      throw new Error('Solve changed during migration');
+    }
+    const current = this.solves().find(({ id }) => id === migratedSolve.id) as Solve;
+    const owned: Solve = { ...current, ownerType: 'account', ownerId: accountId };
+    await this.userDataRepository.putSolve(owned);
+    this.solves.update((solves) => solves.map((solve) => (solve.id === owned.id ? owned : solve)));
   }
 
   /** @param id 削除する計測記録ID */

@@ -29,6 +29,7 @@
     "no": "いいえ",
     "delete": "削除",
     "add": "追加",
+    "retry": "再試行",
     "best": "ベスト",
     "mean": "平均",
     "ao5": "Ao5",
@@ -36,6 +37,23 @@
     "ao50": "Ao50",
     "ao100": "Ao100",
     "recentAverage": "直近5回 平均"
+  },
+  "migration": {
+    "checking": "端末とクラウドの計測記録を確認しています…",
+    "title": "計測記録をクラウドへ保存",
+    "ready": "この端末のゲスト記録{{count}}件を移行できます。",
+    "destination": "保存先: {{account}}",
+    "localRetained": "移行後も端末内の記録は削除されません。",
+    "upload": "{{count}}件を移行",
+    "migrating": "計測記録をアップロードしています",
+    "progress": "{{processed}} / {{total}}件を処理しました",
+    "completed": "クラウドへの保存を確認しました",
+    "completedDetail": "端末内の{{count}}件はクラウド上にも存在します。",
+    "partialFailure": "一部の記録を保存できませんでした",
+    "partialFailureDetail": "{{processed}}件を処理し、{{failed}}件は未処理です。",
+    "retryFailed": "失敗した{{count}}件を再試行",
+    "checkFailure": "クラウドの記録を確認できませんでした",
+    "checkFailureDetail": "通信状態を確認して再試行してください。"
   },
   "timer": {
     "recordGroup": "RECORD GROUP",
