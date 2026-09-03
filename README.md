@@ -23,7 +23,7 @@ CubeReps is a browser-based Rubik's Cube timer and training tool. Solve records 
 - Retry any solve from history with its original scramble, category, and record group
 - History rows with point-in-time Ao5/Ao12 and details for scrambles and cube previews
 - English and Japanese interfaces
-- Optional Google sign-in, confirmation-based guest record import, and continuous solve synchronization
+- Optional Google sign-in, confirmation-based guest record import, and cross-device solve synchronization
 - Responsive layouts for desktop, tablet, and mobile devices
 
 ## Using the timer
@@ -50,7 +50,7 @@ Select **Sign in with Google** in the page header to sign in. Signing in is opti
 
 After signing in, CubeReps compares guest-owned local solve IDs with the signed-in account’s Firestore records and shows the destination account and number of records that can be imported. Nothing is uploaded until you confirm the import. If guest records are added, edited, or deleted before migration starts, the displayed count and migration candidates update automatically. The operation is idempotent by solve UUID, can retry only failed records after an interruption, and marks successful imports as owned by that account.
 
-Account-owned solves are continuously synchronized between signed-in devices. Adds, penalty and group changes, and deletions are applied locally immediately and queued by Firestore while offline. The header shows syncing, synced, offline, pending, or error status; failed operations can be retried. Firestore's persistent web cache is enabled and should be used only on a trusted device.
+Account-owned solves are fetched when signing in, opening History, and returning online. Adds, penalty and group changes, and deletions are applied locally immediately and queued by Firestore while offline. The header shows syncing, synced, offline, pending, or error status; failed operations can be retried. Firestore's persistent web cache is enabled and should be used only on a trusted device.
 
 Regular concurrent edits use Firestore's server-confirmed write order, avoiding dependence on device clocks. Deletion creates a permanent tombstone instead of physically removing the document; a tombstone always wins over later stale edits, so an offline device cannot accidentally restore a deleted solve. Tombstones are retained indefinitely in this initial implementation.
 
@@ -102,7 +102,7 @@ Existing data previously stored in `localStorage` is migrated automatically when
 
 Data is tied to the browser and origin in use. Clearing the site's browser data deletes local guest records and cached account records. Data export is not currently available.
 
-After explicit confirmation, guest import writes to the signed-in user’s `users/{userId}/solves/{solveId}` documents. Repeating, retrying, and continuous synchronization do not duplicate records because the fixed solve UUID is used as the document ID. Timer, History, and statistics use the combined local Firestore cache and live account snapshot while signed in.
+After explicit confirmation, guest import writes to the signed-in user’s `users/{userId}/solves/{solveId}` documents. Repeating, retrying, and later synchronization do not duplicate records because the fixed solve UUID is used as the document ID. Timer, History, and statistics use the combined local cache and the latest account data fetched at synchronization points while signed in.
 
 ## Technology
 
