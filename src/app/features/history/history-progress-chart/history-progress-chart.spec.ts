@@ -13,11 +13,12 @@ describe('HistoryProgressChart', () => {
       imports: [HistoryProgressChart],
       providers: [HistoryStore],
     }).compileComponents();
+    await TestBed.inject(CubeService).ready;
   });
 
   it('記録を古い順に並べ、各時点の結果、ベスト、AO5、AO12を表示する', async () => {
     const cube = TestBed.inject(CubeService);
-    cube.solves.set(
+    cube.storedSolves.set(
       createSolves([12000, 11000, 10000, 9000, 8000, 7000, 6000, 5000, 4000, 3000, 2000, 1000]),
     );
     const fixture = TestBed.createComponent(HistoryProgressChart);
@@ -53,7 +54,9 @@ describe('HistoryProgressChart', () => {
 
   it('直近100回を初期表示し、50回とすべてへ表示範囲を切り替える', async () => {
     const cube = TestBed.inject(CubeService);
-    cube.solves.set(createSolves(Array.from({ length: 120 }, (_, index) => 120000 - index * 1000)));
+    cube.storedSolves.set(
+      createSolves(Array.from({ length: 120 }, (_, index) => 120000 - index * 1000)),
+    );
     const fixture = TestBed.createComponent(HistoryProgressChart);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -84,7 +87,7 @@ describe('HistoryProgressChart', () => {
     const cube = TestBed.inject(CubeService);
     const solves = createSolves([5000, 4000, 3000, 2000, 1000]);
     solves[0] = { ...solves[0], penalty: 'DNF' };
-    cube.solves.set(solves);
+    cube.storedSolves.set(solves);
     const fixture = TestBed.createComponent(HistoryProgressChart);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -98,7 +101,7 @@ describe('HistoryProgressChart', () => {
 
   it('言語切替後にタイトルと凡例を更新する', async () => {
     const cube = TestBed.inject(CubeService);
-    cube.solves.set(createSolves([1000]));
+    cube.storedSolves.set(createSolves([1000]));
     const fixture = TestBed.createComponent(HistoryProgressChart);
     fixture.detectChanges();
     await fixture.whenStable();

@@ -116,11 +116,6 @@ h1 {
   font-size: var(--font-size-title);
   margin: 0;
 }
-header p {
-  margin: 0;
-  font-size: var(--font-size-small);
-  color: var(--success-color);
-}
 .header-tools {
   display: flex;
   align-items: center;
@@ -216,8 +211,5 @@ header p {
   }
   .header-tools {
     gap: 4px;
-  }
-  header p {
-    display: none;
   }
 }

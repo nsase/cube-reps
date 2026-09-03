@@ -23,7 +23,7 @@ class TestUserDataRepository extends UserDataRepository {
       solves: this.solves,
       groups: this.groups,
       algorithmPreferences: this.algorithmPreferences,
-      guestOwnerId: crypto.randomUUID(),
+      guestOwnerId: 'guest-test',
     };
   }
 

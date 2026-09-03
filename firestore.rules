@@ -18,7 +18,7 @@ service cloud.firestore {
         ])
         && data.keys().hasOnly([
           'id', 'time', 'scramble', 'date', 'updatedAt', 'ownerType', 'ownerId',
-          'schemaVersion', 'category', 'caseName', 'groupId', 'penalty'
+          'schemaVersion', 'category', 'caseName', 'groupId', 'penalty', 'deletedAt'
         ])
         && solveId.matches('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')
         && data.id == solveId
@@ -27,6 +27,7 @@ service cloud.firestore {
         && data.scramble is string
         && data.date is timestamp
         && data.updatedAt is timestamp
+        && (!data.keys().hasAny(['deletedAt']) || data.deletedAt is timestamp)
         && data.ownerType == 'account'
         && data.ownerId == userId
         && data.schemaVersion is int
@@ -38,8 +39,11 @@ service cloud.firestore {
 
     match /users/{userId}/solves/{solveId} {
       allow read: if ownsUserData(userId);
-      allow create, update: if ownsUserData(userId)
+      allow create: if ownsUserData(userId)
         && validSolve(userId, solveId, request.resource.data);
+      allow update: if ownsUserData(userId)
+        && validSolve(userId, solveId, request.resource.data)
+        && (!resource.data.keys().hasAny(['deletedAt']) || request.resource.data.keys().hasAny(['deletedAt']));
       allow delete: if ownsUserData(userId);
     }
   }

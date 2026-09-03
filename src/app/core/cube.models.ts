@@ -54,6 +54,8 @@ export interface Solve extends SyncMetadata {
   groupId?: string;
   /** 記録へ適用されたペナルティ。 */
   penalty: Penalty;
+  /** 同期対象の削除を他端末へ伝えるtombstone日時。 */
+  deletedAt?: string;
 }
 
 /** キューブ表示で使用するステッカー色。 */

@@ -3,6 +3,15 @@ import { translateSignal } from '@jsverse/transloco';
 import { Penalty, DisplayRecordGroup, RecordGroup, Solve, SolveCategory } from './cube.models';
 import { average, mean } from './cube-statistics';
 import { USER_DATA_SCHEMA_VERSION, UserDataRepository } from './user-data-repository';
+import { AuthService } from './auth/auth.service';
+
+/** Firestoreへ転送するローカルSolve操作。 */
+export interface SolveMutation {
+  /** 通常更新またはtombstone削除。 */
+  readonly kind: 'put' | 'delete';
+  /** 操作対象の完全なSolve。 */
+  readonly solve: Solve;
+}
 
 /** ユーザーデータとは分離して常に先頭へ表示する既定の記録グループ。 */
 const DEFAULT_GROUPS: readonly DisplayRecordGroup[] = [
@@ -22,6 +31,8 @@ const DEFAULT_GROUP = DEFAULT_GROUPS[0];
 export class CubeService {
   /** 同期対象ユーザーデータの永続化を画面とドメイン処理から分離するRepository。 */
   private readonly userDataRepository = inject(UserDataRepository);
+  /** 新規Solveの所有者と表示対象アカウントを決める認証状態。 */
+  private readonly auth = inject(AuthService);
   /** Repository初期化前に作成する記録でも使用できる一時ゲストUUID。 */
   private readonly initialGuestOwnerId = crypto.randomUUID();
   /** 現在のゲスト所有者UUID。 */
@@ -34,14 +45,27 @@ export class CubeService {
       'nameKey' in group ? [[group.id, translateSignal(group.nameKey)] as const] : [],
     ),
   );
-  /** 新しい順に保持する全計測記録。 */
-  readonly solves = signal<Solve[]>([]);
+  /** tombstoneと非表示のアカウントキャッシュを含む、端末内の全Solve。 */
+  readonly storedSolves = signal<readonly Solve[]>([]);
+  /** 同期サービスが一度ずつ処理するローカルSolve操作キュー。 */
+  readonly solveMutations = signal<readonly SolveMutation[]>([]);
   /** 現在の端末ゲストが所有し、初回移行の対象になり得る計測記録。 */
   readonly guestSolves = computed(() =>
-    this.solves().filter(
-      (solve) => solve.ownerType === 'guest' && solve.ownerId === this.guestOwnerId(),
+    this.storedSolves().filter(
+      (solve) =>
+        solve.ownerType === 'guest' && solve.ownerId === this.guestOwnerId() && !solve.deletedAt,
     ),
   );
+  /** 現在ログイン中のアカウントが所有する、未削除の計測記録。 */
+  readonly accountSolves = computed(() => {
+    const accountId = this.auth.user()?.uid;
+    if (!accountId) return [];
+    return this.storedSolves().filter(
+      (solve) => solve.ownerType === 'account' && solve.ownerId === accountId && !solve.deletedAt,
+    );
+  });
+  /** Timer、History、集計へ公開する、現在の所有者に対応した計測記録。 */
+  readonly solves = computed(() => [...this.guestSolves(), ...this.accountSolves()]);
   /** 旧データ移行とIndexedDBからの復元が完了したときに解決するPromise。 */
   readonly ready = this.initializeStorage();
   /** 作成順に保持し、IndexedDBへ保存するユーザー作成グループ。 */
@@ -148,7 +172,9 @@ export class CubeService {
       .filter((solve) => solve.groupId === id)
       .map((solve) => ({ ...solve, groupId: DEFAULT_GROUP.id, updatedAt }));
     const affectedById = new Map(affectedSolves.map((solve) => [solve.id, solve]));
-    this.solves.update((solves) => solves.map((solve) => affectedById.get(solve.id) ?? solve));
+    this.storedSolves.update((solves) =>
+      solves.map((solve) => affectedById.get(solve.id) ?? solve),
+    );
     this.userGroups.update((groups) => groups.filter((group) => group.id !== id));
     if (this.storageReady()) {
       for (const solve of affectedSolves) void this.userDataRepository.putSolve(solve);
@@ -179,22 +205,26 @@ export class CubeService {
    */
   addSolve(time: number, scramble: string, category: SolveCategory, caseName?: string): Solve {
     const now = new Date().toISOString();
+    const accountId = this.auth.user()?.uid;
     const solve: Solve = {
       id: crypto.randomUUID(),
       time,
       scramble,
       date: now,
       updatedAt: now,
-      ownerType: 'guest',
-      ownerId: this.guestOwnerId(),
+      ownerType: accountId ? 'account' : 'guest',
+      ownerId: accountId ?? this.guestOwnerId(),
       schemaVersion: USER_DATA_SCHEMA_VERSION,
       category,
       caseName,
       groupId: this.activeGroupId(),
       penalty: 'none',
     };
-    this.solves.update((solves) => [solve, ...solves]);
+    this.storedSolves.update((solves) => [solve, ...solves]);
     if (this.storageReady()) void this.userDataRepository.putSolve(solve);
+    if (accountId) {
+      this.solveMutations.update((mutations) => [...mutations, { kind: 'put', solve }]);
+    }
     return solve;
   }
 
@@ -212,8 +242,13 @@ export class CubeService {
       penalty: current.penalty === penalty ? 'none' : penalty,
       updatedAt: new Date().toISOString(),
     };
-    this.solves.update((solves) => solves.map((solve) => (solve.id === id ? updated : solve)));
+    this.storedSolves.update((solves) =>
+      solves.map((solve) => (solve.id === id ? updated : solve)),
+    );
     if (this.storageReady()) void this.userDataRepository.putSolve(updated);
+    if (updated.ownerType === 'account' && updated.ownerId === this.auth.user()?.uid) {
+      this.solveMutations.update((mutations) => [...mutations, { kind: 'put', solve: updated }]);
+    }
   }
 
   /**
@@ -257,14 +292,56 @@ export class CubeService {
     const current = this.solves().find(({ id }) => id === migratedSolve.id) as Solve;
     const owned: Solve = { ...current, ownerType: 'account', ownerId: accountId };
     await this.userDataRepository.putSolve(owned);
-    this.solves.update((solves) => solves.map((solve) => (solve.id === owned.id ? owned : solve)));
+    this.storedSolves.update((solves) =>
+      solves.map((solve) => (solve.id === owned.id ? owned : solve)),
+    );
   }
 
   /** @param id 削除する計測記録ID */
   removeSolve(id: string): void {
-    if (!this.solves().some((solve) => solve.id === id)) return;
-    this.solves.update((solves) => solves.filter((solve) => solve.id !== id));
-    if (this.storageReady()) void this.userDataRepository.deleteSolve(id);
+    const current = this.solves().find((solve) => solve.id === id);
+    if (!current) return;
+    if (current.ownerType === 'account' && current.ownerId === this.auth.user()?.uid) {
+      const deletedAt = new Date().toISOString();
+      const tombstone = { ...current, updatedAt: deletedAt, deletedAt };
+      this.storedSolves.update((solves) =>
+        solves.map((solve) => (solve.id === id ? tombstone : solve)),
+      );
+      if (this.storageReady()) void this.userDataRepository.putSolve(tombstone);
+      this.solveMutations.update((mutations) => [
+        ...mutations,
+        { kind: 'delete', solve: tombstone },
+      ]);
+    } else if (this.storageReady()) {
+      this.storedSolves.update((solves) => solves.filter((solve) => solve.id !== id));
+      void this.userDataRepository.deleteSolve(id);
+    } else {
+      this.storedSolves.update((solves) => solves.filter((solve) => solve.id !== id));
+    }
+  }
+
+  /**
+   * Firestoreのアカウントスナップショットをローカルキャッシュへ冪等に反映する。
+   * tombstoneは通常更新より常に優先し、削除済みSolveを再表示しない。
+   *
+   * @param accountId 購読中のFirebase UID
+   * @param remoteSolves Firestoreから受信した全Solve
+   */
+  async mergeAccountSolves(accountId: string, remoteSolves: readonly Solve[]): Promise<void> {
+    for (const remote of remoteSolves) {
+      if (remote.ownerType !== 'account' || remote.ownerId !== accountId) continue;
+      const local = this.storedSolves().find(({ id }) => id === remote.id);
+      const remoteWins =
+        !local ||
+        Boolean(remote.deletedAt) ||
+        (!local.deletedAt && Date.parse(remote.updatedAt) >= Date.parse(local.updatedAt));
+      if (!remoteWins) continue;
+      this.storedSolves.update((solves) => [
+        ...solves.filter(({ id }) => id !== remote.id),
+        remote,
+      ]);
+      await this.userDataRepository.putSolve(remote);
+    }
   }
 
   /**
@@ -359,13 +436,13 @@ export class CubeService {
   private async initializeStorage(): Promise<void> {
     const stored = await this.userDataRepository.load();
     this.guestOwnerId.set(stored.guestOwnerId);
-    const current = this.solves().map((solve) =>
+    const current = this.storedSolves().map((solve) =>
       solve.ownerId === this.initialGuestOwnerId
         ? { ...solve, ownerId: stored.guestOwnerId }
         : solve,
     );
     const currentIds = new Set(current.map(({ id }) => id));
-    this.solves.set([...current, ...stored.solves.filter(({ id }) => !currentIds.has(id))]);
+    this.storedSolves.set([...current, ...stored.solves.filter(({ id }) => !currentIds.has(id))]);
     const currentGroups = this.userGroups().map((group) =>
       group.ownerId === this.initialGuestOwnerId
         ? { ...group, ownerId: stored.guestOwnerId }

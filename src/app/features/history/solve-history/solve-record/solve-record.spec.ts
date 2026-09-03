@@ -31,6 +31,7 @@ describe('SolveRecord', () => {
         { provide: MatDialog, useValue: dialog },
       ],
     }).compileComponents();
+    await TestBed.inject(CubeService).ready;
   });
 
   /** 計測記録を作成して行コンポーネントへ設定する。 */
@@ -38,7 +39,7 @@ describe('SolveRecord', () => {
     const cube = TestBed.inject(CubeService);
     cube.addSolve(1234, 'R U', 'full');
     const solve = { ...cube.solves()[0], date: '2026-08-24T09:28:00.000Z' };
-    cube.solves.set([solve]);
+    cube.storedSolves.set([solve]);
     const fixture = TestBed.createComponent(SolveRecord);
     fixture.componentRef.setInput('solve', solve);
     fixture.componentRef.setInput('recordNumber', 1);

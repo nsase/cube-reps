@@ -1,4 +1,3 @@
-import { Timestamp } from 'firebase/firestore';
 import { describe, expect, it } from 'vitest';
 import { Solve } from '../cube.models';
 import { USER_DATA_SCHEMA_VERSION } from '../user-data-repository';
@@ -20,13 +19,13 @@ describe('Firestore Solve mapper', () => {
     penalty: '+2',
   };
 
-  it('現行SolveをTimestampと認証UIDを持つ保存形式へ変換する', () => {
+  it('現行SolveをFirestore timestamp互換のDateと認証UIDを持つ保存形式へ変換する', () => {
     const stored = toFirestoreSolve(solve, 'account-1');
 
     expect(stored.id).toBe(solve.id);
-    expect(stored.date).toBeInstanceOf(Timestamp);
-    expect(stored.date.toDate().toISOString()).toBe(solve.date);
-    expect(stored.updatedAt.toDate().toISOString()).toBe(solve.updatedAt);
+    expect(stored.date).toBeInstanceOf(Date);
+    expect(stored.date.toISOString()).toBe(solve.date);
+    expect(stored.updatedAt.toISOString()).toBe(solve.updatedAt);
     expect(stored.ownerId).toBe('account-1');
     expect(stored.ownerType).toBe('account');
     expect(stored.schemaVersion).toBe(USER_DATA_SCHEMA_VERSION);
