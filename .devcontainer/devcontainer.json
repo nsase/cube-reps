@@ -6,7 +6,8 @@
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
       "version": "21"
-    }
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
   "runArgs": ["--name", "cube-reps-dev", "--ipc=host"],
   "mounts": ["source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached"],
