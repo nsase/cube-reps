@@ -1,4 +1,3 @@
-import { Timestamp } from 'firebase/firestore';
 import { Penalty, Solve, SolveCategory } from '../cube.models';
 import { USER_DATA_SCHEMA_VERSION } from '../user-data-repository';
 
@@ -11,9 +10,9 @@ export interface FirestoreSolveDocument {
   /** 計測時に使用したスクランブル。 */
   readonly scramble: string;
   /** Firestoreで並べ替え可能な計測日時。 */
-  readonly date: Timestamp;
+  readonly date: Date;
   /** Firestoreで競合判定に利用できる更新日時。 */
-  readonly updatedAt: Timestamp;
+  readonly updatedAt: Date;
   /** Firebase Authenticationの所有者UID。 */
   readonly ownerId: string;
   /** クラウド上では常にアカウント所有とする種別。 */
@@ -28,6 +27,8 @@ export interface FirestoreSolveDocument {
   readonly groupId?: string;
   /** 記録へ適用されたペナルティ。 */
   readonly penalty: Penalty;
+  /** 削除済みSolveを表すサーバー確定日時。 */
+  readonly deletedAt?: Date;
 }
 
 /**
@@ -36,13 +37,14 @@ export interface FirestoreSolveDocument {
  *
  * @param solve 保存する計測記録
  * @param userId Firebase AuthenticationのUID
- * @returns Timestampを使用するFirestoreドキュメント
+ * @returns Firestoreがtimestampとして保存するDateを使用したドキュメント
  */
 export function toFirestoreSolve(solve: Solve, userId: string): FirestoreSolveDocument {
   return omitUndefined({
     ...solve,
-    date: Timestamp.fromDate(new Date(solve.date)),
-    updatedAt: Timestamp.fromDate(new Date(solve.updatedAt)),
+    date: new Date(solve.date),
+    updatedAt: new Date(solve.updatedAt),
+    deletedAt: solve.deletedAt ? new Date(solve.deletedAt) : undefined,
     ownerId: userId,
     ownerType: 'account' as const,
     schemaVersion: USER_DATA_SCHEMA_VERSION,
@@ -80,6 +82,7 @@ export function fromFirestoreSolve(id: string, value: unknown, userId: string): 
     caseName: typeof value['caseName'] === 'string' ? value['caseName'] : undefined,
     groupId: typeof value['groupId'] === 'string' ? value['groupId'] : undefined,
     penalty,
+    deletedAt: readDate(value['deletedAt']),
   });
 }
 
@@ -90,7 +93,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 /** Firestore Timestampまたは旧ISO文字列をISO 8601文字列へ変換する。 */
 function readDate(value: unknown): string | undefined {
-  if (value instanceof Timestamp) return value.toDate().toISOString();
+  if (value instanceof Date && !Number.isNaN(value.valueOf())) return value.toISOString();
   if (isRecord(value) && typeof value['toDate'] === 'function') {
     const date = (value['toDate'] as () => unknown)();
     if (date instanceof Date && !Number.isNaN(date.valueOf())) return date.toISOString();

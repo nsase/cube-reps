@@ -13,6 +13,7 @@ describe('TimerStats', () => {
       imports: [TimerStats],
       providers: [provideRouter([])],
     }).compileComponents();
+    await TestBed.inject(CubeService).ready;
   });
 
   /** TimerStatsに表示されているベスト・Mean・各AOの値を返す。 */
@@ -66,7 +67,7 @@ describe('TimerStats', () => {
         penalty: 'DNF',
       },
     ];
-    cube.solves.set(solves);
+    cube.storedSolves.set(solves);
     const fixture = TestBed.createComponent(TimerStats);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -80,7 +81,7 @@ describe('TimerStats', () => {
 
   it('solveカテゴリーの変更に合わせて集計表示を分離する', async () => {
     const cube = TestBed.inject(CubeService);
-    cube.solves.set([
+    cube.storedSolves.set([
       {
         id: '1',
         time: 1000,
@@ -122,7 +123,7 @@ describe('TimerStats', () => {
   it('記録先カテゴリーの変更に合わせて集計表示を更新する', async () => {
     const cube = TestBed.inject(CubeService);
     const group = cube.addGroup('大会')!;
-    cube.solves.set([
+    cube.storedSolves.set([
       {
         id: '1',
         time: 1000,
