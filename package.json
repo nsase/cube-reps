@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:firestore": "firebase emulators:start --only firestore --project demo-cube-reps",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",

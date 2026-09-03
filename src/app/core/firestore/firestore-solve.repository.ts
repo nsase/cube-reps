@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import type { Firestore } from 'firebase/firestore';
 import { Solve } from '../cube.models';
 import { firebaseConfig } from '../auth/firebase.config';
@@ -137,16 +137,25 @@ export class FirestoreSolveRepository {
   private async initializeFirestore(): Promise<Firestore> {
     const [
       { getApp, getApps, initializeApp },
-      { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager },
+      {
+        connectFirestoreEmulator,
+        getFirestore,
+        initializeFirestore,
+        persistentLocalCache,
+        persistentMultipleTabManager,
+      },
     ] = await Promise.all([import('firebase/app'), import('firebase/firestore')]);
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    let firestore: Firestore;
     try {
-      return initializeFirestore(app, {
+      firestore = initializeFirestore(app, {
         localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
       });
     } catch {
-      return getFirestore(app);
+      firestore = getFirestore(app);
     }
+    if (isDevMode()) connectFirestoreEmulator(firestore, '127.0.0.1', 8080);
+    return firestore;
   }
 
   /** @returns 遅延初期化し、以後の操作で共有するFirestoreクライアント */
