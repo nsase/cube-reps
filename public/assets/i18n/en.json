@@ -13,6 +13,14 @@
     "signOut": "Sign out",
     "failed": "Authentication failed. Please try again."
   },
+  "sync": {
+    "signed-out": "Local only",
+    "syncing": "Syncing",
+    "synced": "Synced",
+    "offline": "Offline",
+    "pending": "Changes pending",
+    "error": "Sync failed — retry"
+  },
   "routes": {
     "timer": "PRACTICE SESSION",
     "algorithms": "ALGORITHM LIBRARY",

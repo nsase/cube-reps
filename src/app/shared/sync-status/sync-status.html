@@ -1,0 +1,10 @@
+<button
+  class="sync-status"
+  type="button"
+  data-testid="sync-status"
+  [class.error]="sync.phase() === 'error'"
+  [disabled]="sync.phase() !== 'error'"
+  (click)="retry()"
+>
+  ● {{ 'sync.' + sync.phase() | transloco }}
+</button>

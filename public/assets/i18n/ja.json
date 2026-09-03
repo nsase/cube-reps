@@ -13,6 +13,14 @@
     "signOut": "ログアウト",
     "failed": "認証に失敗しました。もう一度お試しください。"
   },
+  "sync": {
+    "signed-out": "端末内のみ",
+    "syncing": "同期中",
+    "synced": "同期済み",
+    "offline": "オフライン",
+    "pending": "未同期の変更あり",
+    "error": "同期失敗 — 再試行"
+  },
   "routes": {
     "timer": "PRACTICE SESSION",
     "algorithms": "ALGORITHM LIBRARY",
