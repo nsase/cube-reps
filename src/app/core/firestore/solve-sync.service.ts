@@ -6,7 +6,7 @@ import { FirestoreSolveRepository } from './firestore-solve.repository';
 /** ユーザーへ表示するSolve同期状態。 */
 export type SolveSyncPhase = 'signed-out' | 'syncing' | 'synced' | 'offline' | 'pending' | 'error';
 
-/** Firestoreと端末間の継続同期を調停するサービス。 */
+/** Firestoreへの書き込みと必要なタイミングでのSolve取得を調停するサービス。 */
 @Injectable({ providedIn: 'root' })
 export class SolveSyncService implements OnDestroy {
   /** 現在の認証アカウント。 */
@@ -15,29 +15,24 @@ export class SolveSyncService implements OnDestroy {
   private readonly cube = inject(CubeService);
   /** FirestoreのSolve購読・書き込み境界。 */
   private readonly cloud = inject(FirestoreSolveRepository);
-  /** 現在の購読を識別し、古いアカウントの通知を破棄する連番。 */
-  private subscriptionId = 0;
-  /** Firestore購読の解除処理。 */
-  private unsubscribe?: () => void;
+  /** 現在の取得を識別し、古いアカウントの結果を破棄する連番。 */
+  private requestId = 0;
   /** 同期失敗後に再試行する直近のローカル操作。 */
   private readonly failedMutations: SolveMutation[] = [];
 
   /** ヘッダーへ公開する現在の同期状態。 */
   readonly phase = signal<SolveSyncPhase>('signed-out');
 
-  /** 認証アカウント変更時に、そのアカウント専用の購読へ切り替える。 */
+  /** 認証アカウント変更時に、そのアカウントの最新Solveを一度取得する。 */
   private readonly watchAccount = effect(() => {
     const user = this.auth.user();
-    const subscriptionId = ++this.subscriptionId;
-    this.unsubscribe?.();
-    this.unsubscribe = undefined;
+    const requestId = ++this.requestId;
     this.failedMutations.length = 0;
     if (!user) {
       this.phase.set('signed-out');
       return;
     }
-    this.phase.set(navigator.onLine ? 'syncing' : 'offline');
-    void this.subscribe(user.uid, subscriptionId);
+    void this.pull(user.uid, requestId);
   });
 
   /** CubeServiceのローカル操作を、認証が維持されている間だけFirestoreへ転送する。 */
@@ -60,14 +55,13 @@ export class SolveSyncService implements OnDestroy {
     window.addEventListener('offline', this.handleOffline);
   }
 
-  /** サービス破棄時にFirestore購読とブラウザイベント購読を解除する。 */
+  /** サービス破棄時にブラウザイベント購読を解除する。 */
   ngOnDestroy(): void {
-    this.unsubscribe?.();
     window.removeEventListener('online', this.handleOnline);
     window.removeEventListener('offline', this.handleOffline);
   }
 
-  /** 失敗した直近の変更またはFirestore購読を再試行する。 */
+  /** 失敗した直近の変更またはクラウドからの取得を再試行する。 */
   retry(): void {
     const user = this.auth.user();
     if (!user) return;
@@ -76,18 +70,20 @@ export class SolveSyncService implements OnDestroy {
       for (const mutation of mutations) void this.upload(user.uid, mutation);
       return;
     }
-    const subscriptionId = ++this.subscriptionId;
-    this.unsubscribe?.();
-    this.unsubscribe = undefined;
-    this.phase.set(navigator.onLine ? 'syncing' : 'offline');
-    void this.subscribe(user.uid, subscriptionId);
+    this.refresh();
+  }
+
+  /** 現在のアカウントが所有する最新Solveを一度取得する。 */
+  refresh(): void {
+    const user = this.auth.user();
+    if (!user) return;
+    void this.pull(user.uid, ++this.requestId);
   }
 
   /** オンライン復帰時にエラー状態なら再試行し、それ以外は同期中として表示する。 */
   private readonly handleOnline = (): void => {
     if (!this.auth.user()) return;
-    if (this.phase() === 'error') this.retry();
-    else this.phase.set('syncing');
+    this.refresh();
   };
 
   /** 通信切断中もFirestoreキャッシュへ操作を保存できることを表示する。 */
@@ -95,34 +91,22 @@ export class SolveSyncService implements OnDestroy {
     if (this.auth.user()) this.phase.set('offline');
   };
 
-  /** Firestoreスナップショットを購読し、ローカルへ冪等に統合する。 */
-  private async subscribe(userId: string, subscriptionId: number): Promise<void> {
+  /**
+   * Firestoreから現在のアカウントのSolveを一度取得し、端末データへ冪等に統合する。
+   *
+   * @param userId 取得対象のFirebase UID
+   * @param requestId 取得開始時のアカウント状態を識別する連番
+   */
+  private async pull(userId: string, requestId: number): Promise<void> {
+    this.phase.set(navigator.onLine ? 'syncing' : 'offline');
     try {
       await this.cube.ready;
-      const unsubscribe = await this.cloud.watch(
-        userId,
-        (solves, pending, fromCache) => {
-          if (subscriptionId !== this.subscriptionId || this.auth.user()?.uid !== userId) return;
-          void this.cube.mergeAccountSolves(userId, solves);
-          this.phase.set(
-            !navigator.onLine || (fromCache && !pending)
-              ? 'offline'
-              : pending
-                ? 'pending'
-                : 'synced',
-          );
-        },
-        () => {
-          if (subscriptionId === this.subscriptionId) this.phase.set('error');
-        },
-      );
-      if (subscriptionId !== this.subscriptionId || this.auth.user()?.uid !== userId) {
-        unsubscribe();
-      } else {
-        this.unsubscribe = unsubscribe;
-      }
+      const solves = await this.cloud.list(userId);
+      if (requestId !== this.requestId || this.auth.user()?.uid !== userId) return;
+      await this.cube.mergeAccountSolves(userId, solves);
+      if (requestId === this.requestId) this.phase.set(navigator.onLine ? 'synced' : 'offline');
     } catch {
-      if (subscriptionId === this.subscriptionId) this.phase.set('error');
+      if (requestId === this.requestId) this.phase.set('error');
     }
   }
 

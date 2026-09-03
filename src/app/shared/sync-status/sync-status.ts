@@ -11,10 +11,10 @@ import { SolveSyncService } from '../../core/firestore/solve-sync.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SyncStatus {
-  /** Firestoreとの継続同期状態。 */
+  /** Firestoreとの同期状態。 */
   protected readonly sync = inject(SolveSyncService);
 
-  /** 同期エラー時に直近の変更または購読を再試行する。 */
+  /** 同期エラー時に直近の変更または取得を再試行する。 */
   protected retry(): void {
     this.sync.retry();
   }

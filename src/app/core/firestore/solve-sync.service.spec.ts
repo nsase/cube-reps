@@ -33,7 +33,7 @@ describe('SolveSyncService', () => {
     mergeAccountSolves: ReturnType<typeof vi.fn>;
   };
   let cloud: {
-    watch: ReturnType<typeof vi.fn>;
+    list: ReturnType<typeof vi.fn>;
     put: ReturnType<typeof vi.fn>;
     tombstone: ReturnType<typeof vi.fn>;
   };
@@ -46,7 +46,7 @@ describe('SolveSyncService', () => {
       mergeAccountSolves: vi.fn(async () => undefined),
     };
     cloud = {
-      watch: vi.fn(async () => () => undefined),
+      list: vi.fn(async () => [solve]),
       put: vi.fn(async () => undefined),
       tombstone: vi.fn(async () => undefined),
     };
@@ -59,33 +59,25 @@ describe('SolveSyncService', () => {
     });
   });
 
-  it('ログイン時にアカウントの変更を購読し、受信Solveをローカルへ統合する', async () => {
-    let receive: ((solves: Solve[], pending: boolean, fromCache: boolean) => void) | undefined;
-    cloud.watch.mockImplementation(
-      async (
-        _userId: string,
-        next: (solves: Solve[], pending: boolean, fromCache: boolean) => void,
-      ) => {
-        receive = next;
-        return () => undefined;
-      },
-    );
+  it('ログイン時にアカウントのSolveを一度取得してローカルへ統合する', async () => {
     const sync = TestBed.inject(SolveSyncService);
     auth.user.set(account);
     TestBed.tick();
-    await vi.waitFor(() =>
-      expect(cloud.watch).toHaveBeenCalledWith(
-        account.uid,
-        expect.any(Function),
-        expect.any(Function),
-      ),
-    );
 
-    receive?.([solve], false, false);
-    await vi.waitFor(() =>
-      expect(cube.mergeAccountSolves).toHaveBeenCalledWith(account.uid, [solve]),
-    );
+    await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledWith(account.uid));
+    expect(cube.mergeAccountSolves).toHaveBeenCalledWith(account.uid, [solve]);
     expect(sync.phase()).toBe('synced');
+  });
+
+  it('明示的な更新でアカウントのSolveを再取得する', async () => {
+    const sync = TestBed.inject(SolveSyncService);
+    auth.user.set(account);
+    TestBed.tick();
+    await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledTimes(1));
+
+    sync.refresh();
+
+    await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledTimes(2));
   });
 
   it('追加・更新と削除を別のFirestore操作へ転送する', async () => {
