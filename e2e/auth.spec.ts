@@ -6,7 +6,8 @@ test.describe('任意のGoogleログイン', { tag: '@responsive' }, () => {
     await page.goto('/#/timer');
 
     await expect(page.locator('app-timer')).toBeVisible();
-    await expect(page.getByTestId('google-sign-in')).toBeVisible();
+    await expect(page.getByTestId('google-sign-in')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('solve-migration')).toHaveCount(0);
     await expect(page.getByTestId('timer-scramble-refresh')).toBeEnabled({ timeout: 15_000 });
     await expectNoHorizontalOverflow(page);
 
@@ -17,5 +18,9 @@ test.describe('任意のGoogleログイン', { tag: '@responsive' }, () => {
     await expect(clock.locator('strong')).not.toHaveText('0.00');
     await page.keyboard.press('Space');
     await expect(page.locator('.today strong')).toHaveText('1');
+
+    await page.reload();
+    await expect(page.locator('.today strong')).toHaveText('1');
+    await expect(page.getByTestId('solve-migration')).toHaveCount(0);
   });
 });

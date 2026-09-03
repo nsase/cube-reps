@@ -1,0 +1,97 @@
+@if (migration.visible() && migration.account(); as account) {
+  <section class="migration" data-testid="solve-migration" aria-live="polite">
+    @switch (migration.state().phase) {
+      @case ('checking') {
+        <p role="status">{{ 'migration.checking' | transloco }}</p>
+        <mat-progress-bar mode="indeterminate" />
+      }
+      @case ('ready') {
+        <div>
+          <strong>{{ 'migration.title' | transloco }}</strong>
+          <p>{{ 'migration.ready' | transloco: { count: migration.state().targetCount } }}</p>
+          <small>{{
+            'migration.destination' | transloco: { account: account.email || account.displayName }
+          }}</small>
+          <small>{{ 'migration.localRetained' | transloco }}</small>
+        </div>
+        <button
+          mat-flat-button
+          type="button"
+          data-testid="start-solve-migration"
+          (click)="migrate()"
+        >
+          {{ 'migration.upload' | transloco: { count: migration.state().targetCount } }}
+        </button>
+      }
+      @case ('migrating') {
+        <div>
+          <strong>{{ 'migration.migrating' | transloco }}</strong>
+          <p role="status">
+            {{
+              'migration.progress'
+                | transloco
+                  : {
+                      processed: migration.state().processedCount,
+                      total: migration.state().targetCount,
+                    }
+            }}
+          </p>
+        </div>
+        <mat-progress-bar
+          mode="determinate"
+          [value]="
+            migration.state().targetCount
+              ? (migration.state().processedCount / migration.state().targetCount) * 100
+              : 0
+          "
+        />
+      }
+      @case ('completed') {
+        <div>
+          <strong>{{ 'migration.completed' | transloco }}</strong>
+          <p role="status">
+            {{ 'migration.completedDetail' | transloco: { count: migration.state().localCount } }}
+          </p>
+          <small>{{ 'migration.localRetained' | transloco }}</small>
+        </div>
+      }
+      @case ('partial-failure') {
+        <div>
+          <strong>{{ 'migration.partialFailure' | transloco }}</strong>
+          <p role="alert">
+            {{
+              'migration.partialFailureDetail'
+                | transloco
+                  : {
+                      processed: migration.state().processedCount,
+                      failed: migration.state().failedCount,
+                    }
+            }}
+          </p>
+        </div>
+        <button
+          mat-flat-button
+          type="button"
+          data-testid="retry-solve-migration"
+          (click)="migrate()"
+        >
+          {{ 'migration.retryFailed' | transloco: { count: migration.state().failedCount } }}
+        </button>
+      }
+      @case ('check-failure') {
+        <div>
+          <strong>{{ 'migration.checkFailure' | transloco }}</strong>
+          <p role="alert">{{ 'migration.checkFailureDetail' | transloco }}</p>
+        </div>
+        <button
+          mat-button
+          type="button"
+          data-testid="retry-migration-check"
+          (click)="retryInspection()"
+        >
+          {{ 'common.retry' | transloco }}
+        </button>
+      }
+    }
+  </section>
+}
