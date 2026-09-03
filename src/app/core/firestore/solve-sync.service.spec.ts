@@ -30,7 +30,6 @@ describe('SolveSyncService', () => {
   let cube: {
     ready: Promise<void>;
     solveMutations: ReturnType<typeof signal<readonly SolveMutation[]>>;
-    showAccount: ReturnType<typeof vi.fn>;
     mergeAccountSolves: ReturnType<typeof vi.fn>;
   };
   let cloud: {
@@ -44,7 +43,6 @@ describe('SolveSyncService', () => {
     cube = {
       ready: Promise.resolve(),
       solveMutations: signal<readonly SolveMutation[]>([]),
-      showAccount: vi.fn(),
       mergeAccountSolves: vi.fn(async () => undefined),
     };
     cloud = {

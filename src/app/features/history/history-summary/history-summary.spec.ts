@@ -12,6 +12,7 @@ describe('HistorySummary', () => {
       imports: [HistorySummary],
       providers: [HistoryStore],
     }).compileComponents();
+    await TestBed.inject(CubeService).ready;
   });
 
   it('+2を反映してDNFを除外したベストと平均、件数不足のAOを表示する', async () => {
@@ -57,7 +58,7 @@ describe('HistorySummary', () => {
         penalty: 'DNF',
       },
     ];
-    cube.solves.set(solves);
+    cube.storedSolves.set(solves);
     const fixture = TestBed.createComponent(HistorySummary);
     fixture.detectChanges();
     await fixture.whenStable();
