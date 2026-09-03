@@ -103,4 +103,15 @@ describe('Firestore Solve Security Rules', () => {
     await assertFails(setDoc(reference, solve({ ownerId: otherUserId })));
     await assertFails(setDoc(reference, solve({ date: '2026-08-31T10:00:00.000Z' })));
   });
+
+  it('tombstoneへの更新を許可し、削除済みSolveの通常更新による復活を拒否する', async () => {
+    const firestore = environment.authenticatedContext(ownerId).firestore();
+    const reference = doc(firestore, 'users', ownerId, 'solves', solveId);
+    const deletedAt = Timestamp.fromDate(new Date('2026-09-03T10:00:00.000Z'));
+
+    await assertSucceeds(setDoc(reference, solve()));
+    await assertSucceeds(setDoc(reference, solve({ deletedAt, updatedAt: deletedAt })));
+    await assertFails(setDoc(reference, solve({ time: 9999 })));
+    await assertSucceeds(setDoc(reference, solve({ deletedAt, updatedAt: deletedAt, time: 9999 })));
+  });
 });

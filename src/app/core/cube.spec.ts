@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { CubeService } from './cube';
 import { Penalty, Solve } from './cube.models';
 import { UserDataRepository } from './user-data-repository';
+import { AuthService } from './auth/auth.service';
 
 describe('CubeService record statistics', () => {
   beforeEach(() => {
@@ -54,10 +55,10 @@ describe('CubeService record statistics', () => {
 
     expect(cube.isCurrentGuestSolveIn([current], current)).toBe(true);
     expect(
-      cube.isCurrentGuestSolveIn(
-        [current],
-        { ...current, updatedAt: new Date(Date.parse(current.updatedAt) + 1).toISOString() },
-      ),
+      cube.isCurrentGuestSolveIn([current], {
+        ...current,
+        updatedAt: new Date(Date.parse(current.updatedAt) + 1).toISOString(),
+      }),
     ).toBe(false);
     expect(
       cube.isCurrentGuestSolveIn(
@@ -251,5 +252,62 @@ describe('CubeService record statistics', () => {
       expect.objectContaining({ id: first.id, groupId: 'unclassified' }),
     );
     expect(deleteSolve).toHaveBeenCalledWith(second.id);
+  });
+
+  it('ログイン中の新規Solveをアカウント所有として作成し同期操作を通知する', () => {
+    const auth = TestBed.inject(AuthService);
+    auth.user.set({
+      uid: 'account-1',
+      displayName: 'Cube User',
+      email: 'cube@example.com',
+      photoURL: null,
+    });
+    const cube = TestBed.inject(CubeService);
+
+    const created = cube.addSolve(1234, 'R U', 'full');
+
+    expect(created).toMatchObject({ ownerType: 'account', ownerId: 'account-1' });
+    expect(cube.solveMutations()).toEqual([{ kind: 'put', solve: created }]);
+  });
+
+  it('アカウントSolveはtombstoneで削除し、古い通常更新で復活させない', async () => {
+    const auth = TestBed.inject(AuthService);
+    auth.user.set({
+      uid: 'account-1',
+      displayName: 'Cube User',
+      email: 'cube@example.com',
+      photoURL: null,
+    });
+    const cube = TestBed.inject(CubeService);
+    const created = cube.addSolve(1234, 'R U', 'full');
+
+    cube.removeSolve(created.id);
+    const mutation = cube.solveMutations().at(-1);
+    expect(mutation?.kind).toBe('delete');
+    expect(mutation?.solve.deletedAt).toBeDefined();
+    expect(cube.solves()).toHaveLength(0);
+
+    await cube.mergeAccountSolves('account-1', [created]);
+    expect(cube.solves()).toHaveLength(0);
+  });
+
+  it('ログアウト時にアカウントSolveを非表示にしゲストSolveだけを残す', async () => {
+    const auth = TestBed.inject(AuthService);
+    const cube = TestBed.inject(CubeService);
+    const guest = cube.addSolve(1000, 'R U', 'full');
+    const accountSolve = { ...solve(2, 2000), ownerType: 'account' as const, ownerId: 'account-1' };
+
+    await cube.mergeAccountSolves('account-1', [accountSolve]);
+    auth.user.set({
+      uid: 'account-1',
+      displayName: 'Cube User',
+      email: 'cube@example.com',
+      photoURL: null,
+    });
+    cube.showAccount('account-1');
+    expect(cube.solves().map(({ id }) => id)).toEqual([guest.id, accountSolve.id]);
+
+    cube.showAccount(null);
+    expect(cube.solves().map(({ id }) => id)).toEqual([guest.id]);
   });
 });

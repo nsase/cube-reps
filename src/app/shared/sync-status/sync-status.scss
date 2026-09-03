@@ -1,0 +1,19 @@
+.sync-status {
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: var(--success-color);
+  padding: 0;
+  font-size: var(--font-size-small);
+
+  &.error {
+    color: var(--danger-color);
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 620px) {
+  .sync-status {
+    display: none;
+  }
+}

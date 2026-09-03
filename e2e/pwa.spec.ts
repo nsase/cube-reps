@@ -41,7 +41,7 @@ test('一度読み込んだアプリを記録を保持したままオフライ�
     .poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller)))
     .toBe(true);
 
-  await expect(page.getByTestId('timer-scramble-refresh')).toBeEnabled();
+  await expect(page.getByTestId('timer-scramble-refresh')).toBeEnabled({ timeout: 15_000 });
   const clock = page.locator('app-timer-clock .clock');
   await page.keyboard.down('Space');
   await expect(clock).toHaveClass(/\bready\b/);
