@@ -63,10 +63,11 @@ Install Node.js and npm, then run the following commands in the repository:
 ```bash
 npm install
 npx playwright install chromium
+npm run start:firestore
 npm start
 ```
 
-The development server normally starts at [http://localhost:4200](http://localhost:4200).
+Run the final two commands in separate terminals. The development server normally starts at [http://localhost:4200](http://localhost:4200) and development builds connect to the local Firestore Emulator at `127.0.0.1:8080`. Production builds continue to connect to the production Firestore database. This separation prevents local development operations from changing production solves.
 
 The Firebase Web configuration in `src/app/core/auth/firebase.config.ts` contains public identifiers used by the browser to connect to the CubeReps Firebase project. Do not add service-account JSON files, private keys, access tokens, or other administrator credentials to the frontend or repository; the browser application does not require them.
 
@@ -74,14 +75,15 @@ Firestore development requires Java 21 or later. `npm run test:firestore` starts
 
 ## Development commands
 
-| Command                   | Description                       |
-| ------------------------- | --------------------------------- |
-| `npm start`               | Start the development server      |
-| `npm run build`           | Create a production build         |
-| `npm test`                | Run tests with Vitest             |
-| `npm run test:firestore`  | Test Firestore with the Emulator  |
-| `npm run test:e2e`        | Run browser tests with Playwright |
-| `npm run prettier:format` | Format the project with Prettier  |
+| Command                   | Description                        |
+| ------------------------- | ---------------------------------- |
+| `npm start`               | Start the development server       |
+| `npm run start:firestore` | Start the local Firestore Emulator |
+| `npm run build`           | Create a production build          |
+| `npm test`                | Run tests with Vitest              |
+| `npm run test:firestore`  | Test Firestore with the Emulator   |
+| `npm run test:e2e`        | Run browser tests with Playwright  |
+| `npm run prettier:format` | Format the project with Prettier   |
 
 Build output is written to `dist/cube-reps`.
 
