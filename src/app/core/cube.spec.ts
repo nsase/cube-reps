@@ -349,6 +349,26 @@ describe('CubeService record statistics', () => {
     expect(cube.storedSolves()).toEqual([first, second]);
   });
 
+  it('ローカルに存在しないFirestoreのtombstoneを保存しない', async () => {
+    const cube = TestBed.inject(CubeService);
+    const repository = TestBed.inject(UserDataRepository);
+    await cube.ready;
+    const deletedAt = new Date(19).toISOString();
+    const remoteTombstone = {
+      ...solve(19, 1000),
+      updatedAt: deletedAt,
+      deletedAt,
+      ownerType: 'account' as const,
+      ownerId: 'account-1',
+    };
+    const putSolve = vi.spyOn(repository, 'putSolve');
+
+    await cube.mergeAccountSolves('account-1', [remoteTombstone]);
+
+    expect(cube.storedSolves()).toEqual([]);
+    expect(putSolve).not.toHaveBeenCalled();
+  });
+
   it('同一tombstoneを繰り返し受信しても再適用しない', async () => {
     const cube = TestBed.inject(CubeService);
     const repository = TestBed.inject(UserDataRepository);

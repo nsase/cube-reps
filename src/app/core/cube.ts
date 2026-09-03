@@ -334,8 +334,7 @@ export class CubeService {
     for (const remote of remoteSolves) {
       if (remote.ownerType !== 'account' || remote.ownerId !== accountId) continue;
       const local = mergedById.get(remote.id);
-      if (!this.remoteSolveWins(local, remote) || (local && this.sameSolve(local, remote)))
-        continue;
+      if (!this.remoteSolveWins(local, remote)) continue;
       mergedById.set(remote.id, remote);
       changedSolves.push(remote);
     }
@@ -358,35 +357,10 @@ export class CubeService {
    * @returns リモートをマージ候補にする場合はtrue
    */
   private remoteSolveWins(local: Solve | undefined, remote: Solve): boolean {
-    if (!local) return true;
+    if (!local) return !remote.deletedAt;
     if (local.deletedAt && !remote.deletedAt) return false;
     if (remote.deletedAt && !local.deletedAt) return true;
-    return Date.parse(remote.updatedAt) >= Date.parse(local.updatedAt);
-  }
-
-  /**
-   * Firestoreのメタデータ通知で同一Solveを新しい参照へ置換しないため内容を比較する。
-   *
-   * @param left 比較する端末側Solve
-   * @param right 比較するFirestore側Solve
-   * @returns 永続化対象の全フィールドが一致する場合はtrue
-   */
-  private sameSolve(left: Solve, right: Solve): boolean {
-    return (
-      left.id === right.id &&
-      left.time === right.time &&
-      left.scramble === right.scramble &&
-      left.date === right.date &&
-      left.updatedAt === right.updatedAt &&
-      left.ownerType === right.ownerType &&
-      left.ownerId === right.ownerId &&
-      left.schemaVersion === right.schemaVersion &&
-      left.category === right.category &&
-      left.caseName === right.caseName &&
-      left.groupId === right.groupId &&
-      left.penalty === right.penalty &&
-      left.deletedAt === right.deletedAt
-    );
+    return Date.parse(remote.updatedAt) > Date.parse(local.updatedAt);
   }
 
   /**
