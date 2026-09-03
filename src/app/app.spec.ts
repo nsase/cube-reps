@@ -18,6 +18,7 @@ describe('App', () => {
       imports: [App],
       providers: [provideRouter(routes)],
     }).compileComponents();
+    await TestBed.inject(CubeService).ready;
   });
 
   afterEach(() => vi.restoreAllMocks());
@@ -144,7 +145,7 @@ describe('App', () => {
 
   it('履歴を100件ずつ表示し、Paginatorの言語切替を反映する', async () => {
     const cube = TestBed.inject(CubeService);
-    cube.solves.set(
+    cube.storedSolves.set(
       Array.from({ length: 101 }, (_, index) => ({
         id: String(index + 1),
         time: 1000 + index,
@@ -186,7 +187,7 @@ describe('App', () => {
 
   it('保存済みSolveの総数を日英のラベルとともに表示する', async () => {
     const cube = TestBed.inject(CubeService);
-    cube.solves.set([
+    cube.storedSolves.set([
       {
         id: 'past-solve',
         time: 1000,

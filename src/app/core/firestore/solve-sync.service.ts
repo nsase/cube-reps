@@ -1,4 +1,4 @@
-import { effect, inject, Injectable, OnDestroy, signal, untracked } from '@angular/core';
+import { effect, inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { CubeService, SolveMutation } from '../cube';
 import { FirestoreSolveRepository } from './firestore-solve.repository';
@@ -32,7 +32,6 @@ export class SolveSyncService implements OnDestroy {
     this.unsubscribe?.();
     this.unsubscribe = undefined;
     this.failedMutations.length = 0;
-    untracked(() => this.cube.showAccount(user?.uid ?? null));
     if (!user) {
       this.phase.set('signed-out');
       return;
