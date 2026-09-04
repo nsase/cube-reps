@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../auth/auth.service';
 import { CubeService, SolveMutation } from '../cube';
 import { Solve } from '../cube.models';
+import { SystemStore } from '../system.store';
 import { FirestoreSolveRepository } from './firestore-solve.repository';
 import { SolveSyncService } from './solve-sync.service';
 
@@ -37,6 +38,7 @@ describe('SolveSyncService', () => {
     put: ReturnType<typeof vi.fn>;
     tombstone: ReturnType<typeof vi.fn>;
   };
+  let system: { online: ReturnType<typeof signal<boolean>> };
 
   beforeEach(() => {
     auth = { user: signal<typeof account | null>(null) };
@@ -50,11 +52,13 @@ describe('SolveSyncService', () => {
       put: vi.fn(async () => undefined),
       tombstone: vi.fn(async () => undefined),
     };
+    system = { online: signal(true) };
     TestBed.configureTestingModule({
       providers: [
         { provide: AuthService, useValue: auth },
         { provide: CubeService, useValue: cube },
         { provide: FirestoreSolveRepository, useValue: cloud },
+        { provide: SystemStore, useValue: system },
       ],
     });
   });
@@ -78,6 +82,35 @@ describe('SolveSyncService', () => {
     sync.refresh();
 
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledTimes(2));
+  });
+
+  it('オフライン移行を表示へ反映し、オンライン復帰時に再取得する', async () => {
+    const sync = TestBed.inject(SolveSyncService);
+    auth.user.set(account);
+    TestBed.tick();
+    await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledTimes(1));
+
+    system.online.set(false);
+    TestBed.tick();
+    expect(cloud.list).toHaveBeenCalledTimes(1);
+    expect(sync.phase()).toBe('offline');
+
+    system.online.set(true);
+    TestBed.tick();
+    await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledTimes(2));
+    expect(sync.phase()).toBe('synced');
+  });
+
+  it('オフライン中のログインではFirestoreキャッシュからの取得を試す', async () => {
+    system.online.set(false);
+    const sync = TestBed.inject(SolveSyncService);
+
+    auth.user.set(account);
+    TestBed.tick();
+
+    await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledWith(account.uid));
+    expect(cube.mergeAccountSolves).toHaveBeenCalledWith(account.uid, [solve]);
+    expect(sync.phase()).toBe('offline');
   });
 
   it('追加・更新と削除を別のFirestore操作へ転送する', async () => {
