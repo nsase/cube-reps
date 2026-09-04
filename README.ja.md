@@ -63,11 +63,10 @@ Node.jsとnpmを用意し、リポジトリ内で次のコマンドを実行し�
 ```bash
 npm install
 npx playwright install chromium
-npm run start:firestore
-npm start
+npm run start:local
 ```
 
-最後の2コマンドは別々のターミナルで実行します。開発サーバーは通常、[http://localhost:4200](http://localhost:4200)で起動し、開発ビルドは`127.0.0.1:8080`のローカルFirestore Emulatorへ接続します。プロダクションビルドは引き続き本番Firestoreへ接続するため、ローカル開発中の操作が本番Solveを変更することはありません。
+最後のコマンドで開発サーバーとローカルFirestore Emulatorを同時に起動します。開発サーバーは通常、[http://localhost:4200](http://localhost:4200)で起動し、開発ビルドは`127.0.0.1:8080`のローカルFirestore Emulatorへ接続します。プロダクションビルドは引き続き本番Firestoreへ接続するため、ローカル開発中の操作が本番Solveを変更することはありません。
 
 `src/app/core/auth/firebase.config.ts`のFirebase Web設定には、ブラウザからCubeRepsのFirebaseプロジェクトへ接続するための公開識別情報が含まれます。サービスアカウントJSON、秘密鍵、アクセストークンなどの管理者認証情報はフロントエンドやリポジトリへ追加しないでください。ブラウザアプリでは必要ありません。
 
@@ -79,6 +78,7 @@ Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`�
 | ------------------------- | -------------------------------- |
 | `npm start`               | 開発サーバーを起動               |
 | `npm run start:firestore` | ローカルFirestore Emulatorを起動 |
+| `npm run start:local`     | 両方の開発サービスを同時に起動   |
 | `npm run build`           | プロダクションビルドを作成       |
 | `npm test`                | Vitestでテストを実行             |
 | `npm run test:firestore`  | EmulatorでFirestoreをテスト      |
