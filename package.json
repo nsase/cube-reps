@@ -12,7 +12,8 @@
     "start:e2e": "npm run build && http-server dist/cube-reps/browser -p 4300 -c-1",
     "prettier:format": "prettier --write .",
     "prepare": "husky",
-    "test:firestore": "firebase emulators:exec --only firestore --project cube-reps \"vitest run --config vitest.firestore.config.ts\""
+    "test:firestore": "firebase emulators:exec --only firestore --project cube-reps \"vitest run --config vitest.firestore.config.ts\"",
+    "start:local": "concurrently --kill-others --names app,firestore \"npm run start\" \"npm run start:firestore\""
   },
   "private": true,
   "license": "0BSD",
@@ -40,6 +41,7 @@
     "@axe-core/playwright": "^4.13.0",
     "@firebase/rules-unit-testing": "^5.0.2",
     "@playwright/test": "^1.62.1",
+    "concurrently": "^10.0.5",
     "fake-indexeddb": "^6.2.5",
     "firebase-tools": "^15.28.2",
     "http-server": "^14.1.1",
