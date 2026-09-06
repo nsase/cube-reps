@@ -31,6 +31,7 @@ describe('SolveSyncService', () => {
   let cube: {
     ready: Promise<void>;
     solveMutations: ReturnType<typeof signal<readonly SolveMutation[]>>;
+    acknowledgeSync: ReturnType<typeof vi.fn>;
     mergeAccountSolves: ReturnType<typeof vi.fn>;
   };
   let cloud: {
@@ -45,6 +46,7 @@ describe('SolveSyncService', () => {
     cube = {
       ready: Promise.resolve(),
       solveMutations: signal<readonly SolveMutation[]>([]),
+      acknowledgeSync: vi.fn(async () => undefined),
       mergeAccountSolves: vi.fn(async () => undefined),
     };
     cloud = {
@@ -130,5 +132,36 @@ describe('SolveSyncService', () => {
         expect.objectContaining({ id: solve.id }),
       ),
     );
+  });
+  it('ログアウト中や別アカウントのキューではFirestoreへアクセスしない', async () => {
+    TestBed.inject(SolveSyncService);
+    cube.solveMutations.set([{ kind: 'put', solve }]);
+    TestBed.tick();
+    expect(cloud.list).not.toHaveBeenCalled();
+    expect(cloud.put).not.toHaveBeenCalled();
+    auth.user.set({ ...account, uid: 'other' });
+    TestBed.tick();
+    await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledWith('other'));
+    expect(cloud.put).not.toHaveBeenCalled();
+    expect(cube.solveMutations()).toHaveLength(1);
+  });
+
+  it('一括移行の一部失敗を別記録の成功で隠さず、失敗分だけ再試行する', async () => {
+    const sync = TestBed.inject(SolveSyncService);
+    auth.user.set(account);
+    TestBed.tick();
+    await vi.waitFor(() => expect(sync.phase()).toBe('synced'));
+    cloud.put.mockRejectedValueOnce(new Error('offline'));
+    cube.solveMutations.set([
+      { kind: 'put', solve },
+      { kind: 'put', solve: { ...solve, id: 'second' } },
+    ]);
+    TestBed.tick();
+    await vi.waitFor(() => expect(sync.phase()).toBe('error'));
+    expect(cloud.put).toHaveBeenCalledTimes(2);
+    sync.retry();
+    await vi.waitFor(() => expect(sync.phase()).toBe('synced'));
+    expect(cloud.put).toHaveBeenCalledTimes(3);
+    expect(cloud.put.mock.calls[2][1].id).toBe(solve.id);
   });
 });

@@ -21,7 +21,7 @@ describe('CubeService record statistics', () => {
       updatedAt: new Date(id).toISOString(),
       ownerType: 'guest',
       ownerId: 'guest-test',
-      schemaVersion: 1,
+      schemaVersion: 2,
       category: 'full',
       groupId: 'unclassified',
       penalty,
@@ -48,11 +48,7 @@ describe('CubeService record statistics', () => {
       ownerType: 'account',
       ownerId: 'account-1',
     });
-    expect((await repository.load()).solves).toContainEqual({
-      ...migrated,
-      ownerType: 'account',
-      ownerId: 'account-1',
-    });
+    expect((await repository.load()).solves).toContainEqual(cube.solves()[0]);
   });
 
   it('指定一覧に同じ端末guestの未変更Solveがある場合だけ移行可能と判定する', () => {
@@ -115,7 +111,7 @@ describe('CubeService record statistics', () => {
       updatedAt: new Date(1).toISOString(),
       ownerType: 'guest',
       ownerId: 'guest-test',
-      schemaVersion: 1,
+      schemaVersion: 2,
     });
     const cube = TestBed.inject(CubeService);
     await cube.ready;
@@ -137,7 +133,7 @@ describe('CubeService record statistics', () => {
     expect(putRecordGroup).toHaveBeenCalledWith(group);
     expect(group).toMatchObject({
       ownerType: 'guest',
-      schemaVersion: 1,
+      schemaVersion: 2,
       updatedAt: group.createdAt,
     });
     expect(localStorage.getItem('cube-reps.groups')).toBeNull();
@@ -237,7 +233,7 @@ describe('CubeService record statistics', () => {
       Array.from({ length: 12 }, (_, index) => solve(index, (index + 1) * 1000)),
     );
 
-    expect(cube.ao5()).toBe(3000);
+    expect(cube.ao5()).toBe(10000);
     expect(cube.ao12()).toBe(6500);
     expect(cube.ao50()).toBeUndefined();
     expect(cube.ao100()).toBeUndefined();
@@ -429,8 +425,43 @@ describe('CubeService record statistics', () => {
     expect(cube.accountSolves()).toEqual([accountSolve]);
 
     auth.user.set(null);
-    expect(cube.solves().map(({ id }) => id)).toEqual([guest.id]);
+    expect(cube.solves().map(({ id }) => id)).toEqual([guest.id, accountSolve.id]);
     expect(cube.accountSolves()).toEqual([]);
     expect(cube.storedSolves().map(({ id }) => id)).toEqual([guest.id, accountSolve.id]);
+  });
+  it('別アカウントのペナルティ・削除・グループ経由の変更を拒否する', async () => {
+    const cube = TestBed.inject(CubeService);
+    await cube.ready;
+    const group = cube.addGroup('Shared local group')!;
+    const guest = cube.addSolve(1000, 'R', 'full');
+    const other = { ...guest, id: 'other', ownerType: 'account' as const, ownerId: 'other' };
+    cube.storedSolves.set([guest, other]);
+    cube.togglePenalty(other.id, '+2');
+    cube.removeSolve(other.id);
+    expect(cube.renameGroup(group.id, 'Changed')).toBe(false);
+    cube.removeGroup(group.id);
+    expect(cube.solves()).toContainEqual(other);
+    expect(cube.groups()).toContainEqual(group);
+    expect(cube.solveMutations()).toEqual([]);
+  });
+  it('再読み込み時に未送信の移行記録を再送し、他所有者の同一IDを上書きしない', async () => {
+    const repository = TestBed.inject(UserDataRepository);
+    const pending = {
+      ...solve(100, 1000),
+      ownerType: 'account' as const,
+      ownerId: 'target',
+      pendingSync: true,
+    };
+    await repository.putSolve(pending);
+    const cube = TestBed.inject(CubeService);
+    await cube.ready;
+    expect(cube.solveMutations()).toContainEqual({ kind: 'put', solve: pending });
+    await cube.mergeAccountSolves('other', [
+      { ...pending, ownerId: 'other', time: 9999, updatedAt: '2099-01-01T00:00:00.000Z' },
+    ]);
+    expect(cube.solves()).toEqual([pending]);
+    const tombstone = { ...pending, pendingSync: undefined, deletedAt: pending.date };
+    await cube.mergeAccountSolves('target', [tombstone]);
+    expect(cube.solves()).toEqual([]);
   });
 });

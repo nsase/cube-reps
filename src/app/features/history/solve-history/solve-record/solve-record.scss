@@ -73,3 +73,7 @@ $muted: var(--text-muted-color);
     max-width: 64px;
   }
 }
+
+.row-actions {
+  flex-wrap: wrap;
+}

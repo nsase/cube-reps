@@ -26,8 +26,16 @@
     "algorithms": "ALGORITHM LIBRARY",
     "history": "YOUR PROGRESS"
   },
-  "nav": { "timer": "タイマー", "history": "記録", "totalSolves": "総ソルブ数" },
-  "solveCategories": { "full": "フルソルブ", "oll": "OLL練習", "pll": "PLL練習" },
+  "nav": {
+    "timer": "タイマー",
+    "history": "記録",
+    "totalSolves": "総ソルブ数"
+  },
+  "solveCategories": {
+    "full": "フルソルブ",
+    "oll": "OLL練習",
+    "pll": "PLL練習"
+  },
   "common": {
     "ok": "OK",
     "cancel": "キャンセル",
@@ -45,23 +53,6 @@
     "ao50": "Ao50",
     "ao100": "Ao100",
     "recentAverage": "直近5回 平均"
-  },
-  "migration": {
-    "checking": "端末とクラウドの計測記録を確認しています…",
-    "title": "計測記録をクラウドへ保存",
-    "ready": "この端末のゲスト記録{{count}}件を移行できます。",
-    "destination": "保存先: {{account}}",
-    "localRetained": "移行後も端末内の記録は削除されません。",
-    "upload": "{{count}}件を移行",
-    "migrating": "計測記録をアップロードしています",
-    "progress": "{{processed}} / {{total}}件を処理しました",
-    "completed": "クラウドへの保存を確認しました",
-    "completedDetail": "端末内の{{count}}件はクラウド上にも存在します。",
-    "partialFailure": "一部の記録を保存できませんでした",
-    "partialFailureDetail": "{{processed}}件を処理し、{{failed}}件は未処理です。",
-    "retryFailed": "失敗した{{count}}件を再試行",
-    "checkFailure": "クラウドの記録を確認できませんでした",
-    "checkFailureDetail": "通信状態を確認して再試行してください。"
   },
   "timer": {
     "recordGroup": "RECORD GROUP",
@@ -152,5 +143,19 @@
     "deleteSolve": "削除",
     "deleteSolveTitle": "記録を削除しますか？",
     "deleteSolveMessage": "選択した計測記録を削除します。\nこの操作は取り消せません。"
+  },
+  "ownership": {
+    "owner": "所有者",
+    "all": "すべて",
+    "unlinked": "アカウント未紐づけ",
+    "account": "アカウント",
+    "selectSolve": "記録{{number}}を選択",
+    "copiedFrom": "コピー元の記録",
+    "move": "現在のアカウントへ移行",
+    "copy": "現在のアカウントへコピー",
+    "selected": "{{count}}件を選択中",
+    "confirm": "選択した{{count}}件を処理します。移行元・コピー元: {{from}}。移行先・コピー先: {{to}}。元の記録はこのブラウザに残ります。",
+    "result": "保存済み: {{completed}}件。未処理: {{failed}}件。クラウドへの保存は同期状態で確認できます。未処理の記録は再選択してやり直せます。",
+    "savedGroup": "保存済みグループ"
   }
 }

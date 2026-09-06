@@ -1,0 +1,21 @@
+<button
+  mat-icon-button
+  [attr.aria-label]="owners.details(solve())"
+  [title]="owners.details(solve())"
+  (click)="showDetails()"
+>
+  @if (solve().ownerType === 'guest') {
+    <mat-icon>devices</mat-icon>
+  } @else if (owners.photo(solve()) && failedPhoto() !== owners.photo(solve())) {
+    <img
+      [src]="owners.photo(solve())"
+      alt=""
+      referrerpolicy="no-referrer"
+      (error)="failedPhoto.set(owners.photo(solve()))"
+    />
+  } @else if (owners.initials(solve())) {
+    <span class="initials" aria-hidden="true">{{ owners.initials(solve()) }}</span>
+  } @else {
+    <mat-icon>account_circle</mat-icon>
+  }
+</button>

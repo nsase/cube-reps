@@ -76,4 +76,25 @@ describe('Firestore Solve mapper', () => {
       fromFirestoreSolve(solve.id, { time: 'fast', scramble: 'R U' }, 'account-1'),
     ).toBeUndefined();
   });
+  it('コピー元や再送状態をFirestoreへ送らず、既存Security Rulesの形式を維持する', () => {
+    const stored = toFirestoreSolve(
+      {
+        id: 'copy',
+        time: 1000,
+        scramble: 'R',
+        date: new Date(0).toISOString(),
+        updatedAt: new Date(0).toISOString(),
+        ownerType: 'account',
+        ownerId: 'target',
+        category: 'full',
+        penalty: 'none',
+        schemaVersion: 2,
+        pendingSync: true,
+        copiedFromId: 'source',
+      },
+      'target',
+    );
+    expect(stored).not.toHaveProperty('pendingSync');
+    expect(stored).not.toHaveProperty('copiedFromId');
+  });
 });

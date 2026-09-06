@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { AuthService } from '../../core/auth/auth.service';
 import { CubeService } from '../../core/cube';
 import { HistoryStore } from './history.store';
 
@@ -70,7 +71,7 @@ describe('HistoryStore', () => {
     store.setPage(2);
 
     expect(store.pagedSolves()).toHaveLength(5);
-    expect(store.pagedSolves()[0].id).toBe('201');
+    expect(store.pagedSolves()[0].id).toBe('5');
   });
 
   it('各記録時点の通し番号とAo5・Ao12を一覧行へ設定する', () => {
@@ -128,5 +129,37 @@ describe('HistoryStore', () => {
     store.selectedCategory.set('pll');
     TestBed.tick();
     expect(store.pageIndex()).toBe(0);
+  });
+  it('所有者フィルターが集計元とページに反映され、アカウント変更で選択を解除する', () => {
+    const cube = TestBed.inject(CubeService);
+    const store = TestBed.inject(HistoryStore);
+    const guest = cube.addSolve(1000, 'R', 'full');
+    const account = {
+      ...guest,
+      id: 'other-solve',
+      ownerType: 'account' as const,
+      ownerId: 'other',
+    };
+    cube.storedSolves.set([guest, account]);
+    TestBed.inject(AuthService).user.set({
+      uid: 'target',
+      displayName: null,
+      email: null,
+      photoURL: null,
+    });
+    TestBed.tick();
+    expect(store.filteredSolves()).toHaveLength(2);
+    store.toggleSelection(guest);
+    expect(store.selectedSolves()).toEqual([guest]);
+    store.selectedOwner.set('account:other');
+    TestBed.tick();
+    expect(store.filteredSolves()).toEqual([account]);
+    expect(store.pagedRows().map((row) => row.solve)).toEqual([account]);
+    expect(store.selectedIds().size).toBe(0);
+    store.toggleSelection(account);
+    TestBed.inject(AuthService).user.set(null);
+    TestBed.tick();
+    expect(store.selectedSolves()).toEqual([]);
+    expect(store.filteredSolves()).toEqual([account]);
   });
 });

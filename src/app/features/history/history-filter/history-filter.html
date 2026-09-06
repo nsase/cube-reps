@@ -14,3 +14,14 @@
     }
   </select></label
 >
+
+<label
+  >{{ 'ownership.owner' | transloco }}
+  <select data-testid="history-owner-filter" [(ngModel)]="store.selectedOwner">
+    <option value="all">{{ 'ownership.all' | transloco }}</option>
+    <option value="unlinked">{{ 'ownership.unlinked' | transloco }}</option>
+    @for (owner of store.owners.options(); track owner.key) {
+      <option [value]="owner.key">{{ owner.label }}</option>
+    }
+  </select>
+</label>

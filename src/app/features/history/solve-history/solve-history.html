@@ -18,6 +18,9 @@
     @for (row of store.pagedRows(); track row.solve.id) {
       <app-solve-record
         [solve]="row.solve"
+        [selectable]="store.canSelect(row.solve)"
+        [selected]="store.selectedIds().has(row.solve.id)"
+        (selectionChanged)="store.toggleSelection(row.solve)"
         [recordNumber]="row.number"
         [ao5]="row.ao5"
         [ao12]="row.ao12"

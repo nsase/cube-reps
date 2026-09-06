@@ -20,8 +20,8 @@ export interface SyncMetadata {
   updatedAt: string;
   /** 対象を所有する主体の種別。 */
   ownerType: UserDataOwnerType;
-  /** ゲスト端末UUIDまたは将来のアカウントUID。 */
-  ownerId: string;
+  /** アカウントのFirebase UID。未紐づけのデータでは省略する。 */
+  ownerId?: string;
   /** このレコードが準拠する保存スキーマのバージョン。 */
   schemaVersion: number;
 }
@@ -54,8 +54,26 @@ export interface Solve extends SyncMetadata {
   groupId?: string;
   /** 記録へ適用されたペナルティ。 */
   penalty: Penalty;
+  /** ローカル保存後、Firestoreへの転送確認まで保持する再送フラグ。 */
+  pendingSync?: boolean;
+  /** ブラウザ内だけに保持するコピー元の記録ID。元のアカウント情報を別アカウントへ送信しない。 */
+  copiedFromId?: string;
   /** 同期対象の削除を他端末へ伝えるtombstone日時。 */
   deletedAt?: string;
+}
+
+/** ブラウザで利用したアカウントの表示情報。認証情報は保持しない。 */
+export interface LocalAccount {
+  /** 表示名が同じアカウントも区別するFirebase UID。 */
+  uid: string;
+  /** 任意の表示名。 */
+  displayName?: string | null;
+  /** 任意のメールアドレス。 */
+  email?: string | null;
+  /** 任意のプロフィール画像URL。 */
+  photoURL?: string | null;
+  /** 利用した認証プロバイダーの識別子。 */
+  providerIds?: string[];
 }
 
 /** キューブ表示で使用するステッカー色。 */

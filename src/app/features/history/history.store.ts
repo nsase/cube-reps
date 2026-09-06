@@ -1,6 +1,8 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { CubeService } from '../../core/cube';
 import { Solve, SolveCategory } from '../../core/cube.models';
+import { AuthService } from '../../core/auth/auth.service';
+import { SolveOwnerService } from '../../core/solve-owner';
 import { average } from '../../core/cube-statistics';
 
 /** 履歴一覧の1行に表示する記録と、その計測時点の集計値。 */
@@ -21,6 +23,30 @@ export class HistoryStore {
   /** 計測記録を参照するrootサービス。 */
   private readonly cube = inject(CubeService);
 
+  /** 現在のアカウントに応じた選択可能範囲。 */
+  readonly auth = inject(AuthService);
+  /** 所有者の表示名と分類。 */
+  readonly owners = inject(SolveOwnerService);
+  /** 全所有者を初期表示するフィルター。 */
+  readonly selectedOwner = signal('all');
+  /** 明示的に移行・コピーする記録ID。 */
+  readonly selectedIds = signal<ReadonlySet<string>>(new Set());
+  /** 所有者フィルターを適用した、グループをまたぐ記録一覧。 */
+  readonly ownerSolves = computed(() =>
+    this.cube
+      .solves()
+      .filter(
+        (solve) =>
+          this.selectedOwner() === 'all' || this.owners.key(solve) === this.selectedOwner(),
+      ),
+  );
+  /** 現在表示する範囲内で選択されている移行・コピー候補。 */
+  readonly selectedSolves = computed(() =>
+    this.filteredSolves().filter(
+      (solve) => this.selectedIds().has(solve.id) && this.canSelect(solve),
+    ),
+  );
+
   /** Timerの記録先と共有する、履歴の表示・集計対象グループ。 */
   readonly selectedGroup = this.cube.activeGroupId;
   /** 履歴と集計に表示するsolveカテゴリー。 */
@@ -35,9 +61,9 @@ export class HistoryStore {
   readonly filteredSolves = computed(() => {
     const groupId = this.selectedGroup();
     const category = this.selectedCategory();
-    return this.cube
-      .solves()
-      .filter((solve) => solve.category === category && solve.groupId === groupId);
+    return this.ownerSolves().filter(
+      (solve) => solve.category === category && (solve.groupId || 'unclassified') === groupId,
+    );
   });
 
   /** 現在のページに表示する計測記録。 */
@@ -64,7 +90,12 @@ export class HistoryStore {
   private readonly resetPageOnFilterChange = effect(() => {
     this.selectedGroup();
     this.selectedCategory();
-    untracked(() => this.pageIndex.set(0));
+    this.selectedOwner();
+    this.auth.user()?.uid;
+    untracked(() => {
+      this.pageIndex.set(0);
+      this.selectedIds.set(new Set());
+    });
   });
 
   /** 削除後も存在するページが選択されるようページ位置を補正する。 */
@@ -72,6 +103,23 @@ export class HistoryStore {
     const lastPage = Math.max(Math.ceil(this.filteredSolves().length / this.pageSize) - 1, 0);
     if (this.pageIndex() > lastPage) this.pageIndex.set(lastPage);
   });
+
+  /** 現在のアカウントに未紐づけの記録だけを選択可能にする。 */
+  canSelect(solve: Solve): boolean {
+    const uid = this.auth.user()?.uid;
+    return Boolean(uid && (solve.ownerType === 'guest' || solve.ownerId !== uid));
+  }
+
+  /** 表示中の1件の選択を切り替える。 */
+  toggleSelection(solve: Solve): void {
+    if (!this.canSelect(solve)) return;
+    this.selectedIds.update((current) => {
+      const ids = new Set(current);
+      if (ids.has(solve.id)) ids.delete(solve.id);
+      else ids.add(solve.id);
+      return ids;
+    });
+  }
 
   /**
    * 履歴に表示するページを変更する。

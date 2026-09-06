@@ -50,3 +50,11 @@ select {
     width: 100%;
   }
 }
+
+label {
+  min-width: 0;
+  max-width: 100%;
+}
+select {
+  max-width: 100%;
+}

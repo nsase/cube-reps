@@ -7,7 +7,6 @@ import { CubeService } from './core/cube';
 import { AppUpdateService } from './core/app-update.service';
 import { AppUpdate } from './shared/app-update/app-update';
 import { AuthControls } from './shared/auth-controls/auth-controls';
-import { SolveMigration } from './shared/solve-migration/solve-migration';
 import { SyncStatus } from './shared/sync-status/sync-status';
 
 /** 共通レイアウトとルーターOutletを表示するルートコンポーネント。 */
@@ -16,7 +15,6 @@ import { SyncStatus } from './shared/sync-status/sync-status';
   imports: [
     AppUpdate,
     AuthControls,
-    SolveMigration,
     SyncStatus,
     RouterLink,
     RouterLinkActive,

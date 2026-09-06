@@ -2,6 +2,16 @@
 <mat-dialog-content>
   <dl>
     <div>
+      <dt>{{ 'ownership.owner' | transloco }}</dt>
+      <dd>{{ owners.details(currentSolve()) }}</dd>
+    </div>
+    @if (currentSolve().copiedFromId) {
+      <div>
+        <dt>{{ 'ownership.copiedFrom' | transloco }}</dt>
+        <dd>{{ currentSolve().copiedFromId }}</dd>
+      </div>
+    }
+    <div>
       <dt>{{ 'history.recordNumber' | transloco }}</dt>
       <dd class="record-number">{{ recordNumber }}</dd>
     </div>

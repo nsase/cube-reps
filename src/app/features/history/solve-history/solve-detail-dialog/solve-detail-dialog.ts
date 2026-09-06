@@ -6,6 +6,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { CubeService } from '../../../../core/cube';
 import { Solve } from '../../../../core/cube.models';
 import { SolvePattern } from '../../../../shared/solve-pattern/solve-pattern';
+import { SolveOwnerService } from '../../../../core/solve-owner';
 import { SolveActions } from '../solve-actions/solve-actions';
 
 /** 計測記録の詳細表示に必要な記録本体と一覧上の通し番号。 */
@@ -25,6 +26,8 @@ export interface SolveDetailData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolveDetailDialog {
+  /** 所有者の表示情報。 */
+  protected readonly owners = inject(SolveOwnerService);
   /** ダイアログで表示する計測記録と通し番号。 */
   private readonly data = inject<SolveDetailData>(MAT_DIALOG_DATA);
   /** ダイアログで表示する計測記録。 */

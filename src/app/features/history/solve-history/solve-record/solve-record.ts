@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -6,18 +6,33 @@ import { MatIconModule } from '@angular/material/icon';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { CubeService } from '../../../../core/cube';
 import { Solve } from '../../../../core/cube.models';
+import { OwnerAvatar } from '../../../../shared/owner-avatar/owner-avatar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { SolveActions } from '../solve-actions/solve-actions';
 import { SolveDetailDialog } from '../solve-detail-dialog/solve-detail-dialog';
 
 /** 1件の計測記録と、そのペナルティ・削除操作を表示するコンポーネント。 */
 @Component({
   selector: 'app-solve-record',
-  imports: [MatButtonModule, MatIconModule, SolveActions, TranslocoPipe],
+  imports: [
+    OwnerAvatar,
+    MatCheckboxModule,
+    MatButtonModule,
+    MatIconModule,
+    SolveActions,
+    TranslocoPipe,
+  ],
   templateUrl: './solve-record.html',
   styleUrl: './solve-record.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolveRecord {
+  /** 親の履歴スコープで判定した選択可否。 */
+  readonly selectable = input(false);
+  /** 親の履歴スコープで保持する選択状態。 */
+  readonly selected = input(false);
+  /** 親の選択集合を更新する操作。 */
+  readonly selectionChanged = output<void>();
   /** 表示する計測記録。 */
   readonly solve = input.required<Solve>();
   /** 履歴一覧に表示する通し番号。 */

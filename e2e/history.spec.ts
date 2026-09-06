@@ -75,9 +75,9 @@ test('旧localStorageの記録をIndexedDBへ移行して履歴に表示する',
 
   expect(migrated.id).toMatch(/^[0-9a-f-]{36}$/i);
   expect(migrated.ownerType).toBe('guest');
-  expect(migrated.ownerId).toMatch(/^[0-9a-f-]{36}$/i);
+  expect(migrated.ownerId).toBeUndefined();
   expect(migrated.updatedAt).toBe('2026-01-01T00:00:00.000Z');
-  expect(migrated.schemaVersion).toBe(1);
+  expect(migrated.schemaVersion).toBe(2);
   expect(await page.evaluate(() => localStorage.getItem('cube-reps.solves'))).toBeNull();
   const related = await page.evaluate(
     () =>
@@ -102,13 +102,11 @@ test('旧localStorageの記録をIndexedDBへ移行して履歴に表示する',
   );
   expect(related.groups[0]).toMatchObject({
     id: 'competition',
-    ownerId: migrated.ownerId,
-    schemaVersion: 1,
+    schemaVersion: 2,
   });
   expect(related.preferences[0]).toMatchObject({
     caseKey: 'PLL-Aa',
-    ownerId: migrated.ownerId,
-    schemaVersion: 1,
+    schemaVersion: 2,
   });
   const custom = related.preferences[0]['custom'] as Array<{ id: string }>;
   expect(custom[0].id).toMatch(/^[0-9a-f-]{36}$/i);

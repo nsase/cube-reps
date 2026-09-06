@@ -5,11 +5,17 @@ import { NEVER } from 'rxjs';
 import en from '../public/assets/i18n/en.json';
 import ja from '../public/assets/i18n/ja.json';
 import { AuthenticatedUser, AuthGateway } from './app/core/auth/auth.gateway';
-import { AlgorithmPreference, RecordGroup, Solve } from './app/core/cube.models';
+import { AlgorithmPreference, RecordGroup, Solve, LocalAccount } from './app/core/cube.models';
 import { StoredUserData, UserDataRepository } from './app/core/user-data-repository';
 
 /** コンポーネントテスト間でIndexedDB状態を共有しないメモリRepository。 */
 class TestUserDataRepository extends UserDataRepository {
+  /** テスト内のアカウント台帳。 */
+  private accounts: LocalAccount[] = [];
+  /** アカウント表示情報を更新する。 */
+  override async putAccount(account: LocalAccount): Promise<void> {
+    this.accounts = [...this.accounts.filter(({ uid }) => uid !== account.uid), account];
+  }
   /** テスト内で保存された計測記録。 */
   private solves: Solve[] = [];
 
@@ -23,7 +29,7 @@ class TestUserDataRepository extends UserDataRepository {
       solves: this.solves,
       groups: this.groups,
       algorithmPreferences: this.algorithmPreferences,
-      guestOwnerId: 'guest-test',
+      accounts: this.accounts,
     };
   }
 
