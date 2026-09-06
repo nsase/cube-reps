@@ -47,6 +47,7 @@ export class SolveActions {
    * 詳細ダイアログなどの呼び出し元が表示を閉じられるように、削除完了を通知する。
    */
   protected delete(): void {
+    if (!this.cube.canEditSolve(this.currentSolve())) return;
     this.confirm
       .delete(
         this.i18n.translate('history.deleteSolveTitle'),

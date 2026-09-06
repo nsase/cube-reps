@@ -28,6 +28,9 @@ export class SolveSyncService {
   /** 同期失敗後に再試行する直近のローカル操作。 */
   private readonly failedMutations: SolveMutation[] = [];
 
+  /** アカウント別の実行中書き込み数。1件の成功で他の失敗を隠さないために使う。 */
+  private readonly uploadsInFlight = new Map<string, number>();
+
   /** ヘッダーへ公開する現在の同期状態。 */
   readonly phase = signal<SolveSyncPhase>('signed-out');
 
@@ -35,7 +38,9 @@ export class SolveSyncService {
   private readonly watchAccount = effect(() => {
     const user = this.auth.user();
     const requestId = ++this.requestId;
-    this.failedMutations.length = 0;
+    const previousFailures = this.failedMutations.splice(0);
+    if (previousFailures.length)
+      untracked(() => this.cube.solveMutations.update((items) => [...items, ...previousFailures]));
     if (!user) {
       this.phase.set('signed-out');
       return;
@@ -67,7 +72,9 @@ export class SolveSyncService {
     if (mutations.length === 0) return;
     const user = this.auth.user();
     if (!user) return;
-    const applicable = mutations.filter((mutation) => mutation.solve.ownerId === user.uid);
+    const applicable = mutations.filter(
+      (mutation) => mutation.solve.ownerType === 'account' && mutation.solve.ownerId === user.uid,
+    );
     if (applicable.length === 0) return;
     this.cube.solveMutations.set(
       mutations.filter((mutation) => mutation.solve.ownerId !== user.uid),
@@ -104,10 +111,11 @@ export class SolveSyncService {
     this.phase.set(this.system.online() ? 'syncing' : 'offline');
     try {
       await this.cube.ready;
+      if (requestId !== this.requestId || this.auth.user()?.uid !== userId) return;
       const solves = await this.cloud.list(userId);
       if (requestId !== this.requestId || this.auth.user()?.uid !== userId) return;
       await this.cube.mergeAccountSolves(userId, solves);
-      if (requestId === this.requestId) this.phase.set(this.system.online() ? 'synced' : 'offline');
+      if (requestId === this.requestId) this.setSettledPhase(userId);
     } catch {
       if (requestId === this.requestId) this.phase.set('error');
     }
@@ -115,14 +123,34 @@ export class SolveSyncService {
 
   /** ローカル操作をFirestoreキャッシュへ書き込み、SDKの再送キューへ委ねる。 */
   private async upload(userId: string, mutation: SolveMutation): Promise<void> {
+    if (
+      this.auth.user()?.uid !== userId ||
+      mutation.solve.ownerType !== 'account' ||
+      mutation.solve.ownerId !== userId
+    )
+      return;
+    this.uploadsInFlight.set(userId, (this.uploadsInFlight.get(userId) ?? 0) + 1);
     this.phase.set(this.system.online() ? 'syncing' : 'pending');
     try {
       if (mutation.kind === 'delete') await this.cloud.tombstone(userId, mutation.solve);
       else await this.cloud.put(userId, mutation.solve);
-      if (!this.system.online()) this.phase.set('pending');
+      await this.cube.acknowledgeSync(mutation.solve);
     } catch {
-      this.failedMutations.push(mutation);
-      this.phase.set('error');
+      if (this.auth.user()?.uid !== userId) {
+        this.cube.solveMutations.update((items) => [...items, mutation]);
+      } else {
+        this.failedMutations.push(mutation);
+      }
+    } finally {
+      this.uploadsInFlight.set(userId, Math.max((this.uploadsInFlight.get(userId) ?? 1) - 1, 0));
+      if (this.auth.user()?.uid === userId) this.setSettledPhase(userId);
     }
+  }
+  /** 取得完了と個別アップロード完了から、残っている処理・失敗を含む状態を表示する。 */
+  private setSettledPhase(userId: string): void {
+    if (this.failedMutations.length) this.phase.set('error');
+    else if (this.uploadsInFlight.get(userId))
+      this.phase.set(this.system.online() ? 'syncing' : 'pending');
+    else this.phase.set(this.system.online() ? 'synced' : 'offline');
   }
 }

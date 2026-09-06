@@ -1,0 +1,25 @@
+@if (store.auth.user()) {
+  <div class="operations">
+    <span>{{ 'ownership.selected' | transloco: { count: store.selectedSolves().length } }}</span>
+    <button
+      mat-button
+      [disabled]="!count(false) || confirming() || migration.pending()"
+      (click)="transfer(false)"
+    >
+      {{ 'ownership.move' | transloco }}
+    </button>
+    <button
+      mat-button
+      [disabled]="!count(true) || confirming() || migration.pending()"
+      (click)="transfer(true)"
+    >
+      {{ 'ownership.copy' | transloco }}
+    </button>
+  </div>
+}
+@if (result(); as outcome) {
+  <div role="status" data-testid="history-transfer-result">
+    <span>{{ 'ownership.result' | transloco: outcome }}</span>
+    <button mat-button (click)="result.set(null)">{{ 'common.close' | transloco }}</button>
+  </div>
+}

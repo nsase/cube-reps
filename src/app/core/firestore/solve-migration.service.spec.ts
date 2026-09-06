@@ -1,265 +1,102 @@
-import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { AuthenticatedUser } from '../auth/auth.gateway';
 import { AuthService } from '../auth/auth.service';
 import { CubeService } from '../cube';
-import { Solve } from '../cube.models';
-import { FirestoreSolveRepository } from './firestore-solve.repository';
+import { UserDataRepository } from '../user-data-repository';
 import { SolveMigrationService } from './solve-migration.service';
 
-const account: AuthenticatedUser = {
-  uid: 'account-1',
-  displayName: 'Cube User',
-  email: 'cube@example.com',
-  photoURL: null,
-};
+/** テスト内でのみ使用するログイン先。 */
+const account = { uid: 'account-a', displayName: 'User', email: null, photoURL: null };
 
-const localSolve = (overrides: Partial<Solve> = {}): Solve => ({
-  id: 'solve-1',
-  time: 12345,
-  scramble: 'R U',
-  date: '2026-09-01T10:00:00.000Z',
-  updatedAt: '2026-09-01T10:01:00.000Z',
-  ownerType: 'guest',
-  ownerId: 'guest-1',
-  schemaVersion: 1,
-  category: 'full',
-  groupId: 'unclassified',
-  penalty: 'none',
-  ...overrides,
-});
+describe('SolveMigrationService selected transfers', () => {
+  beforeEach(async () => {
+    TestBed.resetTestingModule();
+    await TestBed.inject(CubeService).ready;
+  });
 
-describe('SolveMigrationService', () => {
-  const user = signal<AuthenticatedUser | null>(null);
-  const solves = signal<Solve[]>([]);
-  let cloud: { list: ReturnType<typeof vi.fn>; put: ReturnType<typeof vi.fn> };
-  let assignSolveToAccount: ReturnType<typeof vi.fn>;
-
-  beforeEach(() => {
-    user.set(null);
-    solves.set([]);
-    cloud = { list: vi.fn().mockResolvedValue([]), put: vi.fn().mockResolvedValue(undefined) };
-    assignSolveToAccount = vi.fn(async (solve: Solve, accountId: string) => {
-      solves.update((items) =>
-        items.map((item) =>
-          item.id === solve.id ? { ...item, ownerType: 'account', ownerId: accountId } : item,
-        ),
-      );
+  it('ログインだけでは移行せず、選択した未紐づけだけを移行してログアウト後も表示する', async () => {
+    const cube = TestBed.inject(CubeService);
+    const first = cube.addSolve(1000, 'R', 'full');
+    const second = cube.addSolve(2000, 'U', 'full');
+    const auth = TestBed.inject(AuthService);
+    auth.user.set(account);
+    const service = TestBed.inject(SolveMigrationService);
+    TestBed.tick();
+    expect(cube.guestSolves()).toHaveLength(2);
+    expect(await service.transfer([first], account.uid, false)).toEqual({
+      completed: 1,
+      failed: 0,
     });
-    TestBed.configureTestingModule({
-      providers: [
-        SolveMigrationService,
-        { provide: AuthService, useValue: { user } },
-        {
-          provide: CubeService,
-          useValue: {
-            ready: Promise.resolve(),
-            solves,
-            guestSolves: () =>
-              solves().filter(
-                (solve) => solve.ownerType === 'guest' && solve.ownerId === 'guest-1',
-              ),
-            isCurrentGuestSolveIn: (currentSolves: readonly Solve[], solve: Solve) =>
-              currentSolves.some(
-                (item) =>
-                  item.id === solve.id &&
-                  item.ownerType === 'guest' &&
-                  item.ownerId === 'guest-1' &&
-                  item.updatedAt === solve.updatedAt,
-              ),
-            isCurrentGuestSolve: (solve: Solve) =>
-              solves().some(
-                (item) =>
-                  item.id === solve.id &&
-                  item.ownerType === 'guest' &&
-                  item.ownerId === 'guest-1' &&
-                  item.updatedAt === solve.updatedAt,
-              ),
-            assignSolveToAccount,
-          },
-        },
-        { provide: FirestoreSolveRepository, useValue: cloud },
-      ],
+    expect(cube.guestSolves()).toEqual([second]);
+    expect(cube.solveMutations().map((item) => item.solve.id)).toEqual([first.id]);
+    auth.user.set(null);
+    expect(cube.solves()).toHaveLength(2);
+    const moved = cube.solves().find((solve) => solve.id === first.id)!;
+    expect(moved.ownerId).toBe(account.uid);
+    expect(cube.canEditSolve(moved)).toBe(false);
+    expect((await TestBed.inject(UserDataRepository).load()).solves).toContainEqual(moved);
+  });
+
+  it('別アカウントは新しいIDでコピーし、元記録と元所有者を維持する', async () => {
+    const cube = TestBed.inject(CubeService);
+    const auth = TestBed.inject(AuthService);
+    auth.user.set({ ...account, uid: 'source' });
+    const source = cube.addSolve(1000, 'R', 'full');
+    cube.solveMutations.set([]);
+    auth.user.set(account);
+    const service = TestBed.inject(SolveMigrationService);
+    expect(await service.transfer([source], account.uid, true)).toEqual({
+      completed: 1,
+      failed: 0,
     });
-  });
-
-  it('同期済みまたは別アカウント所有のSolveを移行候補へ含めない', async () => {
-    solves.set([
-      localSolve(),
-      localSolve({ id: 'already-owned', ownerType: 'account', ownerId: 'other-account' }),
-    ]);
-    const migration = TestBed.inject(SolveMigrationService);
-    user.set(account);
-    TestBed.flushEffects();
-
-    await vi.waitFor(() => expect(migration.state().phase).toBe('ready'));
-    expect(migration.state().localCount).toBe(1);
-    expect(migration.state().targetCount).toBe(1);
-    await migration.migrate();
-
-    expect(cloud.put).toHaveBeenCalledTimes(1);
-    expect(cloud.put).toHaveBeenCalledWith(account.uid, expect.objectContaining({ id: 'solve-1' }));
-  });
-
-  it('ログインだけではアップロードせず、対象件数とアカウントを準備する', async () => {
-    solves.set([localSolve(), localSolve({ id: 'solve-2' })]);
-    const migration = TestBed.inject(SolveMigrationService);
-    user.set(account);
-    TestBed.flushEffects();
-    await vi.waitFor(() => expect(migration.state().phase).toBe('ready'));
-
-    expect(migration.state().targetCount).toBe(2);
-    expect(migration.account()?.email).toBe('cube@example.com');
-    expect(cloud.put).not.toHaveBeenCalled();
-  });
-
-  it('明示操作時だけUUIDごとに保存し、再検査では重複登録しない', async () => {
-    const solve = localSolve();
-    solves.set([solve]);
-    const migration = TestBed.inject(SolveMigrationService);
-    user.set(account);
-    TestBed.flushEffects();
-    await vi.waitFor(() => expect(migration.state().phase).toBe('ready'));
-
-    await migration.migrate();
-    expect(cloud.put).toHaveBeenCalledWith(account.uid, solve);
-    expect(migration.state().phase).toBe('completed');
-    expect(solves()[0]).toMatchObject({ ownerType: 'account', ownerId: account.uid });
-
-    cloud.list.mockResolvedValue([{ ...solve, ownerType: 'account', ownerId: account.uid }]);
-    migration.retryInspection();
-    await vi.waitFor(() => expect(migration.state().phase).toBe('hidden'));
-    expect(migration.state().targetCount).toBe(0);
-    expect(cloud.put).toHaveBeenCalledTimes(1);
-  });
-
-  it('クラウド側が新しい競合Solveを上書きしない', async () => {
-    solves.set([localSolve()]);
-    cloud.list.mockResolvedValue([
-      localSolve({
-        time: 15000,
-        updatedAt: '2026-09-01T10:02:00.000Z',
-        ownerType: 'account',
-        ownerId: account.uid,
-      }),
-    ]);
-    const migration = TestBed.inject(SolveMigrationService);
-    user.set(account);
-    TestBed.flushEffects();
-
-    await vi.waitFor(() => expect(migration.state().phase).toBe('ready'));
-    expect(migration.state().skippedCount).toBe(1);
-    await migration.migrate();
-    expect(migration.state().phase).toBe('completed');
-    expect(cloud.put).not.toHaveBeenCalled();
-    expect(assignSolveToAccount).toHaveBeenCalledWith(expect.anything(), account.uid);
-  });
-
-  it('部分失敗したSolveだけを識別して再試行する', async () => {
-    solves.set([localSolve(), localSolve({ id: 'solve-2' })]);
-    cloud.put.mockRejectedValueOnce(new Error('offline')).mockResolvedValue(undefined);
-    const migration = TestBed.inject(SolveMigrationService);
-    user.set(account);
-    TestBed.flushEffects();
-    await vi.waitFor(() => expect(migration.state().phase).toBe('ready'));
-
-    await migration.migrate();
-    expect(migration.state()).toMatchObject({
-      phase: 'partial-failure',
-      processedCount: 2,
-      failedCount: 1,
+    expect(cube.solves()).toContainEqual(source);
+    const copy = cube.solves().find((solve) => solve.id !== source.id)!;
+    expect(copy).toMatchObject({
+      ownerId: account.uid,
+      copiedFromId: source.id,
+      time: source.time,
+      pendingSync: true,
     });
-
-    await migration.migrate();
-    expect(migration.state()).toMatchObject({ phase: 'completed', failedCount: 0 });
-    expect(cloud.put).toHaveBeenCalledTimes(3);
+    expect(cube.solveMutations().map((item) => item.solve)).toEqual([copy]);
+    await cube.acknowledgeSync(copy);
+    expect(cube.solves().find((solve) => solve.id === copy.id)?.pendingSync).toBeUndefined();
   });
 
-  it('アカウント切替後に古いアカウントへの残りの保存を開始しない', async () => {
-    solves.set([localSolve(), localSolve({ id: 'solve-2' })]);
-    let finishFirst: (() => void) | undefined;
-    cloud.put.mockImplementationOnce(
-      () =>
-        new Promise<void>((resolve) => {
-          finishFirst = resolve;
-        }),
+  it('確認後の編集とアカウント切替を検知して未確認の内容を送らない', async () => {
+    const cube = TestBed.inject(CubeService);
+    const solve = cube.addSolve(1000, 'R', 'full');
+    TestBed.inject(AuthService).user.set(account);
+    cube.storedSolves.set([{ ...solve, updatedAt: '2099-01-01T00:00:00.000Z' }]);
+    const service = TestBed.inject(SolveMigrationService);
+    expect(await service.transfer([solve], account.uid, false)).toEqual({
+      completed: 0,
+      failed: 1,
+    });
+    TestBed.inject(AuthService).user.set(null);
+    expect(await service.transfer(cube.solves(), account.uid, false)).toEqual({
+      completed: 0,
+      failed: 1,
+    });
+    expect(cube.solveMutations()).toEqual([]);
+  });
+
+  it('保存失敗では元記録を維持し、成功分を重複させず未処理分を再試行する', async () => {
+    const cube = TestBed.inject(CubeService);
+    const first = cube.addSolve(1000, 'R', 'full');
+    const second = cube.addSolve(2000, 'U', 'full');
+    TestBed.inject(AuthService).user.set(account);
+    vi.spyOn(TestBed.inject(UserDataRepository), 'putSolve').mockRejectedValueOnce(
+      new Error('quota'),
     );
-    const migration = TestBed.inject(SolveMigrationService);
-    user.set(account);
-    TestBed.flushEffects();
-    await vi.waitFor(() => expect(migration.state().phase).toBe('ready'));
-
-    const running = migration.migrate();
-    await vi.waitFor(() => expect(cloud.put).toHaveBeenCalledTimes(1));
-    user.set({ ...account, uid: 'account-2', email: 'other@example.com' });
-    TestBed.flushEffects();
-    finishFirst?.();
-    await running;
-
-    expect(cloud.put).toHaveBeenCalledTimes(1);
-    expect(migration.account()?.uid).toBe('account-2');
-  });
-  it('内容が同じでもローカルのupdatedAtが新しければアップロードする', async () => {
-    const solve = localSolve();
-    solves.set([solve]);
-    cloud.list.mockResolvedValue([
-      {
-        ...solve,
-        updatedAt: '2026-09-01T10:00:00.000Z',
-        ownerType: 'account',
-        ownerId: account.uid,
-      },
-    ]);
-    const migration = TestBed.inject(SolveMigrationService);
-    user.set(account);
-    TestBed.flushEffects();
-    await vi.waitFor(() => expect(migration.state().phase).toBe('ready'));
-
-    await migration.migrate();
-    expect(cloud.put).toHaveBeenCalledWith(account.uid, solve);
-  });
-
-  it('updatedAtが同じなら内容が違っても自動アップロードしない', async () => {
-    const solve = localSolve();
-    solves.set([solve]);
-    cloud.list.mockResolvedValue([
-      { ...solve, penalty: '+2', ownerType: 'account', ownerId: account.uid },
-    ]);
-    const migration = TestBed.inject(SolveMigrationService);
-    user.set(account);
-    TestBed.flushEffects();
-    await vi.waitFor(() => expect(migration.state().phase).toBe('ready'));
-
-    await migration.migrate();
-    expect(cloud.put).not.toHaveBeenCalled();
-  });
-  it('移行前の追加・変更・削除を候補へ即時反映し、開始時点のSolveだけを処理する', async () => {
-    const first = localSolve();
-    const removed = localSolve({ id: 'removed' });
-    solves.set([first, removed]);
-    const migration = TestBed.inject(SolveMigrationService);
-    user.set(account);
-    TestBed.flushEffects();
-    await vi.waitFor(() => expect(migration.state().targetCount).toBe(2));
-
-    const updated = {
-      ...first,
-      penalty: '+2' as const,
-      updatedAt: '2026-09-01T10:02:00.000Z',
-    };
-    const added = localSolve({ id: 'added' });
-    solves.set([updated, added]);
-    TestBed.flushEffects();
-    await vi.waitFor(() => expect(migration.state().targetCount).toBe(2));
-
-    await migration.migrate();
-
-    expect(cloud.put).toHaveBeenCalledTimes(2);
-    expect(cloud.put).toHaveBeenCalledWith(account.uid, updated);
-    expect(cloud.put).toHaveBeenCalledWith(account.uid, added);
-    expect(cloud.put).not.toHaveBeenCalledWith(
-      account.uid,
-      expect.objectContaining({ id: 'removed' }),
-    );
+    const service = TestBed.inject(SolveMigrationService);
+    expect(await service.transfer([first, second], account.uid, false)).toEqual({
+      completed: 1,
+      failed: 1,
+    });
+    expect(cube.guestSolves()).toEqual([first]);
+    expect(await service.transfer([first], account.uid, false)).toEqual({
+      completed: 1,
+      failed: 0,
+    });
+    expect(cube.solves()).toHaveLength(2);
   });
 });

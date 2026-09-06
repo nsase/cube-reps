@@ -1,4 +1,7 @@
 import { TestBed } from '@angular/core/testing';
+import { TranslocoService } from '@jsverse/transloco';
+import en from '../../../../../public/assets/i18n/en.json';
+import ja from '../../../../../public/assets/i18n/ja.json';
 import { CubeService } from '../../../core/cube';
 import { HistoryStore } from '../history.store';
 import { HistoryFilter } from './history-filter';
@@ -40,5 +43,33 @@ describe('HistoryFilter', () => {
     const store = TestBed.inject(HistoryStore);
     expect(store.selectedCategory()).toBe('oll');
     expect(store.selectedGroup()).toBe(group.id);
+  });
+  it('全言語に所有者キーがあり、表示中の所有者選択肢を言語変更に追従させる', async () => {
+    expect(Object.keys(en.ownership).sort()).toEqual(Object.keys(ja.ownership).sort());
+    const cube = TestBed.inject(CubeService);
+    await cube.ready;
+    const guest = cube.addSolve(1000, 'R', 'full');
+    cube.storedSolves.set([
+      guest,
+      { ...guest, id: 'unknown-account', ownerType: 'account', ownerId: 'other' },
+    ]);
+    const fixture = TestBed.createComponent(HistoryFilter);
+    fixture.detectChanges();
+    const select = fixture.nativeElement.querySelector(
+      '[data-testid="history-owner-filter"]',
+    ) as HTMLSelectElement;
+    expect(select.textContent).toContain('Not linked to an account');
+    select.value = 'account:other';
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    expect(
+      TestBed.inject(HistoryStore)
+        .filteredSolves()
+        .map((solve) => solve.id),
+    ).toEqual(['unknown-account']);
+    TestBed.inject(TranslocoService).setActiveLang('ja');
+    fixture.detectChanges();
+    expect(select.textContent).toContain('アカウント未紐づけ');
+    expect(select.textContent).toContain('アカウント (other)');
   });
 });

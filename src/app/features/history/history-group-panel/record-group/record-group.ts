@@ -40,13 +40,16 @@ export class RecordGroup {
   protected readonly isActive = computed(() => this.store.selectedGroup() === this.group().id);
   /** このグループに属する計測記録の件数。 */
   protected readonly solveCount = computed(
-    () => this.cube.solves().filter((solve) => solve.groupId === this.group().id).length,
+    () =>
+      this.store
+        .ownerSolves()
+        .filter((solve) => (solve.groupId || 'unclassified') === this.group().id).length,
   );
   /** このグループの名前を変更できるか。 */
-  protected readonly canEdit = computed(() => this.group().id !== 'unclassified');
+  protected readonly canEdit = computed(() => this.cube.canManageGroup(this.group().id));
   /** このグループを削除できるか。 */
   protected readonly canDelete = computed(
-    () => this.group().id !== 'unclassified' && this.cube.groups().length > 1,
+    () => this.cube.canManageGroup(this.group().id) && this.cube.groups().length > 1,
   );
 
   /** このグループを履歴の絞り込み対象に設定する。 */
