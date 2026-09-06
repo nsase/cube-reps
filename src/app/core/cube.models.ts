@@ -16,24 +16,30 @@ export type UserDataOwnerType = 'guest' | 'account';
 
 /** 同期対象ユーザーデータが共通で持つ更新・所有情報。 */
 export interface SyncMetadata {
-  /** 対象を最後に変更した日時を表すISO 8601文字列。 */
+  /** 作成日時を表すISO 8601文字列。Solveでは計測日時であり、取り込み時も維持する。 */
+  createdAt: string;
+  /** 最後に変更した日時を表すISO 8601文字列。 */
   updatedAt: string;
+  /** 同期対象の削除を他端末へ伝えるtombstone日時。 */
+  deletedAt?: string;
   /** 対象を所有する主体の種別。 */
   ownerType: UserDataOwnerType;
   /** アカウントのFirebase UID。未紐づけのデータでは省略する。 */
   ownerId?: string;
   /** このレコードが準拠する保存スキーマのバージョン。 */
   schemaVersion: number;
+  /** ローカル保存後、Firestoreへの転送確認まで保持する再送フラグ。 */
+  pendingSync?: boolean;
 }
 
 /** 計測記録を分類するユーザー定義グループ。 */
 export interface RecordGroup extends SyncMetadata {
+  /** 同じ取り込み先でグループを再利用するためのローカル参照。 */
+  copiedFromId?: string;
   /** グループを一意に識別するID。 */
   id: string;
   /** 画面に表示するグループ名。 */
   name: string;
-  /** グループを作成した日時を表すISO 8601文字列。 */
-  createdAt: string;
 }
 
 /** 1回分の計測結果。 */
@@ -44,8 +50,6 @@ export interface Solve extends SyncMetadata {
   time: number;
   /** 計測時に使用したスクランブル。 */
   scramble: string;
-  /** 計測日時を表すISO 8601文字列。 */
-  date: string;
   /** 記録を独立して集計するsolveカテゴリー。 */
   category: SolveCategory;
   /** PLL練習時のケース名。 */
@@ -54,12 +58,8 @@ export interface Solve extends SyncMetadata {
   groupId?: string;
   /** 記録へ適用されたペナルティ。 */
   penalty: Penalty;
-  /** ローカル保存後、Firestoreへの転送確認まで保持する再送フラグ。 */
-  pendingSync?: boolean;
   /** ブラウザ内だけに保持するコピー元の記録ID。元のアカウント情報を別アカウントへ送信しない。 */
   copiedFromId?: string;
-  /** 同期対象の削除を他端末へ伝えるtombstone日時。 */
-  deletedAt?: string;
 }
 
 /** ブラウザで利用したアカウントの表示情報。認証情報は保持しない。 */

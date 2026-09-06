@@ -1,6 +1,10 @@
 :host {
-  display: inline-flex;
-  flex: 0 0 auto;
+  height: 100%;
+  > div {
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
 }
 img,
 .initials {
@@ -10,7 +14,6 @@ img,
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  vertical-align: middle;
 }
 img {
   object-fit: cover;

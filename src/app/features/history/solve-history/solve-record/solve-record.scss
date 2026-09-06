@@ -35,7 +35,7 @@ $muted: var(--text-muted-color);
 .row-actions {
   display: flex;
   container-type: inline-size;
-  grid-column: 7;
+  grid-column: 9;
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
@@ -61,7 +61,7 @@ $muted: var(--text-muted-color);
 
 @media (max-width: 620px) {
   :host {
-    gap: 6px;
+    gap: 4px;
     padding: 10px;
   }
 
@@ -69,8 +69,13 @@ $muted: var(--text-muted-color);
     grid-column: 1 / -1;
   }
 
+  time {
+    grid-column: 2 / 5;
+  }
+
   .group-badge {
-    max-width: 64px;
+    grid-column: 5 / -1;
+    max-width: 100%;
   }
 }
 

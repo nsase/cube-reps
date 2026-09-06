@@ -154,7 +154,7 @@
     "move": "Move to current account",
     "copy": "Copy to current account",
     "selected": "{{count}} selected",
-    "confirm": "Process {{count}} selected records. From: {{from}}. To: {{to}}. The original records remain in this browser.",
+    "confirm": "Process {{count}} selected records.\nFrom: {{from}}\nTo: {{to}}\nThe original records remain in this browser.",
     "result": "Saved: {{completed}}. Not processed: {{failed}}. Check the sync status for cloud upload. Select unprocessed records to try again.",
     "savedGroup": "Saved group"
   }

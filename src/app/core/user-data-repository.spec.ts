@@ -1,5 +1,5 @@
-import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
+import 'fake-indexeddb/auto';
 import { deleteDB, openDB } from 'idb';
 import { IndexedDbUserDataRepository, USER_DATA_SCHEMA_VERSION } from './user-data-repository';
 
@@ -233,5 +233,54 @@ describe('IndexedDbUserDataRepository', () => {
     expect(await database.get('accounts', 'account-a')).not.toHaveProperty('accessToken');
     expect((await new IndexedDbUserDataRepository().load()).solves).toEqual(data.solves);
     database.close();
+  });
+  it('v3のdateをcreatedAt索引へ移行し、新旧記録を再読み込みできる', async () => {
+    const old = await openDB(IndexedDbUserDataRepository.databaseName, 3, {
+      upgrade(db) {
+        const solves = db.createObjectStore('solves', { keyPath: 'id' });
+        solves.createIndex('date', 'date');
+        solves.createIndex('updatedAt', 'updatedAt');
+        solves.createIndex('ownerId', 'ownerId');
+        const groups = db.createObjectStore('groups', { keyPath: 'id' });
+        groups.createIndex('createdAt', 'createdAt');
+        groups.createIndex('ownerId', 'ownerId');
+        const preferences = db.createObjectStore('algorithmPreferences', { keyPath: 'caseKey' });
+        preferences.createIndex('updatedAt', 'updatedAt');
+        preferences.createIndex('ownerId', 'ownerId');
+        db.createObjectStore('accounts', { keyPath: 'uid' });
+        db.createObjectStore('metadata');
+      },
+    });
+    const date = '2026-01-01T00:00:00.000Z';
+    await old.put('solves', {
+      id: 'legacy',
+      time: 1000,
+      scramble: 'R',
+      date,
+      updatedAt: date,
+      ownerType: 'account',
+      ownerId: 'account',
+      pendingSync: true,
+      deletedAt: date,
+      category: 'full',
+      penalty: 'none',
+      schemaVersion: 2,
+    });
+    old.close();
+    const repository = new IndexedDbUserDataRepository();
+    const data = await repository.load();
+    expect(data.solves).toHaveLength(1);
+    expect(data.solves[0]).toMatchObject({
+      id: 'legacy',
+      createdAt: date,
+      ownerId: 'account',
+      pendingSync: true,
+      deletedAt: date,
+    });
+    expect(data.solves[0]).not.toHaveProperty('date');
+    const fresh = { ...data.solves[0], id: 'fresh', createdAt: '2026-01-02T00:00:00.000Z' };
+    await repository.putSolve(fresh);
+    const restored = await new IndexedDbUserDataRepository().load();
+    expect(restored.solves.map((solve) => solve.id)).toEqual(['fresh', 'legacy']);
   });
 });

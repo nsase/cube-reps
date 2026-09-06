@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
+import { AuthService } from './auth/auth.service';
 import { CubeService } from './cube';
 import { Penalty, Solve } from './cube.models';
 import { UserDataRepository } from './user-data-repository';
-import { AuthService } from './auth/auth.service';
 
 describe('CubeService record statistics', () => {
   beforeEach(() => {
@@ -17,11 +17,11 @@ describe('CubeService record statistics', () => {
       id: String(id),
       time,
       scramble: 'R U',
-      date: new Date(id).toISOString(),
+      createdAt: new Date(id).toISOString(),
       updatedAt: new Date(id).toISOString(),
       ownerType: 'guest',
       ownerId: 'guest-test',
-      schemaVersion: 2,
+      schemaVersion: 3,
       category: 'full',
       groupId: 'unclassified',
       penalty,
@@ -111,7 +111,7 @@ describe('CubeService record statistics', () => {
       updatedAt: new Date(1).toISOString(),
       ownerType: 'guest',
       ownerId: 'guest-test',
-      schemaVersion: 2,
+      schemaVersion: 3,
     });
     const cube = TestBed.inject(CubeService);
     await cube.ready;
@@ -133,7 +133,7 @@ describe('CubeService record statistics', () => {
     expect(putRecordGroup).toHaveBeenCalledWith(group);
     expect(group).toMatchObject({
       ownerType: 'guest',
-      schemaVersion: 2,
+      schemaVersion: 3,
       updatedAt: group.createdAt,
     });
     expect(localStorage.getItem('cube-reps.groups')).toBeNull();
@@ -260,7 +260,10 @@ describe('CubeService record statistics', () => {
     expect(putRecordGroup).toHaveBeenCalledWith(
       expect.objectContaining({ id: group.id, name: '公式大会' }),
     );
-    expect(deleteRecordGroup).toHaveBeenCalledWith(group.id);
+    expect(deleteRecordGroup).not.toHaveBeenCalled();
+    expect(putRecordGroup).toHaveBeenCalledWith(
+      expect.objectContaining({ id: group.id, deletedAt: expect.any(String) }),
+    );
     expect(putSolve).toHaveBeenCalledWith(first);
     expect(putSolve).toHaveBeenCalledWith(
       expect.objectContaining({ id: first.id, groupId: 'unclassified' }),
@@ -281,7 +284,7 @@ describe('CubeService record statistics', () => {
     const created = cube.addSolve(1234, 'R U', 'full');
 
     expect(created).toMatchObject({ ownerType: 'account', ownerId: 'account-1' });
-    expect(cube.solveMutations()).toEqual([{ kind: 'put', solve: created }]);
+    expect(cube.solveMutations()).toEqual([{ kind: 'put', data: created }]);
   });
 
   it('アカウントSolveはtombstoneで削除し、古い通常更新で復活させない', async () => {
@@ -298,7 +301,7 @@ describe('CubeService record statistics', () => {
     cube.removeSolve(created.id);
     const mutation = cube.solveMutations().at(-1);
     expect(mutation?.kind).toBe('delete');
-    expect(mutation?.solve.deletedAt).toBeDefined();
+    expect(mutation?.data.deletedAt).toBeDefined();
     expect(cube.solves()).toHaveLength(0);
 
     await cube.mergeAccountSolves('account-1', [created]);
@@ -455,12 +458,12 @@ describe('CubeService record statistics', () => {
     await repository.putSolve(pending);
     const cube = TestBed.inject(CubeService);
     await cube.ready;
-    expect(cube.solveMutations()).toContainEqual({ kind: 'put', solve: pending });
+    expect(cube.solveMutations()).toContainEqual({ kind: 'put', data: pending });
     await cube.mergeAccountSolves('other', [
       { ...pending, ownerId: 'other', time: 9999, updatedAt: '2099-01-01T00:00:00.000Z' },
     ]);
     expect(cube.solves()).toEqual([pending]);
-    const tombstone = { ...pending, pendingSync: undefined, deletedAt: pending.date };
+    const tombstone = { ...pending, pendingSync: undefined, deletedAt: pending.createdAt };
     await cube.mergeAccountSolves('target', [tombstone]);
     expect(cube.solves()).toEqual([]);
   });

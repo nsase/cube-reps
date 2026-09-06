@@ -1,156 +1,48 @@
-import { effect, inject, Injectable, signal, untracked } from '@angular/core';
-import { AuthService } from '../auth/auth.service';
-import { CubeService, SolveMutation } from '../cube';
-import { SystemStore } from '../system.store';
+import { computed, inject, Injectable } from '@angular/core';
+import { CubeService } from '../cube';
 import { FirestoreSolveRepository } from './firestore-solve.repository';
+import { GroupSyncService } from './group-sync.service';
+import { SyncController, SyncPhase } from './sync-controller';
 
-/** ユーザーへ表示するSolve同期状態。 */
-export type SolveSyncPhase = 'signed-out' | 'syncing' | 'synced' | 'offline' | 'pending' | 'error';
+/** ヘッダーへ公開するユーザーデータの同期状態。 */
+export type SolveSyncPhase = SyncPhase;
 
-/** Firestoreへの書き込みと必要なタイミングでのSolve取得を調停するサービス。 */
+/** Solveとグループの同期をまとめて更新・再試行する。 */
 @Injectable({ providedIn: 'root' })
 export class SolveSyncService {
-  /** 現在の認証アカウント。 */
-  private readonly auth = inject(AuthService);
-  /** ローカル状態への変更適用境界。 */
+  /** Solveの変更と統合を担うローカル境界。 */
   private readonly cube = inject(CubeService);
-  /** FirestoreのSolve購読・書き込み境界。 */
-  private readonly cloud = inject(FirestoreSolveRepository);
-  /** ブラウザのネットワーク接続状態。 */
-  private readonly system = inject(SystemStore);
-  /** 現在の取得を識別し、古いアカウントの結果を破棄する連番。 */
-  private requestId = 0;
-  /**
-   * 接続状態監視の初回実行を識別する。
-   * 初回取得はwatchAccountとwatchNetworkが両方とも動くため、watchNetworkでは初回は処理せず重複取得を避ける。
-   */
-  private networkInitialized = false;
-  /** 同期失敗後に再試行する直近のローカル操作。 */
-  private readonly failedMutations: SolveMutation[] = [];
-
-  /** アカウント別の実行中書き込み数。1件の成功で他の失敗を隠さないために使う。 */
-  private readonly uploadsInFlight = new Map<string, number>();
-
-  /** ヘッダーへ公開する現在の同期状態。 */
-  readonly phase = signal<SolveSyncPhase>('signed-out');
-
-  /** 認証アカウント変更時に、利用可能な保存元からSolveを取得する。 */
-  private readonly watchAccount = effect(() => {
-    const user = this.auth.user();
-    const requestId = ++this.requestId;
-    const previousFailures = this.failedMutations.splice(0);
-    if (previousFailures.length)
-      untracked(() => this.cube.solveMutations.update((items) => [...items, ...previousFailures]));
-    if (!user) {
-      this.phase.set('signed-out');
-      return;
-    }
-    untracked(() => void this.pull(user.uid, requestId));
+  /** Solveの転送と認証・ネットワーク監視。 */
+  private readonly controller = new SyncController({
+    ready: this.cube.ready,
+    mutations: this.cube.solveMutations,
+    record: (mutation) => mutation.data,
+    cloud: inject(FirestoreSolveRepository),
+    merge: async (uid, solves) => {
+      await this.cube.mergeAccountSolves(uid, solves);
+      await this.cube.prepareAccountGroups(uid);
+    },
+    acknowledge: (solve) => this.cube.acknowledgeSync(solve),
   });
-
-  /** オフライン移行を表示へ反映し、オンライン復帰時に最新Solveを取得する。 */
-  private readonly watchNetwork = effect(() => {
-    const online = this.system.online();
-    if (!this.networkInitialized) {
-      this.networkInitialized = true;
-      return;
-    }
-
-    const user = untracked(() => this.auth.user());
-    const requestId = ++this.requestId;
-    if (!user) return;
-    if (!online) {
-      this.phase.set('offline');
-      return;
-    }
-    untracked(() => void this.pull(user.uid, requestId));
-  });
-
-  /** CubeServiceのローカル操作を、認証が維持されている間だけFirestoreへ転送する。 */
-  private readonly uploadMutation = effect(() => {
-    const mutations = this.cube.solveMutations();
-    if (mutations.length === 0) return;
-    const user = this.auth.user();
-    if (!user) return;
-    const applicable = mutations.filter(
-      (mutation) => mutation.solve.ownerType === 'account' && mutation.solve.ownerId === user.uid,
+  /** グループも同じユーザー操作で同期する。 */
+  private readonly groups = inject(GroupSyncService);
+  /** どちらかの失敗や未完了を成功表示で隠さない同期状態。 */
+  readonly phase = computed<SolveSyncPhase>(() => {
+    const phases = [this.controller.phase(), this.groups.phase()];
+    return (
+      (['signed-out', 'error', 'offline', 'pending', 'syncing', 'synced'] as const).find((phase) =>
+        phases.includes(phase),
+      ) ?? 'synced'
     );
-    if (applicable.length === 0) return;
-    this.cube.solveMutations.set(
-      mutations.filter((mutation) => mutation.solve.ownerId !== user.uid),
-    );
-    for (const mutation of applicable) void this.upload(user.uid, mutation);
   });
-
-  /** 失敗した直近の変更またはクラウドからの取得を再試行する。 */
+  /** 両方の失敗した転送を再試行する。 */
   retry(): void {
-    const user = this.auth.user();
-    if (!user) return;
-    if (this.failedMutations.length > 0) {
-      const mutations = this.failedMutations.splice(0);
-      for (const mutation of mutations) void this.upload(user.uid, mutation);
-      return;
-    }
-    this.refresh();
+    this.controller.retry();
+    this.groups.retry();
   }
-
-  /** 現在のアカウントが所有する最新Solveを一度取得する。 */
+  /** Solveとグループを再取得する。 */
   refresh(): void {
-    const user = this.auth.user();
-    if (!user) return;
-    void this.pull(user.uid, ++this.requestId);
-  }
-
-  /**
-   * Firestoreから現在のアカウントのSolveを一度取得し、端末データへ冪等に統合する。
-   *
-   * @param userId 取得対象のFirebase UID
-   * @param requestId 取得開始時のアカウント状態を識別する連番
-   */
-  private async pull(userId: string, requestId: number): Promise<void> {
-    this.phase.set(this.system.online() ? 'syncing' : 'offline');
-    try {
-      await this.cube.ready;
-      if (requestId !== this.requestId || this.auth.user()?.uid !== userId) return;
-      const solves = await this.cloud.list(userId);
-      if (requestId !== this.requestId || this.auth.user()?.uid !== userId) return;
-      await this.cube.mergeAccountSolves(userId, solves);
-      if (requestId === this.requestId) this.setSettledPhase(userId);
-    } catch {
-      if (requestId === this.requestId) this.phase.set('error');
-    }
-  }
-
-  /** ローカル操作をFirestoreキャッシュへ書き込み、SDKの再送キューへ委ねる。 */
-  private async upload(userId: string, mutation: SolveMutation): Promise<void> {
-    if (
-      this.auth.user()?.uid !== userId ||
-      mutation.solve.ownerType !== 'account' ||
-      mutation.solve.ownerId !== userId
-    )
-      return;
-    this.uploadsInFlight.set(userId, (this.uploadsInFlight.get(userId) ?? 0) + 1);
-    this.phase.set(this.system.online() ? 'syncing' : 'pending');
-    try {
-      if (mutation.kind === 'delete') await this.cloud.tombstone(userId, mutation.solve);
-      else await this.cloud.put(userId, mutation.solve);
-      await this.cube.acknowledgeSync(mutation.solve);
-    } catch {
-      if (this.auth.user()?.uid !== userId) {
-        this.cube.solveMutations.update((items) => [...items, mutation]);
-      } else {
-        this.failedMutations.push(mutation);
-      }
-    } finally {
-      this.uploadsInFlight.set(userId, Math.max((this.uploadsInFlight.get(userId) ?? 1) - 1, 0));
-      if (this.auth.user()?.uid === userId) this.setSettledPhase(userId);
-    }
-  }
-  /** 取得完了と個別アップロード完了から、残っている処理・失敗を含む状態を表示する。 */
-  private setSettledPhase(userId: string): void {
-    if (this.failedMutations.length) this.phase.set('error');
-    else if (this.uploadsInFlight.get(userId))
-      this.phase.set(this.system.online() ? 'syncing' : 'pending');
-    else this.phase.set(this.system.online() ? 'synced' : 'offline');
+    this.controller.refresh();
+    this.groups.refresh();
   }
 }

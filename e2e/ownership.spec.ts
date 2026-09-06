@@ -98,30 +98,26 @@ async function seedHistory(page: Page): Promise<void> {
     });
     const transaction = database.transaction(['solves', 'accounts'], 'readwrite');
     for (const [index, owner] of ['guest-one', 'guest-two', 'other'].entries()) {
-      transaction
-        .objectStore('solves')
-        .put({
-          id: `record-${index}`,
-          time: (index + 1) * 1000,
-          scramble: 'R U',
-          date: new Date(2026, 0, index + 1).toISOString(),
-          updatedAt: new Date(2026, 0, index + 1).toISOString(),
-          ownerType: index === 2 ? 'account' : 'guest',
-          ...(index === 2 ? { ownerId: owner } : {}),
-          category: 'full',
-          penalty: 'none',
-          groupId: 'unclassified',
-          schemaVersion: 2,
-        });
-    }
-    transaction
-      .objectStore('accounts')
-      .put({
-        uid: 'other',
-        displayName: 'Other User',
-        email: 'other@example.test',
-        providerIds: ['apple.com'],
+      transaction.objectStore('solves').put({
+        id: `record-${index}`,
+        time: (index + 1) * 1000,
+        scramble: 'R U',
+        createdAt: new Date(2026, 0, index + 1).toISOString(),
+        updatedAt: new Date(2026, 0, index + 1).toISOString(),
+        ownerType: index === 2 ? 'account' : 'guest',
+        ...(index === 2 ? { ownerId: owner } : {}),
+        category: 'full',
+        penalty: 'none',
+        groupId: 'unclassified',
+        schemaVersion: 2,
       });
+    }
+    transaction.objectStore('accounts').put({
+      uid: 'other',
+      displayName: 'Other User',
+      email: 'other@example.test',
+      providerIds: ['apple.com'],
+    });
     await new Promise<void>((resolve, reject) => {
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
@@ -131,19 +127,49 @@ async function seedHistory(page: Page): Promise<void> {
 }
 
 test(
-  '所有者で一覧・集計を絞り込み、アバター詳細を確認する',
+  '所有者で一覧・集計を絞り込み、所有者のツールチップと記録詳細を確認する',
   { tag: '@responsive' },
-  async ({ page }) => {
+  async ({ page, isMobile }) => {
     await seedHistory(page);
     await page.reload();
     await expect(page.locator('app-solve-record')).toHaveCount(3);
+    // 選択欄と所有者を行の前方に保ち、補助情報も各端末で欠けないことを確認する。
+    const row = page.locator('app-solve-record').first();
+    const checkbox = row.getByRole('checkbox');
+    await expect(checkbox).toBeDisabled();
+    const boxes = await row.evaluate((element) =>
+      [...element.children].map((child) => {
+        const rect = child.getBoundingClientRect();
+        return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
+      }),
+    );
+    expect(boxes[0].right).toBeLessThanOrEqual(boxes[1].left + 1);
+    const avatar = (await row.locator('app-owner-avatar [role="img"]').boundingBox())!;
+    expect(avatar.x + avatar.width).toBeLessThanOrEqual(boxes[3].left + 1);
+    const rowBox = (await row.boundingBox())!;
+    for (const box of boxes) {
+      expect(box.left).toBeGreaterThanOrEqual(rowBox.x);
+      expect(box.right).toBeLessThanOrEqual(rowBox.x + rowBox.width);
+    }
     await page.getByTestId('history-owner-filter').selectOption('account:other');
     await expect(page.locator('app-solve-record')).toHaveCount(1);
     await expect(page.locator('app-history-summary')).toContainText('3.00');
-    await page.locator('app-owner-avatar button').click();
+    const owner = page.locator('app-owner-avatar [role="img"]');
+    if (!isMobile) {
+      await owner.hover();
+      const tooltip = page.locator('mat-tooltip-component');
+      await expect(tooltip).toBeVisible();
+      await expect(tooltip).toContainText('apple.com');
+    }
+    await owner.click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.getByRole('button', { name: 'View solve details', exact: true }).click();
     await expect(page.getByRole('dialog')).toContainText('apple.com');
     await page.getByRole('button', { name: 'Close', exact: true }).click();
-    await expect(page.locator('app-solve-actions button').filter({ hasText: '+2' })).toBeDisabled();
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await expect(
+      page.locator('app-solve-record app-solve-actions button').filter({ hasText: '+2' }),
+    ).toBeDisabled();
     await page.getByTestId('history-owner-filter').selectOption('unlinked');
     await expect(page.locator('app-solve-record')).toHaveCount(2);
     await page.getByTestId('history-owner-filter').selectOption('all');
@@ -168,6 +194,7 @@ test(
     await page.getByRole('button', { name: 'Move to current account', exact: true }).click();
     await expect(page.getByRole('dialog')).toContainText('Target User');
     await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(page.getByRole('dialog')).toBeHidden();
     await expect(page.locator('app-solve-record')).toHaveCount(2);
     await page.getByRole('button', { name: 'Move to current account', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Move to current account' }).click();

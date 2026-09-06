@@ -70,6 +70,6 @@ describe('HistoryFilter', () => {
     TestBed.inject(TranslocoService).setActiveLang('ja');
     fixture.detectChanges();
     expect(select.textContent).toContain('アカウント未紐づけ');
-    expect(select.textContent).toContain('アカウント (other)');
+    expect(select.textContent).toContain('other');
   });
 });

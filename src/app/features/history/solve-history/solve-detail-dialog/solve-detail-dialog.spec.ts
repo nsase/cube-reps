@@ -12,7 +12,7 @@ describe('SolveDetailDialog', () => {
     id: 'solve-1',
     time: 1234,
     scramble: 'R U F',
-    date: new Date(0).toISOString(),
+    createdAt: new Date(0).toISOString(),
     updatedAt: new Date(0).toISOString(),
     ownerType: 'guest',
     ownerId: 'guest-test',

@@ -1,13 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { CubeService } from '../../../../core/cube';
 import { Solve } from '../../../../core/cube.models';
 import { OwnerAvatar } from '../../../../shared/owner-avatar/owner-avatar';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { SolveActions } from '../solve-actions/solve-actions';
 import { SolveDetailDialog } from '../solve-detail-dialog/solve-detail-dialog';
 
@@ -62,7 +62,7 @@ export class SolveRecord {
       hour: '2-digit',
       minute: '2-digit',
       hourCycle: 'h23',
-    }).format(new Date(this.solve().date));
+    }).format(new Date(this.solve().createdAt));
   });
   /** 記録の低優先度情報を詳細表示するダイアログサービス。 */
   private readonly dialog = inject(MatDialog);

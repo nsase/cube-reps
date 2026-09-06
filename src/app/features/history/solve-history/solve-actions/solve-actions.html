@@ -1,6 +1,6 @@
 <button
   mat-button
-  [disabled]="!cube.canEditSolve(currentSolve())"
+  [disabled]="!canEditSolve()"
   [class.on]="currentSolve().penalty === '+2'"
   (click)="cube.togglePenalty(currentSolve().id, '+2')"
 >
@@ -8,7 +8,7 @@
 </button>
 <button
   mat-button
-  [disabled]="!cube.canEditSolve(currentSolve())"
+  [disabled]="!canEditSolve()"
   [class.on]="currentSolve().penalty === 'DNF'"
   (click)="cube.togglePenalty(currentSolve().id, 'DNF')"
 >
@@ -26,7 +26,7 @@
 <button
   mat-icon-button
   class="compact-action row-delete"
-  [disabled]="!cube.canEditSolve(currentSolve())"
+  [disabled]="!canEditSolve()"
   [attr.aria-label]="'history.deleteSolve' | transloco"
   [title]="'history.deleteSolve' | transloco"
   (click)="delete()"
@@ -37,12 +37,7 @@
   <mat-icon>replay</mat-icon>
   {{ 'history.retrySolve' | transloco }}
 </button>
-<button
-  mat-button
-  [disabled]="!cube.canEditSolve(currentSolve())"
-  class="wide-action row-delete"
-  (click)="delete()"
->
+<button mat-button [disabled]="!canEditSolve()" class="wide-action row-delete" (click)="delete()">
   <mat-icon>delete</mat-icon>
   {{ 'history.deleteSolve' | transloco }}
 </button>

@@ -5,8 +5,8 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { CubeService } from '../../../../core/cube';
 import { Solve } from '../../../../core/cube.models';
-import { SolvePattern } from '../../../../shared/solve-pattern/solve-pattern';
 import { SolveOwnerService } from '../../../../core/solve-owner';
+import { SolvePattern } from '../../../../shared/solve-pattern/solve-pattern';
 import { SolveActions } from '../solve-actions/solve-actions';
 
 /** 計測記録の詳細表示に必要な記録本体と一覧上の通し番号。 */
@@ -57,7 +57,7 @@ export class SolveDetailDialog {
     new Intl.DateTimeFormat(this.activeLang(), {
       dateStyle: 'medium',
       timeStyle: 'medium',
-    }).format(new Date(this.currentSolve().date)),
+    }).format(new Date(this.currentSolve().createdAt)),
   );
   /** 操作完了後にこの詳細表示を閉じるダイアログ参照。 */
   private readonly dialogRef = inject(MatDialogRef<SolveDetailDialog>);

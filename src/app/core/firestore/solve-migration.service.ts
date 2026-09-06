@@ -25,7 +25,7 @@ export class SolveMigrationService {
   async transfer(
     solves: readonly Solve[],
     accountId: string,
-    copy: boolean,
+    action: 'copy' | 'move',
   ): Promise<SolveTransferResult> {
     if (this.pending() || this.auth.user()?.uid !== accountId)
       return { completed: 0, failed: solves.length };
@@ -35,7 +35,7 @@ export class SolveMigrationService {
       for (const solve of solves) {
         if (this.auth.user()?.uid !== accountId) break;
         try {
-          if (copy) await this.cube.copySolveToAccount(solve, accountId);
+          if (action === 'copy') await this.cube.copySolveToAccount(solve, accountId);
           else await this.cube.assignSolveToAccount(solve, accountId);
           completed++;
         } catch {
