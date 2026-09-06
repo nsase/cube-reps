@@ -1,8 +1,17 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subscription, timer } from 'rxjs';
+import { Solve } from '../../../core/cube.models';
 import { SolveMigrationService } from '../../../core/firestore/solve-migration.service';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 import { HistoryStore } from '../history.store';
@@ -30,30 +39,33 @@ export class HistoryTransfer {
   private readonly i18n = inject(TranslocoService);
   /** 画面を離れた後の非同期処理で選択を変更しないための破棄状態。 */
   private readonly destroyRef = inject(DestroyRef);
+  /** アカウントに紐づく記録 */
+  protected readonly accountSolves = computed(() =>
+    this.store.selectedSolves().filter((solve) => solve.ownerType === 'account'),
+  );
+  /** ゲストに紐づく記録 */
+  protected readonly guestSolves = computed(() =>
+    this.store.selectedSolves().filter((solve) => solve.ownerType === 'guest'),
+  );
   /** 完了通知を消すタイマー。 */
-  private notificationTimer?: ReturnType<typeof setTimeout>;
+  private notificationTimer?: Subscription;
 
-  /** 画面を離れると完了通知のタイマーを破棄する。 */
-  constructor() {
-    this.destroyRef.onDestroy(() => clearTimeout(this.notificationTimer));
+  /** 選択された記録をコピーする。 */
+  protected copy(): Promise<void> {
+    return this.transfer(this.accountSolves(), 'copy');
   }
 
-  /** 選択から操作種別に一致する記録数を返す。 */
-  protected count(copy: boolean): number {
-    return this.store.selectedSolves().filter((solve) => (solve.ownerType === 'account') === copy)
-      .length;
+  /** 選択された記録を移動する。 */
+  protected move(): Promise<void> {
+    return this.transfer(this.guestSolves(), 'move');
   }
 
   /** 確認時点の記録と宛先だけを処理する。キャンセル・画面離脱・アカウント変更では開始しない。 */
-  protected async transfer(copy: boolean): Promise<void> {
+  private async transfer(solves: Solve[], action: 'copy' | 'move'): Promise<void> {
     const uid = this.store.auth.user()?.uid;
-    const solves = this.store
-      .selectedSolves()
-      .filter((solve) => (solve.ownerType === 'account') === copy);
     if (!uid || !solves.length || this.confirming() || this.migration.pending()) return;
     this.confirming.set(true);
     try {
-      const action = copy ? 'copy' : 'move';
       const confirmed = await firstValueFrom(
         this.dialog
           .open(ConfirmDialog, {
@@ -77,13 +89,15 @@ export class HistoryTransfer {
       );
       if (confirmed !== action || this.destroyRef.destroyed || this.store.auth.user()?.uid !== uid)
         return;
-      const result = await this.migration.transfer(solves, uid, copy);
+      const result = await this.migration.transfer(solves, uid, action);
       if (this.destroyRef.destroyed) return;
       this.result.set(result);
       // コピーは元記録が残るため選択を解除して、成功分の意図しない再コピーを避ける。
       this.store.selectedIds.set(new Set());
-      clearTimeout(this.notificationTimer);
-      this.notificationTimer = setTimeout(() => this.result.set(null), 8000);
+      this.notificationTimer?.unsubscribe();
+      this.notificationTimer = timer(8000)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => this.result.set(null));
     } finally {
       if (!this.destroyRef.destroyed) this.confirming.set(false);
     }

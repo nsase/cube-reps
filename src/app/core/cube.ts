@@ -1,24 +1,29 @@
 import { Injectable, Signal, computed, effect, inject, signal, untracked } from '@angular/core';
 import { translateSignal } from '@jsverse/transloco';
+import { AuthService } from './auth/auth.service';
+import { average, mean } from './cube-statistics';
 import {
-  Penalty,
   DisplayRecordGroup,
+  LocalAccount,
+  Penalty,
   RecordGroup,
   Solve,
   SolveCategory,
-  LocalAccount,
 } from './cube.models';
-import { average, mean } from './cube-statistics';
 import { USER_DATA_SCHEMA_VERSION, UserDataRepository } from './user-data-repository';
-import { AuthService } from './auth/auth.service';
 
-/** Firestoreへ転送するローカルSolve操作。 */
-export interface SolveMutation {
+export interface DocumentMutation<D> {
   /** 通常更新またはtombstone削除。 */
   readonly kind: 'put' | 'delete';
-  /** 操作対象の完全なSolve。 */
-  readonly solve: Solve;
+  /** 保存するデータ */
+  readonly data: D;
 }
+
+/** Firestoreへ転送するローカルSolve操作。 */
+export type SolveMutation = DocumentMutation<Solve>;
+
+/** 同期サービスへ引き渡すグループの変更。 */
+export type GroupMutation = DocumentMutation<RecordGroup>;
 
 /** ユーザーデータとは分離して常に先頭へ表示する既定の記録グループ。 */
 const DEFAULT_GROUPS: readonly DisplayRecordGroup[] = [
@@ -52,6 +57,8 @@ export class CubeService {
   readonly storedSolves = signal<readonly Solve[]>([]);
   /** 同期サービスが一度ずつ処理するローカルSolve操作キュー。 */
   readonly solveMutations = signal<readonly SolveMutation[]>([]);
+  /** 保存済みグループ変更の同期キュー。 */
+  readonly groupMutations = signal<readonly GroupMutation[]>([]);
   /** アカウント未紐づけで、選択移行の対象になる計測記録。 */
   readonly guestSolves = computed(() =>
     this.storedSolves().filter((solve) => solve.ownerType === 'guest' && !solve.deletedAt),
@@ -68,7 +75,7 @@ export class CubeService {
   readonly solves = computed(() =>
     this.storedSolves()
       .filter((solve) => !solve.deletedAt)
-      .sort((left, right) => right.date.localeCompare(left.date)),
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
   );
   /** UIDで参照する、このブラウザのアカウント表示台帳。 */
   readonly accounts = signal<readonly LocalAccount[]>([]);
@@ -93,15 +100,18 @@ export class CubeService {
   private readonly savedGroupLabel = translateSignal('ownership.savedGroup');
   /** 台帳のない記録先も選べるようにし、別端末の記録が一覧から消えないようにする。 */
   readonly groups = computed<DisplayRecordGroup[]>(() => {
-    const groups: DisplayRecordGroup[] = [...DEFAULT_GROUPS, ...this.userGroups()];
-    const known = new Set(groups.map((group) => group.id));
+    const groups: DisplayRecordGroup[] = [
+      ...DEFAULT_GROUPS,
+      ...this.userGroups().filter((group) => !group.deletedAt),
+    ];
+    const known = new Set([...groups, ...this.userGroups()].map((group) => group.id));
     for (const solve of this.solves()) {
       if (!solve.groupId || known.has(solve.groupId)) continue;
       known.add(solve.groupId);
       groups.push({
         id: solve.groupId,
         name: `${this.savedGroupLabel()} (${solve.groupId})`,
-        createdAt: solve.date,
+        createdAt: solve.createdAt,
         updatedAt: solve.updatedAt,
         ownerType: solve.ownerType,
         ...(solve.ownerId ? { ownerId: solve.ownerId } : {}),
@@ -169,12 +179,14 @@ export class CubeService {
       name: trimmedName,
       createdAt: now,
       updatedAt: now,
-      ownerType: 'guest',
+      ownerType: this.auth.user() ? 'account' : 'guest',
+      ...(this.auth.user() ? { ownerId: this.auth.user()!.uid, pendingSync: true } : {}),
       schemaVersion: USER_DATA_SCHEMA_VERSION,
     };
     this.userGroups.update((groups) => [...groups, group]);
     this.activeGroupId.set(group.id);
     if (this.storageReady()) void this.userDataRepository.putRecordGroup(group);
+    this.queueGroup(group);
     return group;
   }
 
@@ -186,13 +198,28 @@ export class CubeService {
    * @returns 名前を変更できた場合は`true`
    */
   renameGroup(id: string, name: string): boolean {
+    // デフォルトグループだった場合は名前を変更しない
     const trimmedName = name.trim();
     if (!trimmedName || DEFAULT_GROUPS.some((group) => group.id === id)) return false;
+
+    // ほかアカウントのデータが混ざっている場合は変更しない(Guestデータは変更可能)
     const current = this.userGroups().find((group) => group.id === id);
     if (!current || !this.canManageGroup(id)) return false;
-    const updated = { ...current, name: trimmedName, updatedAt: new Date().toISOString() };
+
+    // グループ名を更新
+    const updated = {
+      ...current,
+      pendingSync: current.ownerType === 'account',
+      name: trimmedName,
+      updatedAt: new Date().toISOString(),
+    };
     this.userGroups.update((groups) => groups.map((group) => (group.id === id ? updated : group)));
+
+    // IndexDBのGroupを更新
     if (this.storageReady()) void this.userDataRepository.putRecordGroup(updated);
+
+    // アカウントデータの場合は、DBと同期する
+    this.queueGroup(updated);
     return true;
   }
 
@@ -208,21 +235,158 @@ export class CubeService {
     const updatedAt = new Date().toISOString();
     const affectedSolves = this.solves()
       .filter((solve) => solve.groupId === id)
-      .map((solve) => ({ ...solve, groupId: DEFAULT_GROUP.id, updatedAt }));
+      .map((solve) => ({
+        ...solve,
+        groupId: DEFAULT_GROUP.id,
+        updatedAt,
+        pendingSync: solve.ownerType === 'account',
+      }));
     const affectedById = new Map(affectedSolves.map((solve) => [solve.id, solve]));
     this.storedSolves.update((solves) =>
       solves.map((solve) => affectedById.get(solve.id) ?? solve),
     );
-    this.userGroups.update((groups) => groups.filter((group) => group.id !== id));
+    const group = this.userGroups().find((group) => group.id === id)!;
+    const deleted = {
+      ...group,
+      updatedAt,
+      deletedAt: updatedAt,
+      pendingSync: group.ownerType === 'account',
+    };
+    this.userGroups.update((groups) => groups.map((item) => (item.id === id ? deleted : item)));
+    this.queueGroup(deleted);
     if (this.storageReady()) {
       for (const solve of affectedSolves) {
         void this.userDataRepository.putSolve(solve);
         if (solve.ownerType === 'account')
-          this.solveMutations.update((items) => [...items, { kind: 'put', solve }]);
+          this.solveMutations.update((items) => [...items, { kind: 'put', data: solve }]);
       }
-      void this.userDataRepository.deleteRecordGroup(id);
+      void this.userDataRepository.putRecordGroup(deleted);
     }
     if (this.activeGroupId() === id) this.activeGroupId.set(DEFAULT_GROUP.id);
+  }
+
+  /** アカウント所有の変更だけを転送する。 */
+  private queueGroup(group: RecordGroup): void {
+    if (group.ownerType === 'account')
+      this.groupMutations.update((items) => [
+        ...items,
+        { kind: group.deletedAt ? 'delete' : 'put', data: group },
+      ]);
+  }
+
+  /** 最新版の転送確認だけで永続再送フラグを解除する。 */
+  async acknowledgeGroupSync(uploaded: RecordGroup): Promise<void> {
+    const current = this.userGroups().find((group) => group.id === uploaded.id);
+    if (
+      !current?.pendingSync ||
+      current.ownerId !== uploaded.ownerId ||
+      current.updatedAt !== uploaded.updatedAt
+    )
+      return;
+    const { pendingSync: _pending, ...saved } = current;
+    this.userGroups.update((groups) =>
+      groups.map((group) => (group.id === saved.id ? saved : group)),
+    );
+    await this.userDataRepository.putRecordGroup(saved);
+  }
+
+  /** グループ名と削除通知を統合し、削除済みグループの記録を未分類へ移す。 */
+  async mergeAccountGroups(accountId: string, remoteGroups: readonly RecordGroup[]): Promise<void> {
+    for (const remote of remoteGroups) {
+      if (remote.ownerType !== 'account' || remote.ownerId !== accountId) continue;
+      const local = this.userGroups().find((group) => group.id === remote.id);
+      if (
+        local &&
+        (local.ownerType !== remote.ownerType ||
+          local.ownerId !== accountId ||
+          (local.deletedAt && !remote.deletedAt) ||
+          (!(remote.deletedAt && !local.deletedAt) &&
+            (local.pendingSync || remote.updatedAt <= local.updatedAt)))
+      )
+        continue;
+      const merged = {
+        ...remote,
+        ...(local?.copiedFromId ? { copiedFromId: local.copiedFromId } : {}),
+      };
+      this.userGroups.update((groups) => [
+        ...groups.filter((group) => group.id !== remote.id),
+        merged,
+      ]);
+      await this.userDataRepository.putRecordGroup(merged);
+    }
+    await this.reconcileDeletedGroups();
+  }
+
+  /** 取得順によらず削除済みグループを履歴の記録先として復活させない。 */
+  private async reconcileDeletedGroups(): Promise<void> {
+    const deleted = new Set(
+      this.userGroups()
+        .filter((group) => group.deletedAt)
+        .map((group) => group.id),
+    );
+    const changed = this.storedSolves()
+      .filter((solve) => solve.groupId && deleted.has(solve.groupId))
+      .map((solve) => ({ ...solve, groupId: DEFAULT_GROUP.id }));
+    const byId = new Map(changed.map((solve) => [solve.id, solve]));
+    this.storedSolves.update((solves) => solves.map((solve) => byId.get(solve.id) ?? solve));
+    await Promise.all(changed.map((solve) => this.userDataRepository.putSolve(solve)));
+    if (deleted.has(this.activeGroupId())) this.activeGroupId.set(DEFAULT_GROUP.id);
+  }
+
+  /** 取り込み先のグループを再利用または作成し、元の所有者の分類を維持する。 */
+  private accountGroupId(groupId: string | undefined, accountId: string, persist = true): string {
+    const source = this.userGroups().find((group) => group.id === groupId && !group.deletedAt);
+    if (!source) return groupId ?? DEFAULT_GROUP.id;
+    if (source.ownerType === 'account' && source.ownerId === accountId) return source.id;
+    const existing = this.userGroups().find(
+      (group) =>
+        group.copiedFromId === source.id && group.ownerId === accountId && !group.deletedAt,
+    );
+    if (existing) return existing.id;
+    const group: RecordGroup = {
+      ...source,
+      id: crypto.randomUUID(),
+      copiedFromId: source.id,
+      ownerType: 'account',
+      ownerId: accountId,
+      pendingSync: true,
+      updatedAt: new Date().toISOString(),
+    };
+    this.userGroups.update((groups) => [...groups, group]);
+    if (persist) {
+      void this.userDataRepository.putRecordGroup(group);
+      this.queueGroup(group);
+    }
+    return group.id;
+  }
+
+  /** 旧版で既にアカウントへ移行した記録にも、同期可能なグループを関連付ける。 */
+  async prepareAccountGroups(accountId: string): Promise<void> {
+    if (this.auth.user()?.uid !== accountId) return;
+    for (const solve of this.accountSolves()) {
+      const source = this.userGroups().find(
+        (group) => group.id === solve.groupId && !group.deletedAt,
+      );
+      if (!source || (source.ownerType === 'account' && source.ownerId === accountId)) continue;
+      const groupId = this.accountGroupId(source.id, accountId, false);
+      const group = this.userGroups().find((group) => group.id === groupId)!;
+      await this.userDataRepository.putRecordGroup(group);
+      this.queueGroup(group);
+      if (this.auth.user()?.uid !== accountId) return;
+      const current = this.solves().find((item) => item.id === solve.id);
+      if (!current || current.groupId !== source.id) continue;
+      const updated = {
+        ...current,
+        groupId,
+        updatedAt: new Date().toISOString(),
+        pendingSync: true,
+      };
+      await this.userDataRepository.putSolve(updated);
+      this.storedSolves.update((solves) =>
+        solves.map((item) => (item.id === updated.id ? updated : item)),
+      );
+      this.solveMutations.update((items) => [...items, { kind: 'put', data: updated }]);
+    }
   }
 
   /**
@@ -252,20 +416,24 @@ export class CubeService {
       id: crypto.randomUUID(),
       time,
       scramble,
-      date: now,
+      createdAt: now,
       updatedAt: now,
       ownerType: accountId ? 'account' : 'guest',
       ...(accountId ? { ownerId: accountId } : {}),
       schemaVersion: USER_DATA_SCHEMA_VERSION,
       category,
       caseName,
-      groupId: this.activeGroupId(),
+      groupId: accountId
+        ? this.accountGroupId(this.activeGroupId(), accountId)
+        : this.activeGroupId(),
       penalty: 'none',
+      ...(accountId ? { pendingSync: true } : {}),
     };
+    this.activeGroupId.set(solve.groupId ?? DEFAULT_GROUP.id);
     this.storedSolves.update((solves) => [solve, ...solves]);
     if (this.storageReady()) void this.userDataRepository.putSolve(solve);
     if (accountId) {
-      this.solveMutations.update((mutations) => [...mutations, { kind: 'put', solve }]);
+      this.solveMutations.update((mutations) => [...mutations, { kind: 'put', data: solve }]);
     }
     return solve;
   }
@@ -281,6 +449,7 @@ export class CubeService {
     if (!current || !this.canEditSolve(current)) return;
     const updated: Solve = {
       ...current,
+      pendingSync: current.ownerType === 'account',
       penalty: current.penalty === penalty ? 'none' : penalty,
       updatedAt: new Date().toISOString(),
     };
@@ -289,7 +458,7 @@ export class CubeService {
     );
     if (this.storageReady()) void this.userDataRepository.putSolve(updated);
     if (updated.ownerType === 'account' && updated.ownerId === this.auth.user()?.uid) {
-      this.solveMutations.update((mutations) => [...mutations, { kind: 'put', solve: updated }]);
+      this.solveMutations.update((mutations) => [...mutations, { kind: 'put', data: updated }]);
     }
   }
 
@@ -324,6 +493,7 @@ export class CubeService {
     const group = this.userGroups().find((group) => group.id === id);
     return Boolean(
       group &&
+      !group.deletedAt &&
       (group.ownerType === 'guest' ||
         Boolean(group.ownerId && group.ownerId === this.auth.user()?.uid)) &&
       this.solves()
@@ -381,17 +551,25 @@ export class CubeService {
         ...current,
         id: copy ? crypto.randomUUID() : current.id,
         ...(copy ? { copiedFromId: current.id } : {}),
+        groupId: this.accountGroupId(current.groupId, accountId, false),
         ownerType: 'account',
         ownerId: accountId,
         pendingSync: true,
         updatedAt: new Date().toISOString(),
         schemaVersion: USER_DATA_SCHEMA_VERSION,
       };
+      const group = this.userGroups().find((group) => group.id === owned.groupId);
+      if (group?.pendingSync) {
+        await this.userDataRepository.putRecordGroup(group);
+        if (!this.groupMutations().some((item) => item.data.id === group.id))
+          this.queueGroup(group);
+      }
+      if (this.auth.user()?.uid !== accountId) throw new Error('Transfer account changed');
       await this.userDataRepository.putSolve(owned);
       this.storedSolves.update((solves) =>
         copy ? [owned, ...solves] : solves.map((item) => (item.id === owned.id ? owned : item)),
       );
-      this.solveMutations.update((items) => [...items, { kind: 'put', solve: owned }]);
+      this.solveMutations.update((items) => [...items, { kind: 'put', data: owned }]);
     } finally {
       this.transferringIds.update((ids) => new Set([...ids].filter((id) => id !== solve.id)));
     }
@@ -403,14 +581,14 @@ export class CubeService {
     if (!current || !this.canEditSolve(current)) return;
     if (current.ownerType === 'account' && current.ownerId === this.auth.user()?.uid) {
       const deletedAt = new Date().toISOString();
-      const tombstone = { ...current, updatedAt: deletedAt, deletedAt };
+      const tombstone = { ...current, pendingSync: true, updatedAt: deletedAt, deletedAt };
       this.storedSolves.update((solves) =>
         solves.map((solve) => (solve.id === id ? tombstone : solve)),
       );
       if (this.storageReady()) void this.userDataRepository.putSolve(tombstone);
       this.solveMutations.update((mutations) => [
         ...mutations,
-        { kind: 'delete', solve: tombstone },
+        { kind: 'delete', data: tombstone },
       ]);
     } else if (this.storageReady()) {
       this.storedSolves.update((solves) => solves.filter((solve) => solve.id !== id));
@@ -446,9 +624,10 @@ export class CubeService {
       [
         ...currentSolves.map((solve) => mergedById.get(solve.id) as Solve),
         ...changedSolves.filter(({ id }) => !currentIds.has(id)),
-      ].sort((left, right) => right.date.localeCompare(left.date)),
+      ].sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
     );
     await Promise.all(changedSolves.map((solve) => this.userDataRepository.putSolve(solve)));
+    await this.reconcileDeletedGroups();
   }
 
   /**
@@ -585,9 +764,12 @@ export class CubeService {
         .filter((solve) => solve.ownerType === 'account' && solve.pendingSync)
         .map((solve) => ({
           kind: solve.deletedAt ? ('delete' as const) : ('put' as const),
-          solve,
+          data: solve,
         })),
     ]);
+    for (const group of this.userGroups().filter((group) => group.pendingSync))
+      this.queueGroup(group);
+    await this.reconcileDeletedGroups();
     this.storageReady.set(true);
   }
 

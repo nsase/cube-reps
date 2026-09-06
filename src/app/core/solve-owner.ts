@@ -15,13 +15,13 @@ export class SolveOwnerService {
   /** 現在ローカル記録がある所有者だけを選択肢にする。 */
   readonly options = computed(() =>
     [
-      ...new Set(
+      ...new Map(
         this.cube
           .solves()
-          .filter((solve) => solve.ownerType === 'account')
-          .map((solve) => solve.ownerId!),
+          .filter((solve) => solve.ownerType === 'account' && solve.ownerId)
+          .map((solve) => [solve.ownerId, solve]),
       ),
-    ].map((uid) => ({ key: `account:${uid}`, label: this.accountName(uid), uid })),
+    ].map(([uid, solve]) => ({ key: this.key(solve), label: this.label(solve), uid })),
   );
 
   /** ゲストは共通の未紐づけ分類、アカウントはUIDで区別する。 */
@@ -34,18 +34,21 @@ export class SolveOwnerService {
     return solve.ownerType === 'guest' ? this.unlinked() : this.accountName(solve.ownerId!);
   }
 
-  /** 同名アカウントも識別できるようUIDを併記する。 */
+  /** 表示名とメールを優先し、プロフィールがない場合はUIDで所有者を示す。 */
   accountName(uid: string): string {
     const account = this.cube.accounts().find((account) => account.uid === uid);
-    return `${account?.displayName || account?.email || this.accountLabel()} (${uid})`;
+    if (account?.displayName && account.email) {
+      return `${account.displayName} (${account.email})`;
+    } else if (account?.email) {
+      return account?.email;
+    }
+    return account?.displayName || uid;
   }
 
   /** 認証方式を含む、保存済みの所有者詳細を返す。 */
   details(solve: Solve): string {
     const account = this.cube.accounts().find((account) => account.uid === solve.ownerId);
-    return [this.label(solve), account?.email, ...(account?.providerIds ?? [])]
-      .filter(Boolean)
-      .join(' · ');
+    return [this.label(solve), ...(account?.providerIds ?? [])].filter(Boolean).join(' · ');
   }
 
   /** アバターのプロフィール画像を返す。 */

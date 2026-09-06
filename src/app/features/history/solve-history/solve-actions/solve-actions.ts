@@ -35,6 +35,8 @@ export class SolveActions {
   protected readonly currentSolve = computed(
     () => this.cube.solves().find(({ id }) => id === this.solve().id) ?? this.solve(),
   );
+  /** 現在の計測記録が編集可能かどうか。 */
+  protected readonly canEditSolve = computed(() => this.cube.canEditSolve(this.currentSolve()));
   /** 記録削除の確認を表示するサービス。 */
   private readonly confirm = inject(ConfirmService);
   /** 確認メッセージを現在の言語へ翻訳するサービス。 */
@@ -47,7 +49,7 @@ export class SolveActions {
    * 詳細ダイアログなどの呼び出し元が表示を閉じられるように、削除完了を通知する。
    */
   protected delete(): void {
-    if (!this.cube.canEditSolve(this.currentSolve())) return;
+    if (!this.canEditSolve()) return;
     this.confirm
       .delete(
         this.i18n.translate('history.deleteSolveTitle'),

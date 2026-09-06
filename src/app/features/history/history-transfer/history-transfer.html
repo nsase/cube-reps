@@ -3,15 +3,15 @@
     <span>{{ 'ownership.selected' | transloco: { count: store.selectedSolves().length } }}</span>
     <button
       mat-button
-      [disabled]="!count(false) || confirming() || migration.pending()"
-      (click)="transfer(false)"
+      [disabled]="!guestSolves().length || confirming() || migration.pending()"
+      (click)="move()"
     >
       {{ 'ownership.move' | transloco }}
     </button>
     <button
       mat-button
-      [disabled]="!count(true) || confirming() || migration.pending()"
-      (click)="transfer(true)"
+      [disabled]="!accountSolves().length || confirming() || migration.pending()"
+      (click)="copy()"
     >
       {{ 'ownership.copy' | transloco }}
     </button>

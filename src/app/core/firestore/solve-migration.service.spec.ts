@@ -22,12 +22,12 @@ describe('SolveMigrationService selected transfers', () => {
     const service = TestBed.inject(SolveMigrationService);
     TestBed.tick();
     expect(cube.guestSolves()).toHaveLength(2);
-    expect(await service.transfer([first], account.uid, false)).toEqual({
+    expect(await service.transfer([first], account.uid, 'move')).toEqual({
       completed: 1,
       failed: 0,
     });
     expect(cube.guestSolves()).toEqual([second]);
-    expect(cube.solveMutations().map((item) => item.solve.id)).toEqual([first.id]);
+    expect(cube.solveMutations().map((item) => item.data.id)).toEqual([first.id]);
     auth.user.set(null);
     expect(cube.solves()).toHaveLength(2);
     const moved = cube.solves().find((solve) => solve.id === first.id)!;
@@ -44,7 +44,7 @@ describe('SolveMigrationService selected transfers', () => {
     cube.solveMutations.set([]);
     auth.user.set(account);
     const service = TestBed.inject(SolveMigrationService);
-    expect(await service.transfer([source], account.uid, true)).toEqual({
+    expect(await service.transfer([source], account.uid, 'copy')).toEqual({
       completed: 1,
       failed: 0,
     });
@@ -56,7 +56,7 @@ describe('SolveMigrationService selected transfers', () => {
       time: source.time,
       pendingSync: true,
     });
-    expect(cube.solveMutations().map((item) => item.solve)).toEqual([copy]);
+    expect(cube.solveMutations().map((item) => item.data)).toEqual([copy]);
     await cube.acknowledgeSync(copy);
     expect(cube.solves().find((solve) => solve.id === copy.id)?.pendingSync).toBeUndefined();
   });
@@ -67,12 +67,12 @@ describe('SolveMigrationService selected transfers', () => {
     TestBed.inject(AuthService).user.set(account);
     cube.storedSolves.set([{ ...solve, updatedAt: '2099-01-01T00:00:00.000Z' }]);
     const service = TestBed.inject(SolveMigrationService);
-    expect(await service.transfer([solve], account.uid, false)).toEqual({
+    expect(await service.transfer([solve], account.uid, 'move')).toEqual({
       completed: 0,
       failed: 1,
     });
     TestBed.inject(AuthService).user.set(null);
-    expect(await service.transfer(cube.solves(), account.uid, false)).toEqual({
+    expect(await service.transfer(cube.solves(), account.uid, 'move')).toEqual({
       completed: 0,
       failed: 1,
     });
@@ -88,12 +88,12 @@ describe('SolveMigrationService selected transfers', () => {
       new Error('quota'),
     );
     const service = TestBed.inject(SolveMigrationService);
-    expect(await service.transfer([first, second], account.uid, false)).toEqual({
+    expect(await service.transfer([first, second], account.uid, 'move')).toEqual({
       completed: 1,
       failed: 1,
     });
     expect(cube.guestSolves()).toEqual([first]);
-    expect(await service.transfer([first], account.uid, false)).toEqual({
+    expect(await service.transfer([first], account.uid, 'move')).toEqual({
       completed: 1,
       failed: 0,
     });

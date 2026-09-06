@@ -93,6 +93,7 @@ export class AlgorithmLibraryService {
       this.preferences()[caseKey] ?? {
         caseKey,
         custom: [],
+        createdAt: new Date().toISOString(),
         updatedAt: new Date(0).toISOString(),
         ownerType: 'guest',
         schemaVersion: USER_DATA_SCHEMA_VERSION,

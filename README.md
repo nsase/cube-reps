@@ -48,11 +48,13 @@ Browser storage is separated by browser and installation context. In particular,
 
 Select **Sign in with Google** in the page header to sign in. Signing in is optional: Timer, History, and locally saved algorithms remain available without an account, including while offline after the app has been loaded.
 
-History displays all undeleted solves saved in this browser profile, regardless of sign-in or account ownership. The owner filter applies consistently to the list, counts, statistics, and Progress Chart within the selected group and category. Owner avatars show a photo, initials, or a fallback icon; tap an avatar for account details.
+History displays all undeleted solves saved in this browser profile, regardless of sign-in or account ownership. The owner filter applies consistently to the list, counts, statistics, and Progress Chart within the selected group and category. Owner avatars show a photo, initials, or a fallback icon; hover over an avatar for its tooltip, or open the solve details with the information button to view account details.
 
 Guest records are **Not linked to an account** and have no guest ID. Existing guest IDs are removed without changing solve IDs or group associations. Signing in does not automatically import records. Select records in History, then confirm **Move to current account** for unlinked records or **Copy to current account** for another account's records. Moving preserves the solve ID; copying creates an independent ID and keeps the original unchanged. Copy details identify the source record; deliberately copying again creates another independent record. Results disappear automatically and remain confined to History; check the header for cloud synchronization status.
 
 Account-owned solves are fetched when signing in, opening History, and returning online. Adds, penalty and group changes, and deletions are applied locally immediately and queued by Firestore while offline. The header shows syncing, synced, offline, pending, or error status; failed operations can be retried. Firestore's persistent web cache is enabled and should be used only on a trusted device.
+
+Account-owned groups also synchronize their names and deletions. Importing records into another owner copies their group once for that destination, preserving the original group. Solve `createdAt` is the measurement time and remains unchanged by moves and copies; legacy `date` values migrate without changing that time.
 
 Regular concurrent edits use Firestore's server-confirmed write order, avoiding dependence on device clocks. Deletion creates a permanent tombstone instead of physically removing the document; a tombstone always wins over later stale edits, so an offline device cannot accidentally restore a deleted solve. Tombstones are retained indefinitely in this initial implementation.
 

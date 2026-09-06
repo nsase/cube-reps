@@ -38,7 +38,7 @@ describe('SolveRecord', () => {
   function createFixture() {
     const cube = TestBed.inject(CubeService);
     cube.addSolve(1234, 'R U', 'full');
-    const solve = { ...cube.solves()[0], date: '2026-08-24T09:28:00.000Z' };
+    const solve = { ...cube.solves()[0], createdAt: '2026-08-24T09:28:00.000Z' };
     cube.storedSolves.set([solve]);
     const fixture = TestBed.createComponent(SolveRecord);
     fixture.componentRef.setInput('solve', solve);
@@ -63,6 +63,24 @@ describe('SolveRecord', () => {
     expect(dialog.open).toHaveBeenCalledWith(SolveDetailDialog, {
       data: { solve, recordNumber: 1 },
     });
+  });
+
+  it('選択不可でもチェック欄を表示し、選択可能な行だけ変更を通知する', () => {
+    const { fixture } = createFixture();
+    const changed = vi.fn();
+    fixture.componentInstance.selectionChanged.subscribe(changed);
+    const checkbox = fixture.nativeElement.querySelector(
+      'input[type="checkbox"]',
+    ) as HTMLInputElement;
+    expect(checkbox.disabled).toBe(true);
+    checkbox.click();
+    expect(changed).not.toHaveBeenCalled();
+    fixture.componentRef.setInput('selectable', true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('input[type="checkbox"]')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelectorAll('app-owner-avatar')).toHaveLength(1);
+    checkbox.click();
+    expect(changed).toHaveBeenCalledOnce();
   });
 
   it('言語に応じて年なしの短い計測日時を表示する', () => {

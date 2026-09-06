@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { DBSchema, IDBPDatabase, openDB } from 'idb';
 import {
   AlgorithmPreference,
+  LocalAccount,
+  RecordGroup,
   Solve,
   SolveCategory,
-  RecordGroup,
-  LocalAccount,
 } from './cube.models';
 
 /** 現行ユーザーデータのスキーマバージョン。 */
-export const USER_DATA_SCHEMA_VERSION = 2;
+export const USER_DATA_SCHEMA_VERSION = 3;
 
 /** IndexedDBから復元したローカルデータ。 */
 export interface StoredUserData {
@@ -54,7 +54,7 @@ interface CubeRepsDatabase extends DBSchema {
   solves: {
     key: string;
     value: Solve;
-    indexes: { date: string; updatedAt: string; ownerId: string };
+    indexes: { createdAt: string; updatedAt: string; ownerId: string };
   };
   groups: { key: string; value: RecordGroup; indexes: { createdAt: string; ownerId: string } };
   algorithmPreferences: {
@@ -108,11 +108,11 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
       this.migrateLegacyGroups(database),
       this.migrateLegacyAlgorithmPreferences(database),
     ]);
-    const solves = await database.getAllFromIndex('solves', 'date');
+    const solves = await database.getAllFromIndex('solves', 'createdAt');
     const groups = await database.getAllFromIndex('groups', 'createdAt');
     const algorithmPreferences = await database.getAll('algorithmPreferences');
     return {
-      solves: solves.sort((left, right) => right.date.localeCompare(left.date)),
+      solves: solves.sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       accounts: await database.getAll('accounts'),
       groups,
       algorithmPreferences,
@@ -177,11 +177,11 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
   }
   /** @returns 必要なストアと検索インデックスを持つデータベース */
   private openDatabase(): Promise<IDBPDatabase<CubeRepsDatabase>> {
-    return openDB<CubeRepsDatabase>(IndexedDbUserDataRepository.databaseName, 3, {
+    return openDB<CubeRepsDatabase>(IndexedDbUserDataRepository.databaseName, 4, {
       upgrade(database, oldVersion, _newVersion, transaction) {
         if (oldVersion < 1) {
           const solves = database.createObjectStore('solves', { keyPath: 'id' });
-          solves.createIndex('date', 'date');
+          solves.createIndex('createdAt', 'createdAt');
           solves.createIndex('updatedAt', 'updatedAt');
           solves.createIndex('ownerId', 'ownerId');
           database.createObjectStore('metadata');
@@ -196,25 +196,33 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
           preferences.createIndex('updatedAt', 'updatedAt');
           preferences.createIndex('ownerId', 'ownerId');
         }
-        if (oldVersion < 3) {
-          database.createObjectStore('accounts', { keyPath: 'uid' });
-          // 同一トランザクションで旧ゲストIDだけを除去し、記録とグループのIDを維持する。
+        if (oldVersion < 4) {
+          const solves = transaction.objectStore('solves');
+          if (solves.indexNames.contains('date' as 'createdAt'))
+            solves.deleteIndex('date' as 'createdAt');
+          if (!solves.indexNames.contains('createdAt'))
+            solves.createIndex('createdAt', 'createdAt');
+          // 計測日時を保持して旧レコードを更新し、索引から記録が抜け落ちることを防ぐ。
           for (const name of ['solves', 'groups', 'algorithmPreferences'] as const) {
             void (async () => {
               let cursor = await transaction.objectStore(name).openCursor();
               while (cursor) {
-                if (cursor.value.ownerType !== 'account') {
-                  const { ownerId: _legacyOwner, ...value } = cursor.value;
-                  await cursor.update({
-                    ...value,
-                    ownerType: 'guest',
-                    schemaVersion: USER_DATA_SCHEMA_VERSION,
-                  });
-                }
+                const { date, ...value } = cursor.value as typeof cursor.value & { date?: string };
+                const { ownerId, ...metadata } = value;
+                await cursor.update({
+                  ...metadata,
+                  ...(value.ownerType === 'account' ? { ownerId } : {}),
+                  ownerType: value.ownerType === 'account' ? 'account' : 'guest',
+                  createdAt: value.createdAt ?? date ?? value.updatedAt,
+                  schemaVersion: USER_DATA_SCHEMA_VERSION,
+                });
                 cursor = await cursor.continue();
               }
             })();
           }
+        }
+        if (oldVersion < 3) {
+          database.createObjectStore('accounts', { keyPath: 'uid' });
           void transaction.objectStore('metadata').delete('guestOwnerId');
         }
       },
@@ -370,6 +378,7 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
       favoriteId: preference.favoriteId
         ? (idMap.get(preference.favoriteId) ?? preference.favoriteId)
         : undefined,
+      createdAt: preference.createdAt ?? new Date().toISOString(),
       updatedAt: preference.updatedAt ?? new Date().toISOString(),
       ownerType: preference.ownerType ?? 'guest',
       ...(preference.ownerType === 'account' ? { ownerId: preference.ownerId } : {}),
@@ -385,11 +394,12 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
   /** @returns 必須項目を検証して現行形式へ変換したSolve */
   private normalizeLegacySolve(value: unknown): Solve | undefined {
     if (!value || typeof value !== 'object') return undefined;
-    const solve = value as Partial<Solve>;
+    const solve = value as Partial<Solve> & { date?: string };
+    const createdAt = solve.createdAt ?? solve.date;
     if (
       typeof solve.time !== 'number' ||
       typeof solve.scramble !== 'string' ||
-      typeof solve.date !== 'string' ||
+      typeof createdAt !== 'string' ||
       !this.isCategory(solve.category)
     ) {
       return undefined;
@@ -398,8 +408,8 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
       id: typeof solve.id === 'string' && solve.id ? solve.id : crypto.randomUUID(),
       time: solve.time,
       scramble: solve.scramble,
-      date: solve.date,
-      updatedAt: solve.updatedAt ?? solve.date,
+      createdAt,
+      updatedAt: solve.updatedAt ?? createdAt,
       ownerType: solve.ownerType ?? 'guest',
       ...(solve.ownerType === 'account' ? { ownerId: solve.ownerId } : {}),
       schemaVersion: USER_DATA_SCHEMA_VERSION,

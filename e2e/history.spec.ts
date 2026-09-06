@@ -77,7 +77,7 @@ test('旧localStorageの記録をIndexedDBへ移行して履歴に表示する',
   expect(migrated.ownerType).toBe('guest');
   expect(migrated.ownerId).toBeUndefined();
   expect(migrated.updatedAt).toBe('2026-01-01T00:00:00.000Z');
-  expect(migrated.schemaVersion).toBe(2);
+  expect(migrated.schemaVersion).toBe(3);
   expect(await page.evaluate(() => localStorage.getItem('cube-reps.solves'))).toBeNull();
   const related = await page.evaluate(
     () =>
@@ -102,11 +102,11 @@ test('旧localStorageの記録をIndexedDBへ移行して履歴に表示する',
   );
   expect(related.groups[0]).toMatchObject({
     id: 'competition',
-    schemaVersion: 2,
+    schemaVersion: 3,
   });
   expect(related.preferences[0]).toMatchObject({
     caseKey: 'PLL-Aa',
-    schemaVersion: 2,
+    schemaVersion: 3,
   });
   const custom = related.preferences[0]['custom'] as Array<{ id: string }>;
   expect(custom[0].id).toMatch(/^[0-9a-f-]{36}$/i);
@@ -287,9 +287,12 @@ test(
     await expect(firstRecord.locator('time')).toBeVisible();
     await expect(firstRecord.locator('code')).toHaveCount(0);
 
-    const headerCells = header.locator('[role="columnheader"]');
+    const compact = (page.viewportSize()?.width ?? 1440) <= 620;
+    const headerCells = header.locator('[role="columnheader"]:visible');
     const recordCells = firstRecord.locator(
-      '.record-number, .result, .ao5, .ao12, time, .group-badge',
+      compact
+        ? '.record-number, .result, .ao5, .ao12'
+        : '.record-number, .result, .ao5, .ao12, time, .group-badge',
     );
     const [headerPositions, recordPositions] = await Promise.all([
       headerCells.evaluateAll((cells) => cells.map((cell) => cell.getBoundingClientRect().x)),
@@ -299,6 +302,11 @@ test(
     recordPositions.forEach((position, index) => {
       expect(Math.abs(position - headerPositions[index])).toBeLessThanOrEqual(1);
     });
+    if (compact) {
+      const result = (await firstRecord.locator('.result').boundingBox())!;
+      const date = (await firstRecord.locator('time').boundingBox())!;
+      expect(date.y).toBeGreaterThanOrEqual(result.y + result.height);
+    }
     const numberFitsColumn = await firstRecord.locator('.record-number').evaluate((number) => {
       return number.scrollWidth <= number.clientWidth;
     });
