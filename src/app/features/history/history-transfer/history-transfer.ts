@@ -6,11 +6,10 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { firstValueFrom, Subscription, timer } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { Solve } from '../../../core/cube.models';
 import { SolveMigrationService } from '../../../core/firestore/solve-migration.service';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
@@ -29,8 +28,6 @@ export class HistoryTransfer {
   protected readonly store = inject(HistoryStore);
   /** 選択済み記録の移行を行うサービス。 */
   protected readonly migration = inject(SolveMigrationService);
-  /** 操作結果の翻訳パラメータ。画面を離れると破棄する。 */
-  protected readonly result = signal<{ completed: number; failed: number } | null>(null);
   /** 確認ダイアログの表示中に同じ操作を重ねない状態。 */
   protected readonly confirming = signal(false);
   /** 共通確認ダイアログの表示先。 */
@@ -47,8 +44,6 @@ export class HistoryTransfer {
   protected readonly guestSolves = computed(() =>
     this.store.selectedSolves().filter((solve) => solve.ownerType === 'guest'),
   );
-  /** 完了通知を消すタイマー。 */
-  private notificationTimer?: Subscription;
 
   /** 選択された記録をコピーする。 */
   protected copy(): Promise<void> {
@@ -89,15 +84,9 @@ export class HistoryTransfer {
       );
       if (confirmed !== action || this.destroyRef.destroyed || this.store.auth.user()?.uid !== uid)
         return;
-      const result = await this.migration.transfer(solves, uid, action);
-      if (this.destroyRef.destroyed) return;
-      this.result.set(result);
+      this.migration.transfer(solves, uid, action);
       // コピーは元記録が残るため選択を解除して、成功分の意図しない再コピーを避ける。
       this.store.selectedIds.set(new Set());
-      this.notificationTimer?.unsubscribe();
-      this.notificationTimer = timer(8000)
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(() => this.result.set(null));
     } finally {
       if (!this.destroyRef.destroyed) this.confirming.set(false);
     }

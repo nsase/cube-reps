@@ -41,7 +41,7 @@ export interface FirestoreSolveDocument {
  * @returns Firestoreがtimestampとして保存するDateを使用したドキュメント
  */
 export function toFirestoreSolve(solve: Solve, userId: string): FirestoreSolveDocument {
-  const { pendingSync: _localPending, copiedFromId: _localSource, ...document } = solve;
+  const { pendingSync: _localPending, ...document } = solve;
   return omitUndefined({
     ...document,
     createdAt: new Date(solve.createdAt),

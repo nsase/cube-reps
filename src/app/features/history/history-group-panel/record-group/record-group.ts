@@ -2,16 +2,17 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, signal } f
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { CubeService } from '../../../../core/cube';
-import { DisplayRecordGroup as RecordGroupModel } from '../../../../core/cube.models';
-import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
-import { HistoryStore } from '../../history.store';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { CubeService } from '../../../../core/cube';
+import { DisplayRecordGroup as RecordGroupModel, SyncMetadata } from '../../../../core/cube.models';
+import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
+import { OwnerAvatar } from '../../../../shared/owner-avatar/owner-avatar';
+import { HistoryStore } from '../../history.store';
 
 /** 1件の記録グループと、その選択・削除操作を表示するコンポーネント。 */
 @Component({
   selector: 'app-record-group',
-  imports: [FormsModule, MatButtonModule, MatIconModule, TranslocoPipe],
+  imports: [FormsModule, MatButtonModule, MatIconModule, TranslocoPipe, OwnerAvatar],
   templateUrl: './record-group.html',
   styleUrl: './record-group.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -49,7 +50,7 @@ export class RecordGroup {
   protected readonly canEdit = computed(() => this.cube.canManageGroup(this.group().id));
   /** このグループを削除できるか。 */
   protected readonly canDelete = computed(
-    () => this.cube.canManageGroup(this.group().id) && this.cube.groups().length > 1,
+    () => this.cube.canManageGroup(this.group().id) && this.cube.activeGroups().length > 1,
   );
 
   /** このグループを履歴の絞り込み対象に設定する。 */
@@ -74,6 +75,16 @@ export class RecordGroup {
   protected cancelEditing(): void {
     this.editedName.set('');
     this.editing.set(false);
+  }
+
+  /** このグループがビルトインかどうかを判定する。 */
+  protected isBuiltIn(group: RecordGroupModel): boolean {
+    return !('ownerType' in group);
+  }
+
+  /** GroupのMetadataを返す */
+  protected getMetadata(group: RecordGroupModel): SyncMetadata {
+    return group as SyncMetadata;
   }
 
   /** 確認後にこのグループを削除する。 */
