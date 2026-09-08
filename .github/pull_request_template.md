@@ -6,7 +6,9 @@
 
 - [ ] `npm run build`
 - [ ] `npm test`
-- [ ] `npm run test:e2e`
+- [ ] `npm run test:firestore`（CIまたはローカル）
+- [ ] Browser Test: Issue PRは`npm run test:e2e:pr`、リリースPRは`npm run test:e2e`（全7プロジェクト）
+- 追加のviewport確認（UI／レスポンシブ変更時は範囲と結果を記載）:
 - [ ] `git diff --check`
 
 ## Documentation
