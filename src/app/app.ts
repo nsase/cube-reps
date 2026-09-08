@@ -4,10 +4,10 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { filter, map } from 'rxjs';
 import { CubeService } from './core/cube';
-import { AppUpdateService } from './core/app-update.service';
+import { FirestoreSyncService } from './core/firestore/firestore-sync.service';
+import { LocalSyncService } from './core/local/local-sync.service';
 import { AppUpdate } from './shared/app-update/app-update';
 import { AuthControls } from './shared/auth-controls/auth-controls';
-import { SolveMigration } from './shared/solve-migration/solve-migration';
 import { SyncStatus } from './shared/sync-status/sync-status';
 
 /** 共通レイアウトとルーターOutletを表示するルートコンポーネント。 */
@@ -16,7 +16,6 @@ import { SyncStatus } from './shared/sync-status/sync-status';
   imports: [
     AppUpdate,
     AuthControls,
-    SolveMigration,
     SyncStatus,
     RouterLink,
     RouterLinkActive,
@@ -30,12 +29,14 @@ import { SyncStatus } from './shared/sync-status/sync-status';
 export class App {
   /** ヘッダーで計測件数を表示するキューブ状態サービス。 */
   protected readonly cube = inject(CubeService);
-  /** タイマー計測中に補助通知を隠すための共通表示状態。 */
-  protected readonly appUpdates = inject(AppUpdateService);
   /** 現在のルートとナビゲーションイベントを提供するサービス。 */
   private readonly router = inject(Router);
   /** 翻訳辞書と言語変更を管理するサービス。 */
   protected readonly i18n = inject(TranslocoService);
+  /** 変更をIndexedDBへ保存するための同期サービス */
+  protected readonly localSync = inject(LocalSyncService);
+  /** 変更をFirestoreへ保存するための同期サービス */
+  protected readonly firestoreSync = inject(FirestoreSyncService);
 
   /** アクティブな末端ルートのdataに定義された画面見出しの翻訳キー。 */
   protected readonly headingKey = toSignal(

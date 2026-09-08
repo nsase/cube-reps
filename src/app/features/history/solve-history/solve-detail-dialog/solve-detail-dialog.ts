@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { CubeService } from '../../../../core/cube';
 import { Solve } from '../../../../core/cube.models';
+import { MetadataOwnerService } from '../../../../core/metadata-owner';
 import { SolvePattern } from '../../../../shared/solve-pattern/solve-pattern';
 import { SolveActions } from '../solve-actions/solve-actions';
 
@@ -25,6 +26,8 @@ export interface SolveDetailData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolveDetailDialog {
+  /** 所有者の表示情報。 */
+  protected readonly owners = inject(MetadataOwnerService);
   /** ダイアログで表示する計測記録と通し番号。 */
   private readonly data = inject<SolveDetailData>(MAT_DIALOG_DATA);
   /** ダイアログで表示する計測記録。 */
@@ -44,7 +47,7 @@ export class SolveDetailDialog {
    * ダイアログを開いた後の変更を反映するため、保存中の同一ID記録を優先して参照する。
    */
   protected readonly currentSolve = computed(
-    () => this.cube.solves().find(({ id }) => id === this.solve.id) ?? this.solve,
+    () => this.cube.activeSolves().find(({ id }) => id === this.solve.id) ?? this.solve,
   );
   /**
    * 現在の表示言語に合わせた計測日時。
@@ -54,7 +57,7 @@ export class SolveDetailDialog {
     new Intl.DateTimeFormat(this.activeLang(), {
       dateStyle: 'medium',
       timeStyle: 'medium',
-    }).format(new Date(this.currentSolve().date)),
+    }).format(new Date(this.currentSolve().createdAt)),
   );
   /** 操作完了後にこの詳細表示を閉じるダイアログ参照。 */
   private readonly dialogRef = inject(MatDialogRef<SolveDetailDialog>);

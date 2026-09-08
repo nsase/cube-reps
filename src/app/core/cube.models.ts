@@ -16,14 +16,20 @@ export type UserDataOwnerType = 'guest' | 'account';
 
 /** 同期対象ユーザーデータが共通で持つ更新・所有情報。 */
 export interface SyncMetadata {
-  /** 対象を最後に変更した日時を表すISO 8601文字列。 */
+  /** 作成日時を表すISO 8601文字列。Solveでは計測日時であり、取り込み時も維持する。 */
+  createdAt: string;
+  /** 最後に変更した日時を表すISO 8601文字列。 */
   updatedAt: string;
+  /** 同期対象の削除を他端末へ伝えるtombstone日時。 */
+  deletedAt?: string;
   /** 対象を所有する主体の種別。 */
   ownerType: UserDataOwnerType;
-  /** ゲスト端末UUIDまたは将来のアカウントUID。 */
-  ownerId: string;
+  /** アカウントのFirebase UID。未紐づけのデータでは省略する。 */
+  ownerId?: string;
   /** このレコードが準拠する保存スキーマのバージョン。 */
   schemaVersion: number;
+  /** ローカル保存後、Firestoreへの転送確認まで保持する再送フラグ。 */
+  pendingSync?: boolean;
 }
 
 /** 計測記録を分類するユーザー定義グループ。 */
@@ -32,8 +38,6 @@ export interface RecordGroup extends SyncMetadata {
   id: string;
   /** 画面に表示するグループ名。 */
   name: string;
-  /** グループを作成した日時を表すISO 8601文字列。 */
-  createdAt: string;
 }
 
 /** 1回分の計測結果。 */
@@ -44,8 +48,6 @@ export interface Solve extends SyncMetadata {
   time: number;
   /** 計測時に使用したスクランブル。 */
   scramble: string;
-  /** 計測日時を表すISO 8601文字列。 */
-  date: string;
   /** 記録を独立して集計するsolveカテゴリー。 */
   category: SolveCategory;
   /** PLL練習時のケース名。 */
@@ -54,8 +56,6 @@ export interface Solve extends SyncMetadata {
   groupId?: string;
   /** 記録へ適用されたペナルティ。 */
   penalty: Penalty;
-  /** 同期対象の削除を他端末へ伝えるtombstone日時。 */
-  deletedAt?: string;
 }
 
 /** キューブ表示で使用するステッカー色。 */
@@ -117,3 +117,17 @@ export interface BuiltInRecordGroup extends Omit<RecordGroup, keyof SyncMetadata
 
 /** 履歴とタイマーに表示できる記録グループ。 */
 export type DisplayRecordGroup = BuiltInRecordGroup | RecordGroup;
+
+/** 同期データ */
+export interface DocumentMutation<D> {
+  /** 通常更新またはtombstone削除。 */
+  readonly kind: 'put' | 'delete';
+  /** 保存するデータ */
+  readonly data: D;
+}
+
+/** 計測記録の同期データ */
+export type SolveMutation = DocumentMutation<Solve>;
+
+/** グループの同期データ */
+export type GroupMutation = DocumentMutation<RecordGroup>;

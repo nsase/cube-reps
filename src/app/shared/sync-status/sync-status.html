@@ -2,9 +2,9 @@
   class="sync-status"
   type="button"
   data-testid="sync-status"
-  [class.error]="sync.phase() === 'error'"
-  [disabled]="sync.phase() !== 'error'"
+  [class.error]="phase() === 'error'"
+  [disabled]="phase() !== 'error'"
   (click)="retry()"
 >
-  ● {{ 'sync.' + sync.phase() | transloco }}
+  ● {{ 'sync.' + phase() | transloco }}
 </button>

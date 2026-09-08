@@ -1,5 +1,6 @@
 import { Penalty, Solve, SolveCategory } from '../cube.models';
 import { USER_DATA_SCHEMA_VERSION } from '../user-data-repository';
+import { isRecord, omitUndefined, readDate } from './utils';
 
 /** Firestoreへ保存する計測記録の現行形式。 */
 export interface FirestoreSolveDocument {
@@ -10,7 +11,7 @@ export interface FirestoreSolveDocument {
   /** 計測時に使用したスクランブル。 */
   readonly scramble: string;
   /** Firestoreで並べ替え可能な計測日時。 */
-  readonly date: Date;
+  readonly createdAt: Date;
   /** Firestoreで競合判定に利用できる更新日時。 */
   readonly updatedAt: Date;
   /** Firebase Authenticationの所有者UID。 */
@@ -40,9 +41,10 @@ export interface FirestoreSolveDocument {
  * @returns Firestoreがtimestampとして保存するDateを使用したドキュメント
  */
 export function toFirestoreSolve(solve: Solve, userId: string): FirestoreSolveDocument {
+  const { pendingSync: _localPending, ...document } = solve;
   return omitUndefined({
-    ...solve,
-    date: new Date(solve.date),
+    ...document,
+    createdAt: new Date(solve.createdAt),
     updatedAt: new Date(solve.updatedAt),
     deletedAt: solve.deletedAt ? new Date(solve.deletedAt) : undefined,
     ownerId: userId,
@@ -64,16 +66,16 @@ export function fromFirestoreSolve(id: string, value: unknown, userId: string): 
   if (!isRecord(value)) return undefined;
   if (typeof value['time'] !== 'number' || !Number.isFinite(value['time'])) return undefined;
   if (typeof value['scramble'] !== 'string') return undefined;
-  const date = readDate(value['date']);
-  if (!date) return undefined;
-  const updatedAt = readDate(value['updatedAt']) ?? date;
+  const createdAt = readDate(value['createdAt']) ?? readDate(value['date']);
+  if (!createdAt) return undefined;
+  const updatedAt = readDate(value['updatedAt']) ?? createdAt;
   const category = readCategory(value['category']);
   const penalty = readPenalty(value['penalty']);
   return omitUndefined({
     id,
     time: value['time'],
     scramble: value['scramble'],
-    date,
+    createdAt,
     updatedAt,
     ownerType: 'account' as const,
     ownerId: userId,
@@ -86,23 +88,6 @@ export function fromFirestoreSolve(id: string, value: unknown, userId: string): 
   });
 }
 
-/** 値がキー参照可能なオブジェクトか判定する。 */
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-/** Firestore Timestampまたは旧ISO文字列をISO 8601文字列へ変換する。 */
-function readDate(value: unknown): string | undefined {
-  if (value instanceof Date && !Number.isNaN(value.valueOf())) return value.toISOString();
-  if (isRecord(value) && typeof value['toDate'] === 'function') {
-    const date = (value['toDate'] as () => unknown)();
-    if (date instanceof Date && !Number.isNaN(date.valueOf())) return date.toISOString();
-  }
-  if (typeof value !== 'string') return undefined;
-  const date = new Date(value);
-  return Number.isNaN(date.valueOf()) ? undefined : date.toISOString();
-}
-
 /** 未知の旧カテゴリーをフルソルブへ寄せる。 */
 function readCategory(value: unknown): SolveCategory {
   return value === 'oll' || value === 'pll' ? value : 'full';
@@ -111,9 +96,4 @@ function readCategory(value: unknown): SolveCategory {
 /** 未知または欠落した旧ペナルティを未適用へ寄せる。 */
 function readPenalty(value: unknown): Penalty {
   return value === '+2' || value === 'DNF' ? value : 'none';
-}
-
-/** Firestoreが拒否するundefinedフィールドだけを取り除く。 */
-function omitUndefined<T extends object>(value: T): T {
-  return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined)) as T;
 }

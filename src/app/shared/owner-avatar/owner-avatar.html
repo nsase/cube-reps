@@ -1,0 +1,15 @@
+<div
+  role="img"
+  [attr.aria-label]="owners.details(metadata())"
+  [matTooltip]="owners.details(metadata())"
+>
+  @if (metadata().ownerType === 'guest') {
+    <mat-icon>devices</mat-icon>
+  } @else if (photo() && failedPhoto() !== photo()) {
+    <img [src]="photo()" alt="" referrerpolicy="no-referrer" (error)="failedPhoto.set(photo())" />
+  } @else if (initials()) {
+    <span class="initials" aria-hidden="true">{{ initials() }}</span>
+  } @else {
+    <mat-icon>account_circle</mat-icon>
+  }
+</div>
