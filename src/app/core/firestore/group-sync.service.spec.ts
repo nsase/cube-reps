@@ -1,7 +1,9 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../auth/auth.service';
-import { CubeService, GroupMutation } from '../cube';
+import { CubeService } from '../cube';
+import { GroupMutation } from '../cube.models';
+import { FirestoreSyncService } from './firestore-sync.service';
 import { RecordGroup } from '../cube.models';
 import { SystemStore } from '../system.store';
 import { FirestoreGroupRepository } from './firestore-group.repository';
@@ -26,10 +28,10 @@ describe('GroupSyncService', () => {
   let auth: { user: ReturnType<typeof signal<typeof account | null>> };
   let cube: {
     ready: Promise<void>;
-    groupMutations: ReturnType<typeof signal<readonly GroupMutation[]>>;
-    acknowledgeGroupSync: ReturnType<typeof vi.fn>;
-    mergeAccountGroups: ReturnType<typeof vi.fn>;
+    groupSyncFinished: ReturnType<typeof vi.fn>;
+    mergeGroups: ReturnType<typeof vi.fn>;
   };
+  let queue: { groupMutations: ReturnType<typeof signal<readonly GroupMutation[]>> };
   let cloud: {
     list: ReturnType<typeof vi.fn>;
     put: ReturnType<typeof vi.fn>;
@@ -39,11 +41,11 @@ describe('GroupSyncService', () => {
 
   beforeEach(() => {
     auth = { user: signal<typeof account | null>(null) };
+    queue = { groupMutations: signal<readonly GroupMutation[]>([]) };
     cube = {
       ready: Promise.resolve(),
-      groupMutations: signal<readonly GroupMutation[]>([]),
-      acknowledgeGroupSync: vi.fn(async () => undefined),
-      mergeAccountGroups: vi.fn(async () => undefined),
+      groupSyncFinished: vi.fn(async () => undefined),
+      mergeGroups: vi.fn(async () => undefined),
     };
     cloud = {
       list: vi.fn(async () => [group]),
@@ -55,6 +57,7 @@ describe('GroupSyncService', () => {
       providers: [
         { provide: AuthService, useValue: auth },
         { provide: CubeService, useValue: cube },
+        { provide: FirestoreSyncService, useValue: queue },
         { provide: FirestoreGroupRepository, useValue: cloud },
         { provide: SystemStore, useValue: system },
       ],
@@ -67,7 +70,7 @@ describe('GroupSyncService', () => {
     TestBed.tick();
 
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledWith(account.uid));
-    expect(cube.mergeAccountGroups).toHaveBeenCalledWith(account.uid, [group]);
+    expect(cube.mergeGroups).toHaveBeenCalledWith([group]);
     expect(sync.phase()).toBe('synced');
   });
 
@@ -107,7 +110,7 @@ describe('GroupSyncService', () => {
     TestBed.tick();
 
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledWith(account.uid));
-    expect(cube.mergeAccountGroups).toHaveBeenCalledWith(account.uid, [group]);
+    expect(cube.mergeGroups).toHaveBeenCalledWith([group]);
     expect(sync.phase()).toBe('offline');
   });
 
@@ -116,11 +119,11 @@ describe('GroupSyncService', () => {
     auth.user.set(account);
     TestBed.tick();
 
-    cube.groupMutations.set([{ kind: 'put', data: group }]);
+    queue.groupMutations.set([{ kind: 'put', data: group }]);
     TestBed.tick();
     await vi.waitFor(() => expect(cloud.put).toHaveBeenCalledWith(account.uid, group));
 
-    cube.groupMutations.set([{ kind: 'delete', data: { ...group, deletedAt: group.updatedAt } }]);
+    queue.groupMutations.set([{ kind: 'delete', data: { ...group, deletedAt: group.updatedAt } }]);
     TestBed.tick();
     await vi.waitFor(() =>
       expect(cloud.tombstone).toHaveBeenCalledWith(
@@ -131,7 +134,7 @@ describe('GroupSyncService', () => {
   });
   it('ログアウト中や別アカウントのキューではFirestoreへアクセスしない', async () => {
     TestBed.inject(GroupSyncService);
-    cube.groupMutations.set([{ kind: 'put', data: group }]);
+    queue.groupMutations.set([{ kind: 'put', data: group }]);
     TestBed.tick();
     expect(cloud.list).not.toHaveBeenCalled();
     expect(cloud.put).not.toHaveBeenCalled();
@@ -139,7 +142,7 @@ describe('GroupSyncService', () => {
     TestBed.tick();
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledWith('other'));
     expect(cloud.put).not.toHaveBeenCalled();
-    expect(cube.groupMutations()).toHaveLength(1);
+    expect(queue.groupMutations()).toHaveLength(1);
   });
 
   it('一括移行の一部失敗を別記録の成功で隠さず、失敗分だけ再試行する', async () => {
@@ -148,7 +151,7 @@ describe('GroupSyncService', () => {
     TestBed.tick();
     await vi.waitFor(() => expect(sync.phase()).toBe('synced'));
     cloud.put.mockRejectedValueOnce(new Error('offline'));
-    cube.groupMutations.set([
+    queue.groupMutations.set([
       { kind: 'put', data: group },
       { kind: 'put', data: { ...group, id: 'second' } },
     ]);
@@ -159,5 +162,30 @@ describe('GroupSyncService', () => {
     await vi.waitFor(() => expect(sync.phase()).toBe('synced'));
     expect(cloud.put).toHaveBeenCalledTimes(3);
     expect(cloud.put.mock.calls[2][1].id).toBe(group.id);
+  });
+  it('取得中にアカウントが切り替わった場合、古い取得結果を取り込まない', async () => {
+    let complete!: (records: (typeof group)[]) => void;
+    cloud.list.mockReturnValueOnce(
+      new Promise((resolve) => {
+        complete = resolve;
+      }),
+    );
+    TestBed.inject(GroupSyncService);
+    auth.user.set(account);
+    TestBed.tick();
+    await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledTimes(1));
+    auth.user.set(null);
+    TestBed.tick();
+    complete([group]);
+    await Promise.resolve();
+    expect(cube.mergeGroups).not.toHaveBeenCalled();
+  });
+
+  it('取得結果のうちログイン先以外の所有者を取り込まない', async () => {
+    cloud.list.mockResolvedValueOnce([group, { ...group, id: 'other', ownerId: 'other' }]);
+    TestBed.inject(GroupSyncService);
+    auth.user.set(account);
+    TestBed.tick();
+    await vi.waitFor(() => expect(cube.mergeGroups).toHaveBeenCalledWith([group]));
   });
 });

@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { FirestoreSyncService } from '../../../../core/firestore/firestore-sync.service';
 import { CubeService } from '../../../../core/cube';
 import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
 import { HistoryStore } from '../../history.store';
@@ -77,5 +79,40 @@ describe('RecordGroup', () => {
     expect(cube.activeGroups().some(({ id }) => id === group.id)).toBe(false);
     expect(store.selectedGroup()).toBe('unclassified');
     expect(cube.activeSolves().find(({ id }) => id === solve.id)?.groupId).toBe('unclassified');
+  });
+  it('既定グループは丸印、ゲストは端末、移行後はグループ所有者のアバターを表示する', async () => {
+    const cube = TestBed.inject(CubeService);
+    TestBed.inject(FirestoreSyncService);
+    await cube.ready;
+    const fixture = TestBed.createComponent(RecordGroup);
+    fixture.componentRef.setInput('group', cube.activeGroups()[0]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.group-icon').textContent).toBe('●');
+    expect(fixture.nativeElement.querySelector('app-owner-avatar')).toBeNull();
+    const group = cube.addGroup('Practice')!;
+    const solve = cube.addSolve(1000, 'R', 'full');
+    fixture.componentRef.setInput('group', group);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-owner-avatar mat-icon').textContent).toBe(
+      'devices',
+    );
+    TestBed.inject(AuthService).user.set({
+      uid: 'target',
+      displayName: 'Target User',
+      email: null,
+      photoURL: null,
+    });
+    cube.assignSolveToAccount(solve, 'target');
+    fixture.componentRef.setInput('group', cube.userGroups()[0]);
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement
+        .querySelector('app-owner-avatar [role="img"]')
+        .getAttribute('aria-label'),
+    ).toContain('Target User');
+    expect(fixture.nativeElement.querySelector('app-owner-avatar .initials').textContent).toBe(
+      'TU',
+    );
+    expect(cube.userGroups()).toHaveLength(1);
   });
 });

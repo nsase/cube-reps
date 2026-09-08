@@ -7,7 +7,7 @@ import { HistoryStore } from '../history.store';
 import { HistoryTransfer } from './history-transfer';
 
 describe('HistoryTransfer', () => {
-  it('選択件数と所有者を確認し、キャンセルでは変更せず確定後は閉じられる結果を表示する', async () => {
+  it('選択件数と所有者を確認し、キャンセルでは変更せず確定後は移行して選択を解除する', async () => {
     const dialog = {
       open: vi.fn((_component: unknown, _config: { data: { message: string } }) => ({
         afterClosed: () => of('cancel'),
@@ -41,11 +41,10 @@ describe('HistoryTransfer', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     expect(cube.guestSolves()).toHaveLength(0);
-    expect(fixture.nativeElement.querySelector('[role="status"]').textContent).toContain(
-      'Saved: 1',
+    expect(store.selectedIds().size).toBe(0);
+    expect(cube.activeSolves()[0].ownerId).toBe('target');
+    expect((fixture.nativeElement.querySelector('button') as HTMLButtonElement).disabled).toBe(
+      true,
     );
-    (fixture.nativeElement.querySelector('[role="status"] button') as HTMLButtonElement).click();
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('[role="status"]')).toBeNull();
   });
 });

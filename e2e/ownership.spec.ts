@@ -203,7 +203,8 @@ test(
     await page.locator('app-solve-record').getByRole('checkbox').check();
     await page.getByRole('button', { name: 'Copy to current account', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Copy to current account' }).click();
-    await expect(page.getByTestId('history-transfer-result')).toContainText('Saved: 1');
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await expect(page.locator('app-solve-record').getByRole('checkbox')).not.toBeChecked();
     await page.getByTestId('history-owner-filter').selectOption('all');
     await expect(page.locator('app-solve-record')).toHaveCount(4);
     await expectNoHorizontalOverflow(page);
@@ -213,6 +214,60 @@ test(
     await page.reload();
     await expect(page.locator('app-solve-record')).toHaveCount(4);
     await page.locator('nav a[href="#/timer"]').click();
-    await expect(page.getByTestId('history-transfer-result')).toHaveCount(0);
+    await expect(page.locator('app-timer')).toBeVisible();
+  },
+);
+
+/** グループの所有者変更を、実際の移行操作と再読み込みで確認する。 */
+test(
+  'ゲスト記録の移行で同じグループのアバターがアカウントへ切り替わる',
+  { tag: '@responsive' },
+  async ({ page }) => {
+    await seedHistory(page);
+    await page.evaluate(async () => {
+      const request = indexedDB.open('cube-reps');
+      const database = await new Promise<IDBDatabase>((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      const transaction = database.transaction(['groups', 'solves'], 'readwrite');
+      transaction
+        .objectStore('groups')
+        .put({
+          id: 'practice',
+          name: 'Practice',
+          ownerType: 'guest',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+          schemaVersion: 3,
+        });
+      const records = transaction.objectStore('solves');
+      const record = records.get('record-0');
+      record.onsuccess = () => records.put({ ...record.result, groupId: 'practice' });
+      await new Promise<void>((resolve, reject) => {
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+      });
+      database.close();
+    });
+    await seedSession(page);
+    await page.reload();
+    await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible({
+      timeout: 15000,
+    });
+    const group = page.locator('app-record-group').filter({ hasText: 'Practice' });
+    await expect(group).toHaveCount(1);
+    await expect(group.getByRole('img')).toHaveAccessibleName('Not linked to an account');
+    await group.getByRole('button').filter({ hasText: 'Practice' }).click();
+    await page.locator('app-solve-record').getByRole('checkbox').check();
+    await page.getByRole('button', { name: 'Move to current account', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Move to current account' }).click();
+    await expect(group.getByRole('img')).toHaveAccessibleName(/Target User/);
+    await expect(group).toHaveCount(1);
+    await expect(page.locator('app-solve-record')).toHaveCount(1);
+    await page.reload();
+    await expect(group.getByRole('img')).toHaveAccessibleName(/Target User/);
+    await expect(group).toHaveCount(1);
+    await expectNoHorizontalOverflow(page);
   },
 );
