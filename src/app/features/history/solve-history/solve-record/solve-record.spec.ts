@@ -38,7 +38,7 @@ describe('SolveRecord', () => {
   function createFixture() {
     const cube = TestBed.inject(CubeService);
     cube.addSolve(1234, 'R U', 'full');
-    const solve = { ...cube.solves()[0], createdAt: '2026-08-24T09:28:00.000Z' };
+    const solve = { ...cube.activeSolves()[0], createdAt: '2026-08-24T09:28:00.000Z' };
     cube.storedSolves.set([solve]);
     const fixture = TestBed.createComponent(SolveRecord);
     fixture.componentRef.setInput('solve', solve);

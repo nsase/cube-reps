@@ -33,10 +33,10 @@ export class SolveActions {
    * 詳細ダイアログの入力は固定されるため、保存中の同一ID記録を優先して参照する。
    */
   protected readonly currentSolve = computed(
-    () => this.cube.solves().find(({ id }) => id === this.solve().id) ?? this.solve(),
+    () => this.cube.activeSolves().find(({ id }) => id === this.solve().id) ?? this.solve(),
   );
   /** 現在の計測記録が編集可能かどうか。 */
-  protected readonly canEditSolve = computed(() => this.cube.canEditSolve(this.currentSolve()));
+  protected readonly canEditSolve = computed(() => this.cube.canManageSolve(this.currentSolve()));
   /** 記録削除の確認を表示するサービス。 */
   private readonly confirm = inject(ConfirmService);
   /** 確認メッセージを現在の言語へ翻訳するサービス。 */

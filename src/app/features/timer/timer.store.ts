@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { OLL_CASES, PLL_CASES } from '../../core/algorithm-cases';
-import { CubeService } from '../../core/cube';
 import { AppUpdateService } from '../../core/app-update.service';
+import { CubeService } from '../../core/cube';
 import { AlgorithmCase, Penalty, Solve, SolveCategory } from '../../core/cube.models';
 
 /** Timerコンポーネントツリー内で計測状態と操作を共有するStore。 */
@@ -130,7 +130,7 @@ export class TimerStore implements OnDestroy {
     const solve = this.completedSolve();
     if (!solve) return;
     this.cube.togglePenalty(solve.id, penalty);
-    this.completedSolve.set(this.cube.solves().find(({ id }) => id === solve.id));
+    this.completedSolve.set(this.cube.activeSolves().find(({ id }) => id === solve.id));
   }
 
   /** 直前の計測結果を削除し、完了後操作を閉じる。 */

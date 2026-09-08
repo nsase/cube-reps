@@ -4,7 +4,7 @@
   </div>
   <app-history-group-create />
   <div class="group-list">
-    @for (group of cube.groups(); track group.id) {
+    @for (group of cube.activeGroups(); track group.id) {
       <app-record-group [group]="group" />
     }
   </div>

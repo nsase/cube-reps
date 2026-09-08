@@ -27,7 +27,11 @@
   </form>
 } @else {
   <button class="group-main" (click)="select()">
-    <span class="group-icon">●</span>
+    @if (isBuiltIn(group())) {
+      <span class="group-icon">●</span>
+    } @else {
+      <app-owner-avatar [metadata]="getMetadata(group())" />
+    }
     <span
       ><strong>{{ cube.groupName(group().id) }}</strong
       ><small>{{ 'history.solveCount' | transloco: { count: solveCount() } }}</small></span

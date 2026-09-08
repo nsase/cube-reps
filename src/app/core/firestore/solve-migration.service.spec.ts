@@ -29,10 +29,10 @@ describe('SolveMigrationService selected transfers', () => {
     expect(cube.guestSolves()).toEqual([second]);
     expect(cube.solveMutations().map((item) => item.data.id)).toEqual([first.id]);
     auth.user.set(null);
-    expect(cube.solves()).toHaveLength(2);
-    const moved = cube.solves().find((solve) => solve.id === first.id)!;
+    expect(cube.activeSolves()).toHaveLength(2);
+    const moved = cube.activeSolves().find((solve) => solve.id === first.id)!;
     expect(moved.ownerId).toBe(account.uid);
-    expect(cube.canEditSolve(moved)).toBe(false);
+    expect(cube.canManageSolve(moved)).toBe(false);
     expect((await TestBed.inject(UserDataRepository).load()).solves).toContainEqual(moved);
   });
 
@@ -48,8 +48,8 @@ describe('SolveMigrationService selected transfers', () => {
       completed: 1,
       failed: 0,
     });
-    expect(cube.solves()).toContainEqual(source);
-    const copy = cube.solves().find((solve) => solve.id !== source.id)!;
+    expect(cube.activeSolves()).toContainEqual(source);
+    const copy = cube.activeSolves().find((solve) => solve.id !== source.id)!;
     expect(copy).toMatchObject({
       ownerId: account.uid,
       copiedFromId: source.id,
@@ -58,7 +58,7 @@ describe('SolveMigrationService selected transfers', () => {
     });
     expect(cube.solveMutations().map((item) => item.data)).toEqual([copy]);
     await cube.acknowledgeSync(copy);
-    expect(cube.solves().find((solve) => solve.id === copy.id)?.pendingSync).toBeUndefined();
+    expect(cube.activeSolves().find((solve) => solve.id === copy.id)?.pendingSync).toBeUndefined();
   });
 
   it('確認後の編集とアカウント切替を検知して未確認の内容を送らない', async () => {
@@ -72,7 +72,7 @@ describe('SolveMigrationService selected transfers', () => {
       failed: 1,
     });
     TestBed.inject(AuthService).user.set(null);
-    expect(await service.transfer(cube.solves(), account.uid, 'move')).toEqual({
+    expect(await service.transfer(cube.activeSolves(), account.uid, 'move')).toEqual({
       completed: 0,
       failed: 1,
     });
@@ -97,6 +97,6 @@ describe('SolveMigrationService selected transfers', () => {
       completed: 1,
       failed: 0,
     });
-    expect(cube.solves()).toHaveLength(2);
+    expect(cube.activeSolves()).toHaveLength(2);
   });
 });

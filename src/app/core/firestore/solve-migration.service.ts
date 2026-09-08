@@ -3,14 +3,6 @@ import { AuthService } from '../auth/auth.service';
 import { CubeService } from '../cube';
 import { Solve } from '../cube.models';
 
-/** 明示的な選択操作の結果。完了はローカル保存を表し、クラウド同期は同期表示で確認する。 */
-export interface SolveTransferResult {
-  /** 保存できた記録数。 */
-  completed: number;
-  /** 再選択してやり直せる未処理記録数。 */
-  failed: number;
-}
-
 /** 履歴で確認された記録だけを移行・コピーし、アカウント変更後の追加処理を止める。 */
 @Injectable({ providedIn: 'root' })
 export class SolveMigrationService {
@@ -22,27 +14,17 @@ export class SolveMigrationService {
   readonly pending = signal(false);
 
   /** 確認時点の記録と宛先を固定して移行またはコピーする。 */
-  async transfer(
-    solves: readonly Solve[],
-    accountId: string,
-    action: 'copy' | 'move',
-  ): Promise<SolveTransferResult> {
-    if (this.pending() || this.auth.user()?.uid !== accountId)
-      return { completed: 0, failed: solves.length };
+  transfer(solves: readonly Solve[], accountId: string, action: 'copy' | 'move'): void {
+    if (this.pending() || this.auth.user()?.uid !== accountId) return;
+
     this.pending.set(true);
-    let completed = 0;
     try {
       for (const solve of solves) {
         if (this.auth.user()?.uid !== accountId) break;
-        try {
-          if (action === 'copy') await this.cube.copySolveToAccount(solve, accountId);
-          else await this.cube.assignSolveToAccount(solve, accountId);
-          completed++;
-        } catch {
-          // 成功分は再処理せず、未処理の選択だけを利用者が再試行できるようにする。
-        }
+
+        if (action === 'copy') this.cube.copySolveToAccount(solve, accountId);
+        else this.cube.assignSolveToAccount(solve, accountId);
       }
-      return { completed, failed: solves.length - completed };
     } finally {
       this.pending.set(false);
     }

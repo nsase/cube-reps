@@ -34,7 +34,7 @@ export function toFirestoreGroupRecord(
   group: RecordGroup,
   userId: string,
 ): FirestoreRecordGroupDocument {
-  const { pendingSync: _localPending, copiedFromId: _localSource, ...document } = group;
+  const { pendingSync: _localPending, ...document } = group;
   return omitUndefined({
     ...document,
     createdAt: new Date(group.createdAt),

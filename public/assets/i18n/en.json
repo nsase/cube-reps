@@ -148,7 +148,6 @@
     "owner": "Owner",
     "all": "All owners",
     "unlinked": "Not linked to an account",
-    "account": "Account",
     "selectSolve": "Select record {{number}}",
     "copiedFrom": "Copied from record",
     "move": "Move to current account",

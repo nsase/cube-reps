@@ -4,8 +4,9 @@ import { TranslocoTestingModule } from '@jsverse/transloco';
 import { NEVER } from 'rxjs';
 import en from '../public/assets/i18n/en.json';
 import ja from '../public/assets/i18n/ja.json';
+import { LocalAccount } from './app/core/account.models';
 import { AuthenticatedUser, AuthGateway } from './app/core/auth/auth.gateway';
-import { AlgorithmPreference, RecordGroup, Solve, LocalAccount } from './app/core/cube.models';
+import { AlgorithmPreference, RecordGroup, Solve } from './app/core/cube.models';
 import { StoredUserData, UserDataRepository } from './app/core/user-data-repository';
 
 /** コンポーネントテスト間でIndexedDB状態を共有しないメモリRepository。 */

@@ -38,17 +38,15 @@ describe('TimerSolveActions', () => {
     const { cube, fixture, solve } = createFixture();
 
     (fixture.nativeElement.querySelector('[data-action="dnf"]') as HTMLButtonElement).click();
-    expect(cube.solves()[0].penalty).toBe('DNF');
+    expect(cube.activeSolves()[0].penalty).toBe('DNF');
     (fixture.nativeElement.querySelector('[data-action="plus-two"]') as HTMLButtonElement).click();
-    expect(cube.solves()[0].penalty).toBe('+2');
-    expect(cube.solves()[0].id).toBe(solve.id);
+    expect(cube.activeSolves()[0].penalty).toBe('+2');
+    expect(cube.activeSolves()[0].id).toBe(solve.id);
   });
 
   it('操作後にボタンからフォーカスを外す', () => {
     const { fixture } = createFixture();
-    const button = fixture.nativeElement.querySelector(
-      '[data-action="dnf"]',
-    ) as HTMLButtonElement;
+    const button = fixture.nativeElement.querySelector('[data-action="dnf"]') as HTMLButtonElement;
     button.focus();
 
     button.click();
@@ -62,7 +60,7 @@ describe('TimerSolveActions', () => {
     (fixture.nativeElement.querySelector('[data-action="delete"]') as HTMLButtonElement).click();
 
     expect(confirm.delete).toHaveBeenCalledOnce();
-    expect(cube.solves()).toHaveLength(0);
+    expect(cube.activeSolves()).toHaveLength(0);
   });
 
   it('リトライで記録を残して同じスクランブルを再設定する', () => {
@@ -70,7 +68,7 @@ describe('TimerSolveActions', () => {
 
     (fixture.nativeElement.querySelector('[data-action="retry"]') as HTMLButtonElement).click();
 
-    expect(cube.solves()).toHaveLength(1);
+    expect(cube.activeSolves()).toHaveLength(1);
     expect(store.scramble()).toBe('R U');
     expect(store.completedSolve()).toBeUndefined();
   });

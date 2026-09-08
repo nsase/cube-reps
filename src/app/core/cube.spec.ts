@@ -42,13 +42,13 @@ describe('CubeService record statistics', () => {
     await cube.assignSolveToAccount(migrated, 'account-1');
 
     expect(cube.guestSolves()).toHaveLength(0);
-    expect(cube.solves()[0]).toMatchObject({
+    expect(cube.activeSolves()[0]).toMatchObject({
       id: migrated.id,
       time: migrated.time,
       ownerType: 'account',
       ownerId: 'account-1',
     });
-    expect((await repository.load()).solves).toContainEqual(cube.solves()[0]);
+    expect((await repository.load()).solves).toContainEqual(cube.activeSolves()[0]);
   });
 
   it('指定一覧に同じ端末guestの未変更Solveがある場合だけ移行可能と判定する', () => {
@@ -81,7 +81,7 @@ describe('CubeService record statistics', () => {
     ]);
     cube.activeGroupId.set('unclassified');
 
-    expect(cube.activeSolves()).toHaveLength(2);
+    expect(cube.activeGroupSolves()).toHaveLength(2);
   });
 
   it('新しい計測記録とユーザー作成カテゴリーへUUIDを割り当てる', () => {
@@ -98,7 +98,7 @@ describe('CubeService record statistics', () => {
   it('初期カテゴリーを英語名で作成する', () => {
     const cube = TestBed.inject(CubeService);
 
-    expect(cube.groups()[0]).toMatchObject({ id: 'unclassified', name: 'Unclassified' });
+    expect(cube.activeGroups()[0]).toMatchObject({ id: 'unclassified', name: 'Unclassified' });
     expect(cube.groupName('missing')).toBe('Unclassified');
   });
 
@@ -116,7 +116,7 @@ describe('CubeService record statistics', () => {
     const cube = TestBed.inject(CubeService);
     await cube.ready;
 
-    expect(cube.groups()).toEqual([
+    expect(cube.activeGroups()).toEqual([
       expect.objectContaining({ id: 'unclassified', name: 'Unclassified' }),
       expect.objectContaining({ id: 'user-group', name: 'Competition' }),
     ]);
@@ -160,12 +160,12 @@ describe('CubeService record statistics', () => {
 
     cube.removeGroup(target.id);
 
-    expect(cube.groups()).not.toContainEqual(expect.objectContaining({ id: target.id }));
-    expect(cube.solves().find(({ id }) => id === first.id)?.groupId).toBe('unclassified');
-    expect(cube.solves().find(({ id }) => id === second.id)?.groupId).toBe('unclassified');
-    expect(cube.solves().find(({ id }) => id === untouched.id)?.groupId).toBe(other.id);
+    expect(cube.activeGroups()).not.toContainEqual(expect.objectContaining({ id: target.id }));
+    expect(cube.activeSolves().find(({ id }) => id === first.id)?.groupId).toBe('unclassified');
+    expect(cube.activeSolves().find(({ id }) => id === second.id)?.groupId).toBe('unclassified');
+    expect(cube.activeSolves().find(({ id }) => id === untouched.id)?.groupId).toBe(other.id);
     expect(cube.activeGroupId()).toBe('unclassified');
-    expect(cube.activeSolves().map(({ id }) => id)).toEqual([second.id, first.id]);
+    expect(cube.activeGroupSolves().map(({ id }) => id)).toEqual([second.id, first.id]);
   });
 
   it('リトライ対象と元の計測条件を次のタイマーへ一度だけ引き渡す', () => {
@@ -189,12 +189,12 @@ describe('CubeService record statistics', () => {
       { ...solve(2, 2000), category: 'pll' },
     ]);
 
-    expect(cube.activeSolves().map(({ id }) => id)).toEqual(['1']);
+    expect(cube.activeGroupSolves().map(({ id }) => id)).toEqual(['1']);
     expect(cube.best()).toBe(1000);
 
     cube.activeSolveCategory.set('pll');
 
-    expect(cube.activeSolves().map(({ id }) => id)).toEqual(['2']);
+    expect(cube.activeGroupSolves().map(({ id }) => id)).toEqual(['2']);
     expect(cube.best()).toBe(2000);
   });
 
@@ -301,11 +301,11 @@ describe('CubeService record statistics', () => {
     cube.removeSolve(created.id);
     const mutation = cube.solveMutations().at(-1);
     expect(mutation?.kind).toBe('delete');
-    expect(mutation?.data.deletedAt).toBeDefined();
-    expect(cube.solves()).toHaveLength(0);
+    expect(mutation?.solve.deletedAt).toBeDefined();
+    expect(cube.activeSolves()).toHaveLength(0);
 
     await cube.mergeAccountSolves('account-1', [created]);
-    expect(cube.solves()).toHaveLength(0);
+    expect(cube.activeSolves()).toHaveLength(0);
   });
 
   it('同一内容のFirestore通知ではSolve一覧とIndexedDBを更新しない', async () => {
@@ -424,11 +424,11 @@ describe('CubeService record statistics', () => {
       email: 'cube@example.com',
       photoURL: null,
     });
-    expect(cube.solves().map(({ id }) => id)).toEqual([guest.id, accountSolve.id]);
+    expect(cube.activeSolves().map(({ id }) => id)).toEqual([guest.id, accountSolve.id]);
     expect(cube.accountSolves()).toEqual([accountSolve]);
 
     auth.user.set(null);
-    expect(cube.solves().map(({ id }) => id)).toEqual([guest.id, accountSolve.id]);
+    expect(cube.activeSolves().map(({ id }) => id)).toEqual([guest.id, accountSolve.id]);
     expect(cube.accountSolves()).toEqual([]);
     expect(cube.storedSolves().map(({ id }) => id)).toEqual([guest.id, accountSolve.id]);
   });
@@ -443,8 +443,8 @@ describe('CubeService record statistics', () => {
     cube.removeSolve(other.id);
     expect(cube.renameGroup(group.id, 'Changed')).toBe(false);
     cube.removeGroup(group.id);
-    expect(cube.solves()).toContainEqual(other);
-    expect(cube.groups()).toContainEqual(group);
+    expect(cube.activeSolves()).toContainEqual(other);
+    expect(cube.activeGroups()).toContainEqual(group);
     expect(cube.solveMutations()).toEqual([]);
   });
   it('再読み込み時に未送信の移行記録を再送し、他所有者の同一IDを上書きしない', async () => {
@@ -462,9 +462,9 @@ describe('CubeService record statistics', () => {
     await cube.mergeAccountSolves('other', [
       { ...pending, ownerId: 'other', time: 9999, updatedAt: '2099-01-01T00:00:00.000Z' },
     ]);
-    expect(cube.solves()).toEqual([pending]);
+    expect(cube.activeSolves()).toEqual([pending]);
     const tombstone = { ...pending, pendingSync: undefined, deletedAt: pending.createdAt };
     await cube.mergeAccountSolves('target', [tombstone]);
-    expect(cube.solves()).toEqual([]);
+    expect(cube.activeSolves()).toEqual([]);
   });
 });

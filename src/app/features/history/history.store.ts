@@ -1,9 +1,9 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
-import { CubeService } from '../../core/cube';
-import { Solve, SolveCategory } from '../../core/cube.models';
 import { AuthService } from '../../core/auth/auth.service';
-import { SolveOwnerService } from '../../core/solve-owner';
+import { CubeService } from '../../core/cube';
 import { average } from '../../core/cube-statistics';
+import { Solve, SolveCategory } from '../../core/cube.models';
+import { MetadataOwnerService } from '../../core/metadata-owner';
 
 /** 履歴一覧の1行に表示する記録と、その計測時点の集計値。 */
 export interface HistorySolveRow {
@@ -26,7 +26,7 @@ export class HistoryStore {
   /** 現在のアカウントに応じた選択可能範囲。 */
   readonly auth = inject(AuthService);
   /** 所有者の表示名と分類。 */
-  readonly owners = inject(SolveOwnerService);
+  readonly owners = inject(MetadataOwnerService);
   /** 全所有者を初期表示するフィルター。 */
   readonly selectedOwner = signal('all');
   /** 明示的に移行・コピーする記録ID。 */
@@ -34,7 +34,7 @@ export class HistoryStore {
   /** 所有者フィルターを適用した、グループをまたぐ記録一覧。 */
   readonly ownerSolves = computed(() =>
     this.cube
-      .solves()
+      .activeSolves()
       .filter(
         (solve) =>
           this.selectedOwner() === 'all' || this.owners.key(solve) === this.selectedOwner(),

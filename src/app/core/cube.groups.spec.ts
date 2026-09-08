@@ -19,12 +19,14 @@ describe('CubeService group synchronization', () => {
     TestBed.inject(AuthService).user.set(account);
     await cube.assignSolveToAccount(first, account.uid);
     await cube.assignSolveToAccount(second, account.uid);
-    const moved = cube.solves().find((solve) => solve.id === first.id)!;
+    const moved = cube.activeSolves().find((solve) => solve.id === first.id)!;
     expect(moved.createdAt).toBe(first.createdAt);
     expect(moved.groupId).not.toBe(source.id);
-    expect(cube.solves().find((solve) => solve.id === second.id)?.groupId).toBe(moved.groupId);
+    expect(cube.activeSolves().find((solve) => solve.id === second.id)?.groupId).toBe(
+      moved.groupId,
+    );
     expect(cube.groupName(moved.groupId)).toBe('Practice');
-    expect(cube.groups()).toContainEqual(source);
+    expect(cube.activeGroups()).toContainEqual(source);
     expect(cube.groupMutations()).toHaveLength(1);
     expect((await TestBed.inject(UserDataRepository).load()).groups).toContainEqual(
       expect.objectContaining({ id: moved.groupId, pendingSync: true, ownerId: account.uid }),
@@ -38,13 +40,15 @@ describe('CubeService group synchronization', () => {
     await new Promise((resolve) => setTimeout(resolve, 2));
     cube.renameGroup(group.id, 'After');
     await cube.acknowledgeGroupSync(group);
-    expect(cube.groups().find((item) => item.id === group.id)).toMatchObject({
+    expect(cube.activeGroups().find((item) => item.id === group.id)).toMatchObject({
       name: 'After',
       pendingSync: true,
     });
     const latest = cube.groupMutations().at(-1)!.data;
     await cube.acknowledgeGroupSync(latest);
-    expect(cube.groups().find((item) => item.id === group.id)).not.toHaveProperty('pendingSync');
+    expect(cube.activeGroups().find((item) => item.id === group.id)).not.toHaveProperty(
+      'pendingSync',
+    );
   });
 
   it('削除通知がSolveより先に到着してもグループを復活させない', async () => {
@@ -59,14 +63,14 @@ describe('CubeService group synchronization', () => {
       updatedAt: '2099-01-01T00:00:00.000Z',
     };
     await cube.mergeAccountGroups(account.uid, [remote]);
-    expect(cube.groups().some((item) => item.id === group.id)).toBe(false);
-    expect(cube.solves()[0].groupId).toBe('unclassified');
+    expect(cube.activeGroups().some((item) => item.id === group.id)).toBe(false);
+    expect(cube.activeSolves()[0].groupId).toBe('unclassified');
     await cube.mergeAccountSolves(account.uid, [
       { ...solve, id: 'remote-solve', pendingSync: undefined },
     ]);
-    expect(cube.solves().every((item) => item.groupId === 'unclassified')).toBe(true);
+    expect(cube.activeSolves().every((item) => item.groupId === 'unclassified')).toBe(true);
     await cube.mergeAccountGroups(account.uid, [{ ...group, pendingSync: undefined }]);
-    expect(cube.groups().some((item) => item.id === group.id)).toBe(false);
+    expect(cube.activeGroups().some((item) => item.id === group.id)).toBe(false);
   });
 
   it('別アカウントの同じIDを上書きしない', async () => {
@@ -90,9 +94,9 @@ describe('CubeService group synchronization', () => {
     TestBed.inject(AuthService).user.set(account);
     cube.storedSolves.set([{ ...solve, ownerType: 'account', ownerId: account.uid }]);
     await cube.prepareAccountGroups(account.uid);
-    expect(cube.solves()[0].createdAt).toBe(solve.createdAt);
-    expect(cube.solves()[0].groupId).not.toBe(source.id);
-    expect(cube.groupName(cube.solves()[0].groupId)).toBe('Legacy');
+    expect(cube.activeSolves()[0].createdAt).toBe(solve.createdAt);
+    expect(cube.activeSolves()[0].groupId).not.toBe(source.id);
+    expect(cube.groupName(cube.activeSolves()[0].groupId)).toBe('Legacy');
     expect(cube.groupMutations()).toHaveLength(1);
     expect(cube.solveMutations()).toHaveLength(1);
   });
@@ -105,10 +109,10 @@ describe('CubeService group synchronization', () => {
     const repository = TestBed.inject(UserDataRepository);
     vi.spyOn(repository, 'putRecordGroup').mockRejectedValueOnce(new Error('quota'));
     await expect(cube.assignSolveToAccount(solve, account.uid)).rejects.toThrow('quota');
-    expect(cube.solves()).toEqual([solve]);
+    expect(cube.activeSolves()).toEqual([solve]);
     expect(cube.groupMutations()).toHaveLength(0);
     await cube.assignSolveToAccount(solve, account.uid);
-    expect(cube.solves()[0].ownerId).toBe(account.uid);
+    expect(cube.activeSolves()[0].ownerId).toBe(account.uid);
     expect(cube.groupMutations()).toHaveLength(1);
   });
 
@@ -117,7 +121,7 @@ describe('CubeService group synchronization', () => {
     cube.addGroup('Practice');
     TestBed.inject(AuthService).user.set(account);
     const solve = cube.addSolve(1234, 'R', 'full');
-    expect(cube.activeSolves()).toEqual([solve]);
+    expect(cube.activeGroupSolves()).toEqual([solve]);
     expect(cube.groupName(solve.groupId)).toBe('Practice');
   });
 
@@ -128,7 +132,7 @@ describe('CubeService group synchronization', () => {
     cube.removeGroup(group.id);
     const restored = TestBed.runInInjectionContext(() => new CubeService());
     await restored.ready;
-    expect(restored.groups().some((item) => item.id === group.id)).toBe(false);
+    expect(restored.activeGroups().some((item) => item.id === group.id)).toBe(false);
     expect(restored.groupMutations()).toEqual([
       expect.objectContaining({
         kind: 'delete',

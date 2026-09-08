@@ -1,5 +1,6 @@
 import { effect, inject, signal, untracked, WritableSignal } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
+import { CubeService } from '../cube';
 import { SyncMetadata } from '../cube.models';
 import { SystemStore } from '../system.store';
 
@@ -8,8 +9,6 @@ export type SyncPhase = 'signed-out' | 'syncing' | 'synced' | 'offline' | 'pendi
 
 /** 同期対象ごとの差分を共通コントローラーへ渡す境界。 */
 export interface SyncAdapter<T extends SyncMetadata, M> {
-  /** ローカル復元の完了通知。 */
-  ready: Promise<void>;
   /** 永続化されたローカル変更。 */
   mutations: WritableSignal<readonly M[]>;
   /** 操作から同期レコードを取得する。 */
@@ -24,7 +23,7 @@ export interface SyncAdapter<T extends SyncMetadata, M> {
     tombstone(userId: string, record: T): Promise<void>;
   };
   /** 取得した一覧をローカルへ統合する。 */
-  merge(userId: string, records: readonly T[]): Promise<void>;
+  merge(records: readonly T[]): Promise<void>;
   /** 転送した版の永続再送フラグを解除する。 */
   acknowledge(record: T): Promise<void>;
 }
@@ -38,6 +37,9 @@ export class SyncController<T extends SyncMetadata, M> {
   private readonly auth = inject(AuthService);
   /** ブラウザのネットワーク接続状態。 */
   private readonly system = inject(SystemStore);
+  /** アプリ全体のストア */
+  private readonly cube = inject(CubeService);
+
   /** 現在の取得を識別し、古いアカウントの結果を破棄する連番。 */
   private requestId = 0;
   /**
@@ -132,11 +134,11 @@ export class SyncController<T extends SyncMetadata, M> {
   private async pull(userId: string, requestId: number): Promise<void> {
     this.phase.set(this.system.online() ? 'syncing' : 'offline');
     try {
-      await this.adapter.ready;
+      await this.cube.ready;
       if (requestId !== this.requestId || this.auth.user()?.uid !== userId) return;
-      const solves = await this.adapter.cloud.list(userId);
+      const remotes = await this.adapter.cloud.list(userId);
       if (requestId !== this.requestId || this.auth.user()?.uid !== userId) return;
-      await this.adapter.merge(userId, solves);
+      await this.adapter.merge(remotes.filter((remote) => remote.ownerId === userId));
       if (requestId === this.requestId) this.setSettledPhase(userId);
     } catch {
       if (requestId === this.requestId) this.phase.set('error');

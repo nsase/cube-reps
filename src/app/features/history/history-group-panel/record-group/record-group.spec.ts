@@ -74,8 +74,8 @@ describe('RecordGroup', () => {
       expect.any(String),
       expect.stringMatching(/1.*(?:未分類|Unclassified)/s),
     );
-    expect(cube.groups().some(({ id }) => id === group.id)).toBe(false);
+    expect(cube.activeGroups().some(({ id }) => id === group.id)).toBe(false);
     expect(store.selectedGroup()).toBe('unclassified');
-    expect(cube.solves().find(({ id }) => id === solve.id)?.groupId).toBe('unclassified');
+    expect(cube.activeSolves().find(({ id }) => id === solve.id)?.groupId).toBe('unclassified');
   });
 });

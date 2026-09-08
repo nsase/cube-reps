@@ -23,7 +23,7 @@ describe('SolveActions', () => {
   function createFixture() {
     const cube = TestBed.inject(CubeService);
     cube.addSolve(1234, 'R U', 'full');
-    const solve = cube.solves()[0];
+    const solve = cube.activeSolves()[0];
     const fixture = TestBed.createComponent(SolveActions);
     fixture.componentRef.setInput('solve', solve);
     fixture.detectChanges();
@@ -37,13 +37,13 @@ describe('SolveActions', () => {
     ) as NodeListOf<HTMLButtonElement>;
 
     buttons[0].click();
-    expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('+2');
+    expect(cube.activeSolves().find(({ id }) => id === solve.id)?.penalty).toBe('+2');
     buttons[0].click();
-    expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('none');
+    expect(cube.activeSolves().find(({ id }) => id === solve.id)?.penalty).toBe('none');
     buttons[1].click();
-    expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('DNF');
+    expect(cube.activeSolves().find(({ id }) => id === solve.id)?.penalty).toBe('DNF');
     buttons[1].click();
-    expect(cube.solves().find(({ id }) => id === solve.id)?.penalty).toBe('none');
+    expect(cube.activeSolves().find(({ id }) => id === solve.id)?.penalty).toBe('none');
   });
 
   it('リトライ対象を設定してタイマー画面へ移動する', () => {
@@ -68,7 +68,7 @@ describe('SolveActions', () => {
     (fixture.nativeElement.querySelector('.row-delete') as HTMLButtonElement).click();
 
     expect(confirm.delete).toHaveBeenCalledOnce();
-    expect(cube.solves().some(({ id }) => id === solve.id)).toBe(false);
+    expect(cube.activeSolves().some(({ id }) => id === solve.id)).toBe(false);
     expect(deleted).toHaveBeenCalledOnce();
   });
 });

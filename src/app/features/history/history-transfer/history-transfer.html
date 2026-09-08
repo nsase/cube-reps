@@ -17,9 +17,3 @@
     </button>
   </div>
 }
-@if (result(); as outcome) {
-  <div role="status" data-testid="history-transfer-result">
-    <span>{{ 'ownership.result' | transloco: outcome }}</span>
-    <button mat-button (click)="result.set(null)">{{ 'common.close' | transloco }}</button>
-  </div>
-}

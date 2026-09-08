@@ -34,8 +34,6 @@ export interface SyncMetadata {
 
 /** 計測記録を分類するユーザー定義グループ。 */
 export interface RecordGroup extends SyncMetadata {
-  /** 同じ取り込み先でグループを再利用するためのローカル参照。 */
-  copiedFromId?: string;
   /** グループを一意に識別するID。 */
   id: string;
   /** 画面に表示するグループ名。 */
@@ -58,22 +56,6 @@ export interface Solve extends SyncMetadata {
   groupId?: string;
   /** 記録へ適用されたペナルティ。 */
   penalty: Penalty;
-  /** ブラウザ内だけに保持するコピー元の記録ID。元のアカウント情報を別アカウントへ送信しない。 */
-  copiedFromId?: string;
-}
-
-/** ブラウザで利用したアカウントの表示情報。認証情報は保持しない。 */
-export interface LocalAccount {
-  /** 表示名が同じアカウントも区別するFirebase UID。 */
-  uid: string;
-  /** 任意の表示名。 */
-  displayName?: string | null;
-  /** 任意のメールアドレス。 */
-  email?: string | null;
-  /** 任意のプロフィール画像URL。 */
-  photoURL?: string | null;
-  /** 利用した認証プロバイダーの識別子。 */
-  providerIds?: string[];
 }
 
 /** キューブ表示で使用するステッカー色。 */
@@ -135,3 +117,17 @@ export interface BuiltInRecordGroup extends Omit<RecordGroup, keyof SyncMetadata
 
 /** 履歴とタイマーに表示できる記録グループ。 */
 export type DisplayRecordGroup = BuiltInRecordGroup | RecordGroup;
+
+/** 同期データ */
+export interface DocumentMutation<D> {
+  /** 通常更新またはtombstone削除。 */
+  readonly kind: 'put' | 'delete';
+  /** 保存するデータ */
+  readonly data: D;
+}
+
+/** 計測記録の同期データ */
+export type SolveMutation = DocumentMutation<Solve>;
+
+/** グループの同期データ */
+export type GroupMutation = DocumentMutation<RecordGroup>;

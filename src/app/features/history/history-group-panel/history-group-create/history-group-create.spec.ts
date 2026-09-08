@@ -33,8 +33,8 @@ describe('HistoryGroupCreate', () => {
 
     const cube = TestBed.inject(CubeService);
     const store = TestBed.inject(HistoryStore);
-    expect(cube.groups().at(-1)?.name).toBe('大会用');
-    expect(store.selectedGroup()).toBe(cube.groups().at(-1)?.id);
+    expect(cube.activeGroups().at(-1)?.name).toBe('大会用');
+    expect(store.selectedGroup()).toBe(cube.activeGroups().at(-1)?.id);
     expect(fixture.nativeElement.querySelector('form')).toBeNull();
   });
 
@@ -53,6 +53,6 @@ describe('HistoryGroupCreate', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('form')).toBeNull();
-    expect(TestBed.inject(CubeService).groups()).toHaveLength(1);
+    expect(TestBed.inject(CubeService).activeGroups()).toHaveLength(1);
   });
 });
