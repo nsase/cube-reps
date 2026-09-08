@@ -9,6 +9,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:e2e": "playwright test",
+    "test:e2e:pr": "playwright test --project=desktop-wide",
     "start:e2e": "npm run build && http-server dist/cube-reps/browser -p 4300 -c-1",
     "prettier:format": "prettier --write .",
     "prepare": "husky",
