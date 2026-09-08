@@ -1,8 +1,9 @@
-import { GroupSyncService } from './group-sync.service';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../auth/auth.service';
-import { CubeService, SolveMutation } from '../cube';
+import { CubeService } from '../cube';
+import { SolveMutation } from '../cube.models';
+import { FirestoreSyncService } from './firestore-sync.service';
 import { Solve } from '../cube.models';
 import { SystemStore } from '../system.store';
 import { FirestoreSolveRepository } from './firestore-solve.repository';
@@ -31,11 +32,10 @@ describe('SolveSyncService', () => {
   let auth: { user: ReturnType<typeof signal<typeof account | null>> };
   let cube: {
     ready: Promise<void>;
-    solveMutations: ReturnType<typeof signal<readonly SolveMutation[]>>;
-    acknowledgeSync: ReturnType<typeof vi.fn>;
-    prepareAccountGroups: ReturnType<typeof vi.fn>;
-    mergeAccountSolves: ReturnType<typeof vi.fn>;
+    solveSyncFinished: ReturnType<typeof vi.fn>;
+    mergeSolves: ReturnType<typeof vi.fn>;
   };
+  let queue: { solveMutations: ReturnType<typeof signal<readonly SolveMutation[]>> };
   let cloud: {
     list: ReturnType<typeof vi.fn>;
     put: ReturnType<typeof vi.fn>;
@@ -45,12 +45,11 @@ describe('SolveSyncService', () => {
 
   beforeEach(() => {
     auth = { user: signal<typeof account | null>(null) };
+    queue = { solveMutations: signal<readonly SolveMutation[]>([]) };
     cube = {
       ready: Promise.resolve(),
-      solveMutations: signal<readonly SolveMutation[]>([]),
-      acknowledgeSync: vi.fn(async () => undefined),
-      prepareAccountGroups: vi.fn(async () => undefined),
-      mergeAccountSolves: vi.fn(async () => undefined),
+      solveSyncFinished: vi.fn(async () => undefined),
+      mergeSolves: vi.fn(async () => undefined),
     };
     cloud = {
       list: vi.fn(async () => [solve]),
@@ -60,12 +59,9 @@ describe('SolveSyncService', () => {
     system = { online: signal(true) };
     TestBed.configureTestingModule({
       providers: [
-        {
-          provide: GroupSyncService,
-          useValue: { phase: signal('synced'), retry: vi.fn(), refresh: vi.fn() },
-        },
         { provide: AuthService, useValue: auth },
         { provide: CubeService, useValue: cube },
+        { provide: FirestoreSyncService, useValue: queue },
         { provide: FirestoreSolveRepository, useValue: cloud },
         { provide: SystemStore, useValue: system },
       ],
@@ -78,7 +74,7 @@ describe('SolveSyncService', () => {
     TestBed.tick();
 
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledWith(account.uid));
-    expect(cube.mergeAccountSolves).toHaveBeenCalledWith(account.uid, [solve]);
+    expect(cube.mergeSolves).toHaveBeenCalledWith([solve]);
     expect(sync.phase()).toBe('synced');
   });
 
@@ -118,7 +114,7 @@ describe('SolveSyncService', () => {
     TestBed.tick();
 
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledWith(account.uid));
-    expect(cube.mergeAccountSolves).toHaveBeenCalledWith(account.uid, [solve]);
+    expect(cube.mergeSolves).toHaveBeenCalledWith([solve]);
     expect(sync.phase()).toBe('offline');
   });
 
@@ -127,11 +123,11 @@ describe('SolveSyncService', () => {
     auth.user.set(account);
     TestBed.tick();
 
-    cube.solveMutations.set([{ kind: 'put', data: solve }]);
+    queue.solveMutations.set([{ kind: 'put', data: solve }]);
     TestBed.tick();
     await vi.waitFor(() => expect(cloud.put).toHaveBeenCalledWith(account.uid, solve));
 
-    cube.solveMutations.set([{ kind: 'delete', data: { ...solve, deletedAt: solve.updatedAt } }]);
+    queue.solveMutations.set([{ kind: 'delete', data: { ...solve, deletedAt: solve.updatedAt } }]);
     TestBed.tick();
     await vi.waitFor(() =>
       expect(cloud.tombstone).toHaveBeenCalledWith(
@@ -142,7 +138,7 @@ describe('SolveSyncService', () => {
   });
   it('ログアウト中や別アカウントのキューではFirestoreへアクセスしない', async () => {
     TestBed.inject(SolveSyncService);
-    cube.solveMutations.set([{ kind: 'put', data: solve }]);
+    queue.solveMutations.set([{ kind: 'put', data: solve }]);
     TestBed.tick();
     expect(cloud.list).not.toHaveBeenCalled();
     expect(cloud.put).not.toHaveBeenCalled();
@@ -150,7 +146,7 @@ describe('SolveSyncService', () => {
     TestBed.tick();
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledWith('other'));
     expect(cloud.put).not.toHaveBeenCalled();
-    expect(cube.solveMutations()).toHaveLength(1);
+    expect(queue.solveMutations()).toHaveLength(1);
   });
 
   it('一括移行の一部失敗を別記録の成功で隠さず、失敗分だけ再試行する', async () => {
@@ -159,7 +155,7 @@ describe('SolveSyncService', () => {
     TestBed.tick();
     await vi.waitFor(() => expect(sync.phase()).toBe('synced'));
     cloud.put.mockRejectedValueOnce(new Error('offline'));
-    cube.solveMutations.set([
+    queue.solveMutations.set([
       { kind: 'put', data: solve },
       { kind: 'put', data: { ...solve, id: 'second' } },
     ]);
@@ -170,5 +166,30 @@ describe('SolveSyncService', () => {
     await vi.waitFor(() => expect(sync.phase()).toBe('synced'));
     expect(cloud.put).toHaveBeenCalledTimes(3);
     expect(cloud.put.mock.calls[2][1].id).toBe(solve.id);
+  });
+  it('取得中にアカウントが切り替わった場合、古い取得結果を取り込まない', async () => {
+    let complete!: (records: (typeof solve)[]) => void;
+    cloud.list.mockReturnValueOnce(
+      new Promise((resolve) => {
+        complete = resolve;
+      }),
+    );
+    TestBed.inject(SolveSyncService);
+    auth.user.set(account);
+    TestBed.tick();
+    await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledTimes(1));
+    auth.user.set(null);
+    TestBed.tick();
+    complete([solve]);
+    await Promise.resolve();
+    expect(cube.mergeSolves).not.toHaveBeenCalled();
+  });
+
+  it('取得結果のうちログイン先以外の所有者を取り込まない', async () => {
+    cloud.list.mockResolvedValueOnce([solve, { ...solve, id: 'other', ownerId: 'other' }]);
+    TestBed.inject(SolveSyncService);
+    auth.user.set(account);
+    TestBed.tick();
+    await vi.waitFor(() => expect(cube.mergeSolves).toHaveBeenCalledWith([solve]));
   });
 });

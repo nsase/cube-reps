@@ -12,7 +12,6 @@ describe('Firestore group mapper', () => {
     ownerType: 'guest',
     schemaVersion: 3,
     pendingSync: true,
-    copiedFromId: 'source',
   };
   it('日時をtimestamp互換形式へ変換し、端末専用情報を送信しない', () => {
     const stored = toFirestoreGroupRecord(group, 'account');
@@ -20,7 +19,6 @@ describe('Firestore group mapper', () => {
     expect(stored.updatedAt).toEqual(new Date(group.updatedAt));
     expect(stored.deletedAt).toEqual(new Date(group.deletedAt!));
     expect(stored).not.toHaveProperty('pendingSync');
-    expect(stored).not.toHaveProperty('copiedFromId');
     expect(fromFirestoreRecordGroup(group.id, stored, 'account')).toEqual({
       id: group.id,
       name: group.name,
