@@ -80,16 +80,19 @@ Firestore development requires Java 21 or later. `npm run test:firestore` starts
 
 ## Development commands
 
-| Command                   | Description                        |
-| ------------------------- | ---------------------------------- |
-| `npm start`               | Start the development server       |
-| `npm run start:firestore` | Start the local Firestore Emulator |
-| `npm run start:local`     | Start both development services    |
-| `npm run build`           | Create a production build          |
-| `npm test`                | Run tests with Vitest              |
-| `npm run test:firestore`  | Test Firestore with the Emulator   |
-| `npm run test:e2e`        | Run browser tests with Playwright  |
-| `npm run prettier:format` | Format the project with Prettier   |
+| Command                   | Description                                  |
+| ------------------------- | -------------------------------------------- |
+| `npm start`               | Start the development server                 |
+| `npm run start:firestore` | Start the local Firestore Emulator           |
+| `npm run start:local`     | Start both development services              |
+| `npm run build`           | Create a production build                    |
+| `npm test`                | Run tests with Vitest                        |
+| `npm run test:firestore`  | Test Firestore with the Emulator             |
+| `npm run test:e2e:pr`     | Run desktop-wide browser tests for Issue PRs |
+| `npm run test:e2e`        | Run all 7 Playwright projects                |
+| `npm run prettier:format` | Format the project with Prettier             |
+
+PRs targeting `develop` run `npm run test:e2e:pr` (desktop-wide); release PRs targeting `main` require all 7 projects with `npm run test:e2e`. Build, unit tests, and Firestore Emulator tests run for both. For UI, layout, or responsive changes, also test affected viewports locally with `npm run test:e2e -- --project=<project>`; run all projects for shared style changes or unclear impact, and record the scope and results in the PR. The CI workflow can also be run manually with `browser_scope: all` (default) or `pr` to verify either scope.
 
 Build output is written to `dist/cube-reps`.
 

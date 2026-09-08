@@ -80,16 +80,19 @@ Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`�
 
 ## 開発コマンド
 
-| コマンド                  | 内容                             |
-| ------------------------- | -------------------------------- |
-| `npm start`               | 開発サーバーを起動               |
-| `npm run start:firestore` | ローカルFirestore Emulatorを起動 |
-| `npm run start:local`     | 両方の開発サービスを同時に起動   |
-| `npm run build`           | プロダクションビルドを作成       |
-| `npm test`                | Vitestでテストを実行             |
-| `npm run test:firestore`  | EmulatorでFirestoreをテスト      |
-| `npm run test:e2e`        | Playwrightでブラウザテストを実行 |
-| `npm run prettier:format` | プロジェクト全体をPrettierで整形 |
+| コマンド                  | 内容                                             |
+| ------------------------- | ------------------------------------------------ |
+| `npm start`               | 開発サーバーを起動                               |
+| `npm run start:firestore` | ローカルFirestore Emulatorを起動                 |
+| `npm run start:local`     | 両方の開発サービスを同時に起動                   |
+| `npm run build`           | プロダクションビルドを作成                       |
+| `npm test`                | Vitestでテストを実行                             |
+| `npm run test:firestore`  | EmulatorでFirestoreをテスト                      |
+| `npm run test:e2e:pr`     | Issue PR向けにdesktop-wideのブラウザテストを実行 |
+| `npm run test:e2e`        | Playwrightの全7プロジェクトを実行                |
+| `npm run prettier:format` | プロジェクト全体をPrettierで整形                 |
+
+`develop`向けPRでは`npm run test:e2e:pr`（desktop-wide）、`main`向けリリースPRでは`npm run test:e2e`（全7プロジェクト）の成功を必須とします。Build、Unit Test、Firestore Emulator Testはどちらでも実行します。UI、レイアウト、レスポンシブ表示の変更時は、`npm run test:e2e -- --project=<project>`で影響するviewportもローカルで確認してください。共通スタイルの変更や影響範囲が不明な場合は全プロジェクトを実行し、範囲と結果をPRへ記載します。CIワークフローは`browser_scope: all`（既定）または`pr`を選んで手動実行し、両方の実行範囲を確認できます。
 
 ビルド成果物は`dist/cube-reps`へ出力されます。
 
