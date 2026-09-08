@@ -26,8 +26,16 @@
     "algorithms": "ALGORITHM LIBRARY",
     "history": "YOUR PROGRESS"
   },
-  "nav": { "timer": "Timer", "history": "History", "totalSolves": "Total Solves" },
-  "solveCategories": { "full": "Full solve", "oll": "OLL drill", "pll": "PLL drill" },
+  "nav": {
+    "timer": "Timer",
+    "history": "History",
+    "totalSolves": "Total Solves"
+  },
+  "solveCategories": {
+    "full": "Full solve",
+    "oll": "OLL drill",
+    "pll": "PLL drill"
+  },
   "common": {
     "ok": "OK",
     "cancel": "Cancel",
@@ -45,23 +53,6 @@
     "ao50": "Ao50",
     "ao100": "Ao100",
     "recentAverage": "Last 5 average"
-  },
-  "migration": {
-    "checking": "Checking records on this device and in the cloud…",
-    "title": "Save solve records to the cloud",
-    "ready": "{{count}} guest records on this device are ready to migrate.",
-    "destination": "Destination: {{account}}",
-    "localRetained": "Records on this device will not be deleted after migration.",
-    "upload": "Migrate {{count}} records",
-    "migrating": "Uploading solve records",
-    "progress": "Processed {{processed}} of {{total}} records",
-    "completed": "Cloud storage verified",
-    "completedDetail": "All {{count}} records on this device also exist in the cloud.",
-    "partialFailure": "Some records could not be saved",
-    "partialFailureDetail": "Processed {{processed}} records; {{failed}} remain unprocessed.",
-    "retryFailed": "Retry {{count}} failed records",
-    "checkFailure": "Could not check cloud records",
-    "checkFailureDetail": "Check your connection and try again."
   },
   "timer": {
     "recordGroup": "RECORD GROUP",
@@ -152,5 +143,18 @@
     "deleteSolve": "Delete",
     "deleteSolveTitle": "Delete this solve?",
     "deleteSolveMessage": "The selected solve will be deleted.\nThis action cannot be undone."
+  },
+  "ownership": {
+    "owner": "Owner",
+    "all": "All owners",
+    "unlinked": "Not linked to an account",
+    "selectSolve": "Select record {{number}}",
+    "copiedFrom": "Copied from record",
+    "move": "Move to current account",
+    "copy": "Copy to current account",
+    "selected": "{{count}} selected",
+    "confirm": "Process {{count}} selected records.\nFrom: {{from}}\nTo: {{to}}\nThe original records remain in this browser.",
+    "result": "Saved: {{completed}}. Not processed: {{failed}}. Check the sync status for cloud upload. Select unprocessed records to try again.",
+    "savedGroup": "Saved group"
   }
 }

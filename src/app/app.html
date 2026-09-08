@@ -14,7 +14,7 @@
       >
     </nav>
     <div class="today">
-      {{ 'nav.totalSolves' | transloco }} <strong>{{ cube.solves().length }}</strong>
+      {{ 'nav.totalSolves' | transloco }} <strong>{{ cube.activeSolves().length }}</strong>
     </div>
   </aside>
   <main>
@@ -38,11 +38,6 @@
         </label>
       </div>
     </header>
-    @defer {
-      @if (appUpdates.showNonEssentialNotices()) {
-        <app-solve-migration />
-      }
-    }
     <div class="route-content">
       <router-outlet />
     </div>

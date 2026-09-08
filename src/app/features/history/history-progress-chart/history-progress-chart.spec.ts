@@ -137,7 +137,7 @@ function createSolves(times: readonly number[]): Solve[] {
     id: String(index + 1),
     time,
     scramble: 'R U',
-    date: new Date(times.length - index).toISOString(),
+    createdAt: new Date(times.length - index).toISOString(),
     updatedAt: new Date(times.length - index).toISOString(),
     ownerType: 'guest',
     ownerId: 'guest-test',

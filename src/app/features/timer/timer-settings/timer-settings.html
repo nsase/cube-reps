@@ -6,7 +6,7 @@
   <label
     >{{ 'timer.recordDestination' | transloco
     }}<select [(ngModel)]="cube.activeGroupId">
-      @for (group of cube.groups(); track group.id) {
+      @for (group of cube.activeGroups(); track group.id) {
         <option [value]="group.id">{{ cube.groupName(group.id) }}</option>
       }
     </select></label
