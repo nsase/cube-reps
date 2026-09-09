@@ -164,7 +164,7 @@ export class CubeService {
     const changedGroups: RecordGroup[] = [];
     for (const remote of remoteGroups) {
       const local = groupsById.get(remote.id);
-      if (local && !this.remoteGroupWins(local, remote)) continue;
+      if (local && !this.remoteWins(local, remote)) continue;
       groupsById.set(remote.id, remote);
       changedGroups.push(remote);
     }
@@ -663,31 +663,21 @@ export class CubeService {
   }
 
   /**
-   * グループの削除を通常更新より優先して、古い端末からの復活を防ぐ。
+   * SolveとGroupの削除を通常更新より優先して、古い端末からの復活を防ぐ。
    * 通常版同士では未送信の変更を保持し、同期済みの版を更新日時で比較する。
    *
-   * @param local 端末に保持しているグループ
-   * @param remote クラウドから取得したグループ
-   * @returns 取得した版を採用する場合はtrue
-   */
-  private remoteGroupWins(local: RecordGroup, remote: RecordGroup): boolean {
-    if (Boolean(local.deletedAt) !== Boolean(remote.deletedAt)) return !!remote.deletedAt;
-    return this.remoteWins(local, remote);
-  }
-
-  /**
-   * リモートとローカルとどちらが新しいかを比較する。
-   *
-   * @param local 同じIDで端末に保存されているSolve
-   * @param remote Firestoreから受信したSolve
+   * @param local 同じIDで端末に保持している同期メタデータ
+   * @param remote Firestoreから受信した同期メタデータ
    * @returns リモートをマージ候補にする場合はtrue
    */
   private remoteWins(local: SyncMetadata | undefined, remote: SyncMetadata): boolean {
     // ローカルにない場合、リモートデータが削除されていなければリモートを優先する
     if (!local) return !remote.deletedAt;
+    // 削除状態が異なる場合、更新日時や未送信の変更より削除を優先する
+    if (Boolean(local.deletedAt) !== Boolean(remote.deletedAt)) return !!remote.deletedAt;
     // ローカルデータがアップロード待機中の場合はローカルを優先する
     if (local.pendingSync) return false;
-    // 更新日時の新しい砲を優先する
+    // 更新日時の新しい方を優先する
     return Date.parse(remote.updatedAt) > Date.parse(local.updatedAt);
   }
 
