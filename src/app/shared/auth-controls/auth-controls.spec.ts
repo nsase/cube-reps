@@ -1,4 +1,8 @@
+import { OverlayContainer } from '@angular/cdk/overlay';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { TranslocoService } from '@jsverse/transloco';
+import { AppUpdateService } from '../../core/app-update.service';
 import { AuthenticatedUser, AuthGateway } from '../../core/auth/auth.gateway';
 import { AuthControls } from './auth-controls';
 
@@ -20,7 +24,7 @@ class AuthControlsGateway extends AuthGateway {
   }
 
   /** @inheritdoc */
-  override async signIn(): Promise<void> {
+  override async signInWithGoogle(): Promise<void> {
     this.signInCount++;
     if (this.rejectSignIn) throw new Error('sign-in failed');
   }
@@ -38,72 +42,79 @@ class AuthControlsGateway extends AuthGateway {
 
 describe('AuthControls', () => {
   let gateway: AuthControlsGateway;
-
   beforeEach(async () => {
     gateway = new AuthControlsGateway();
     await TestBed.configureTestingModule({
       imports: [AuthControls],
-      providers: [{ provide: AuthGateway, useValue: gateway }],
+      providers: [provideRouter([]), { provide: AuthGateway, useValue: gateway }],
     }).compileComponents();
   });
 
-  it('認証状態の確認中と未ログイン時のGoogleログイン操作を表示する', async () => {
+  /** ユーザーの操作と同じようにプロフィールを開く。 */
+  async function openProfile() {
     const fixture = TestBed.createComponent(AuthControls);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent).toContain(
-      'Checking sign-in',
-    );
+    fixture.nativeElement.querySelector('button').click();
+    await fixture.whenStable();
+    return { fixture, popup: TestBed.inject(OverlayContainer).getContainerElement() };
+  }
 
+  it('復元中は状態を表示し、ゲストにはログインページへのリンクを表示する', async () => {
+    const { fixture, popup } = await openProfile();
+    expect(popup.textContent).toContain('Checking sign-in');
     gateway.emit(null);
     fixture.detectChanges();
-    const signIn = fixture.nativeElement.querySelector(
-      '[data-testid="google-sign-in"]',
-    ) as HTMLButtonElement;
-    expect(signIn.textContent).toContain('Sign in with Google');
-
-    signIn.click();
+    expect(popup.textContent).toContain('Guest account');
+    expect(popup.querySelector('a')?.getAttribute('href')).toBe('/login');
+    expect(gateway.signInCount).toBe(0);
+    TestBed.inject(TranslocoService).setActiveLang('ja');
+    fixture.detectChanges();
     await fixture.whenStable();
-    expect(gateway.signInCount).toBe(1);
+    expect(popup.textContent).toContain('ゲストアカウント');
+    expect(popup.textContent).toContain('ログイン');
+    expect(fixture.nativeElement.querySelector('button').getAttribute('aria-label')).toBe(
+      'プロフィール',
+    );
   });
 
-  it('ログイン中のGoogleアカウントを表示してログアウトできる', async () => {
-    const fixture = TestBed.createComponent(AuthControls);
+  it('情報はポップアップに表示し、ログアウトできる', async () => {
+    const { fixture, popup } = await openProfile();
     gateway.emit({
-      uid: 'firebase-user',
+      uid: 'user',
       displayName: 'Cube User',
       email: 'cube@example.com',
       photoURL: null,
     });
     fixture.detectChanges();
-
-    const account = fixture.nativeElement.querySelector(
-      '[data-testid="authenticated-account"]',
-    ) as HTMLElement;
-    expect(account.textContent).toContain('Cube User');
-    expect(account.textContent).toContain('cube@example.com');
-
-    const signOut = fixture.nativeElement.querySelector(
-      'button[aria-label="Sign out"]',
-    ) as HTMLButtonElement;
-    signOut.click();
+    expect(fixture.nativeElement.textContent).not.toContain('cube@example.com');
+    expect(popup.textContent).toContain('Cube User');
+    expect(popup.textContent).toContain('cube@example.com');
+    (popup.querySelector('button') as HTMLButtonElement).click();
     await fixture.whenStable();
     expect(gateway.signOutCount).toBe(1);
   });
 
-  it('Googleログインに失敗したことをユーザーへ表示する', async () => {
-    gateway.rejectSignIn = true;
-    const fixture = TestBed.createComponent(AuthControls);
-    gateway.emit(null);
+  it('プロフィール画像の読み込み失敗時は共通アイコンを表示する', async () => {
+    const { fixture } = await openProfile();
+    gateway.emit({
+      uid: 'user',
+      displayName: null,
+      email: null,
+      photoURL: 'https://example.com/avatar.png',
+    });
     fixture.detectChanges();
+    fixture.nativeElement.querySelector('img').dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('img')).toBeNull();
+    expect(fixture.nativeElement.querySelector('mat-icon').textContent).toContain('account_circle');
+  });
 
-    (
-      fixture.nativeElement.querySelector('[data-testid="google-sign-in"]') as HTMLButtonElement
-    ).click();
+  it('計測が始まるとメニューを閉じ、計測中は再表示できない', async () => {
+    const { fixture, popup } = await openProfile();
+    TestBed.inject(AppUpdateService).setNotificationSuppressed(true);
+    fixture.detectChanges();
     await fixture.whenStable();
-    fixture.detectChanges();
-
-    expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent).toContain(
-      'Authentication failed',
-    );
+    await vi.waitFor(() => expect(popup.querySelector('[role="menu"]')).toBeNull());
+    expect(fixture.nativeElement.querySelector('button').disabled).toBe(true);
   });
 });

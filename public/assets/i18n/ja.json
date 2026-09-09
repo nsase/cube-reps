@@ -8,10 +8,23 @@
   },
   "auth": {
     "checking": "ログイン状態を確認しています…",
-    "signIn": "Googleでログイン",
+    "signIn": {
+      "google": "Sign in with Google"
+    },
     "signingIn": "ログインしています…",
     "signOut": "ログアウト",
-    "failed": "認証に失敗しました。もう一度お試しください。"
+    "failed": "認証に失敗しました。もう一度お試しください。",
+    "profile": "プロフィール",
+    "account": "アカウント",
+    "guest": "ゲストアカウント",
+    "login": "ログイン",
+    "loginDescription": [
+      "ログインすると記録はクラウドに保存され端末間で同期できます。",
+      "ログインしなくても利用できますが、記録はブラウザ内に保存されるため他端末とは同期されません。"
+    ],
+    "signedIn": "ログインしました。",
+    "continueToTimer": "ログインしないで利用する",
+    "backToTimer": "タイマーへ進む"
   },
   "sync": {
     "signed-out": "端末内のみ",
@@ -24,7 +37,8 @@
   "routes": {
     "timer": "PRACTICE SESSION",
     "algorithms": "ALGORITHM LIBRARY",
-    "history": "YOUR PROGRESS"
+    "history": "YOUR PROGRESS",
+    "login": "ログイン"
   },
   "nav": {
     "timer": "タイマー",

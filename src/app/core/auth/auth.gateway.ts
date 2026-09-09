@@ -43,7 +43,7 @@ export abstract class AuthGateway {
   abstract observe(next: (user: AuthenticatedUser | null) => void, error: () => void): () => void;
 
   /** Googleアカウント選択画面を開いてログインする。 */
-  abstract signIn(): Promise<void>;
+  abstract signInWithGoogle(): Promise<void>;
 
   /** 現在のFirebaseセッションからログアウトする。 */
   abstract signOut(): Promise<void>;
@@ -87,7 +87,7 @@ export class FirebaseAuthGateway extends AuthGateway {
   }
 
   /** @inheritdoc */
-  override async signIn(): Promise<void> {
+  override async signInWithGoogle(): Promise<void> {
     const [auth, { GoogleAuthProvider, signInWithPopup }] = await Promise.all([
       this.auth,
       import('firebase/auth'),

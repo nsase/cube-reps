@@ -8,10 +8,23 @@
   },
   "auth": {
     "checking": "Checking sign-in…",
-    "signIn": "Sign in with Google",
+    "signIn": {
+      "google": "Sign in with Google"
+    },
     "signingIn": "Signing in…",
     "signOut": "Sign out",
-    "failed": "Authentication failed. Please try again."
+    "failed": "Authentication failed. Please try again.",
+    "profile": "Profile",
+    "account": "Account",
+    "guest": "Guest account",
+    "login": "Sign in",
+    "loginDescription": [
+      "When you sign in, your records are saved to the cloud and synced across devices.",
+      "You can use the app without signing in, but your records are saved only in this browser and will not sync with other devices."
+    ],
+    "signedIn": "You are signed in.",
+    "continueToTimer": "Continue without signing in",
+    "backToTimer": "Continue to Timer"
   },
   "sync": {
     "signed-out": "Local only",
@@ -24,7 +37,8 @@
   "routes": {
     "timer": "PRACTICE SESSION",
     "algorithms": "ALGORITHM LIBRARY",
-    "history": "YOUR PROGRESS"
+    "history": "YOUR PROGRESS",
+    "login": "Sign in"
   },
   "nav": {
     "timer": "Timer",

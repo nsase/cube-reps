@@ -31,6 +31,11 @@ export const routes: Routes = [
     data: { titleKey: 'routes.history' },
     loadComponent: () => import('./features/history/history').then(({ History }) => History),
   },
+  {
+    path: 'login',
+    data: { titleKey: 'routes.login' },
+    loadComponent: () => import('./features/login/login').then(({ Login }) => Login),
+  },
   { path: '', pathMatch: 'full', redirectTo: 'timer' },
   { path: '**', redirectTo: 'timer' },
 ];

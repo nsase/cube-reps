@@ -46,7 +46,7 @@ Browser storage is separated by browser and installation context. In particular,
 
 ## Google account sign-in
 
-Select **Sign in with Google** in the page header to sign in. Signing in is optional: Timer, History, and locally saved algorithms remain available without an account, including while offline after the app has been loaded.
+Open the profile icon to the right of the language selector, select **Sign in**, then choose **Sign in with Google** on the login page. The profile popup shows your name, email address, and **Sign out** when signed in, or **Guest account** when signed out. Signing in is optional: Timer, History, and locally saved algorithms remain available without an account, including while offline after the app has been loaded.
 
 History displays all undeleted solves saved in this browser profile, regardless of sign-in or account ownership. The owner filter applies consistently to the list, counts, statistics, and Progress Chart within the selected group and category. Owner avatars show a photo, initials, or a fallback icon; hover over an avatar for its tooltip, or open the solve details with the information button to view account details.
 

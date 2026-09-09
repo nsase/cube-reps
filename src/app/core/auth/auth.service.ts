@@ -35,8 +35,8 @@ export class AuthService implements OnDestroy {
   }
 
   /** Googleアカウント選択画面を開き、認証結果を状態へ反映する。 */
-  async signIn(): Promise<void> {
-    await this.run(() => this.gateway.signIn());
+  async signInWithGoogle(): Promise<void> {
+    await this.run(() => this.gateway.signInWithGoogle());
   }
 
   /** Firebaseセッションを終了し、端末内のユーザーデータは維持する。 */
