@@ -94,7 +94,7 @@ Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`�
 | `npm run test:e2e`        | Playwrightの全7プロジェクトを実行                |
 | `npm run prettier:format` | プロジェクト全体をPrettierで整形                 |
 
-`develop`向けPRでは`npm run test:e2e:pr`（desktop-wide）、`main`向けリリースPRでは`npm run test:e2e`（全7プロジェクト）の成功を必須とします。Build、Unit Test、Firestore Emulator Testはどちらでも実行します。UI、レイアウト、レスポンシブ表示の変更時は、`npm run test:e2e -- --project=<project>`で影響するviewportもローカルで確認してください。共通スタイルの変更や影響範囲が不明な場合は全プロジェクトを実行し、範囲と結果をPRへ記載します。CIワークフローは`browser_scope: all`（既定）または`pr`を選んで手動実行し、両方の実行範囲を確認できます。
+ローカル検証は`npm test`（Unit Test・Component Test）と`git diff --check`を実行します。Build、Firestore Emulator Test、Browser TestはCIで実行し、ブラウザテストはローカルで実行しません。`develop`向けPRでは`npm run test:e2e:pr`（desktop-wide）、`main`向けリリースPRでは`npm run test:e2e`（全7プロジェクト）の成功を必須とします。Build、Unit Test、Firestore Emulator Testも両方のCIで実行します。UI、レイアウト、レスポンシブ表示の変更で追加のviewport確認が必要な場合、共通スタイルの変更、影響範囲が不明な場合は、手動CIの`browser_scope: all`で確認し、範囲と結果をPRへ記載します。手動CIでは`browser_scope: pr`でIssue PR相当の範囲も確認できます。merge前にすべての必須CIチェックの成功を確認します。
 
 ビルド成果物は`dist/cube-reps`へ出力されます。
 
