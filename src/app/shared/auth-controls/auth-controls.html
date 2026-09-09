@@ -1,42 +1,49 @@
-<div class="auth-controls">
-  @if (auth.initializing()) {
-    <span class="auth-status" role="status">{{ 'auth.checking' | transloco }}</span>
-  } @else if (auth.user(); as user) {
-    <div class="account" data-testid="authenticated-account">
-      @if (user.photoURL) {
-        <img [src]="user.photoURL" alt="" referrerpolicy="no-referrer" />
-      } @else {
-        <mat-icon aria-hidden="true">account_circle</mat-icon>
-      }
-      <span>
-        <strong>{{ user.displayName || user.email }}</strong>
+<button
+  mat-icon-button
+  type="button"
+  data-testid="profile-menu-trigger"
+  [matMenuTriggerFor]="profileMenu"
+  [matMenuTriggerRestoreFocus]="updates.showNonEssentialNotices()"
+  [disabled]="!updates.showNonEssentialNotices()"
+  [attr.aria-label]="'auth.profile' | transloco"
+>
+  @if (auth.user()?.photoURL; as photo) {
+    @if (failedPhoto() !== photo) {
+      <img [src]="photo" alt="" referrerpolicy="no-referrer" (error)="failedPhoto.set(photo)" />
+    } @else {
+      <mat-icon>account_circle</mat-icon>
+    }
+  } @else {
+    <mat-icon>account_circle</mat-icon>
+  }
+</button>
+<mat-menu #profileMenu="matMenu" xPosition="before">
+  <div class="account" data-testid="profile-information">
+    @if (auth.initializing()) {
+      <span role="status">{{ 'auth.checking' | transloco }}</span>
+    } @else if (auth.user(); as user) {
+      <div data-testid="authenticated-account">
+        <strong>{{ user.displayName || user.email || ('auth.account' | transloco) }}</strong>
         @if (user.displayName && user.email) {
           <small>{{ user.email }}</small>
         }
-      </span>
-    </div>
-    <button
-      mat-icon-button
-      type="button"
-      [disabled]="auth.pending()"
-      [attr.aria-label]="'auth.signOut' | transloco"
-      (click)="signOut()"
-    >
-      <mat-icon>logout</mat-icon>
-    </button>
-  } @else {
-    <button
-      mat-button
-      type="button"
-      data-testid="google-sign-in"
-      [disabled]="auth.pending()"
-      (click)="signIn()"
-    >
-      <mat-icon>login</mat-icon>
-      {{ (auth.pending() ? 'auth.signingIn' : 'auth.signIn') | transloco }}
-    </button>
+      </div>
+    } @else {
+      <strong>{{ 'auth.guest' | transloco }}</strong>
+    }
+    @if (auth.failed()) {
+      <p class="auth-error" role="alert">{{ 'auth.failed' | transloco }}</p>
+    }
+  </div>
+  @if (!auth.initializing()) {
+    @if (auth.user()) {
+      <button mat-menu-item type="button" [disabled]="auth.pending()" (click)="signOut()">
+        <mat-icon>logout</mat-icon>{{ 'auth.signOut' | transloco }}
+      </button>
+    } @else {
+      <a mat-menu-item routerLink="/login" data-testid="open-login">
+        <mat-icon>login</mat-icon>{{ 'auth.login' | transloco }}
+      </a>
+    }
   }
-</div>
-@if (auth.failed()) {
-  <p class="auth-error" role="alert">{{ 'auth.failed' | transloco }}</p>
-}
+</mat-menu>

@@ -251,8 +251,10 @@ describe('App', () => {
 
     expect(fixture.nativeElement.querySelector('nav a em')?.textContent).toContain('タイマー');
     expect(
-      fixture.nativeElement.querySelector('[data-testid="google-sign-in"]')?.textContent,
-    ).toContain('Googleでログイン');
+      fixture.nativeElement
+        .querySelector('[data-testid="profile-menu-trigger"]')
+        ?.getAttribute('aria-label'),
+    ).toContain('プロフィール');
     expect(fixture.nativeElement.querySelector('app-timer-settings strong')?.textContent).toContain(
       '未分類',
     );

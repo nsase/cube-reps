@@ -185,9 +185,11 @@ test(
     await seedHistory(page);
     await seedSession(page);
     await page.reload();
-    await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible({
+    await page.getByTestId('profile-menu-trigger').click();
+    await expect(page.getByTestId('authenticated-account')).toContainText('Target User', {
       timeout: 15000,
     });
+    await page.keyboard.press('Escape');
     await expect(page.locator('app-solve-record')).toHaveCount(3);
     await page.getByTestId('history-owner-filter').selectOption('unlinked');
     await page.locator('app-solve-record').first().getByRole('checkbox').check();
@@ -208,8 +210,11 @@ test(
     await page.getByTestId('history-owner-filter').selectOption('all');
     await expect(page.locator('app-solve-record')).toHaveCount(4);
     await expectNoHorizontalOverflow(page);
-    await page.getByRole('button', { name: 'Sign out', exact: true }).click();
-    await expect(page.getByTestId('google-sign-in')).toBeVisible();
+    await page.getByTestId('profile-menu-trigger').click();
+    await page.getByRole('menuitem', { name: 'Sign out', exact: true }).click();
+    await page.getByTestId('profile-menu-trigger').click();
+    await expect(page.getByTestId('profile-information')).toContainText('Guest account');
+    await page.keyboard.press('Escape');
     await expect(page.locator('app-solve-record')).toHaveCount(4);
     await page.reload();
     await expect(page.locator('app-solve-record')).toHaveCount(4);
@@ -231,16 +236,14 @@ test(
         request.onerror = () => reject(request.error);
       });
       const transaction = database.transaction(['groups', 'solves'], 'readwrite');
-      transaction
-        .objectStore('groups')
-        .put({
-          id: 'practice',
-          name: 'Practice',
-          ownerType: 'guest',
-          createdAt: '2026-01-01T00:00:00.000Z',
-          updatedAt: '2026-01-01T00:00:00.000Z',
-          schemaVersion: 3,
-        });
+      transaction.objectStore('groups').put({
+        id: 'practice',
+        name: 'Practice',
+        ownerType: 'guest',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+        schemaVersion: 3,
+      });
       const records = transaction.objectStore('solves');
       const record = records.get('record-0');
       record.onsuccess = () => records.put({ ...record.result, groupId: 'practice' });
@@ -252,9 +255,11 @@ test(
     });
     await seedSession(page);
     await page.reload();
-    await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeVisible({
+    await page.getByTestId('profile-menu-trigger').click();
+    await expect(page.getByTestId('authenticated-account')).toContainText('Target User', {
       timeout: 15000,
     });
+    await page.keyboard.press('Escape');
     const group = page.locator('app-record-group').filter({ hasText: 'Practice' });
     await expect(group).toHaveCount(1);
     await expect(group.getByRole('img')).toHaveAccessibleName('Not linked to an account');
