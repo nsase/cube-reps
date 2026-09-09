@@ -374,3 +374,80 @@ test(
     await expect(dialog.locator('.result')).toHaveText('3.00+');
   },
 );
+
+test('グループ未取得の記録を選択でき、取得後も同じ分類で履歴を参照できる', async ({ page }) => {
+  // 別端末のSolveだけが先にキャッシュへ届いた状態を用意する。
+  await page.evaluate(async () => {
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('cube-reps');
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction('solves', 'readwrite');
+        tx.objectStore('solves').put({
+          id: 'orphan-solve',
+          groupId: 'other-device-group',
+          time: 1234,
+          scramble: 'R U',
+          category: 'full',
+          penalty: 'none',
+          ownerType: 'account',
+          ownerId: 'other-device-user',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+          schemaVersion: 3,
+        });
+        tx.onerror = () => {
+          db.close();
+          reject(tx.error);
+        };
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+      };
+    });
+  });
+  await page.reload();
+  const groups = page.getByTestId('history-group-filter');
+  await groups.selectOption('other-device-group');
+  await expect(page.locator('app-solve-record')).toHaveCount(1);
+  await expect(page.locator('app-solve-record')).toContainText('1.23');
+  await expect(page.locator('app-history-summary')).toContainText('1.23');
+  await expect(page.locator('[data-series="result"]')).toHaveCount(1);
+
+  // 遅れて届いたグループを保存し、起動後も選択と記録が維持されることを確認する。
+  await page.evaluate(async () => {
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('cube-reps');
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction('groups', 'readwrite');
+        tx.objectStore('groups').put({
+          id: 'other-device-group',
+          name: 'Other device practice',
+          ownerType: 'account',
+          ownerId: 'other-device-user',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+          schemaVersion: 3,
+        });
+        tx.onerror = () => {
+          db.close();
+          reject(tx.error);
+        };
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+      };
+    });
+  });
+  await page.reload();
+  await expect(groups).toHaveValue('other-device-group');
+  await expect(groups.locator('option:checked')).toHaveText('Other device practice');
+  await expect(page.locator('app-solve-record')).toHaveCount(1);
+  await expect(page.locator('app-solve-record')).toContainText('Other device practice');
+  await expect(page.locator('[data-series="result"]')).toHaveCount(1);
+});
