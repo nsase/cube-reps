@@ -79,7 +79,7 @@ class TestAuthGateway extends AuthGateway {
   }
 
   /**  */
-  override async signIn(): Promise<void> {}
+  override async signInWithGoogle(): Promise<void> {}
 
   /**  */
   override async signOut(): Promise<void> {}

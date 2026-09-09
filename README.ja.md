@@ -46,7 +46,7 @@ CubeRepsは、スピードキューブの計測とトレーニングをブラウ
 
 ## Googleアカウントでのログイン
 
-画面上部の**Googleでログイン**からログインできます。ログインは任意です。アカウントがなくてもTimer、履歴、端末内に保存した手順を利用でき、一度アプリを読み込んだ後はオフラインでも引き続き利用できます。
+言語選択の右にあるプロフィールアイコンから**ログイン**を選び、ログインページの**Sign in with Google**を押します。プロフィールのポップアップには、ログイン中はユーザー名・メールアドレス・**ログアウト**、未ログイン時は**ゲストアカウント**を表示します。ログインは任意です。アカウントがなくてもTimer、履歴、端末内に保存した手順を利用でき、一度アプリを読み込んだ後はオフラインでも引き続き利用できます。
 
 履歴は、ログイン状態や所有者に関係なく、このブラウザプロファイルに保存した未削除の全Solveを表示します。所有者フィルターは、選択中のグループ・カテゴリー内の一覧、件数、集計、Progress Chartへ一貫して適用されます。所有者アバターは画像、イニシャル、共通アイコンで表示し、ホバーするとツールチップを表示します。アカウント詳細はInformationボタンから開く記録詳細でも確認できます。
 
@@ -94,7 +94,7 @@ Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`�
 | `npm run test:e2e`        | Playwrightの全7プロジェクトを実行                |
 | `npm run prettier:format` | プロジェクト全体をPrettierで整形                 |
 
-`develop`向けPRでは`npm run test:e2e:pr`（desktop-wide）、`main`向けリリースPRでは`npm run test:e2e`（全7プロジェクト）の成功を必須とします。Build、Unit Test、Firestore Emulator Testはどちらでも実行します。UI、レイアウト、レスポンシブ表示の変更時は、`npm run test:e2e -- --project=<project>`で影響するviewportもローカルで確認してください。共通スタイルの変更や影響範囲が不明な場合は全プロジェクトを実行し、範囲と結果をPRへ記載します。CIワークフローは`browser_scope: all`（既定）または`pr`を選んで手動実行し、両方の実行範囲を確認できます。
+ローカル検証は`npm test`（Unit Test・Component Test）と`git diff --check`を実行します。Build、Firestore Emulator Test、Browser TestはCIで実行し、ブラウザテストはローカルで実行しません。`develop`向けPRでは`npm run test:e2e:pr`（desktop-wide）、`main`向けリリースPRでは`npm run test:e2e`（全7プロジェクト）の成功を必須とします。Build、Unit Test、Firestore Emulator Testも両方のCIで実行します。UI、レイアウト、レスポンシブ表示の変更で追加のviewport確認が必要な場合、共通スタイルの変更、影響範囲が不明な場合は、手動CIの`browser_scope: all`で確認し、範囲と結果をPRへ記載します。手動CIでは`browser_scope: pr`でIssue PR相当の範囲も確認できます。merge前にすべての必須CIチェックの成功を確認します。
 
 ビルド成果物は`dist/cube-reps`へ出力されます。
 

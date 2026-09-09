@@ -1,0 +1,21 @@
+<section>
+  @if (auth.initializing()) {
+    <p role="status">{{ 'auth.checking' | transloco }}</p>
+  } @else if (auth.user()) {
+    <p role="status">{{ 'auth.signedIn' | transloco }}</p>
+  } @else {
+    @for (description of 'auth.loginDescription' | transloco; track $index) {
+      <p>{{ description }}</p>
+    }
+    <app-google-button />
+    @if (auth.pending()) {
+      <p role="status">{{ 'auth.signingIn' | transloco }}</p>
+    }
+  }
+  @if (auth.failed()) {
+    <p class="auth-error" role="alert">{{ 'auth.failed' | transloco }}</p>
+  }
+  <a mat-button routerLink="/timer">{{
+    (auth.user() ? 'auth.continueToTimer' : 'auth.continueWithoutLogin') | transloco
+  }}</a>
+</section>

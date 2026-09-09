@@ -11,10 +11,10 @@
 - Pull Requestを作成するときは、`.github/pull_request_template.md`を本文のベースとして使用し、既定のセクションと確認項目を維持する。
 - Pull Requestのチェック項目は実際の確認結果に合わせて更新し、未確認の項目を完了扱いにしない。
 - Issue用Pull Requestには`Related to #<Issue番号>`を記載し、`develop`へのmerge時点ではIssueを閉じない。
-- Issue用Pull Requestでは、`npm run build`、`npm test`、`npm run test:firestore`、`npm run test:e2e:pr`、`git diff --check`が成功していることを確認してからmergeする。
+- Issue用Pull Requestでは、CIの`npm run build`、`npm test`、`npm run test:firestore`、`npm run test:e2e:pr`が成功し、ローカルの`git diff --check`に問題がないことを確認してからmergeする。
 - リリースは原則として1日1回を目安に、`develop`から`main`をbaseとするPull Requestを作成して行う。
 - リリース用Pull Requestには、そのリリースで完了する各Issueの`Closes #<Issue番号>`を記載し、`main`へのmerge時にIssueを閉じる。
-- リリース用Pull Requestでは、`npm run build`、`npm test`、`npm run test:firestore`、`npm run test:e2e`（全7プロジェクト）、`git diff --check`が成功していることを確認してからmergeする。
+- リリース用Pull Requestでは、CIの`npm run build`、`npm test`、`npm run test:firestore`、`npm run test:e2e`（全7プロジェクト）が成功し、ローカルの`git diff --check`に問題がないことを確認してからmergeする。
 - `main`へmergeしてリリースした後も、`develop`は削除せず常設ブランチとして維持する。
 - ユーザーから依頼されたPull Request以外に、同期用を含む追加のブランチやPull Requestを独断で作成しない。追加が必要と判断した場合は、作成前に理由を説明してユーザーの了承を得る。
 
@@ -123,7 +123,7 @@
 ## Browser Tests
 
 - UI、レイアウト、ナビゲーション、ユーザー操作を変更した場合は、Playwrightのブラウザテストを追加または更新する。
-- レスポンシブ表示を変更した場合は、デスクトップ、タブレット、モバイルの代表的なビューポートで、予期せぬ折り返し、要素の重なり、ページ外へのはみ出しがないことを確認する。
+- レスポンシブ表示を変更した場合は、CIでデスクトップ、タブレット、モバイルの代表的なビューポートを検証し、予期せぬ折り返し、要素の重なり、ページ外へのはみ出しがないことを確認する。
 - `@responsive`を付けたテストは、次のPlaywrightプロジェクトとCSSピクセル単位のviewportで確認する。端末定義やviewportを変更した場合は、この一覧も同時に更新する。
 
   | Playwrightプロジェクト | 端末・向き | viewport（幅 × 高さ） |
@@ -140,16 +140,17 @@
 - Unit TestやComponent Testと同じ内部状態やDOM属性を重複して検証せず、実際の操作フローとユーザーから見える最終結果を検証する。
 - 配列などから繰り返し配置された要素の位置を検証する場合は、`nth()`を使用してよい。
 - 画面上の固定要素を取得する場合は、要素の並び順に依存する`nth()`を使用せず、専用の`data-testid`を付けて取得する。
-- Issue PRでは`npm run test:e2e:pr`で`desktop-wide`の成功を確認する。リリースPRでは`npm run test:e2e`で全7プロジェクトの成功を必須とする。
-- UI、レイアウト、レスポンシブ表示を変更した場合は、開発者が影響範囲を判断し、`npm run test:e2e -- --project=<project>`で影響するviewportをローカルで追加確認する。共通スタイルの変更や影響範囲が不明な場合は全プロジェクトを実行し、確認範囲と結果をPRへ記載する。
+- ブラウザテストはCIのみで実行し、ローカルでは実行しない。
+- Issue PRではCIの`npm run test:e2e:pr`で`desktop-wide`の成功を確認する。リリースPRではCIの`npm run test:e2e`で全7プロジェクトの成功を必須とする。
+- UI、レイアウト、レスポンシブ表示を変更し、desktop-wide以外の追加確認が必要な場合は、手動CIの`browser_scope: all`で全7プロジェクトを確認する。共通スタイルの変更や影響範囲が不明な場合も同様に手動CIを実行し、確認範囲と結果をPRへ記載する。
 - 手動CIはCIワークフローの`workflow_dispatch`から実行し、`browser_scope: all`（既定）で全7プロジェクト、`pr`でIssue PR相当を確認できる。
 
 ## Verification
 
-- コード変更後は`npm run build`を実行する。
-- コード変更後は`npm test`を実行する。
-- コード変更後は`npm run test:e2e:pr`を実行する。UI／レスポンシブ変更時はBrowser Testsの規則に従って追加確認する。
-- Firestoreに関わる変更では`npm run test:firestore`もローカルで実行する。CIではIssue PR・リリースPRのどちらでも実行する。
-- リリース前は`npm run test:e2e`で全7プロジェクトを確認する。
-- 最後に`git diff --check`を実行し、空白エラーがないことを確認する。
-- ビルド警告が既存のものか、新しい変更によるものかを区別して報告する。
+- コード変更後のローカル検証は`npm test`（Unit Test・Component Test）を実行する。
+- `npm run build`と`npm run test:firestore`はCIで実行し、ローカルの必須検証には含めない。
+- ブラウザテストはCIのみで実行する。ローカルでは`npm run test:e2e:pr`、`npm run test:e2e`、Playwrightの個別実行を行わない。
+- Issue PR・リリースPRとも、merge前にCIのBuild、Unit Test、Firestore Emulator Test、対象範囲のBrowser Testが成功していることを確認する。
+- リリース前はCIの`npm run test:e2e`で全7プロジェクトを確認する。
+- 最後にローカルで`git diff --check`を実行し、空白エラーがないことを確認する。
+- CIのビルド警告が既存のものか、新しい変更によるものかを区別して報告する。
