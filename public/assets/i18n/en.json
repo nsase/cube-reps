@@ -8,18 +8,48 @@
   },
   "auth": {
     "checking": "Checking sign-in…",
-    "signIn": "Sign in with Google",
+    "signIn": {
+      "google": "Sign in with Google"
+    },
     "signingIn": "Signing in…",
     "signOut": "Sign out",
-    "failed": "Authentication failed. Please try again."
+    "failed": "Authentication failed. Please try again.",
+    "profile": "Profile",
+    "account": "Account",
+    "guest": "Guest account",
+    "login": "Sign in",
+    "loginDescription": [
+      "When you sign in, your records are saved to the cloud and synced across devices.",
+      "You can use the app without signing in, but your records are saved only in this browser and will not sync with other devices."
+    ],
+    "signedIn": "You are signed in.",
+    "continueToTimer": "Continue to Timer",
+    "continueWithoutLogin": "Continue without signing in"
+  },
+  "sync": {
+    "signed-out": "Local only",
+    "syncing": "Syncing",
+    "synced": "Synced",
+    "offline": "Offline",
+    "pending": "Changes pending",
+    "error": "Sync failed — retry"
   },
   "routes": {
     "timer": "PRACTICE SESSION",
     "algorithms": "ALGORITHM LIBRARY",
-    "history": "YOUR PROGRESS"
+    "history": "YOUR PROGRESS",
+    "login": "Sign in"
   },
-  "nav": { "timer": "Timer", "history": "History", "totalSolves": "Total Solves" },
-  "solveCategories": { "full": "Full solve", "oll": "OLL drill", "pll": "PLL drill" },
+  "nav": {
+    "timer": "Timer",
+    "history": "History",
+    "totalSolves": "Total Solves"
+  },
+  "solveCategories": {
+    "full": "Full solve",
+    "oll": "OLL drill",
+    "pll": "PLL drill"
+  },
   "common": {
     "ok": "OK",
     "cancel": "Cancel",
@@ -29,6 +59,7 @@
     "no": "No",
     "delete": "Delete",
     "add": "Add",
+    "retry": "Retry",
     "best": "Best",
     "mean": "Mean",
     "ao5": "Ao5",
@@ -126,5 +157,18 @@
     "deleteSolve": "Delete",
     "deleteSolveTitle": "Delete this solve?",
     "deleteSolveMessage": "The selected solve will be deleted.\nThis action cannot be undone."
+  },
+  "ownership": {
+    "owner": "Owner",
+    "all": "All owners",
+    "unlinked": "Not linked to an account",
+    "selectSolve": "Select record {{number}}",
+    "copiedFrom": "Copied from record",
+    "move": "Move to current account",
+    "copy": "Copy to current account",
+    "selected": "{{count}} selected",
+    "confirm": "Process {{count}} selected records.\nFrom: {{from}}\nTo: {{to}}\nThe original records remain in this browser.",
+    "result": "Saved: {{completed}}. Not processed: {{failed}}. Check the sync status for cloud upload. Select unprocessed records to try again.",
+    "savedGroup": "Saved group"
   }
 }

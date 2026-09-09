@@ -12,7 +12,7 @@ describe('SolveDetailDialog', () => {
     id: 'solve-1',
     time: 1234,
     scramble: 'R U F',
-    date: new Date(0).toISOString(),
+    createdAt: new Date(0).toISOString(),
     updatedAt: new Date(0).toISOString(),
     ownerType: 'guest',
     ownerId: 'guest-test',
@@ -32,10 +32,11 @@ describe('SolveDetailDialog', () => {
         { provide: MatDialogRef, useValue: { close: vi.fn() } },
       ],
     }).compileComponents();
+    await TestBed.inject(CubeService).ready;
   });
 
   it('スクランブルと展開図を含む記録詳細を表示する', () => {
-    TestBed.inject(CubeService).solves.set([solve]);
+    TestBed.inject(CubeService).storedSolves.set([solve]);
     TestBed.inject(TranslocoService).setActiveLang('en');
     const fixture = TestBed.createComponent(SolveDetailDialog);
     fixture.detectChanges();
@@ -62,7 +63,7 @@ describe('SolveDetailDialog', () => {
   });
 
   it('言語切替後に計測日時のロケールを更新する', () => {
-    TestBed.inject(CubeService).solves.set([solve]);
+    TestBed.inject(CubeService).storedSolves.set([solve]);
     const i18n = TestBed.inject(TranslocoService);
     i18n.setActiveLang('en');
     const fixture = TestBed.createComponent(SolveDetailDialog);

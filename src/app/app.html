@@ -14,18 +14,20 @@
       >
     </nav>
     <div class="today">
-      {{ 'nav.totalSolves' | transloco }} <strong>{{ cube.solves().length }}</strong>
+      {{ 'nav.totalSolves' | transloco }} <strong>{{ cube.activeSolves().length }}</strong>
     </div>
   </aside>
   <main>
     <header>
       <h1>{{ headingKey() | transloco }}</h1>
       <div class="header-tools">
-        <p>● {{ 'app.offline' | transloco }}</p>
-        <app-auth-controls />
+        @defer {
+          <app-sync-status />
+        }
         <label>
           <span class="visually-hidden">{{ 'app.language' | transloco }}</span>
           <select
+            data-testid="language-select"
             [value]="i18n.getActiveLang()"
             (change)="setLanguage($any($event.target).value)"
             [attr.aria-label]="'app.language' | transloco"
@@ -34,6 +36,7 @@
             <option value="ja">日本語</option>
           </select>
         </label>
+        <app-auth-controls />
       </div>
     </header>
     <div class="route-content">

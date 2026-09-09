@@ -23,7 +23,7 @@ class FakeAuthGateway extends AuthGateway {
   }
 
   /** @inheritdoc */
-  override signIn(): Promise<void> {
+  override signInWithGoogle(): Promise<void> {
     return this.signInResult();
   }
 
@@ -84,7 +84,7 @@ describe('AuthService', () => {
         rejectSignIn = reject;
       });
 
-    const result = service.signIn();
+    const result = service.signInWithGoogle();
     expect(service.pending()).toBe(true);
     rejectSignIn?.(new Error('popup closed'));
     await result;
@@ -95,7 +95,7 @@ describe('AuthService', () => {
   });
 
   it('Gatewayが通常キャンセルとして完了した場合は認証失敗を表示しない', async () => {
-    await service.signIn();
+    await service.signInWithGoogle();
 
     expect(service.pending()).toBe(false);
     expect(service.failed()).toBe(false);

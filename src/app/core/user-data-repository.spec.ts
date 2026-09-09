@@ -1,8 +1,14 @@
+import { IDBFactory } from 'fake-indexeddb';
 import 'fake-indexeddb/auto';
-import { deleteDB } from 'idb';
+import { deleteDB, openDB } from 'idb';
 import { IndexedDbUserDataRepository, USER_DATA_SCHEMA_VERSION } from './user-data-repository';
 
 describe('IndexedDbUserDataRepository', () => {
+  beforeEach(() => {
+    vi.stubGlobal('indexedDB', new IDBFactory());
+    localStorage.clear();
+  });
+  afterEach(() => vi.unstubAllGlobals());
   it('旧localStorageの同期対象データを現行形式へ移行し、以後はIndexedDBだけから復元する', async () => {
     await deleteDB(IndexedDbUserDataRepository.databaseName);
     localStorage.clear();
@@ -73,7 +79,6 @@ describe('IndexedDbUserDataRepository', () => {
     expect(migrated.solves[1]).toMatchObject({
       updatedAt: '2026-01-01T00:00:00.000Z',
       ownerType: 'guest',
-      ownerId: migrated.guestOwnerId,
       schemaVersion: USER_DATA_SCHEMA_VERSION,
       groupId: 'unclassified',
     });
@@ -88,7 +93,6 @@ describe('IndexedDbUserDataRepository', () => {
         id: 'group-id',
         name: 'Competition',
         updatedAt: '2026-01-03T00:00:00.000Z',
-        ownerId: migrated.guestOwnerId,
         schemaVersion: USER_DATA_SCHEMA_VERSION,
       }),
     ]);
@@ -96,7 +100,6 @@ describe('IndexedDbUserDataRepository', () => {
     const preference = migrated.algorithmPreferences[0];
     expect(preference).toMatchObject({
       caseKey: 'PLL-Aa',
-      ownerId: migrated.guestOwnerId,
       schemaVersion: USER_DATA_SCHEMA_VERSION,
     });
     expect(preference.custom[0].id).toMatch(
@@ -117,7 +120,7 @@ describe('IndexedDbUserDataRepository', () => {
     const secondRepository = new IndexedDbUserDataRepository();
     const restored = await secondRepository.load();
 
-    expect(restored.guestOwnerId).toBe(migrated.guestOwnerId);
+    expect(restored.accounts).toEqual([]);
     expect(restored.solves).toEqual([updated, migrated.solves[1]]);
     expect(restored.groups).toEqual(expect.arrayContaining([...migrated.groups, addedGroup]));
     expect(restored.algorithmPreferences).toEqual(
@@ -137,5 +140,147 @@ describe('IndexedDbUserDataRepository', () => {
     expect(finalData.solves).toEqual([migrated.solves[1]]);
     expect(finalData.groups).toEqual(migrated.groups);
     expect(finalData.algorithmPreferences).toEqual(migrated.algorithmPreferences);
+  });
+  it('v2の異なるゲストIDを除去し、記録・グループ・お気に入りの参照とアカウント所有を維持する', async () => {
+    const old = await openDB(IndexedDbUserDataRepository.databaseName, 2, {
+      upgrade(db) {
+        const solves = db.createObjectStore('solves', { keyPath: 'id' });
+        solves.createIndex('date', 'date');
+        solves.createIndex('updatedAt', 'updatedAt');
+        solves.createIndex('ownerId', 'ownerId');
+        const groups = db.createObjectStore('groups', { keyPath: 'id' });
+        groups.createIndex('createdAt', 'createdAt');
+        groups.createIndex('ownerId', 'ownerId');
+        const preferences = db.createObjectStore('algorithmPreferences', { keyPath: 'caseKey' });
+        preferences.createIndex('updatedAt', 'updatedAt');
+        preferences.createIndex('ownerId', 'ownerId');
+        db.createObjectStore('metadata');
+      },
+    });
+    const metadata = {
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      ownerType: 'guest',
+      schemaVersion: 1,
+    };
+    for (const [index, ownerId] of ['guest-a', 'guest-b'].entries()) {
+      await old.put('groups', {
+        ...metadata,
+        id: `group-${index}`,
+        name: 'Same name',
+        createdAt: metadata.updatedAt,
+        ownerId,
+      });
+      await old.put('solves', {
+        ...metadata,
+        id: `solve-${index}`,
+        time: 1234,
+        date: metadata.updatedAt,
+        scramble: 'R',
+        category: 'full',
+        penalty: 'none',
+        groupId: `group-${index}`,
+        ownerId,
+      });
+    }
+    await old.put('algorithmPreferences', {
+      ...metadata,
+      ownerId: 'guest-a',
+      caseKey: 'PLL-T',
+      custom: [{ id: 'custom-id', notation: 'R' }],
+      favoriteId: 'custom-id',
+    });
+    await old.put('solves', {
+      ...metadata,
+      id: 'account-solve',
+      date: metadata.updatedAt,
+      ownerType: 'account',
+      ownerId: 'account-a',
+      deletedAt: metadata.updatedAt,
+    });
+    await old.put('metadata', 'guest-b', 'guestOwnerId');
+    old.close();
+    const repository = new IndexedDbUserDataRepository();
+    const data = await repository.load();
+    expect(
+      data.solves
+        .filter((solve) => solve.ownerType === 'guest')
+        .map((solve) => [solve.id, solve.groupId, solve.ownerId]),
+    ).toEqual([
+      ['solve-0', 'group-0', undefined],
+      ['solve-1', 'group-1', undefined],
+    ]);
+    expect(data.groups.map((group) => [group.id, group.ownerId])).toEqual([
+      ['group-0', undefined],
+      ['group-1', undefined],
+    ]);
+    expect(data.algorithmPreferences[0]).toMatchObject({
+      favoriteId: 'custom-id',
+      custom: [{ id: 'custom-id' }],
+    });
+    expect(data.algorithmPreferences[0]).not.toHaveProperty('ownerId');
+    expect(data.solves.find((solve) => solve.id === 'account-solve')).toMatchObject({
+      ownerId: 'account-a',
+      deletedAt: metadata.updatedAt,
+    });
+    const database = await openDB(IndexedDbUserDataRepository.databaseName);
+    expect(await database.get('metadata', 'guestOwnerId')).toBeUndefined();
+    await repository.putAccount({
+      uid: 'account-a',
+      displayName: 'Name',
+      providerIds: ['apple.com'],
+      ...{ accessToken: 'must-not-save' },
+    });
+    expect(await database.get('accounts', 'account-a')).not.toHaveProperty('accessToken');
+    expect((await new IndexedDbUserDataRepository().load()).solves).toEqual(data.solves);
+    database.close();
+  });
+  it('v3のdateをcreatedAt索引へ移行し、新旧記録を再読み込みできる', async () => {
+    const old = await openDB(IndexedDbUserDataRepository.databaseName, 3, {
+      upgrade(db) {
+        const solves = db.createObjectStore('solves', { keyPath: 'id' });
+        solves.createIndex('date', 'date');
+        solves.createIndex('updatedAt', 'updatedAt');
+        solves.createIndex('ownerId', 'ownerId');
+        const groups = db.createObjectStore('groups', { keyPath: 'id' });
+        groups.createIndex('createdAt', 'createdAt');
+        groups.createIndex('ownerId', 'ownerId');
+        const preferences = db.createObjectStore('algorithmPreferences', { keyPath: 'caseKey' });
+        preferences.createIndex('updatedAt', 'updatedAt');
+        preferences.createIndex('ownerId', 'ownerId');
+        db.createObjectStore('accounts', { keyPath: 'uid' });
+        db.createObjectStore('metadata');
+      },
+    });
+    const date = '2026-01-01T00:00:00.000Z';
+    await old.put('solves', {
+      id: 'legacy',
+      time: 1000,
+      scramble: 'R',
+      date,
+      updatedAt: date,
+      ownerType: 'account',
+      ownerId: 'account',
+      pendingSync: true,
+      deletedAt: date,
+      category: 'full',
+      penalty: 'none',
+      schemaVersion: 2,
+    });
+    old.close();
+    const repository = new IndexedDbUserDataRepository();
+    const data = await repository.load();
+    expect(data.solves).toHaveLength(1);
+    expect(data.solves[0]).toMatchObject({
+      id: 'legacy',
+      createdAt: date,
+      ownerId: 'account',
+      pendingSync: true,
+      deletedAt: date,
+    });
+    expect(data.solves[0]).not.toHaveProperty('date');
+    const fresh = { ...data.solves[0], id: 'fresh', createdAt: '2026-01-02T00:00:00.000Z' };
+    await repository.putSolve(fresh);
+    const restored = await new IndexedDbUserDataRepository().load();
+    expect(restored.solves.map((solve) => solve.id)).toEqual(['fresh', 'legacy']);
   });
 });

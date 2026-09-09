@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, Injectable } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { TranslocoService } from '@jsverse/transloco';
+import { GroupSyncService } from '../../core/firestore/group-sync.service';
+import { SolveSyncService } from '../../core/firestore/solve-sync.service';
 import { HistoryFilter } from './history-filter/history-filter';
 import { HistoryGroupPanel } from './history-group-panel/history-group-panel';
 import { HistoryProgressChart } from './history-progress-chart/history-progress-chart';
 import { HistorySummary } from './history-summary/history-summary';
+import { HistoryTransfer } from './history-transfer/history-transfer';
 import { HistoryStore } from './history.store';
 import { SolveHistory } from './solve-history/solve-history';
 
@@ -41,10 +43,27 @@ export class HistoryPaginatorIntl extends MatPaginatorIntl {
 /** HistoryStoreのスコープを作り、履歴の子領域を構成するコンテナ。 */
 @Component({
   selector: 'app-history',
-  imports: [HistoryGroupPanel, HistoryFilter, HistorySummary, HistoryProgressChart, SolveHistory],
+  imports: [
+    HistoryTransfer,
+    HistoryGroupPanel,
+    HistoryFilter,
+    HistorySummary,
+    HistoryProgressChart,
+    SolveHistory,
+  ],
   providers: [HistoryStore, { provide: MatPaginatorIntl, useClass: HistoryPaginatorIntl }],
   templateUrl: './history.html',
   styleUrl: './history.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class History {}
+export class History {
+  /** History表示時に現在のアカウントの最新Solveを取り込む同期サービス。 */
+  private readonly solveSync = inject(SolveSyncService);
+  private readonly groupSync = inject(GroupSyncService);
+
+  /** 画面を開くたびにクラウドの変更を端末データへ取り込む。 */
+  constructor() {
+    this.solveSync.refresh();
+    this.groupSync.refresh();
+  }
+}

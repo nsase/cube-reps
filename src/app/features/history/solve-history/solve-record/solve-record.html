@@ -1,4 +1,11 @@
+<mat-checkbox
+  [checked]="selected()"
+  [disabled]="!selectable()"
+  (change)="selectionChanged.emit()"
+  [attr.aria-label]="'ownership.selectSolve' | transloco: { number: recordNumber() }"
+/>
 <span class="record-number">{{ recordNumber() }}</span>
+<app-owner-avatar [metadata]="solve()" />
 <div class="result">
   <strong>{{ cube.displayTime(solve()) }}</strong>
 </div>

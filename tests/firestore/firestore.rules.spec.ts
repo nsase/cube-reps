@@ -18,7 +18,7 @@ function solve(overrides: Record<string, unknown> = {}): Record<string, unknown>
     id: solveId,
     time: 12345,
     scramble: 'R U',
-    date: Timestamp.fromDate(new Date('2026-08-31T10:00:00.000Z')),
+    createdAt: Timestamp.fromDate(new Date('2026-08-31T10:00:00.000Z')),
     updatedAt: Timestamp.fromDate(new Date('2026-08-31T10:01:00.000Z')),
     ownerType: 'account',
     ownerId,
@@ -101,6 +101,62 @@ describe('Firestore Solve Security Rules', () => {
 
     await assertFails(setDoc(reference, solve({ id: 'different-id' })));
     await assertFails(setDoc(reference, solve({ ownerId: otherUserId })));
-    await assertFails(setDoc(reference, solve({ date: '2026-08-31T10:00:00.000Z' })));
+    await assertFails(setDoc(reference, solve({ createdAt: '2026-08-31T10:00:00.000Z' })));
+  });
+
+  it('tombstoneへの更新を許可し、削除済みSolveの通常更新による復活を拒否する', async () => {
+    const firestore = environment.authenticatedContext(ownerId).firestore();
+    const reference = doc(firestore, 'users', ownerId, 'solves', solveId);
+    const deletedAt = Timestamp.fromDate(new Date('2026-09-03T10:00:00.000Z'));
+
+    await assertSucceeds(setDoc(reference, solve()));
+    await assertSucceeds(setDoc(reference, solve({ deletedAt, updatedAt: deletedAt })));
+    await assertFails(setDoc(reference, solve({ time: 9999 })));
+    await assertSucceeds(setDoc(reference, solve({ deletedAt, updatedAt: deletedAt, time: 9999 })));
+  });
+  it('グループは本人だけが読み書きでき、削除通知と日時形式を検証する', async () => {
+    const reference = doc(
+      environment.authenticatedContext(ownerId).firestore(),
+      'users',
+      ownerId,
+      'groups',
+      solveId,
+    );
+    const group = {
+      id: solveId,
+      name: 'Practice',
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+      ownerType: 'account',
+      ownerId,
+      schemaVersion: 3,
+    };
+    await assertSucceeds(setDoc(reference, group));
+    await assertSucceeds(getDoc(reference));
+    await assertSucceeds(
+      getDocs(
+        collection(
+          environment.authenticatedContext(ownerId).firestore(),
+          'users',
+          ownerId,
+          'groups',
+        ),
+      ),
+    );
+    await assertFails(setDoc(reference, { ...group, createdAt: 'invalid' }));
+    await assertFails(setDoc(reference, { ...group, ownerId: otherUserId }));
+    await assertFails(setDoc(reference, { ...group, pendingSync: true }));
+    for (const context of [
+      environment.unauthenticatedContext(),
+      environment.authenticatedContext(otherUserId),
+    ]) {
+      const other = doc(context.firestore(), 'users', ownerId, 'groups', solveId);
+      await assertFails(getDoc(other));
+      await assertFails(setDoc(other, group));
+      await assertFails(deleteDoc(other));
+    }
+    await assertSucceeds(setDoc(reference, { ...group, deletedAt: Timestamp.now() }));
+    await assertFails(setDoc(reference, group));
+    await assertFails(deleteDoc(reference));
   });
 });

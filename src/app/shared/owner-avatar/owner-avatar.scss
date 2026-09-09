@@ -1,0 +1,25 @@
+:host {
+  height: 100%;
+  > div {
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+}
+img,
+.initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+img {
+  object-fit: cover;
+}
+.initials {
+  background: var(--surface-color);
+  color: var(--text-muted-color);
+  font-size: var(--font-size-small);
+}

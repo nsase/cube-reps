@@ -2,6 +2,10 @@
 <mat-dialog-content>
   <dl>
     <div>
+      <dt>{{ 'ownership.owner' | transloco }}</dt>
+      <dd>{{ owners.details(currentSolve()) }}</dd>
+    </div>
+    <div>
       <dt>{{ 'history.recordNumber' | transloco }}</dt>
       <dd class="record-number">{{ recordNumber }}</dd>
     </div>

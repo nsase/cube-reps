@@ -9,8 +9,19 @@
 <label
   >{{ 'history.recordFilter' | transloco
   }}<select data-testid="history-group-filter" [(ngModel)]="store.selectedGroup">
-    @for (group of cube.groups(); track group.id) {
+    @for (group of cube.activeGroups(); track group.id) {
       <option [value]="group.id">{{ cube.groupName(group.id) }}</option>
     }
   </select></label
 >
+
+<label
+  >{{ 'ownership.owner' | transloco }}
+  <select data-testid="history-owner-filter" [(ngModel)]="store.selectedOwner">
+    <option value="all">{{ 'ownership.all' | transloco }}</option>
+    <option value="unlinked">{{ 'ownership.unlinked' | transloco }}</option>
+    @for (owner of store.owners.options(); track owner.key) {
+      <option [value]="owner.key">{{ owner.label }}</option>
+    }
+  </select>
+</label>

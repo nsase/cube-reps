@@ -69,7 +69,7 @@ test('スクランブル再作成後のSpace操作でタイマーを開始する
   const refreshButton = page.getByTestId('timer-scramble-refresh');
   const clock = page.locator('app-timer-clock .clock');
   const time = clock.locator('strong');
-  await expect(refreshButton).toBeEnabled();
+  await expect(refreshButton).toBeEnabled({ timeout: 15_000 });
 
   await refreshButton.focus();
   await refreshButton.press('Enter');

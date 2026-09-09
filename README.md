@@ -23,7 +23,7 @@ CubeReps is a browser-based Rubik's Cube timer and training tool. Solve records 
 - Retry any solve from history with its original scramble, category, and record group
 - History rows with point-in-time Ao5/Ao12 and details for scrambles and cube previews
 - English and Japanese interfaces
-- Optional sign-in with a Google account
+- Optional Google sign-in, confirmation-based guest record import, and cross-device solve synchronization
 - Responsive layouts for desktop, tablet, and mobile devices
 
 ## Using the timer
@@ -46,9 +46,23 @@ Browser storage is separated by browser and installation context. In particular,
 
 ## Google account sign-in
 
-Select **Sign in with Google** in the page header to sign in. Signing in is optional: Timer, History, and locally saved algorithms remain available without an account, including while offline after the app has been loaded.
+Open the profile icon to the right of the language selector, select **Sign in**, then choose **Sign in with Google** on the login page. The profile popup shows your name, email address, and **Sign out** when signed in, or **Guest account** when signed out. Signing in is optional: Timer, History, and locally saved algorithms remain available without an account, including while offline after the app has been loaded.
 
-This version only establishes the account identity needed for future device synchronization. Signing in does not upload, replace, delete, or synchronize existing local data. Signing out also leaves local data on the device. The sign-in and sign-out operations themselves require an internet connection.
+History displays all undeleted solves saved in this browser profile, regardless of sign-in or account ownership. The owner filter applies consistently to the list, counts, statistics, and Progress Chart within the selected group and category. Owner avatars show a photo, initials, or a fallback icon; hover over an avatar for its tooltip, or open the solve details with the information button to view account details.
+
+Guest records are **Not linked to an account** and have no guest ID. Existing guest IDs are removed without changing solve IDs or group associations. Signing in does not automatically import records. Select records in History, then confirm **Move to current account** for unlinked records or **Copy to current account** for another account's records. Moving preserves the solve ID; copying creates an independent ID and keeps the original unchanged. Deliberately copying again creates another independent record. Check the header for cloud synchronization status.
+
+Account-owned solves are fetched when signing in, opening History, and returning online. Adds, penalty and group changes, and deletions are applied locally immediately and queued by Firestore while offline. The header shows syncing, synced, offline, pending, or error status; failed operations can be retried. Firestore's persistent web cache is enabled and should be used only on a trusted device.
+
+Account-owned groups also synchronize their names and deletions. When an account-owned solve is added to a guest group, or a guest solve in that group is moved to an account, the existing group becomes owned by that account without creating another group. Unselected guest solves keep their ownership and group association. The group panel shows each custom group’s owner avatar. Solve `createdAt` is the measurement time and remains unchanged by moves and copies; legacy `date` values migrate without changing that time.
+
+If a solve arrives before its group, History offers a temporary group named with its ID without changing the stored association. The original name appears when the group arrives. Solve and group deletions take precedence over regular edits, including pending changes; affected solves remain available under Unclassified.
+
+Regular concurrent edits use Firestore's server-confirmed write order, avoiding dependence on device clocks. Deletion creates a permanent tombstone instead of physically removing the document; a tombstone always wins over later stale edits, so an offline device cannot accidentally restore a deleted solve. Cloud tombstones are retained indefinitely. Synced group tombstones remain in memory for reconciliation but are removed from the application’s IndexedDB; unsent deletions remain persisted for retry.
+
+Signing out retains all local history. Records belonging to other accounts remain viewable but cannot be edited or deleted until that account signs in. Group changes that would modify those records are also disabled. Owner filters only read local data; Firestore reads and writes remain restricted to the currently signed-in UID. No other account's records are uploaded automatically.
+
+A separate IndexedDB account directory stores display names, email addresses, profile images, and provider identifiers by Firebase UID, never passwords or tokens. This browser profile's previous account records and display information are visible to anyone using it. Before handing over a shared device, sign out and clear the site's browser data after ensuring needed records have synced. Ordinary sign-out does not delete local or cloud records.
 
 ## Setup
 
@@ -57,10 +71,10 @@ Install Node.js and npm, then run the following commands in the repository:
 ```bash
 npm install
 npx playwright install chromium
-npm start
+npm run start:local
 ```
 
-The development server normally starts at [http://localhost:4200](http://localhost:4200).
+The final command starts the development server and local Firestore Emulator together. The development server normally starts at [http://localhost:4200](http://localhost:4200) and development builds connect to the local Firestore Emulator at `127.0.0.1:8080`. Production builds continue to connect to the production Firestore database. This separation prevents local development operations from changing production solves.
 
 The Firebase Web configuration in `src/app/core/auth/firebase.config.ts` contains public identifiers used by the browser to connect to the CubeReps Firebase project. Do not add service-account JSON files, private keys, access tokens, or other administrator credentials to the frontend or repository; the browser application does not require them.
 
@@ -68,14 +82,19 @@ Firestore development requires Java 21 or later. `npm run test:firestore` starts
 
 ## Development commands
 
-| Command                   | Description                       |
-| ------------------------- | --------------------------------- |
-| `npm start`               | Start the development server      |
-| `npm run build`           | Create a production build         |
-| `npm test`                | Run tests with Vitest             |
-| `npm run test:firestore`  | Test Firestore with the Emulator  |
-| `npm run test:e2e`        | Run browser tests with Playwright |
-| `npm run prettier:format` | Format the project with Prettier  |
+| Command                   | Description                                  |
+| ------------------------- | -------------------------------------------- |
+| `npm start`               | Start the development server                 |
+| `npm run start:firestore` | Start the local Firestore Emulator           |
+| `npm run start:local`     | Start both development services              |
+| `npm run build`           | Create a production build                    |
+| `npm test`                | Run tests with Vitest                        |
+| `npm run test:firestore`  | Test Firestore with the Emulator             |
+| `npm run test:e2e:pr`     | Run desktop-wide browser tests for Issue PRs |
+| `npm run test:e2e`        | Run all 7 Playwright projects                |
+| `npm run prettier:format` | Format the project with Prettier             |
+
+Local verification uses `npm test` (unit and component tests) and `git diff --check`. Builds, Firestore Emulator tests, and browser tests run in CI; do not run browser tests locally. PRs targeting `develop` run `npm run test:e2e:pr` (desktop-wide); release PRs targeting `main` require all 7 projects with `npm run test:e2e`. CI also runs build, unit tests, and Firestore Emulator tests for both. For UI, layout, or responsive changes needing additional viewport coverage, shared style changes, or unclear impact, run the CI workflow manually with `browser_scope: all` and record the scope and results in the PR. Manual CI also accepts `browser_scope: pr` for Issue PR coverage. All required CI checks must pass before merging.
 
 Build output is written to `dist/cube-reps`.
 
@@ -92,11 +111,9 @@ Existing data previously stored in `localStorage` is migrated automatically when
 - Active record destination
 - Display language
 
-Data is tied to the browser and origin in use. Clearing the site's browser data also deletes CubeReps records. Cloud synchronization and data export are not currently available.
+Data is tied to the browser and origin in use. Clearing the site's browser data deletes local guest records and cached account records. Data export is not currently available.
 
-In preparation for future synchronization, a Firestore data-access foundation can safely CRUD only the signed-in user's `users/{userId}/solves/{solveId}` documents. It is not connected to Timer or History yet, so signing in and normal app operations never automatically upload, modify, or delete local records.
-
-Google sign-in does not change the owner or storage location of existing local records at this stage.
+After explicit confirmation, guest import writes to the signed-in user’s `users/{userId}/solves/{solveId}` documents. Repeating, retrying, and later synchronization do not duplicate records because the fixed solve UUID is used as the document ID. Timer, History, and statistics use the combined local cache and the latest account data fetched at synchronization points while signed in.
 
 ## Technology
 

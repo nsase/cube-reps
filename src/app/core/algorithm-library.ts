@@ -11,10 +11,6 @@ type AlgorithmPreferences = Record<string, AlgorithmPreference>;
 export class AlgorithmLibraryService {
   /** ユーザー設定の永続化を画面から分離するRepository。 */
   private readonly repository = inject(UserDataRepository);
-  /** Repository初期化前の操作でも使用できる一時ゲストUUID。 */
-  private readonly initialGuestOwnerId = crypto.randomUUID();
-  /** 現在のゲスト所有者UUID。 */
-  private readonly guestOwnerId = signal<string>(this.initialGuestOwnerId);
   /** ケースキーごとの保存済みユーザー設定。 */
   private readonly preferences = signal<AlgorithmPreferences>({});
   /** IndexedDB初期化後の変更だけを保存するフラグ。 */
@@ -97,9 +93,9 @@ export class AlgorithmLibraryService {
       this.preferences()[caseKey] ?? {
         caseKey,
         custom: [],
+        createdAt: new Date().toISOString(),
         updatedAt: new Date(0).toISOString(),
         ownerType: 'guest',
-        ownerId: this.guestOwnerId(),
         schemaVersion: USER_DATA_SCHEMA_VERSION,
       }
     );
@@ -113,7 +109,6 @@ export class AlgorithmLibraryService {
       caseKey,
       updatedAt: new Date().toISOString(),
       ownerType: 'guest',
-      ownerId: this.guestOwnerId(),
       schemaVersion: USER_DATA_SCHEMA_VERSION,
     };
     const shouldDelete = updated.custom.length === 0 && !updated.favoriteId;
@@ -131,12 +126,7 @@ export class AlgorithmLibraryService {
   /** IndexedDBの復元値と起動直後の変更をケースキー単位で統合する。 */
   private async initializeStorage(): Promise<void> {
     const stored = await this.repository.load();
-    this.guestOwnerId.set(stored.guestOwnerId);
-    const current = Object.values(this.preferences()).map((preference) =>
-      preference.ownerId === this.initialGuestOwnerId
-        ? { ...preference, ownerId: stored.guestOwnerId }
-        : preference,
-    );
+    const current = Object.values(this.preferences());
     const currentKeys = new Set(current.map(({ caseKey }) => caseKey));
     this.preferences.set(
       Object.fromEntries(

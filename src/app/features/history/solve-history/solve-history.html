@@ -5,7 +5,9 @@
   </div>
   @if (store.pagedRows().length) {
     <div class="history-header" role="row">
+      <div class="column-check"></div>
       <span class="column-number" role="columnheader">#</span>
+      <div class="column-account"></div>
       <span class="column-time" role="columnheader">{{ 'history.time' | transloco }}</span>
       <span class="column-ao5" role="columnheader">{{ 'common.ao5' | transloco }}</span>
       <span class="column-ao12" role="columnheader">{{ 'common.ao12' | transloco }}</span>
@@ -18,6 +20,9 @@
     @for (row of store.pagedRows(); track row.solve.id) {
       <app-solve-record
         [solve]="row.solve"
+        [selectable]="store.canSelect(row.solve)"
+        [selected]="store.selectedIds().has(row.solve.id)"
+        (selectionChanged)="store.toggleSelection(row.solve)"
         [recordNumber]="row.number"
         [ao5]="row.ao5"
         [ao12]="row.ao12"

@@ -12,6 +12,7 @@ describe('HistorySummary', () => {
       imports: [HistorySummary],
       providers: [HistoryStore],
     }).compileComponents();
+    await TestBed.inject(CubeService).ready;
   });
 
   it('+2を反映してDNFを除外したベストと平均、件数不足のAOを表示する', async () => {
@@ -21,7 +22,7 @@ describe('HistorySummary', () => {
         id: '1',
         time: 1000,
         scramble: 'R U',
-        date: new Date(1).toISOString(),
+        createdAt: new Date(1).toISOString(),
         updatedAt: new Date(1).toISOString(),
         ownerType: 'guest',
         ownerId: 'guest-test',
@@ -34,7 +35,7 @@ describe('HistorySummary', () => {
         id: '2',
         time: 2000,
         scramble: 'U R',
-        date: new Date(2).toISOString(),
+        createdAt: new Date(2).toISOString(),
         updatedAt: new Date(2).toISOString(),
         ownerType: 'guest',
         ownerId: 'guest-test',
@@ -47,7 +48,7 @@ describe('HistorySummary', () => {
         id: '3',
         time: 500,
         scramble: 'F R',
-        date: new Date(3).toISOString(),
+        createdAt: new Date(3).toISOString(),
         updatedAt: new Date(3).toISOString(),
         ownerType: 'guest',
         ownerId: 'guest-test',
@@ -57,7 +58,7 @@ describe('HistorySummary', () => {
         penalty: 'DNF',
       },
     ];
-    cube.solves.set(solves);
+    cube.storedSolves.set(solves);
     const fixture = TestBed.createComponent(HistorySummary);
     fixture.detectChanges();
     await fixture.whenStable();

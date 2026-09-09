@@ -1,0 +1,18 @@
+section {
+  display: grid;
+  gap: 16px;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px;
+  background: var(--surface-color);
+  border: 1px solid var(--outline-color);
+  border-radius: 8px;
+}
+p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+.auth-error {
+  color: var(--danger-color);
+}

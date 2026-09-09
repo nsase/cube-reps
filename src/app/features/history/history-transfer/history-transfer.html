@@ -1,0 +1,19 @@
+@if (store.auth.user()) {
+  <div class="operations">
+    <span>{{ 'ownership.selected' | transloco: { count: store.selectedSolves().length } }}</span>
+    <button
+      mat-button
+      [disabled]="!guestSolves().length || confirming() || migration.pending()"
+      (click)="move()"
+    >
+      {{ 'ownership.move' | transloco }}
+    </button>
+    <button
+      mat-button
+      [disabled]="!accountSolves().length || confirming() || migration.pending()"
+      (click)="copy()"
+    >
+      {{ 'ownership.copy' | transloco }}
+    </button>
+  </div>
+}
