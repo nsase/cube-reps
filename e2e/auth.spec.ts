@@ -6,7 +6,7 @@ test.describe('任意のGoogleログイン', { tag: '@responsive' }, () => {
     await page.goto('/#/timer');
 
     await expect(page.locator('app-timer')).toBeVisible();
-    await expect(page.getByTestId('google-sign-in')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('profile-menu-trigger')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId('sync-status')).toContainText('Local only', { timeout: 15_000 });
     await expect(page.getByTestId('solve-migration')).toHaveCount(0);
     await expect(page.getByTestId('timer-scramble-refresh')).toBeEnabled({ timeout: 15_000 });
@@ -25,3 +25,38 @@ test.describe('任意のGoogleログイン', { tag: '@responsive' }, () => {
     await expect(page.getByTestId('solve-migration')).toHaveCount(0);
   });
 });
+
+test(
+  'プロフィールからログインページへ移動し、ゲストのまま戻れる',
+  { tag: '@responsive' },
+  async ({ page }) => {
+    await page.goto('/#/timer');
+    const profile = page.getByTestId('profile-menu-trigger');
+    await profile.click();
+    await expect(page.getByTestId('profile-information')).toContainText('Guest account', {
+      timeout: 15_000,
+    });
+    await expectNoHorizontalOverflow(page);
+    const languageBox = await page.getByTestId('language-select').boundingBox();
+    const profileBox = await profile.boundingBox();
+    expect(languageBox!.x + languageBox!.width).toBeLessThanOrEqual(profileBox!.x);
+    const menuBox = await page.getByRole('menu').boundingBox();
+    expect(menuBox!.x).toBeGreaterThanOrEqual(0);
+    expect(menuBox!.x + menuBox!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
+    await page.getByTestId('open-login').click();
+    await expect(page).toHaveURL(/#\/login$/);
+    await expect(page.getByTestId('google-sign-in')).toBeVisible();
+    await page.getByTestId('language-select').selectOption('ja');
+    await expect(page.getByTestId('google-sign-in')).toContainText('Sign in with Google');
+    await expect(page.locator('h1')).toHaveText('ログイン');
+    await expectNoHorizontalOverflow(page);
+    await page.reload();
+    await expect(page.getByTestId('google-sign-in')).toBeVisible();
+    await page.getByRole('link', { name: 'ログインしないで利用する' }).click();
+    await expect(page.locator('app-timer')).toBeVisible();
+    await profile.click();
+    await expect(page.getByTestId('profile-information')).toContainText('ゲストアカウント');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu')).toHaveCount(0);
+  },
+);
