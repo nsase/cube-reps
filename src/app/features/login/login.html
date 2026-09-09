@@ -16,6 +16,6 @@
     <p class="auth-error" role="alert">{{ 'auth.failed' | transloco }}</p>
   }
   <a mat-button routerLink="/timer">{{
-    (auth.user() ? 'auth.backToTimer' : 'auth.continueToTimer') | transloco
+    (auth.user() ? 'auth.continueToTimer' : 'auth.continueWithoutLogin') | transloco
   }}</a>
 </section>
