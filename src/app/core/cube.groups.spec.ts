@@ -134,7 +134,66 @@ describe('CubeService group synchronization', () => {
     const cube = TestBed.inject(CubeService);
     const local = { ...group, name: 'Local', pendingSync: true };
     cube.userGroups.set([local]);
-    await cube.mergeGroups([deleted]);
+    await cube.mergeGroups([{ ...group, name: 'Remote', updatedAt: deleted.updatedAt }]);
     expect(cube.userGroups()).toEqual([local]);
+  });
+  it('ログインだけでは既存のゲストグループを移行しない', () => {
+    const cube = TestBed.inject(CubeService);
+    const guest = cube.addGroup('Guest')!;
+    TestBed.inject(AuthService).user.set(account);
+    TestBed.tick();
+    expect(cube.userGroups()).toEqual([guest]);
+    expect(TestBed.inject(FirestoreSyncService).groupMutations()).toEqual([]);
+  });
+
+  it('新しい名称を採用し、同一版と古い版の再取得でSignalや保存先を更新しない', async () => {
+    const cube = TestBed.inject(CubeService);
+    const repository = TestBed.inject(UserDataRepository);
+    await cube.mergeGroups([group]);
+    const renamed = { ...group, name: 'Renamed', updatedAt: '2026-02-01T00:00:00.000Z' };
+    await cube.mergeGroups([renamed]);
+    expect(cube.groupName(group.id)).toBe('Renamed');
+    const current = cube.userGroups();
+    const solvesBefore = cube.storedSolves();
+    const put = vi.spyOn(repository, 'putRecordGroup');
+    await cube.mergeGroups([{ ...renamed }]);
+    await cube.mergeGroups([group]);
+    expect(cube.userGroups()).toBe(current);
+    expect(cube.storedSolves()).toBe(solvesBefore);
+    expect(put).not.toHaveBeenCalled();
+  });
+
+  it('未知の削除通知の再取得でSignalや永続化を更新しない', async () => {
+    const cube = TestBed.inject(CubeService);
+    const repository = TestBed.inject(UserDataRepository);
+    await cube.mergeGroups([deleted]);
+    const current = cube.userGroups();
+    const solvesBefore = cube.storedSolves();
+    const remove = vi.spyOn(repository, 'deleteRecordGroup');
+    await cube.mergeGroups([{ ...deleted }]);
+    expect(cube.userGroups()).toBe(current);
+    expect(cube.storedSolves()).toBe(solvesBefore);
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it('削除通知は端末時計が進んだ名称更新より優先し、通常版で復活しない', async () => {
+    const cube = TestBed.inject(CubeService);
+    const future = { ...group, updatedAt: '2099-01-01T00:00:00.000Z' };
+    await cube.mergeGroups([future]);
+    await cube.mergeSolves([solve]);
+    await cube.mergeGroups([deleted]);
+    expect(cube.activeGroups().map((item) => item.id)).not.toContain(group.id);
+    expect(cube.activeSolves()[0].groupId).toBe('unclassified');
+    await cube.mergeGroups([future]);
+    expect(cube.activeGroups().map((item) => item.id)).not.toContain(group.id);
+  });
+  it('未送信の名称変更より削除を優先し、遅れた送信完了でも復活しない', async () => {
+    const cube = TestBed.inject(CubeService);
+    const pending = { ...group, name: 'Pending', pendingSync: true };
+    cube.userGroups.set([pending]);
+    await cube.mergeGroups([deleted]);
+    await cube.groupSyncFinished(pending);
+    expect(cube.userGroups()).toEqual([deleted]);
+    expect(cube.activeGroups().map((item) => item.id)).not.toContain(group.id);
   });
 });
