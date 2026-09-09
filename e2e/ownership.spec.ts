@@ -264,7 +264,10 @@ test(
     await expect(group).toHaveCount(1);
     await expect(group.getByRole('img')).toHaveAccessibleName('Not linked to an account');
     await group.getByRole('button').filter({ hasText: 'Practice' }).click();
-    await page.locator('app-solve-record').getByRole('checkbox').check();
+    // 絞り込み前の一覧を選択しないよう、対象グループの1件が表示されるまで待つ。
+    const records = page.locator('app-solve-record');
+    await expect(records).toHaveCount(1);
+    await records.getByRole('checkbox').check();
     await page.getByRole('button', { name: 'Move to current account', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Move to current account' }).click();
     await expect(group.getByRole('img')).toHaveAccessibleName(/Target User/);
