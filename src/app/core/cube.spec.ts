@@ -357,6 +357,24 @@ describe('CubeService record statistics', () => {
     expect(cube.storedSolves().map(({ id }) => id)).toEqual([remote.id, local.id]);
   });
 
+  it('Solveの削除は新しい日時の通常版より優先され、再取得でも復活しない', async () => {
+    const cube = TestBed.inject(CubeService);
+    await cube.ready;
+    const remote = {
+      ...solve(19, 1000),
+      ownerType: 'account' as const,
+      ownerId: 'account-1',
+    };
+    const future = { ...remote, updatedAt: '2099-01-01T00:00:00.000Z' };
+    await cube.mergeSolves([future]);
+    const tombstone = { ...remote, deletedAt: remote.updatedAt };
+    await cube.mergeSolves([tombstone]);
+    expect(cube.activeSolves()).toEqual([]);
+    await cube.mergeSolves([future]);
+    expect(cube.storedSolves()).toEqual([tombstone]);
+    expect(cube.activeSolves()).toEqual([]);
+  });
+
   it('ローカルに存在しないFirestoreのtombstoneを保存しない', async () => {
     const cube = TestBed.inject(CubeService);
     const repository = TestBed.inject(UserDataRepository);
@@ -437,7 +455,7 @@ describe('CubeService record statistics', () => {
     expect(cube.activeGroups()).toContainEqual(group);
     expect(sync.solveMutations()).toEqual([]);
   });
-  it('再読み込み時に未送信の移行記録を再送し、同期待ちのローカル版を優先する', async () => {
+  it('再読み込み時に未送信の移行記録を再送し、通常更新は保持するが削除通知は優先する', async () => {
     const repository = TestBed.inject(UserDataRepository);
     const pending = {
       ...solve(100, 1000),
@@ -456,7 +474,9 @@ describe('CubeService record statistics', () => {
     expect(cube.activeSolves()).toEqual([pending]);
     const tombstone = { ...pending, pendingSync: undefined, deletedAt: pending.createdAt };
     await cube.mergeSolves([tombstone]);
-    expect(cube.activeSolves()).toEqual([pending]);
+    expect(cube.activeSolves()).toEqual([]);
+    await cube.solveSyncFinished(pending);
+    expect(cube.storedSolves()).toEqual([tombstone]);
   });
   it('送信中の編集を古い同期完了で上書きせず、最新版だけを保存済みにする', async () => {
     const cube = TestBed.inject(CubeService);
