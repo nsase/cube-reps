@@ -94,7 +94,7 @@ Firestore development requires Java 21 or later. `npm run test:firestore` starts
 | `npm run test:e2e`        | Run all 7 Playwright projects                |
 | `npm run prettier:format` | Format the project with Prettier             |
 
-PRs targeting `develop` run `npm run test:e2e:pr` (desktop-wide); release PRs targeting `main` require all 7 projects with `npm run test:e2e`. Build, unit tests, and Firestore Emulator tests run for both. For UI, layout, or responsive changes, also test affected viewports locally with `npm run test:e2e -- --project=<project>`; run all projects for shared style changes or unclear impact, and record the scope and results in the PR. The CI workflow can also be run manually with `browser_scope: all` (default) or `pr` to verify either scope.
+Local verification uses `npm test` (unit and component tests) and `git diff --check`. Builds, Firestore Emulator tests, and browser tests run in CI; do not run browser tests locally. PRs targeting `develop` run `npm run test:e2e:pr` (desktop-wide); release PRs targeting `main` require all 7 projects with `npm run test:e2e`. CI also runs build, unit tests, and Firestore Emulator tests for both. For UI, layout, or responsive changes needing additional viewport coverage, shared style changes, or unclear impact, run the CI workflow manually with `browser_scope: all` and record the scope and results in the PR. Manual CI also accepts `browser_scope: pr` for Issue PR coverage. All required CI checks must pass before merging.
 
 Build output is written to `dist/cube-reps`.
 
