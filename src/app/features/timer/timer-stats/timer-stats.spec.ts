@@ -13,6 +13,7 @@ describe('TimerStats', () => {
       imports: [TimerStats],
       providers: [provideRouter([])],
     }).compileComponents();
+    await TestBed.inject(CubeService).ready;
   });
 
   /** TimerStatsに表示されているベスト・Mean・各AOの値を返す。 */
@@ -30,7 +31,7 @@ describe('TimerStats', () => {
         id: '1',
         time: 1000,
         scramble: 'R U',
-        date: new Date(1).toISOString(),
+        createdAt: new Date(1).toISOString(),
         updatedAt: new Date(1).toISOString(),
         ownerType: 'guest',
         ownerId: 'guest-test',
@@ -43,7 +44,7 @@ describe('TimerStats', () => {
         id: '2',
         time: 2000,
         scramble: 'U R',
-        date: new Date(2).toISOString(),
+        createdAt: new Date(2).toISOString(),
         updatedAt: new Date(2).toISOString(),
         ownerType: 'guest',
         ownerId: 'guest-test',
@@ -56,7 +57,7 @@ describe('TimerStats', () => {
         id: '3',
         time: 500,
         scramble: 'F R',
-        date: new Date(3).toISOString(),
+        createdAt: new Date(3).toISOString(),
         updatedAt: new Date(3).toISOString(),
         ownerType: 'guest',
         ownerId: 'guest-test',
@@ -66,7 +67,7 @@ describe('TimerStats', () => {
         penalty: 'DNF',
       },
     ];
-    cube.solves.set(solves);
+    cube.storedSolves.set(solves);
     const fixture = TestBed.createComponent(TimerStats);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -80,12 +81,12 @@ describe('TimerStats', () => {
 
   it('solveカテゴリーの変更に合わせて集計表示を分離する', async () => {
     const cube = TestBed.inject(CubeService);
-    cube.solves.set([
+    cube.storedSolves.set([
       {
         id: '1',
         time: 1000,
         scramble: 'R U',
-        date: new Date(1).toISOString(),
+        createdAt: new Date(1).toISOString(),
         updatedAt: new Date(1).toISOString(),
         ownerType: 'guest',
         ownerId: 'guest-test',
@@ -98,7 +99,7 @@ describe('TimerStats', () => {
         id: '2',
         time: 4000,
         scramble: 'U R',
-        date: new Date(2).toISOString(),
+        createdAt: new Date(2).toISOString(),
         updatedAt: new Date(2).toISOString(),
         ownerType: 'guest',
         ownerId: 'guest-test',
@@ -122,12 +123,12 @@ describe('TimerStats', () => {
   it('記録先カテゴリーの変更に合わせて集計表示を更新する', async () => {
     const cube = TestBed.inject(CubeService);
     const group = cube.addGroup('大会')!;
-    cube.solves.set([
+    cube.storedSolves.set([
       {
         id: '1',
         time: 1000,
         scramble: 'R U',
-        date: new Date(1).toISOString(),
+        createdAt: new Date(1).toISOString(),
         updatedAt: new Date(1).toISOString(),
         ownerType: 'guest',
         ownerId: 'guest-test',
@@ -140,7 +141,7 @@ describe('TimerStats', () => {
         id: '2',
         time: 4000,
         scramble: 'U R',
-        date: new Date(2).toISOString(),
+        createdAt: new Date(2).toISOString(),
         updatedAt: new Date(2).toISOString(),
         ownerType: 'guest',
         ownerId: 'guest-test',

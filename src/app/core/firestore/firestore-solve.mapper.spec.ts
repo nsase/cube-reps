@@ -1,4 +1,3 @@
-import { Timestamp } from 'firebase/firestore';
 import { describe, expect, it } from 'vitest';
 import { Solve } from '../cube.models';
 import { USER_DATA_SCHEMA_VERSION } from '../user-data-repository';
@@ -9,7 +8,7 @@ describe('Firestore Solve mapper', () => {
     id: '4d651998-42f1-4e63-9815-7f56bcac524d',
     time: 12345,
     scramble: 'R U',
-    date: '2026-08-31T10:00:00.000Z',
+    createdAt: '2026-08-31T10:00:00.000Z',
     updatedAt: '2026-08-31T10:01:00.000Z',
     ownerType: 'guest',
     ownerId: 'guest-id',
@@ -20,13 +19,13 @@ describe('Firestore Solve mapper', () => {
     penalty: '+2',
   };
 
-  it('現行SolveをTimestampと認証UIDを持つ保存形式へ変換する', () => {
+  it('現行SolveをFirestore timestamp互換のDateと認証UIDを持つ保存形式へ変換する', () => {
     const stored = toFirestoreSolve(solve, 'account-1');
 
     expect(stored.id).toBe(solve.id);
-    expect(stored.date).toBeInstanceOf(Timestamp);
-    expect(stored.date.toDate().toISOString()).toBe(solve.date);
-    expect(stored.updatedAt.toDate().toISOString()).toBe(solve.updatedAt);
+    expect(stored.createdAt).toBeInstanceOf(Date);
+    expect(stored.createdAt.toISOString()).toBe(solve.createdAt);
+    expect(stored.updatedAt.toISOString()).toBe(solve.updatedAt);
     expect(stored.ownerId).toBe('account-1');
     expect(stored.ownerType).toBe('account');
     expect(stored.schemaVersion).toBe(USER_DATA_SCHEMA_VERSION);
@@ -62,7 +61,7 @@ describe('Firestore Solve mapper', () => {
       id: solve.id,
       time: 9876,
       scramble: 'U R',
-      date: '2025-01-02T03:04:05.000Z',
+      createdAt: '2025-01-02T03:04:05.000Z',
       updatedAt: '2025-01-02T03:04:05.000Z',
       ownerType: 'account',
       ownerId: 'account-2',
@@ -76,5 +75,24 @@ describe('Firestore Solve mapper', () => {
     expect(
       fromFirestoreSolve(solve.id, { time: 'fast', scramble: 'R U' }, 'account-1'),
     ).toBeUndefined();
+  });
+  it('再送状態をFirestoreへ送らず、既存Security Rulesの形式を維持する', () => {
+    const stored = toFirestoreSolve(
+      {
+        id: 'copy',
+        time: 1000,
+        scramble: 'R',
+        createdAt: new Date(0).toISOString(),
+        updatedAt: new Date(0).toISOString(),
+        ownerType: 'account',
+        ownerId: 'target',
+        category: 'full',
+        penalty: 'none',
+        schemaVersion: 2,
+        pendingSync: true,
+      },
+      'target',
+    );
+    expect(stored).not.toHaveProperty('pendingSync');
   });
 });

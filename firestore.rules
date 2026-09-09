@@ -13,20 +13,21 @@ service cloud.firestore {
 
     function validSolve(userId, solveId, data) {
       return data.keys().hasAll([
-          'id', 'time', 'scramble', 'date', 'updatedAt', 'ownerType', 'ownerId',
+          'id', 'time', 'scramble', 'createdAt', 'updatedAt', 'ownerType', 'ownerId',
           'schemaVersion', 'category', 'penalty'
         ])
         && data.keys().hasOnly([
-          'id', 'time', 'scramble', 'date', 'updatedAt', 'ownerType', 'ownerId',
-          'schemaVersion', 'category', 'caseName', 'groupId', 'penalty'
+          'id', 'time', 'scramble', 'createdAt', 'updatedAt', 'ownerType', 'ownerId',
+          'schemaVersion', 'category', 'caseName', 'groupId', 'penalty', 'deletedAt'
         ])
         && solveId.matches('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')
         && data.id == solveId
         && data.time is number
         && data.time >= 0
         && data.scramble is string
-        && data.date is timestamp
+        && data.createdAt is timestamp
         && data.updatedAt is timestamp
+        && (!data.keys().hasAny(['deletedAt']) || data.deletedAt is timestamp)
         && data.ownerType == 'account'
         && data.ownerId == userId
         && data.schemaVersion is int
@@ -36,10 +37,27 @@ service cloud.firestore {
         && validOptionalStrings(data);
     }
 
-    match /users/{userId}/solves/{solveId} {
+    match /users/{userId}/groups/{groupId} {
       allow read: if ownsUserData(userId);
       allow create, update: if ownsUserData(userId)
+        && request.resource.data.keys().hasAll(['id', 'name', 'createdAt', 'updatedAt', 'ownerType', 'ownerId', 'schemaVersion'])
+        && request.resource.data.keys().hasOnly(['id', 'name', 'createdAt', 'updatedAt', 'deletedAt', 'ownerType', 'ownerId', 'schemaVersion'])
+        && request.resource.data.id == groupId
+        && request.resource.data.name is string && request.resource.data.name.size() > 0
+        && request.resource.data.createdAt is timestamp && request.resource.data.updatedAt is timestamp
+        && (!request.resource.data.keys().hasAny(['deletedAt']) || request.resource.data.deletedAt is timestamp)
+        && request.resource.data.ownerType == 'account' && request.resource.data.ownerId == userId
+        && request.resource.data.schemaVersion is int && request.resource.data.schemaVersion >= 1
+        && (resource == null || !resource.data.keys().hasAny(['deletedAt']) || request.resource.data.keys().hasAny(['deletedAt']));
+    }
+
+    match /users/{userId}/solves/{solveId} {
+      allow read: if ownsUserData(userId);
+      allow create: if ownsUserData(userId)
         && validSolve(userId, solveId, request.resource.data);
+      allow update: if ownsUserData(userId)
+        && validSolve(userId, solveId, request.resource.data)
+        && (!resource.data.keys().hasAny(['deletedAt']) || request.resource.data.keys().hasAny(['deletedAt']));
       allow delete: if ownsUserData(userId);
     }
   }

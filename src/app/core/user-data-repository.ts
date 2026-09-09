@@ -1,16 +1,17 @@
 import { Injectable } from '@angular/core';
 import { DBSchema, IDBPDatabase, openDB } from 'idb';
-import { AlgorithmPreference, Solve, SolveCategory, RecordGroup } from './cube.models';
+import { LocalAccount } from './account.models';
+import { AlgorithmPreference, RecordGroup, Solve, SolveCategory } from './cube.models';
 
 /** 現行ユーザーデータのスキーマバージョン。 */
-export const USER_DATA_SCHEMA_VERSION = 1;
+export const USER_DATA_SCHEMA_VERSION = 3;
 
 /** IndexedDBから復元したローカルデータ。 */
 export interface StoredUserData {
   /** 新しい順に並んだ計測記録。 */
   readonly solves: Solve[];
-  /** 未ログイン時の所有者を表す端末固有UUID。 */
-  readonly guestOwnerId: string;
+  /** このブラウザで利用したアカウントの表示台帳。 */
+  readonly accounts: LocalAccount[];
   /** 作成順に並んだユーザー定義グループ。 */
   readonly groups: RecordGroup[];
   /** ケースキーごとのユーザー追加手順とお気に入り。 */
@@ -21,6 +22,9 @@ export interface StoredUserData {
 export abstract class UserDataRepository {
   /** @returns 移行を完了したローカルデータ */
   abstract load(): Promise<StoredUserData>;
+
+  /** アカウントの表示情報だけをUID単位で保存する。 */
+  abstract putAccount(account: LocalAccount): Promise<void>;
 
   /** @param solve 追加または更新する計測記録 */
   abstract putSolve(solve: Solve): Promise<void>;
@@ -45,7 +49,7 @@ interface CubeRepsDatabase extends DBSchema {
   solves: {
     key: string;
     value: Solve;
-    indexes: { date: string; updatedAt: string; ownerId: string };
+    indexes: { createdAt: string; updatedAt: string; ownerId: string };
   };
   groups: { key: string; value: RecordGroup; indexes: { createdAt: string; ownerId: string } };
   algorithmPreferences: {
@@ -53,6 +57,7 @@ interface CubeRepsDatabase extends DBSchema {
     value: AlgorithmPreference;
     indexes: { updatedAt: string; ownerId: string };
   };
+  accounts: { key: string; value: LocalAccount };
   metadata: { key: string; value: string | number };
 }
 
@@ -93,22 +98,29 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
   /** @returns 3種類のユーザーデータを移行・復元した初期状態 */
   private async initialize(): Promise<StoredUserData> {
     const database = await this.database;
-    const guestOwnerId = await this.loadGuestOwnerId(database);
     await Promise.all([
-      this.migrateLegacySolves(database, guestOwnerId),
-      this.migrateLegacyGroups(database, guestOwnerId),
-      this.migrateLegacyAlgorithmPreferences(database, guestOwnerId),
+      this.migrateLegacySolves(database),
+      this.migrateLegacyGroups(database),
+      this.migrateLegacyAlgorithmPreferences(database),
     ]);
-    const solves = await database.getAllFromIndex('solves', 'date');
+    const solves = await database.getAllFromIndex('solves', 'createdAt');
     const groups = await database.getAllFromIndex('groups', 'createdAt');
     const algorithmPreferences = await database.getAll('algorithmPreferences');
     return {
-      solves: solves.sort((left, right) => right.date.localeCompare(left.date)),
-      guestOwnerId,
+      solves: solves.sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      accounts: await database.getAll('accounts'),
       groups,
       algorithmPreferences,
     };
   }
+  /** 認証情報を混入させず、最新のアカウント表示情報を保存する。 */
+  putAccount(account: LocalAccount): Promise<void> {
+    const { uid, displayName, email, photoURL, providerIds } = account;
+    return this.enqueueWrite(async (database) => {
+      await database.put('accounts', { uid, displayName, email, photoURL, providerIds });
+    });
+  }
+
   /** 記録を既存データへ影響させず追加または更新する。 */
   putSolve(solve: Solve): Promise<void> {
     return this.enqueueWrite(async (database) => {
@@ -160,11 +172,11 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
   }
   /** @returns 必要なストアと検索インデックスを持つデータベース */
   private openDatabase(): Promise<IDBPDatabase<CubeRepsDatabase>> {
-    return openDB<CubeRepsDatabase>(IndexedDbUserDataRepository.databaseName, 2, {
-      upgrade(database, oldVersion) {
+    return openDB<CubeRepsDatabase>(IndexedDbUserDataRepository.databaseName, 4, {
+      upgrade(database, oldVersion, _newVersion, transaction) {
         if (oldVersion < 1) {
           const solves = database.createObjectStore('solves', { keyPath: 'id' });
-          solves.createIndex('date', 'date');
+          solves.createIndex('createdAt', 'createdAt');
           solves.createIndex('updatedAt', 'updatedAt');
           solves.createIndex('ownerId', 'ownerId');
           database.createObjectStore('metadata');
@@ -179,30 +191,47 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
           preferences.createIndex('updatedAt', 'updatedAt');
           preferences.createIndex('ownerId', 'ownerId');
         }
+        if (oldVersion < 4) {
+          const solves = transaction.objectStore('solves');
+          if (solves.indexNames.contains('date' as 'createdAt'))
+            solves.deleteIndex('date' as 'createdAt');
+          if (!solves.indexNames.contains('createdAt'))
+            solves.createIndex('createdAt', 'createdAt');
+          // 計測日時を保持して旧レコードを更新し、索引から記録が抜け落ちることを防ぐ。
+          for (const name of ['solves', 'groups', 'algorithmPreferences'] as const) {
+            void (async () => {
+              let cursor = await transaction.objectStore(name).openCursor();
+              while (cursor) {
+                const { date, ...value } = cursor.value as typeof cursor.value & { date?: string };
+                const { ownerId, ...metadata } = value;
+                await cursor.update({
+                  ...metadata,
+                  ...(value.ownerType === 'account' ? { ownerId } : {}),
+                  ownerType: value.ownerType === 'account' ? 'account' : 'guest',
+                  createdAt: value.createdAt ?? date ?? value.updatedAt,
+                  schemaVersion: USER_DATA_SCHEMA_VERSION,
+                });
+                cursor = await cursor.continue();
+              }
+            })();
+          }
+        }
+        if (oldVersion < 3) {
+          database.createObjectStore('accounts', { keyPath: 'uid' });
+          void transaction.objectStore('metadata').delete('guestOwnerId');
+        }
       },
     });
   }
 
-  /** @returns IndexedDBに永続化したゲスト所有者UUID */
-  private async loadGuestOwnerId(database: IDBPDatabase<CubeRepsDatabase>): Promise<string> {
-    const stored = await database.get('metadata', 'guestOwnerId');
-    if (typeof stored === 'string' && stored) return stored;
-    const guestOwnerId = crypto.randomUUID();
-    await database.put('metadata', guestOwnerId, 'guestOwnerId');
-    return guestOwnerId;
-  }
-
   /** localStorageの旧Solveを、再試行可能かつ重複しない形で移行する。 */
-  private async migrateLegacySolves(
-    database: IDBPDatabase<CubeRepsDatabase>,
-    guestOwnerId: string,
-  ): Promise<void> {
+  private async migrateLegacySolves(database: IDBPDatabase<CubeRepsDatabase>): Promise<void> {
     const staged = this.readLegacyArray(IndexedDbUserDataRepository.migrationStorageKey);
     const legacy = staged ?? this.readLegacyArray(IndexedDbUserDataRepository.legacyStorageKey);
     if (!legacy) return;
 
     const normalized = legacy.flatMap((value) => {
-      const solve = this.normalizeLegacySolve(value, guestOwnerId);
+      const solve = this.normalizeLegacySolve(value);
       return solve ? [solve] : [];
     });
     if (!staged) {
@@ -221,16 +250,13 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
   }
 
   /** localStorageの旧グループを同期可能な形式へ移行する。 */
-  private async migrateLegacyGroups(
-    database: IDBPDatabase<CubeRepsDatabase>,
-    guestOwnerId: string,
-  ): Promise<void> {
+  private async migrateLegacyGroups(database: IDBPDatabase<CubeRepsDatabase>): Promise<void> {
     const staged = this.readLegacyArray(IndexedDbUserDataRepository.migrationGroupsStorageKey);
     const legacy =
       staged ?? this.readLegacyArray(IndexedDbUserDataRepository.legacyGroupsStorageKey);
     if (!legacy) return;
     const normalized = legacy.flatMap((value) => {
-      const group = this.normalizeLegacyGroup(value, guestOwnerId);
+      const group = this.normalizeLegacyGroup(value);
       return group ? [group] : [];
     });
     if (!staged) {
@@ -250,21 +276,20 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
   /** localStorageの旧ユーザー手順設定をケース単位のレコードへ移行する。 */
   private async migrateLegacyAlgorithmPreferences(
     database: IDBPDatabase<CubeRepsDatabase>,
-    guestOwnerId: string,
   ): Promise<void> {
     const staged = this.readLegacyArray(IndexedDbUserDataRepository.migrationAlgorithmsStorageKey);
     const legacy = this.readLegacyObject(IndexedDbUserDataRepository.legacyAlgorithmsStorageKey);
     if (!staged && !legacy) return;
     const normalized =
       staged?.flatMap((value) => {
-        const preference = this.normalizeLegacyAlgorithmPreference(value, guestOwnerId);
+        const preference = this.normalizeLegacyAlgorithmPreference(value);
         return preference ? [preference] : [];
       }) ??
       Object.entries(legacy ?? {}).flatMap(([caseKey, value]) => {
-        const preference = this.normalizeLegacyAlgorithmPreference(
-          { ...(value as object), caseKey },
-          guestOwnerId,
-        );
+        const preference = this.normalizeLegacyAlgorithmPreference({
+          ...(value as object),
+          caseKey,
+        });
         return preference ? [preference] : [];
       });
     if (!staged) {
@@ -313,7 +338,7 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
   }
 
   /** @returns 必須項目を検証して同期可能な形式へ変換したグループ */
-  private normalizeLegacyGroup(value: unknown, guestOwnerId: string): RecordGroup | undefined {
+  private normalizeLegacyGroup(value: unknown): RecordGroup | undefined {
     if (!value || typeof value !== 'object') return undefined;
     const group = value as Partial<RecordGroup>;
     if (typeof group.name !== 'string' || typeof group.createdAt !== 'string') return undefined;
@@ -323,16 +348,13 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
       createdAt: group.createdAt,
       updatedAt: group.updatedAt ?? group.createdAt,
       ownerType: group.ownerType ?? 'guest',
-      ownerId: group.ownerId ?? guestOwnerId,
+      ...(group.ownerType === 'account' ? { ownerId: group.ownerId } : {}),
       schemaVersion: USER_DATA_SCHEMA_VERSION,
     };
   }
 
   /** @returns ユーザー手順IDとお気に入り参照を同期可能な形式へ変換した設定 */
-  private normalizeLegacyAlgorithmPreference(
-    value: unknown,
-    guestOwnerId: string,
-  ): AlgorithmPreference | undefined {
+  private normalizeLegacyAlgorithmPreference(value: unknown): AlgorithmPreference | undefined {
     if (!value || typeof value !== 'object') return undefined;
     const preference = value as Partial<AlgorithmPreference>;
     if (typeof preference.caseKey !== 'string' || !Array.isArray(preference.custom))
@@ -351,9 +373,10 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
       favoriteId: preference.favoriteId
         ? (idMap.get(preference.favoriteId) ?? preference.favoriteId)
         : undefined,
+      createdAt: preference.createdAt ?? new Date().toISOString(),
       updatedAt: preference.updatedAt ?? new Date().toISOString(),
       ownerType: preference.ownerType ?? 'guest',
-      ownerId: preference.ownerId ?? guestOwnerId,
+      ...(preference.ownerType === 'account' ? { ownerId: preference.ownerId } : {}),
       schemaVersion: USER_DATA_SCHEMA_VERSION,
     };
   }
@@ -364,13 +387,14 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
   }
 
   /** @returns 必須項目を検証して現行形式へ変換したSolve */
-  private normalizeLegacySolve(value: unknown, guestOwnerId: string): Solve | undefined {
+  private normalizeLegacySolve(value: unknown): Solve | undefined {
     if (!value || typeof value !== 'object') return undefined;
-    const solve = value as Partial<Solve>;
+    const solve = value as Partial<Solve> & { date?: string };
+    const createdAt = solve.createdAt ?? solve.date;
     if (
       typeof solve.time !== 'number' ||
       typeof solve.scramble !== 'string' ||
-      typeof solve.date !== 'string' ||
+      typeof createdAt !== 'string' ||
       !this.isCategory(solve.category)
     ) {
       return undefined;
@@ -379,10 +403,10 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
       id: typeof solve.id === 'string' && solve.id ? solve.id : crypto.randomUUID(),
       time: solve.time,
       scramble: solve.scramble,
-      date: solve.date,
-      updatedAt: solve.updatedAt ?? solve.date,
+      createdAt,
+      updatedAt: solve.updatedAt ?? createdAt,
       ownerType: solve.ownerType ?? 'guest',
-      ownerId: solve.ownerId ?? guestOwnerId,
+      ...(solve.ownerType === 'account' ? { ownerId: solve.ownerId } : {}),
       schemaVersion: USER_DATA_SCHEMA_VERSION,
       category: solve.category,
       caseName: solve.caseName,

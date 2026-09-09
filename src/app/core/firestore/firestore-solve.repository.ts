@@ -1,14 +1,13 @@
-import { Injectable } from '@angular/core';
-import type { Firestore } from 'firebase/firestore';
+import { inject, Injectable } from '@angular/core';
 import { Solve } from '../cube.models';
-import { firebaseConfig } from '../auth/firebase.config';
+import { FirestoreConnection } from './firestore-connection';
 import { fromFirestoreSolve, toFirestoreSolve } from './firestore-solve.mapper';
 
 /** ログインユーザー単位でCloud FirestoreのSolveをCRUDするデータアクセスサービス。 */
 @Injectable({ providedIn: 'root' })
 export class FirestoreSolveRepository {
-  /** 初期化済みFirebaseアプリに紐づくFirestoreクライアント。 */
-  private readonly firestore = this.initializeFirestore();
+  /** 初回のクラウド操作時だけ作成して共有するFirestoreクライアント。 */
+  private readonly connection = inject(FirestoreConnection);
 
   /**
    * UUIDをドキュメントIDとしてSolveを追加または置換する。
@@ -17,14 +16,32 @@ export class FirestoreSolveRepository {
    * @param solve 保存する計測記録
    */
   async put(userId: string, solve: Solve): Promise<void> {
-    const [firestore, { doc, setDoc }] = await Promise.all([
-      this.firestore,
+    const [firestore, { doc, serverTimestamp, setDoc }] = await Promise.all([
+      this.connection.client(),
       import('firebase/firestore'),
     ]);
-    await setDoc(
-      doc(firestore, 'users', userId, 'solves', solve.id),
-      toFirestoreSolve(solve, userId),
-    );
+    await setDoc(doc(firestore, 'users', userId, 'solves', solve.id), {
+      ...toFirestoreSolve(solve, userId),
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  /**
+   * アカウント所有Solveを物理削除せずtombstoneへ更新する。
+   *
+   * @param userId Firebase AuthenticationのUID
+   * @param solve 削除直前の計測記録
+   */
+  async tombstone(userId: string, solve: Solve): Promise<void> {
+    const [firestore, { doc, serverTimestamp, setDoc }] = await Promise.all([
+      this.connection.client(),
+      import('firebase/firestore'),
+    ]);
+    await setDoc(doc(firestore, 'users', userId, 'solves', solve.id), {
+      ...toFirestoreSolve(solve, userId),
+      deletedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
   }
 
   /**
@@ -35,17 +52,17 @@ export class FirestoreSolveRepository {
    * @returns 現行形式へ変換した計測記録
    */
   async list(userId: string): Promise<Solve[]> {
-    const [firestore, { collection, getDocs, orderBy, query }] = await Promise.all([
-      this.firestore,
+    const [firestore, { collection, getDocs }] = await Promise.all([
+      this.connection.client(),
       import('firebase/firestore'),
     ]);
-    const snapshot = await getDocs(
-      query(collection(firestore, 'users', userId, 'solves'), orderBy('date', 'desc')),
-    );
-    return snapshot.docs.flatMap((item) => {
-      const solve = fromFirestoreSolve(item.id, item.data(), userId);
-      return solve ? [solve] : [];
-    });
+    const snapshot = await getDocs(collection(firestore, 'users', userId, 'solves'));
+    return snapshot.docs
+      .flatMap((item) => {
+        const solve = fromFirestoreSolve(item.id, item.data(), userId);
+        return solve ? [solve] : [];
+      })
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
   }
 
   /**
@@ -57,7 +74,7 @@ export class FirestoreSolveRepository {
    */
   async get(userId: string, solveId: string): Promise<Solve | undefined> {
     const [firestore, { doc, getDoc }] = await Promise.all([
-      this.firestore,
+      this.connection.client(),
       import('firebase/firestore'),
     ]);
     const snapshot = await getDoc(doc(firestore, 'users', userId, 'solves', solveId));
@@ -72,18 +89,9 @@ export class FirestoreSolveRepository {
    */
   async delete(userId: string, solveId: string): Promise<void> {
     const [firestore, { deleteDoc, doc }] = await Promise.all([
-      this.firestore,
+      this.connection.client(),
       import('firebase/firestore'),
     ]);
     await deleteDoc(doc(firestore, 'users', userId, 'solves', solveId));
-  }
-
-  /** Firebase SDKを遅延ロードしてFirestoreクライアントを初期化する。 */
-  private async initializeFirestore(): Promise<Firestore> {
-    const [{ getApp, getApps, initializeApp }, { getFirestore }] = await Promise.all([
-      import('firebase/app'),
-      import('firebase/firestore'),
-    ]);
-    return getFirestore(getApps().length > 0 ? getApp() : initializeApp(firebaseConfig));
   }
 }

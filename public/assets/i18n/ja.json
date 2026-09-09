@@ -8,18 +8,48 @@
   },
   "auth": {
     "checking": "ログイン状態を確認しています…",
-    "signIn": "Googleでログイン",
+    "signIn": {
+      "google": "Sign in with Google"
+    },
     "signingIn": "ログインしています…",
     "signOut": "ログアウト",
-    "failed": "認証に失敗しました。もう一度お試しください。"
+    "failed": "認証に失敗しました。もう一度お試しください。",
+    "profile": "プロフィール",
+    "account": "アカウント",
+    "guest": "ゲストアカウント",
+    "login": "ログイン",
+    "loginDescription": [
+      "ログインすると記録はクラウドに保存され端末間で同期できます。",
+      "ログインしなくても利用できますが、記録はブラウザ内に保存されるため他端末とは同期されません。"
+    ],
+    "signedIn": "ログインしました。",
+    "continueToTimer": "タイマーへ進む",
+    "continueWithoutLogin": "ログインしないで利用する"
+  },
+  "sync": {
+    "signed-out": "端末内のみ",
+    "syncing": "同期中",
+    "synced": "同期済み",
+    "offline": "オフライン",
+    "pending": "未同期の変更あり",
+    "error": "同期失敗 — 再試行"
   },
   "routes": {
     "timer": "PRACTICE SESSION",
     "algorithms": "ALGORITHM LIBRARY",
-    "history": "YOUR PROGRESS"
+    "history": "YOUR PROGRESS",
+    "login": "ログイン"
   },
-  "nav": { "timer": "タイマー", "history": "記録", "totalSolves": "総ソルブ数" },
-  "solveCategories": { "full": "フルソルブ", "oll": "OLL練習", "pll": "PLL練習" },
+  "nav": {
+    "timer": "タイマー",
+    "history": "記録",
+    "totalSolves": "総ソルブ数"
+  },
+  "solveCategories": {
+    "full": "フルソルブ",
+    "oll": "OLL練習",
+    "pll": "PLL練習"
+  },
   "common": {
     "ok": "OK",
     "cancel": "キャンセル",
@@ -29,6 +59,7 @@
     "no": "いいえ",
     "delete": "削除",
     "add": "追加",
+    "retry": "再試行",
     "best": "ベスト",
     "mean": "平均",
     "ao5": "Ao5",
@@ -126,5 +157,18 @@
     "deleteSolve": "削除",
     "deleteSolveTitle": "記録を削除しますか？",
     "deleteSolveMessage": "選択した計測記録を削除します。\nこの操作は取り消せません。"
+  },
+  "ownership": {
+    "owner": "所有者",
+    "all": "すべて",
+    "unlinked": "アカウント未紐づけ",
+    "selectSolve": "記録{{number}}を選択",
+    "copiedFrom": "コピー元の記録",
+    "move": "現在のアカウントへ移行",
+    "copy": "現在のアカウントへコピー",
+    "selected": "{{count}}件を選択中",
+    "confirm": "選択した{{count}}件を処理します。\n移行元・コピー元: {{from}}\n移行先・コピー先: {{to}}\n元の記録はこのブラウザに残ります。",
+    "result": "保存済み: {{completed}}件。未処理: {{failed}}件。クラウドへの保存は同期状態で確認できます。未処理の記録は再選択してやり直せます。",
+    "savedGroup": "保存済みグループ"
   }
 }

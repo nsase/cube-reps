@@ -1,0 +1,11 @@
+:host {
+  display: grid;
+  --mat-button-filled-label-text-color: #1f1f1f;
+  --mat-button-filled-container-color: white;
+  --mat-button-filled-label-text-font: 'Roboto', arial, sans-serif;
+  --mat-button-filled-label-text-weight: 500;
+}
+
+button {
+  border: 1px solid #747775;
+}

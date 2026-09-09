@@ -7,7 +7,7 @@ $muted: var(--text-muted-color);
 
 .history {
   display: grid;
-  grid-template-columns: 56px 90px 70px 70px 120px 120px minmax(260px, 1fr);
+  grid-template-columns: 48px 56px 48px 90px 70px 70px 120px 120px minmax(260px, 1fr);
   overflow: hidden;
   border: 1px solid $line;
   border-radius: 9px;
@@ -64,7 +64,7 @@ mat-paginator {
 
 @media (max-width: 1200px) {
   .history {
-    grid-template-columns: 52px 85px 65px 65px 105px minmax(58px, 1fr);
+    grid-template-columns: 48px 52px 48px 85px 65px 65px 105px minmax(58px, 1fr);
   }
 
   .column-actions {
@@ -74,11 +74,16 @@ mat-paginator {
 
 @media (max-width: 620px) {
   .history {
-    grid-template-columns: 44px 55px 47px 47px 79px minmax(51px, 1fr);
+    grid-template-columns: 40px 32px 48px minmax(65px, 1fr) 45px 45px;
+  }
+
+  .column-date,
+  .column-group {
+    display: none;
   }
 
   .history-header {
-    gap: 6px;
+    gap: 4px;
     padding: 8px 10px;
     font-size: 10px;
   }

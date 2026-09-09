@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { CubeService } from '../../core/cube';
 import { AppUpdateService } from '../../core/app-update.service';
+import { CubeService } from '../../core/cube';
 import type { CaseAlgorithm } from '../../core/cube.models';
 import { TimerStore } from './timer.store';
 
@@ -49,9 +49,9 @@ describe('TimerStore', () => {
 
     expect(store.state()).toBe('idle');
     expect(updates.showUpdateNotice()).toBe(true);
-    expect(cube.solves()[0].time).toBe(1234);
-    expect(cube.solves()[0].category).toBe('full');
-    expect(store.completedSolve()?.id).toBe(cube.solves()[0].id);
+    expect(cube.activeSolves()[0].time).toBe(1234);
+    expect(cube.activeSolves()[0].category).toBe('full');
+    expect(store.completedSolve()?.id).toBe(cube.activeSolves()[0].id);
     expect(cube.createScramble).toHaveBeenCalledTimes(2);
     vi.useRealTimers();
   });
@@ -127,8 +127,8 @@ describe('TimerStore', () => {
     store.elapsed.set(2000);
     store.press();
 
-    expect(cube.solves()[0].category).toBe('pll');
-    expect(cube.solves()[0].caseName).toBe(expectedCase);
+    expect(cube.activeSolves()[0].category).toBe('pll');
+    expect(cube.activeSolves()[0].caseName).toBe(expectedCase);
   });
 
   it('PLLモードではランダムを初期選択する', () => {
@@ -205,8 +205,8 @@ describe('TimerStore', () => {
     store.elapsed.set(1500);
     store.press();
 
-    expect(cube.solves()[0].category).toBe('oll');
-    expect(cube.solves()[0].caseName).toBe('01');
+    expect(cube.activeSolves()[0].category).toBe('oll');
+    expect(cube.activeSolves()[0].caseName).toBe('01');
   });
 
   it('OLL・PLLの全ケースで定義済みSetupをスクランブルに使う', () => {

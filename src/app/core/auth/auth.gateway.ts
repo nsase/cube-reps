@@ -2,15 +2,17 @@ import { Injectable } from '@angular/core';
 import type { Auth } from 'firebase/auth';
 import { firebaseConfig } from './firebase.config';
 
-/** UIと認証状態が参照するGoogleアカウント情報。 */
+/** UIと認証状態が参照するアカウント情報。 */
 export interface AuthenticatedUser {
+  /** 表示台帳に保持する認証プロバイダー識別子。 */
+  providerIds?: string[];
   /** Firebase内でアカウントを一意に識別するUID。 */
   uid: string;
-  /** Googleアカウントの表示名。 */
+  /** アカウントの表示名。 */
   displayName: string | null;
-  /** Googleアカウントのメールアドレス。 */
+  /** アカウントのメールアドレス。 */
   email: string | null;
-  /** Googleアカウントのプロフィール画像URL。 */
+  /** アカウントのプロフィール画像URL。 */
   photoURL: string | null;
 }
 
@@ -41,7 +43,7 @@ export abstract class AuthGateway {
   abstract observe(next: (user: AuthenticatedUser | null) => void, error: () => void): () => void;
 
   /** Googleアカウント選択画面を開いてログインする。 */
-  abstract signIn(): Promise<void>;
+  abstract signInWithGoogle(): Promise<void>;
 
   /** 現在のFirebaseセッションからログアウトする。 */
   abstract signOut(): Promise<void>;
@@ -70,6 +72,7 @@ export class FirebaseAuthGateway extends AuthGateway {
                     displayName: user.displayName,
                     email: user.email,
                     photoURL: user.photoURL,
+                    providerIds: user.providerData?.map(({ providerId }) => providerId) ?? [],
                   }
                 : null,
             ),
@@ -84,7 +87,7 @@ export class FirebaseAuthGateway extends AuthGateway {
   }
 
   /** @inheritdoc */
-  override async signIn(): Promise<void> {
+  override async signInWithGoogle(): Promise<void> {
     const [auth, { GoogleAuthProvider, signInWithPopup }] = await Promise.all([
       this.auth,
       import('firebase/auth'),

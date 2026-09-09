@@ -6,11 +6,21 @@ on:
       - develop
       - main
 
+  workflow_dispatch:
+    inputs:
+      browser_scope:
+        description: Browser test scope (pr matches develop, all matches main)
+        type: choice
+        options:
+          - all
+          - pr
+        default: all
+
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name }}-${{ inputs.browser_scope }}
   cancel-in-progress: true
 
 jobs:
@@ -52,5 +62,10 @@ jobs:
       - name: Firestore emulator test
         run: npm run test:firestore
 
-      - name: Browser test
+      - name: Browser test (desktop-wide)
+        if: github.event.pull_request.base.ref == 'develop' || (github.event_name == 'workflow_dispatch' && inputs.browser_scope == 'pr')
+        run: npm run test:e2e:pr
+
+      - name: Browser test (all 7 projects)
+        if: github.event.pull_request.base.ref == 'main' || (github.event_name == 'workflow_dispatch' && inputs.browser_scope == 'all')
         run: npm run test:e2e

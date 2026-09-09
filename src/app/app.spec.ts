@@ -18,6 +18,7 @@ describe('App', () => {
       imports: [App],
       providers: [provideRouter(routes)],
     }).compileComponents();
+    await TestBed.inject(CubeService).ready;
   });
 
   afterEach(() => vi.restoreAllMocks());
@@ -144,12 +145,12 @@ describe('App', () => {
 
   it('履歴を100件ずつ表示し、Paginatorの言語切替を反映する', async () => {
     const cube = TestBed.inject(CubeService);
-    cube.solves.set(
+    cube.storedSolves.set(
       Array.from({ length: 101 }, (_, index) => ({
         id: String(index + 1),
         time: 1000 + index,
         scramble: 'R U',
-        date: new Date(index).toISOString(),
+        createdAt: new Date(index).toISOString(),
         updatedAt: new Date(index).toISOString(),
         ownerType: 'guest',
         ownerId: 'guest-test',
@@ -186,12 +187,12 @@ describe('App', () => {
 
   it('保存済みSolveの総数を日英のラベルとともに表示する', async () => {
     const cube = TestBed.inject(CubeService);
-    cube.solves.set([
+    cube.storedSolves.set([
       {
         id: 'past-solve',
         time: 1000,
         scramble: 'R U',
-        date: new Date(0).toISOString(),
+        createdAt: new Date(0).toISOString(),
         updatedAt: new Date(0).toISOString(),
         ownerType: 'guest',
         ownerId: 'guest-test',
@@ -204,7 +205,7 @@ describe('App', () => {
         id: 'recent-solve',
         time: 2000,
         scramble: 'F R',
-        date: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         ownerType: 'guest',
         ownerId: 'guest-test',
@@ -250,8 +251,10 @@ describe('App', () => {
 
     expect(fixture.nativeElement.querySelector('nav a em')?.textContent).toContain('タイマー');
     expect(
-      fixture.nativeElement.querySelector('[data-testid="google-sign-in"]')?.textContent,
-    ).toContain('Googleでログイン');
+      fixture.nativeElement
+        .querySelector('[data-testid="profile-menu-trigger"]')
+        ?.getAttribute('aria-label'),
+    ).toContain('プロフィール');
     expect(fixture.nativeElement.querySelector('app-timer-settings strong')?.textContent).toContain(
       '未分類',
     );

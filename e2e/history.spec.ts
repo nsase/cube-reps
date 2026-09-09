@@ -75,9 +75,9 @@ test('旧localStorageの記録をIndexedDBへ移行して履歴に表示する',
 
   expect(migrated.id).toMatch(/^[0-9a-f-]{36}$/i);
   expect(migrated.ownerType).toBe('guest');
-  expect(migrated.ownerId).toMatch(/^[0-9a-f-]{36}$/i);
+  expect(migrated.ownerId).toBeUndefined();
   expect(migrated.updatedAt).toBe('2026-01-01T00:00:00.000Z');
-  expect(migrated.schemaVersion).toBe(1);
+  expect(migrated.schemaVersion).toBe(3);
   expect(await page.evaluate(() => localStorage.getItem('cube-reps.solves'))).toBeNull();
   const related = await page.evaluate(
     () =>
@@ -102,13 +102,11 @@ test('旧localStorageの記録をIndexedDBへ移行して履歴に表示する',
   );
   expect(related.groups[0]).toMatchObject({
     id: 'competition',
-    ownerId: migrated.ownerId,
-    schemaVersion: 1,
+    schemaVersion: 3,
   });
   expect(related.preferences[0]).toMatchObject({
     caseKey: 'PLL-Aa',
-    ownerId: migrated.ownerId,
-    schemaVersion: 1,
+    schemaVersion: 3,
   });
   const custom = related.preferences[0]['custom'] as Array<{ id: string }>;
   expect(custom[0].id).toMatch(/^[0-9a-f-]{36}$/i);
@@ -289,9 +287,12 @@ test(
     await expect(firstRecord.locator('time')).toBeVisible();
     await expect(firstRecord.locator('code')).toHaveCount(0);
 
-    const headerCells = header.locator('[role="columnheader"]');
+    const compact = (page.viewportSize()?.width ?? 1440) <= 620;
+    const headerCells = header.locator('[role="columnheader"]:visible');
     const recordCells = firstRecord.locator(
-      '.record-number, .result, .ao5, .ao12, time, .group-badge',
+      compact
+        ? '.record-number, .result, .ao5, .ao12'
+        : '.record-number, .result, .ao5, .ao12, time, .group-badge',
     );
     const [headerPositions, recordPositions] = await Promise.all([
       headerCells.evaluateAll((cells) => cells.map((cell) => cell.getBoundingClientRect().x)),
@@ -301,6 +302,11 @@ test(
     recordPositions.forEach((position, index) => {
       expect(Math.abs(position - headerPositions[index])).toBeLessThanOrEqual(1);
     });
+    if (compact) {
+      const result = (await firstRecord.locator('.result').boundingBox())!;
+      const date = (await firstRecord.locator('time').boundingBox())!;
+      expect(date.y).toBeGreaterThanOrEqual(result.y + result.height);
+    }
     const numberFitsColumn = await firstRecord.locator('.record-number').evaluate((number) => {
       return number.scrollWidth <= number.clientWidth;
     });
@@ -368,3 +374,80 @@ test(
     await expect(dialog.locator('.result')).toHaveText('3.00+');
   },
 );
+
+test('グループ未取得の記録を選択でき、取得後も同じ分類で履歴を参照できる', async ({ page }) => {
+  // 別端末のSolveだけが先にキャッシュへ届いた状態を用意する。
+  await page.evaluate(async () => {
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('cube-reps');
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction('solves', 'readwrite');
+        tx.objectStore('solves').put({
+          id: 'orphan-solve',
+          groupId: 'other-device-group',
+          time: 1234,
+          scramble: 'R U',
+          category: 'full',
+          penalty: 'none',
+          ownerType: 'account',
+          ownerId: 'other-device-user',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+          schemaVersion: 3,
+        });
+        tx.onerror = () => {
+          db.close();
+          reject(tx.error);
+        };
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+      };
+    });
+  });
+  await page.reload();
+  const groups = page.getByTestId('history-group-filter');
+  await groups.selectOption('other-device-group');
+  await expect(page.locator('app-solve-record')).toHaveCount(1);
+  await expect(page.locator('app-solve-record')).toContainText('1.23');
+  await expect(page.locator('app-history-summary')).toContainText('1.23');
+  await expect(page.locator('[data-series="result"]')).toHaveCount(1);
+
+  // 遅れて届いたグループを保存し、起動後も選択と記録が維持されることを確認する。
+  await page.evaluate(async () => {
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('cube-reps');
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction('groups', 'readwrite');
+        tx.objectStore('groups').put({
+          id: 'other-device-group',
+          name: 'Other device practice',
+          ownerType: 'account',
+          ownerId: 'other-device-user',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+          schemaVersion: 3,
+        });
+        tx.onerror = () => {
+          db.close();
+          reject(tx.error);
+        };
+        tx.oncomplete = () => {
+          db.close();
+          resolve();
+        };
+      };
+    });
+  });
+  await page.reload();
+  await expect(groups).toHaveValue('other-device-group');
+  await expect(groups.locator('option:checked')).toHaveText('Other device practice');
+  await expect(page.locator('app-solve-record')).toHaveCount(1);
+  await expect(page.locator('app-solve-record')).toContainText('Other device practice');
+  await expect(page.locator('[data-series="result"]')).toHaveCount(1);
+});
