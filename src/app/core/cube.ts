@@ -164,7 +164,7 @@ export class CubeService {
     const changedGroups: RecordGroup[] = [];
     for (const remote of remoteGroups) {
       const local = groupsById.get(remote.id);
-      if (local && !this.remoteWins(local, remote)) continue;
+      if (local && !this.remoteGroupWins(local, remote)) continue;
       groupsById.set(remote.id, remote);
       changedGroups.push(remote);
     }
@@ -660,6 +660,19 @@ export class CubeService {
 
     // データのロードが完了し、データが更新可能な状態になったことを通知する
     this.storageReady.set(true);
+  }
+
+  /**
+   * グループの削除を通常更新より優先して、古い端末からの復活を防ぐ。
+   * 通常版同士では未送信の変更を保持し、同期済みの版を更新日時で比較する。
+   *
+   * @param local 端末に保持しているグループ
+   * @param remote クラウドから取得したグループ
+   * @returns 取得した版を採用する場合はtrue
+   */
+  private remoteGroupWins(local: RecordGroup, remote: RecordGroup): boolean {
+    if (Boolean(local.deletedAt) !== Boolean(remote.deletedAt)) return !!remote.deletedAt;
+    return this.remoteWins(local, remote);
   }
 
   /**
