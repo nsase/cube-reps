@@ -23,8 +23,8 @@
       "You can use the app without signing in, but your records are saved only in this browser and will not sync with other devices."
     ],
     "signedIn": "You are signed in.",
-    "continueToTimer": "Continue without signing in",
-    "backToTimer": "Continue to Timer"
+    "continueToTimer": "Continue to Timer",
+    "continueWithoutLogin": "Continue without signing in"
   },
   "sync": {
     "signed-out": "Local only",

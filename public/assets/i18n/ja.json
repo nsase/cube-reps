@@ -23,8 +23,8 @@
       "ログインしなくても利用できますが、記録はブラウザ内に保存されるため他端末とは同期されません。"
     ],
     "signedIn": "ログインしました。",
-    "continueToTimer": "ログインしないで利用する",
-    "backToTimer": "タイマーへ進む"
+    "continueToTimer": "タイマーへ進む",
+    "continueWithoutLogin": "ログインしないで利用する"
   },
   "sync": {
     "signed-out": "端末内のみ",
