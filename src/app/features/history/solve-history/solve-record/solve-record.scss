@@ -41,44 +41,21 @@ $muted: var(--text-muted-color);
   gap: 4px;
 }
 
-.group-badge {
-  overflow: hidden;
-  max-width: 80px;
-  padding: 4px 6px;
-  border-radius: 4px;
-  background: #f0f1e9;
-  color: #64702f;
-  font-size: var(--font-size-small);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-@media (max-width: 1200px) {
-  .row-actions {
-    grid-column: 1 / -1;
+@container (max-width: 300px) {
+  app-solve-actions {
+    display: none;
   }
 }
 
-@media (max-width: 620px) {
-  :host {
-    gap: 4px;
-    padding: 10px;
+@media (max-width: 680px) {
+  .ao5,
+  .ao12 {
+    display: none;
   }
+}
 
-  .row-actions {
-    grid-column: 1 / -1;
-  }
-
+@media (max-width: 450px) {
   time {
-    grid-column: 2 / 5;
+    display: none;
   }
-
-  .group-badge {
-    grid-column: 5 / -1;
-    max-width: 100%;
-  }
-}
-
-.row-actions {
-  flex-wrap: wrap;
 }

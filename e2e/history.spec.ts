@@ -196,7 +196,16 @@ test('記録グループの削除後も所属記録を未分類で表示する',
   await expect(targetGroup).toHaveCount(0);
   await expect(page.getByTestId('history-group-filter')).toHaveValue('unclassified');
   await expect(page.locator('app-solve-record')).toHaveCount(1);
-  await expect(page.locator('app-solve-record .group-badge')).toHaveText(/未分類|Unclassified/);
+  await page.getByRole('button', { name: /計測記録の詳細を表示|View solve details/ }).click();
+  await expect(
+    page
+      .getByRole('dialog')
+      .locator('dl > div')
+      .filter({
+        has: page.locator('dt', { hasText: /記録グループ|Record group/ }),
+      })
+      .locator('dd'),
+  ).toHaveText(/未分類|Unclassified/);
 });
 
 test('途中のDNFを飛ばして前後の結果を線でつなぐ', async ({ page }) => {
@@ -278,21 +287,24 @@ test(
     await expect(header).toContainText('Ao5');
     await expect(header).toContainText('Ao12');
     await expect(header).toContainText(/日時|Date/);
-    await expect(header).toContainText(/記録先|Record group/);
+    await expect(header).not.toContainText(/記録先|Record group/);
     await expect(firstRecord.locator('.ao5')).toHaveText('3.00');
     await expect(firstRecord.locator('.ao12')).toHaveText('6.50');
     await expect(firstRecord.locator('.record-number')).toHaveText('1234');
     await expect(firstRecord).not.toContainText('フルソルブ');
     await expect(firstRecord).not.toContainText('Ao5');
-    await expect(firstRecord.locator('time')).toBeVisible();
+    const viewportWidth = page.viewportSize()!.width;
+    await expect(header.locator('.column-ao5')).toBeVisible({ visible: viewportWidth > 680 });
+    await expect(header.locator('.column-ao12')).toBeVisible({ visible: viewportWidth > 680 });
+    await expect(firstRecord.locator('.ao5')).toBeVisible({ visible: viewportWidth > 680 });
+    await expect(firstRecord.locator('.ao12')).toBeVisible({ visible: viewportWidth > 680 });
+    await expect(header.locator('.column-date')).toBeVisible({ visible: viewportWidth > 450 });
+    await expect(firstRecord.locator('time')).toBeVisible({ visible: viewportWidth > 450 });
     await expect(firstRecord.locator('code')).toHaveCount(0);
 
-    const compact = (page.viewportSize()?.width ?? 1440) <= 620;
     const headerCells = header.locator('[role="columnheader"]:visible');
     const recordCells = firstRecord.locator(
-      compact
-        ? '.record-number, .result, .ao5, .ao12'
-        : '.record-number, .result, .ao5, .ao12, time, .group-badge',
+      '.record-number:visible, .result:visible, .ao5:visible, .ao12:visible, time:visible',
     );
     const [headerPositions, recordPositions] = await Promise.all([
       headerCells.evaluateAll((cells) => cells.map((cell) => cell.getBoundingClientRect().x)),
@@ -302,11 +314,19 @@ test(
     recordPositions.forEach((position, index) => {
       expect(Math.abs(position - headerPositions[index])).toBeLessThanOrEqual(1);
     });
-    if (compact) {
-      const result = (await firstRecord.locator('.result').boundingBox())!;
-      const date = (await firstRecord.locator('time').boundingBox())!;
-      expect(date.y).toBeGreaterThanOrEqual(result.y + result.height);
+    // 非表示の情報を除いたすべてのセルが、折り返さず同じ行に収まることを確認する。
+    const rowBoxes = await firstRecord.locator(':scope > :visible').evaluateAll((cells) =>
+      cells.map((cell) => {
+        const box = cell.getBoundingClientRect();
+        return { left: box.left, right: box.right, center: box.top + box.height / 2 };
+      }),
+    );
+    const rowCenters = rowBoxes.map((box) => box.center);
+    expect(Math.max(...rowCenters) - Math.min(...rowCenters)).toBeLessThanOrEqual(1);
+    for (let index = 1; index < rowBoxes.length; index++) {
+      expect(rowBoxes[index].left).toBeGreaterThanOrEqual(rowBoxes[index - 1].right);
     }
+    await expectNoHorizontalOverflow(page);
     const numberFitsColumn = await firstRecord.locator('.record-number').evaluate((number) => {
       return number.scrollWidth <= number.clientWidth;
     });
@@ -322,14 +342,28 @@ test(
     }
     if (testInfo.project.name === 'pixel-7') {
       await expect(firstRecord.locator('.wide-action.row-retry')).toBeHidden();
-      await expect(firstRecord.locator('.compact-action.row-retry')).toBeVisible();
+      await expect(firstRecord.locator('.compact-action.row-retry')).toBeHidden();
+      await expect(firstRecord.locator('.row-actions button:visible')).toHaveCount(1);
+      await expect(
+        firstRecord.getByRole('button', {
+          name: /計測記録の詳細を表示|View solve details/,
+        }),
+      ).toBeVisible();
     }
-    const actionGap = await firstRecord.locator('.row-actions').evaluate((actions) => {
-      const details = actions.querySelector<HTMLElement>('.row-details')!;
-      const firstSolveAction = actions.querySelector<HTMLElement>('app-solve-actions button')!;
-      return firstSolveAction.getBoundingClientRect().left - details.getBoundingClientRect().right;
-    });
-    expect(actionGap).toBeLessThanOrEqual(8);
+    // 操作が表示される幅では詳細ボタンとの重なりと余分な間隔を検出する。
+    const actionBoxes = await firstRecord
+      .locator('.row-actions button:visible')
+      .evaluateAll((buttons) =>
+        buttons.map((button) => {
+          const box = button.getBoundingClientRect();
+          return { left: box.left, right: box.right };
+        }),
+      );
+    for (let index = 1; index < actionBoxes.length; index++) {
+      const gap = actionBoxes[index].left - actionBoxes[index - 1].right;
+      expect(gap).toBeGreaterThanOrEqual(0);
+      expect(gap).toBeLessThanOrEqual(8);
+    }
 
     const detailsButton = firstRecord.getByRole('button', {
       name: /計測記録の詳細を表示|View solve details/,
@@ -346,6 +380,7 @@ test(
     await expectElementsWithin(page, '[role="dialog"]', '.solve-actions button');
     await expect(dialog.locator('.record-number')).toHaveText('1234');
     await expect(dialog.locator('.result')).toHaveText('1.00');
+    await expect(dialog.locator('.recorded-date')).toBeVisible();
     await expect(dialog.locator('code')).toHaveText(scramble);
     await expect(dialog.locator('app-solve-pattern')).toBeVisible();
     await expect(dialog.getByRole('button', { name: '+2' })).toBeVisible();
@@ -448,6 +483,8 @@ test('グループ未取得の記録を選択でき、取得後も同じ分類�
   await expect(groups).toHaveValue('other-device-group');
   await expect(groups.locator('option:checked')).toHaveText('Other device practice');
   await expect(page.locator('app-solve-record')).toHaveCount(1);
-  await expect(page.locator('app-solve-record')).toContainText('Other device practice');
+  await expect(page.locator('app-solve-record')).not.toContainText('Other device practice');
+  await page.getByRole('button', { name: /計測記録の詳細を表示|View solve details/ }).click();
+  await expect(page.getByRole('dialog')).toContainText('Other device practice');
   await expect(page.locator('[data-series="result"]')).toHaveCount(1);
 });
