@@ -83,16 +83,18 @@ describe('SolveRecord', () => {
     expect(changed).toHaveBeenCalledOnce();
   });
 
-  it('言語に応じて年なしの短い計測日時を表示する', () => {
+  it('言語切替後もグループ名を一覧に表示せず、年なしの短い計測日時を表示する', () => {
     const i18n = TestBed.inject(TranslocoService);
     i18n.setActiveLang('en');
-    const { fixture } = createFixture();
+    const { cube, fixture, solve } = createFixture();
     const date = fixture.nativeElement.querySelector('time') as HTMLElement;
     expect(date.textContent).toBe('Aug 24, 09:28');
+    expect(fixture.nativeElement.textContent).not.toContain(cube.groupName(solve.groupId));
 
     i18n.setActiveLang('ja');
     fixture.detectChanges();
 
     expect(date.textContent).toBe('08/24 09:28');
+    expect(fixture.nativeElement.textContent).not.toContain(cube.groupName(solve.groupId));
   });
 });
