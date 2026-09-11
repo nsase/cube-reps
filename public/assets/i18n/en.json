@@ -44,7 +44,6 @@
   "nav": {
     "timer": "Timer",
     "history": "History",
-    "totalSolves": "Total Solves",
     "settings": "Settings"
   },
   "solveCategories": {

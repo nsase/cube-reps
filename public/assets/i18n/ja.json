@@ -44,7 +44,6 @@
   "nav": {
     "timer": "タイマー",
     "history": "記録",
-    "totalSolves": "総ソルブ数",
     "settings": "設定"
   },
   "solveCategories": {

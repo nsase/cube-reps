@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { filter, map } from 'rxjs';
-import { SettingsStore } from './core/settings.store';
 import { CubeService } from './core/cube';
 import { FirestoreSyncService } from './core/firestore/firestore-sync.service';
 import { LocalSyncService } from './core/local/local-sync.service';
+import { SettingsStore } from './core/settings.store';
+import { Nav } from './nav';
 import { AppUpdate } from './shared/app-update/app-update';
 import { AuthControls } from './shared/auth-controls/auth-controls';
 import { SyncStatus } from './shared/sync-status/sync-status';
@@ -14,15 +15,7 @@ import { SyncStatus } from './shared/sync-status/sync-status';
 /** 共通レイアウトとルーターOutletを表示するルートコンポーネント。 */
 @Component({
   selector: 'app-root',
-  imports: [
-    AppUpdate,
-    AuthControls,
-    SyncStatus,
-    RouterLink,
-    RouterLinkActive,
-    RouterOutlet,
-    TranslocoPipe,
-  ],
+  imports: [AppUpdate, AuthControls, SyncStatus, RouterLink, RouterOutlet, TranslocoPipe, Nav],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
