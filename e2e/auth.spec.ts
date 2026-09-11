@@ -37,16 +37,15 @@ test(
       timeout: 15_000,
     });
     await expectNoHorizontalOverflow(page);
-    const languageBox = await page.getByTestId('language-select').boundingBox();
-    const profileBox = await profile.boundingBox();
-    expect(languageBox!.x + languageBox!.width).toBeLessThanOrEqual(profileBox!.x);
     const menuBox = await page.getByRole('menu').boundingBox();
     expect(menuBox!.x).toBeGreaterThanOrEqual(0);
     expect(menuBox!.x + menuBox!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
     await page.getByTestId('open-login').click();
     await expect(page).toHaveURL(/#\/login$/);
     await expect(page.getByTestId('google-sign-in')).toBeVisible();
+    await page.getByTestId('settings-link').click();
     await page.getByTestId('language-select').selectOption('ja');
+    await page.goto('/#/login');
     await expect(page.getByTestId('google-sign-in')).toContainText('Sign in with Google');
     await expect(page.locator('h1')).toHaveText('ログイン');
     await expectNoHorizontalOverflow(page);

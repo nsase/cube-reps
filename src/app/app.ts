@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { filter, map } from 'rxjs';
+import { SettingsStore } from './core/settings.store';
 import { CubeService } from './core/cube';
 import { FirestoreSyncService } from './core/firestore/firestore-sync.service';
 import { LocalSyncService } from './core/local/local-sync.service';
@@ -31,8 +32,8 @@ export class App {
   protected readonly cube = inject(CubeService);
   /** 現在のルートとナビゲーションイベントを提供するサービス。 */
   private readonly router = inject(Router);
-  /** 翻訳辞書と言語変更を管理するサービス。 */
-  protected readonly i18n = inject(TranslocoService);
+  /** アプリ起動時に端末設定を復元するStore。 */
+  private readonly settings = inject(SettingsStore);
   /** 変更をIndexedDBへ保存するための同期サービス */
   protected readonly localSync = inject(LocalSyncService);
   /** 変更をFirestoreへ保存するための同期サービス */
@@ -50,23 +51,4 @@ export class App {
     ),
     { initialValue: '' },
   );
-
-  /** ブラウザに保存された表示言語を起動時に復元する。 */
-  constructor() {
-    const saved = localStorage.getItem('cube-reps.language');
-    const lang = saved === 'ja' || saved === 'en' ? saved : 'en';
-    this.i18n.setActiveLang(lang);
-    document.documentElement.lang = lang;
-  }
-
-  /**
-   * 表示言語を切り替えて次回起動時にも復元できるよう保存する。
-   *
-   * @param lang 切り替える言語コード
-   */
-  protected setLanguage(lang: 'ja' | 'en'): void {
-    this.i18n.setActiveLang(lang);
-    localStorage.setItem('cube-reps.language', lang);
-    document.documentElement.lang = lang;
-  }
 }

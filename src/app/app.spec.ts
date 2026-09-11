@@ -40,13 +40,14 @@ describe('App', () => {
     expect(document.documentElement.lang).toBe('en');
   });
 
-  it('言語選択肢はデフォルト言語の英語を先頭に表示する', () => {
+  it('設定画面ではデフォルト言語の英語を先頭に表示する', async () => {
     const fixture = TestBed.createComponent(App);
+    await TestBed.inject(Router).navigateByUrl('/settings');
     fixture.detectChanges();
 
     const options = Array.from(
       fixture.nativeElement.querySelectorAll(
-        '.header-tools select option',
+        'app-settings select option',
       ) as NodeListOf<HTMLOptionElement>,
     );
     expect(options.map((option) => option.value)).toEqual(['en', 'ja']);
@@ -236,12 +237,12 @@ describe('App', () => {
 
   it('表示言語を日本語へ切り替えて選択を保存する', async () => {
     const fixture = TestBed.createComponent(App);
-    await TestBed.inject(Router).navigateByUrl('/timer');
+    await TestBed.inject(Router).navigateByUrl('/settings');
     fixture.detectChanges();
     await fixture.whenStable();
 
     const language = fixture.nativeElement.querySelector(
-      '.header-tools select',
+      'app-settings select',
     ) as HTMLSelectElement;
     language.value = 'ja';
     language.dispatchEvent(new Event('change'));
@@ -255,6 +256,9 @@ describe('App', () => {
         .querySelector('[data-testid="profile-menu-trigger"]')
         ?.getAttribute('aria-label'),
     ).toContain('プロフィール');
+    await TestBed.inject(Router).navigateByUrl('/timer');
+    fixture.detectChanges();
+    await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('app-timer-settings strong')?.textContent).toContain(
       '未分類',
     );
