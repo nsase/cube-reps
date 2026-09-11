@@ -64,21 +64,31 @@ mat-paginator {
 
 @media (max-width: 680px) {
   .history {
-    grid-template-columns: 48px 56px 48px 80px 120px minmax(48px, 1fr);
+    grid-template-columns: 48px 56px 48px 80px 70px 70px minmax(48px, 1fr);
   }
 
-  .column-ao5,
-  .column-ao12 {
+  .column-date {
     display: none;
   }
 }
 
-@media (max-width: 450px) {
+@media (max-width: 460px) {
   .history {
-    grid-template-columns: 48px 56px 48px 80px minmax(48px, 1fr);
+    grid-template-columns: 40px 50px 40px 70px 60px 60px minmax(40px, 1fr);
   }
 
-  .column-date {
+  .history-header {
+    gap: 4px;
+  }
+}
+
+@media (max-width: 430px) {
+  .history {
+    grid-template-columns: 40px 50px 40px 70px minmax(40px, 1fr);
+  }
+
+  .column-ao5,
+  .column-ao12 {
     display: none;
   }
 }
