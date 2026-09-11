@@ -1,0 +1,15 @@
+h2 {
+  margin: 0 0 12px;
+  font-size: var(--font-size-large);
+}
+p {
+  overflow-wrap: anywhere;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+[role='alert'] {
+  color: var(--danger-color);
+}

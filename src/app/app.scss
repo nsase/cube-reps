@@ -120,22 +120,6 @@ h1 {
   align-items: center;
   gap: 14px;
   min-width: 0;
-
-  select {
-    border: 1px solid $line;
-    border-radius: 4px;
-    background: var(--surface-color);
-    color: $ink;
-    padding: 5px 8px;
-  }
-}
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
 }
 
 @media (max-width: 900px) {
@@ -193,7 +177,7 @@ h1 {
   nav a,
   nav a.on {
     font-size: var(--font-size-base);
-    padding: 6px 18px;
+    padding: 6px 10px;
   }
   nav em {
     display: block;
@@ -210,5 +194,11 @@ h1 {
   }
   .header-tools {
     gap: 4px;
+  }
+}
+
+@media (min-width: 621px) and (max-width: 900px) and (max-height: 500px) {
+  nav {
+    margin-top: 16px;
   }
 }
