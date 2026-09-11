@@ -15,5 +15,13 @@
     >
       {{ 'ownership.copy' | transloco }}
     </button>
+    <button
+      mat-button
+      data-testid="history-move-all"
+      [disabled]="!allGuestSolves().length || confirming() || migration.pending()"
+      (click)="moveAll()"
+    >
+      {{ 'ownership.moveAll' | transloco }}
+    </button>
   </div>
 }
