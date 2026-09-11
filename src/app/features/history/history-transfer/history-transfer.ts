@@ -10,12 +10,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { firstValueFrom } from 'rxjs';
+import { CubeService } from '../../../core/cube';
 import { Solve } from '../../../core/cube.models';
 import { SolveMigrationService } from '../../../core/firestore/solve-migration.service';
 import { ConfirmDialog } from '../../../shared/confirm-dialog/confirm-dialog';
 import { HistoryStore } from '../history.store';
 
-/** 履歴内で選択した記録の移行・コピーを確認し、一時的な結果を表示する。 */
+/** 履歴の選択記録の移行・コピーとゲスト記録の一括移行を確認する。 */
 @Component({
   selector: 'app-history-transfer',
   imports: [MatButtonModule, TranslocoPipe],
@@ -26,7 +27,9 @@ import { HistoryStore } from '../history.store';
 export class HistoryTransfer {
   /** 履歴の選択と所有者の表示情報。 */
   protected readonly store = inject(HistoryStore);
-  /** 選択済み記録の移行を行うサービス。 */
+  /** 絞り込みやページに関係なく、削除されていない全ゲスト記録を参照する。 */
+  protected readonly allGuestSolves = inject(CubeService).guestSolves;
+  /** 確認済み記録の移行を行うサービス。 */
   protected readonly migration = inject(SolveMigrationService);
   /** 確認ダイアログの表示中に同じ操作を重ねない状態。 */
   protected readonly confirming = signal(false);
@@ -55,8 +58,17 @@ export class HistoryTransfer {
     return this.transfer(this.guestSolves(), 'move');
   }
 
+  /** このブラウザの全ゲスト記録を、件数と宛先の確認後に移行する。 */
+  protected moveAll(): Promise<void> {
+    return this.transfer(this.allGuestSolves(), 'move', true);
+  }
+
   /** 確認時点の記録と宛先だけを処理する。キャンセル・画面離脱・アカウント変更では開始しない。 */
-  private async transfer(solves: Solve[], action: 'copy' | 'move'): Promise<void> {
+  private async transfer(
+    solves: Solve[],
+    action: 'copy' | 'move',
+    allGuests = false,
+  ): Promise<void> {
     const uid = this.store.auth.user()?.uid;
     if (!uid || !solves.length || this.confirming() || this.migration.pending()) return;
     this.confirming.set(true);
@@ -65,14 +77,17 @@ export class HistoryTransfer {
         this.dialog
           .open(ConfirmDialog, {
             data: {
-              title: this.i18n.translate(`ownership.${action}`),
-              message: this.i18n.translate('ownership.confirm', {
-                count: solves.length,
-                from: [...new Set(solves.map((solve) => this.store.owners.label(solve)))].join(
-                  ', ',
-                ),
-                to: this.store.owners.accountName(uid),
-              }),
+              title: this.i18n.translate(allGuests ? 'ownership.moveAll' : `ownership.${action}`),
+              message: this.i18n.translate(
+                allGuests ? 'ownership.confirmMoveAll' : 'ownership.confirm',
+                {
+                  count: solves.length,
+                  from: [...new Set(solves.map((solve) => this.store.owners.label(solve)))].join(
+                    ', ',
+                  ),
+                  to: this.store.owners.accountName(uid),
+                },
+              ),
               buttons: [
                 { id: 'cancel', labelKey: 'common.cancel' },
                 { id: action, labelKey: `ownership.${action}` },
