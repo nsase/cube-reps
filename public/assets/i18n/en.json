@@ -163,6 +163,8 @@
     "unlinked": "Not linked to an account",
     "selectSolve": "Select record {{number}}",
     "copiedFrom": "Copied from record",
+    "moveAll": "Move all guest records",
+    "confirmMoveAll": "Move all {{count}} records not linked to an account in this browser.\nIncludes all groups and categories, regardless of filters or page.\nTo: {{to}}\nThe records remain in this browser.",
     "move": "Move to current account",
     "copy": "Copy to current account",
     "selected": "{{count}} selected",

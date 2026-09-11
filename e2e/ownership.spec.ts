@@ -280,3 +280,41 @@ test(
     await expectNoHorizontalOverflow(page);
   },
 );
+
+/** 絞り込み外のゲスト記録も、選択せず一括移行できることを確認する。 */
+test(
+  '全ゲスト記録を確認後に移行し、再読み込み後も所有者を維持する',
+  { tag: '@responsive' },
+  async ({ page }) => {
+    await seedHistory(page);
+    await seedSession(page);
+    await page.reload();
+    const moveAll = page.getByTestId('history-move-all');
+    await expect(moveAll).toBeEnabled({ timeout: 15000 });
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.getByTestId('history-owner-filter').selectOption('account:other');
+    await expect(page.locator('app-solve-record')).toHaveCount(1);
+    await expectNoHorizontalOverflow(page);
+    await moveAll.click();
+    await expect(page.getByRole('dialog')).toContainText('Move all 2 records');
+    await expect(page.getByRole('dialog')).toContainText('Target User');
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(moveAll).toBeEnabled();
+    await moveAll.click();
+    await page
+      .getByRole('dialog')
+      .getByRole('button', { name: 'Move to current account', exact: true })
+      .click();
+    await expect(moveAll).toBeDisabled();
+    await expect(page.locator('app-solve-record')).toHaveCount(1);
+    await page.getByTestId('history-owner-filter').selectOption('unlinked');
+    await expect(page.locator('app-solve-record')).toHaveCount(0);
+    await page.getByTestId('history-owner-filter').selectOption('account:target');
+    await expect(page.locator('app-solve-record')).toHaveCount(2);
+    await page.reload();
+    await expect(moveAll).toBeDisabled();
+    await page.getByTestId('history-owner-filter').selectOption('account:target');
+    await expect(page.locator('app-solve-record')).toHaveCount(2);
+    await expectNoHorizontalOverflow(page);
+  },
+);
