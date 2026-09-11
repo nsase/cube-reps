@@ -11,7 +11,9 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
-  test('レスポンシブ配置が画面内に収まる', async ({ page }) => {
+  test('拡大した文字でもレスポンシブ配置が画面内に収まる', async ({ page }) => {
+    await expect(page.locator('body')).toHaveCSS('font-size', '16px');
+    await expect(page.locator('app-timer-scramble p')).toHaveCSS('font-size', '19.2px');
     await expectNoHorizontalOverflow(page);
     await expectResponsiveLayout(page, layoutItems);
   });
