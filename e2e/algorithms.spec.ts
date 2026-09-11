@@ -6,7 +6,7 @@ import { expectNoHorizontalOverflow, expectResponsiveLayout } from './support/la
 const routes = ['algorithms/oll', 'algorithms/pll'] as const;
 
 /** 手順一覧画面で独立して配置される主要要素。 */
-const layoutItems = 'app-algorithm-tools, .count, .grid > app-algorithm-case-card';
+const layoutItems = 'app-algorithm-tools, .grid > app-algorithm-case-card';
 
 test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
   for (const route of routes) {

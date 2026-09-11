@@ -7,14 +7,10 @@ $muted: var(--text-muted-color);
   margin: auto;
 }
 
-.count {
-  margin: 27px 0 13px;
-  color: $muted;
-  font-size: var(--font-size-small);
-
-  b {
-    color: $ink;
-  }
+section {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
 }
 
 .grid {

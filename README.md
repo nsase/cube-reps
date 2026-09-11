@@ -24,7 +24,7 @@ CubeReps is a browser-based Rubik's Cube timer and training tool. Solve records 
 - History rows with point-in-time Ao5/Ao12 and details for scrambles and cube previews
 - English and Japanese interfaces
 - Optional Google sign-in, confirmation-based guest record import, and cross-device solve synchronization
-- Responsive layouts for desktop, tablet, and mobile devices
+- Responsive layouts for desktop, tablet, and mobile devices, with a 16px base font and larger scramble and supporting text
 
 ## Using the timer
 

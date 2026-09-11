@@ -13,14 +13,11 @@ img {
   width: 260px;
   max-width: calc(100vw - 32px);
   overflow-wrap: anywhere;
+  font-size: var(--font-size-base);
 }
-strong,
-small {
-  display: block;
-}
-small {
-  margin-top: 4px;
-  font-size: var(--font-size-small);
+.authenticated-account {
+  display: grid;
+  gap: 4px;
 }
 .auth-error {
   color: var(--danger-color);

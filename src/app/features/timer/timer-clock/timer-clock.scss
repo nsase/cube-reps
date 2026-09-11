@@ -26,7 +26,8 @@ small {
 
 strong {
   max-width: 100%;
-  font: 600 clamp(var(--font-size-display), min(22cqw, 38cqh), var(--font-size-timer-max)) var(--font-family-heading);
+  font: 600 clamp(var(--font-size-display), min(22cqw, 38cqh), var(--font-size-timer-max))
+    var(--font-family-heading);
   font-variant-numeric: tabular-nums;
   letter-spacing: clamp(-6px, -0.4cqw, -2px);
   line-height: 1;
@@ -44,7 +45,7 @@ strong {
 i {
   margin-top: clamp(10px, 2.5vh, 25px);
   color: #aaa;
-  font: normal var(--font-size-small) var(--font-family-mono);
+  font: normal var(--font-size-base) var(--font-family-mono);
   letter-spacing: 2px;
 }
 

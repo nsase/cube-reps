@@ -96,7 +96,6 @@
   },
   "algorithms": {
     "search": "番号・名前・グループで検索",
-    "caseCount": "{{count}}ケース",
     "empty": "該当するケースがありません。",
     "pattern": "{{name}} のパターン",
     "favorite": "お気に入りの手順",

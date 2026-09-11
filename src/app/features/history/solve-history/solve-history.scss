@@ -27,7 +27,7 @@ $muted: var(--text-muted-color);
   padding: 9px 18px;
   border-bottom: 1px solid $line;
   color: $muted;
-  font: 500 var(--font-size-small) var(--font-family-mono);
+  font: 500 var(--font-size-base) var(--font-family-mono);
 }
 
 .history-title {

@@ -96,7 +96,6 @@
   },
   "algorithms": {
     "search": "Search by number, name, or group",
-    "caseCount": "{{count}} cases",
     "empty": "No matching cases.",
     "pattern": "Pattern for {{name}}",
     "favorite": "Favorite algorithm",
