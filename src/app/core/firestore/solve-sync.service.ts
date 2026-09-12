@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
-import { GroupSyncService } from './group-sync.service';
 import { CubeService } from '../cube';
 import { FirestoreSolveRepository } from './firestore-solve.repository';
 import { FirestoreSyncService } from './firestore-sync.service';
+import { GroupSyncService } from './group-sync.service';
 import { SyncController, SyncPhase } from './sync-controller';
 
 /** ヘッダーへ公開するユーザーデータの同期状態。 */
@@ -44,7 +44,7 @@ export class SolveSyncService {
     await this.controller.retry();
   }
   /** 計測記録を再取得する。 */
-  async refresh(): Promise<void> {
-    await this.controller.refresh();
+  async refresh(): Promise<boolean> {
+    return await this.controller.refresh();
   }
 }

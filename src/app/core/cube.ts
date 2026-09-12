@@ -170,9 +170,7 @@ export class CubeService {
       changedGroups.push(remote);
     }
     if (changedGroups.length === 0) {
-      await this.reconcileDeletedGroups(
-        new Set(remoteGroups.filter((group) => group.deletedAt).map((group) => group.id)),
-      );
+      await this.reconcileDeletedGroups(remoteGroups);
       return;
     }
 
@@ -191,7 +189,7 @@ export class CubeService {
     ]);
 
     // 削除済みグループに所属する計測記録を未分類グループへ移動する
-    await this.reconcileDeletedGroups(new Set(deletedGroups.map((group) => group.id)));
+    await this.reconcileDeletedGroups(deletedGroups);
   }
 
   /**
@@ -747,29 +745,30 @@ export class CubeService {
    * @param ownerId 今回の一覧取得が完了したアカウント
    */
   async reconcileMissingGroups(ownerId: string): Promise<void> {
-    const knownIds = new Set(this.userGroups().map((group) => group.id));
-    const missing = new Set(
+    const knownIds = new Set(
+      [...DEFAULT_GROUPS, ...this.userGroups().filter((group) => !group.deletedAt)].map(
+        (group) => group.id,
+      ),
+    );
+    const missingGroupIds = new Set(
       this.storedSolves()
         .filter(
           (solve) => solve.ownerType === 'account' && solve.ownerId === ownerId && !solve.deletedAt,
         )
         .map((solve) => solve.groupId)
-        .filter((id): id is string => !!id && id !== DEFAULT_GROUP.id && !knownIds.has(id)),
+        .filter((groupId): groupId is string => !!groupId && !knownIds.has(groupId)),
     );
-    await this.moveSolvesToDefault(missing, ownerId);
+    await this.moveSolvesToDefault(missingGroupIds, ownerId);
   }
 
   /** 削除を確認できたグループの所属を整理する。起動時には未取得を削除と判断しない。
    * @param deletedGroupIds 今回受信した削除、または端末内に保持した削除のID
    */
   private async reconcileDeletedGroups(
-    deletedGroupIds = new Set(
-      this.userGroups()
-        .filter((group) => group.deletedAt)
-        .map((group) => group.id),
-    ),
+    deletedGroup: readonly RecordGroup[] = this.userGroups(),
   ): Promise<void> {
-    await this.moveSolvesToDefault(deletedGroupIds);
+    const ids = new Set(deletedGroup.filter((group) => group.deletedAt).map((group) => group.id));
+    await this.moveSolvesToDefault(ids);
   }
 
   /** 対象グループの有効な記録だけを未分類へ移し、削除済み記録の再保存を防ぐ。

@@ -33,11 +33,11 @@ export class FirestoreGroupRepository {
    * @returns 削除通知を含むグループ一覧
    */
   async list(userId: string): Promise<RecordGroup[]> {
-    const [db, { collection, getDocsFromServer }] = await Promise.all([
+    const [db, { collection, getDocs }] = await Promise.all([
       this.connection.client(),
       import('firebase/firestore'),
     ]);
-    const snapshot = await getDocsFromServer(collection(db, 'users', userId, 'groups'));
+    const snapshot = await getDocs(collection(db, 'users', userId, 'groups'));
     return snapshot.docs.flatMap((item) => {
       const group = fromFirestoreRecordGroup(item.id, item.data(), userId);
       return group ? [group] : [];
