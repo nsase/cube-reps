@@ -1,0 +1,14 @@
+h2 {
+  margin: 0 0 12px;
+  font-size: var(--font-size-large);
+}
+select {
+  max-width: 100%;
+  padding: 8px;
+  border: 1px solid var(--outline-color);
+  border-radius: 4px;
+  background: var(--surface-color);
+}
+p {
+  color: var(--text-muted-color);
+}

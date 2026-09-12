@@ -44,9 +44,15 @@ After the first online load completes, the installed app can be started and relo
 
 Browser storage is separated by browser and installation context. In particular, Safari and a Home Screen web app on iOS/iPadOS may not share existing data, so records created in Safari might not appear in the installed app. Installing or updating CubeReps does not itself delete browser data.
 
+## Settings
+
+Open **Settings** at the bottom of the sidebar (in the bottom navigation on mobile) to select English or Japanese. On the first visit, Japanese is selected for a Japanese browser language; otherwise English is used. The language applies throughout the app and is saved in this browser for the next visit; existing language preferences are preserved.
+
+Select **Check for updates** to check for a new version. Settings displays checking, latest-version, update-available, and failure states. If an update is ready, select **Update now** to reload the app with the new version, even if you previously dismissed the update notification. A failed check or update can be retried. Update checking is unavailable in development builds and browsers without Service Worker support; Settings explains this instead of showing a latest-version result.
+
 ## Google account sign-in
 
-Open the profile icon to the right of the language selector, select **Sign in**, then choose **Sign in with Google** on the login page. The profile popup shows your name, email address, and **Sign out** when signed in, or **Guest account** when signed out. Signing in is optional: Timer, History, and locally saved algorithms remain available without an account, including while offline after the app has been loaded.
+Open the profile icon in the header, select **Sign in**, then choose **Sign in with Google** on the login page. The profile popup shows your name, email address, and **Sign out** when signed in, or **Guest account** when signed out. Signing in is optional: Timer, History, and locally saved algorithms remain available without an account, including while offline after the app has been loaded.
 
 History displays all undeleted solves saved in this browser profile, regardless of sign-in or account ownership. The owner filter applies consistently to the list, counts, statistics, and Progress Chart within the selected group and category. Owner avatars show a photo, initials, or a fallback icon; hover over an avatar for its tooltip, or open the solve details with the information button to view account details.
 
@@ -127,7 +133,7 @@ After explicit confirmation, guest import writes to the signed-in user’s `user
 - Playwright
 - SCSS
 
-Each page uses standalone components and route-level lazy loading. Persistent application data is managed by root services, while temporary timer and history state is managed by screen-scoped Signal Stores.
+Each page uses standalone components and route-level lazy loading. The root `SettingsStore` manages persistent browser settings, including language; the settings page separates language and update controls into child components. Persistent application data is managed by root services, while temporary timer and history state is managed by screen-scoped Signal Stores.
 
 The shared Angular Material theme and application color variables are defined in `src/styles/_material-theme.scss`. Material component colors should be customized through that theme instead of being overridden in individual component styles.
 
@@ -136,7 +142,7 @@ The shared Angular Material theme and application color variables are defined in
 ```text
 src/app/
 ├── core/       # Cube logic, statistics, algorithms, and persistent data
-├── features/   # Timer, algorithm library, and history pages
+├── features/   # Timer, algorithm library, history, and settings pages
 └── shared/     # Shared UI such as cube views and confirmation dialogs
 ```
 

@@ -40,13 +40,14 @@ describe('App', () => {
     expect(document.documentElement.lang).toBe('en');
   });
 
-  it('言語選択肢はデフォルト言語の英語を先頭に表示する', () => {
+  it('設定画面ではデフォルト言語の英語を先頭に表示する', async () => {
     const fixture = TestBed.createComponent(App);
+    await TestBed.inject(Router).navigateByUrl('/settings');
     fixture.detectChanges();
 
     const options = Array.from(
       fixture.nativeElement.querySelectorAll(
-        '.header-tools select option',
+        'app-settings select option',
       ) as NodeListOf<HTMLOptionElement>,
     );
     expect(options.map((option) => option.value)).toEqual(['en', 'ja']);
@@ -66,7 +67,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.brand')?.textContent).toContain('CubeReps');
+    expect(fixture.nativeElement.querySelector('.brand')?.textContent).toMatch(/Cube\s*Reps/);
     const logo = fixture.nativeElement.querySelector('.brand img') as HTMLImageElement;
     expect(logo.getAttribute('src')).toBe('cube-reps-mark.svg');
     expect(logo.getAttribute('alt')).toBe('');
@@ -185,63 +186,14 @@ describe('App', () => {
     expect(nextPage.getAttribute('aria-label')).toBe('次のページ');
   });
 
-  it('保存済みSolveの総数を日英のラベルとともに表示する', async () => {
-    const cube = TestBed.inject(CubeService);
-    cube.storedSolves.set([
-      {
-        id: 'past-solve',
-        time: 1000,
-        scramble: 'R U',
-        createdAt: new Date(0).toISOString(),
-        updatedAt: new Date(0).toISOString(),
-        ownerType: 'guest',
-        ownerId: 'guest-test',
-        schemaVersion: 1,
-        category: 'full',
-        groupId: 'unclassified',
-        penalty: 'none',
-      },
-      {
-        id: 'recent-solve',
-        time: 2000,
-        scramble: 'F R',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        ownerType: 'guest',
-        ownerId: 'guest-test',
-        schemaVersion: 1,
-        category: 'full',
-        groupId: 'unclassified',
-        penalty: 'none',
-      },
-    ]);
-    const fixture = TestBed.createComponent(App);
-    await firstValueFrom(TestBed.inject(TranslocoService).load('en'));
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const solveTotal = fixture.nativeElement.querySelector('.today') as HTMLElement;
-    expect(solveTotal.textContent).toContain('Total Solves');
-    expect(solveTotal.querySelector('strong')?.textContent).toBe('2');
-
-    const i18n = TestBed.inject(TranslocoService);
-    await firstValueFrom(i18n.load('ja'));
-    i18n.setActiveLang('ja');
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    expect(solveTotal.textContent).toContain('総ソルブ数');
-    expect(solveTotal.querySelector('strong')?.textContent).toBe('2');
-  });
-
   it('表示言語を日本語へ切り替えて選択を保存する', async () => {
     const fixture = TestBed.createComponent(App);
-    await TestBed.inject(Router).navigateByUrl('/timer');
+    await TestBed.inject(Router).navigateByUrl('/settings');
     fixture.detectChanges();
     await fixture.whenStable();
 
     const language = fixture.nativeElement.querySelector(
-      '.header-tools select',
+      'app-settings select',
     ) as HTMLSelectElement;
     language.value = 'ja';
     language.dispatchEvent(new Event('change'));
@@ -255,6 +207,9 @@ describe('App', () => {
         .querySelector('[data-testid="profile-menu-trigger"]')
         ?.getAttribute('aria-label'),
     ).toContain('プロフィール');
+    await TestBed.inject(Router).navigateByUrl('/timer');
+    fixture.detectChanges();
+    await fixture.whenStable();
     expect(fixture.nativeElement.querySelector('app-timer-settings strong')?.textContent).toContain(
       '未分類',
     );

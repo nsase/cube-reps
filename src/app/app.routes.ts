@@ -36,6 +36,11 @@ export const routes: Routes = [
     data: { titleKey: 'routes.login' },
     loadComponent: () => import('./features/login/login').then(({ Login }) => Login),
   },
+  {
+    path: 'settings',
+    data: { titleKey: 'routes.settings' },
+    loadComponent: () => import('./features/settings/settings').then(({ Settings }) => Settings),
+  },
   { path: '', pathMatch: 'full', redirectTo: 'timer' },
   { path: '**', redirectTo: 'timer' },
 ];
