@@ -488,3 +488,55 @@ test('グループ未取得の記録を選択でき、取得後も同じ分類�
   await expect(page.getByRole('dialog')).toContainText('Other device practice');
   await expect(page.locator('[data-series="result"]')).toHaveCount(1);
 });
+
+test('旧版の削除済みグループを整理しても有効な記録は未分類で再表示できる', async ({ page }) => {
+  await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('cube-reps');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const metadata = {
+      ownerType: 'account',
+      ownerId: 'previous-account',
+      schemaVersion: 3,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+    };
+    await new Promise<void>((resolve, reject) => {
+      const transaction = db.transaction(['groups', 'solves'], 'readwrite');
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+      transaction
+        .objectStore('groups')
+        .put({
+          ...metadata,
+          id: 'deleted-group',
+          name: 'Deleted practice',
+          deletedAt: metadata.updatedAt,
+        });
+      const record = {
+        ...metadata,
+        id: 'remaining',
+        groupId: 'deleted-group',
+        time: 1234,
+        scramble: 'R U',
+        category: 'full',
+        penalty: 'none',
+      };
+      transaction.objectStore('solves').put(record);
+      transaction
+        .objectStore('solves')
+        .put({ ...record, id: 'deleted', deletedAt: metadata.updatedAt });
+    });
+    db.close();
+  });
+  await page.reload();
+  await expect(page.locator('app-solve-record')).toHaveCount(1);
+  await expect(page.locator('app-solve-record')).toContainText('1.23');
+  await expect(page.getByTestId('history-group-filter')).toHaveValue('unclassified');
+  await expect(page.getByTestId('history-group-filter')).not.toContainText('Deleted practice');
+  await page.reload();
+  await expect(page.locator('app-solve-record')).toHaveCount(1);
+  await expect(page.locator('app-solve-record')).toContainText('1.23');
+});

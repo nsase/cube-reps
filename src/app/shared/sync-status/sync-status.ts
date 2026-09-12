@@ -26,8 +26,8 @@ export class SyncStatus {
   });
 
   /** 同期エラー時に直近の変更または取得を再試行する。 */
-  protected retry(): void {
-    this.solveSync.retry();
-    this.groupSync.retry();
+  protected async retry(): Promise<void> {
+    await this.groupSync.retry();
+    await this.solveSync.retry();
   }
 }

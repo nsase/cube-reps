@@ -18,6 +18,7 @@ export class GroupSyncService {
 
   /** グループの同期状態と再送処理。 */
   private readonly controller = new SyncController({
+    autoPull: false,
     mutations: this.mutations,
     record: (mutation) => mutation.data,
     cloud: inject(FirestoreGroupRepository),
@@ -29,11 +30,13 @@ export class GroupSyncService {
   readonly phase = this.controller.phase;
 
   /** 失敗した転送を再試行する。 */
-  retry(): void {
-    this.controller.retry();
+  async retry(): Promise<void> {
+    await this.controller.retry();
   }
-  /** グループ一覧を再取得する。 */
-  refresh(): void {
-    this.controller.refresh();
+  /** Solve取得の前提となるグループ一覧を取得する。
+   * @returns 取得・統合が正常に完了した場合はtrue
+   */
+  async refresh(): Promise<boolean> {
+    return this.controller.refresh();
   }
 }

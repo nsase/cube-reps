@@ -70,7 +70,7 @@ describe('History group synchronization', () => {
     fixture.detectChanges();
     await vi.waitFor(() => {
       expect(groupCloud.list).toHaveBeenCalledWith(account.uid);
-      expect(solveCloud.list).toHaveBeenCalledWith(account.uid);
+      expect(solveCloud.list).not.toHaveBeenCalled();
     });
   });
 
@@ -112,26 +112,17 @@ describe('History group synchronization', () => {
 
   for (const order of ['group-first', 'solve-first'] as const) {
     it(`${order}: 別端末のグループと記録を選択し、名称変更と削除後も履歴を参照できる`, async () => {
-      if (order === 'group-first') {
-        receiveGroups([group]);
-        await vi.waitFor(() => expect(TestBed.inject(GroupSyncService).phase()).toBe('synced'));
-        await render();
-        await selectGroup(group.id);
-        receiveSolves(solves);
-      } else {
-        receiveSolves(solves);
-        await vi.waitFor(() => expect(TestBed.inject(SolveSyncService).phase()).toBe('synced'));
-        await render();
-        await selectGroup(group.id);
-        expectHistory();
-        expect(fixture.nativeElement.textContent).not.toContain(group.name);
-        receiveGroups([group]);
-      }
+      if (order === 'solve-first') receiveSolves(solves);
+      expect(solveCloud.list).not.toHaveBeenCalled();
+      receiveGroups([group]);
+      await vi.waitFor(() => expect(solveCloud.list).toHaveBeenCalledWith(account.uid));
+      if (order === 'group-first') receiveSolves(solves);
       await vi.waitFor(() => {
         expect(TestBed.inject(GroupSyncService).phase()).toBe('synced');
         expect(TestBed.inject(SolveSyncService).phase()).toBe('synced');
       });
       await render();
+      await selectGroup(group.id);
       expectHistory();
       expect(
         fixture.nativeElement.querySelector('[data-testid="history-group-filter"]')
