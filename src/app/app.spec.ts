@@ -67,7 +67,7 @@ describe('App', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('.brand')?.textContent).toContain('CubeReps');
+    expect(fixture.nativeElement.querySelector('.brand')?.textContent).toMatch(/Cube\s*Reps/);
     const logo = fixture.nativeElement.querySelector('.brand img') as HTMLImageElement;
     expect(logo.getAttribute('src')).toBe('cube-reps-mark.svg');
     expect(logo.getAttribute('alt')).toBe('');
@@ -184,55 +184,6 @@ describe('App', () => {
     await fixture.whenStable();
 
     expect(nextPage.getAttribute('aria-label')).toBe('次のページ');
-  });
-
-  it('保存済みSolveの総数を日英のラベルとともに表示する', async () => {
-    const cube = TestBed.inject(CubeService);
-    cube.storedSolves.set([
-      {
-        id: 'past-solve',
-        time: 1000,
-        scramble: 'R U',
-        createdAt: new Date(0).toISOString(),
-        updatedAt: new Date(0).toISOString(),
-        ownerType: 'guest',
-        ownerId: 'guest-test',
-        schemaVersion: 1,
-        category: 'full',
-        groupId: 'unclassified',
-        penalty: 'none',
-      },
-      {
-        id: 'recent-solve',
-        time: 2000,
-        scramble: 'F R',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        ownerType: 'guest',
-        ownerId: 'guest-test',
-        schemaVersion: 1,
-        category: 'full',
-        groupId: 'unclassified',
-        penalty: 'none',
-      },
-    ]);
-    const fixture = TestBed.createComponent(App);
-    await firstValueFrom(TestBed.inject(TranslocoService).load('en'));
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    const solveTotal = fixture.nativeElement.querySelector('.today') as HTMLElement;
-    expect(solveTotal.textContent).toContain('Total Solves');
-    expect(solveTotal.querySelector('strong')?.textContent).toBe('2');
-
-    const i18n = TestBed.inject(TranslocoService);
-    await firstValueFrom(i18n.load('ja'));
-    i18n.setActiveLang('ja');
-    fixture.detectChanges();
-    await fixture.whenStable();
-
-    expect(solveTotal.textContent).toContain('総ソルブ数');
-    expect(solveTotal.querySelector('strong')?.textContent).toBe('2');
   });
 
   it('表示言語を日本語へ切り替えて選択を保存する', async () => {

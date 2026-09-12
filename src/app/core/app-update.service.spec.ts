@@ -69,6 +69,14 @@ describe('AppUpdateService', () => {
     expect(service.checkState()).toBe('checking');
     await service.checkForUpdate();
     expect(checkForUpdate).toHaveBeenCalledOnce();
+    versionUpdates.next({
+      type: 'VERSION_READY',
+      currentVersion: { hash: 'current' },
+      latestVersion: { hash: 'next' },
+    });
+    expect(service.checkState()).toBe('latest');
+    await service.checkForUpdate();
+    expect(checkForUpdate).toHaveBeenCalledOnce();
     finish(true);
     await pending;
     expect(service.updateAvailable()).toBe(true);
@@ -105,5 +113,34 @@ describe('AppUpdateService', () => {
     await service.checkForUpdate();
     expect(service.enabled).toBe(false);
     expect(checkForUpdate).not.toHaveBeenCalled();
+  });
+  it('ダウンロード失敗イベントを反映し、要求終了時に上書きしない', async () => {
+    let finish!: (found: boolean) => void;
+    checkForUpdate.mockImplementation(
+      () =>
+        new Promise<boolean>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const service = TestBed.inject(AppUpdateService);
+    const pending = service.checkForUpdate();
+    versionUpdates.next({
+      type: 'VERSION_INSTALLATION_FAILED',
+      version: { hash: 'next' },
+      error: 'download failed',
+    });
+    expect(service.checkState()).toBe('failed');
+    finish(false);
+    await pending;
+    expect(service.checkState()).toBe('failed');
+    expect(service.updateAvailable()).toBe(false);
+  });
+
+  it('イベントのない戻り値だけでは更新の有無を判断しない', async () => {
+    checkForUpdate.mockResolvedValue(true);
+    const service = TestBed.inject(AppUpdateService);
+    await service.checkForUpdate();
+    expect(service.checkState()).toBe('failed');
+    expect(service.updateAvailable()).toBe(false);
   });
 });

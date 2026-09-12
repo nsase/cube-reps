@@ -15,6 +15,13 @@ test(
     const settingsLinkBox = await page.getByTestId('settings-link').boundingBox();
     expect(settingsLinkBox).not.toBeNull();
     expect(settingsLinkBox!.y).toBeGreaterThanOrEqual(0);
+    if (page.viewportSize()!.width > 620) {
+      const sidebar = await page.locator('aside').boundingBox();
+      expect(settingsLinkBox!.y).toBeGreaterThan(sidebar!.height / 2);
+      expect(
+        sidebar!.y + sidebar!.height - settingsLinkBox!.y - settingsLinkBox!.height,
+      ).toBeLessThanOrEqual(35);
+    }
     expect(settingsLinkBox!.y + settingsLinkBox!.height).toBeLessThanOrEqual(
       page.viewportSize()!.height,
     );

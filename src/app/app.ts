@@ -3,7 +3,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { filter, map } from 'rxjs';
-import { CubeService } from './core/cube';
 import { FirestoreSyncService } from './core/firestore/firestore-sync.service';
 import { LocalSyncService } from './core/local/local-sync.service';
 import { SettingsStore } from './core/settings.store';
@@ -21,8 +20,6 @@ import { SyncStatus } from './shared/sync-status/sync-status';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
-  /** ヘッダーで計測件数を表示するキューブ状態サービス。 */
-  protected readonly cube = inject(CubeService);
   /** 現在のルートとナビゲーションイベントを提供するサービス。 */
   private readonly router = inject(Router);
   /** アプリ起動時に端末設定を復元するStore。 */

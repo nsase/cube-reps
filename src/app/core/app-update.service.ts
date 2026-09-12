@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
-import { computed, Injectable, InjectionToken, inject, signal } from '@angular/core';
-import { SwUpdate, VersionEvent } from '@angular/service-worker';
+import { computed, inject, Injectable, InjectionToken, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { SwUpdate, VersionEvent } from '@angular/service-worker';
 
 /** 新版へ切り替えた後に現在のページを再読み込みする処理。 */
 export const RELOAD_PAGE = new InjectionToken<() => void>('RELOAD_PAGE', {
@@ -33,8 +33,8 @@ export class AppUpdateService {
   readonly enabled = this.swUpdate.isEnabled;
   /** 手動確認の進行状況。取得済みの新版はupdateAvailableで別途保持する。 */
   readonly checkState = signal<'idle' | 'checking' | 'latest' | 'failed'>('idle');
-  /** 通信不能時のfalseを「最新版」と誤表示しないための確認結果。 */
-  private latestConfirmed = false;
+  /** 完了イベントからPromiseの終了までの間も重複した確認要求を防ぐ。 */
+  private checkInProgress = false;
   /** 適用済みの新版を表示するためにページを再読み込みする処理。 */
   private readonly reloadPage = inject(RELOAD_PAGE);
 
@@ -43,11 +43,15 @@ export class AppUpdateService {
     if (!this.swUpdate.isEnabled) return;
     this.swUpdate.versionUpdates.pipe(takeUntilDestroyed()).subscribe((event: VersionEvent) => {
       if (event.type === 'NO_NEW_VERSION_DETECTED' && this.checkState() === 'checking') {
-        this.latestConfirmed = true;
+        this.checkState.set('latest');
       }
       if (event.type === 'VERSION_READY') {
         this.updateDismissed.set(false);
         this.updateAvailable.set(true);
+        this.checkState.set('latest');
+      }
+      if (event.type === 'VERSION_INSTALLATION_FAILED') {
+        this.checkState.set('failed');
       }
     });
   }
@@ -67,15 +71,17 @@ export class AppUpdateService {
 
   /** 新版の取得を手動で確認し、失敗時にも再試行できる状態へ戻す。 */
   async checkForUpdate(): Promise<void> {
-    if (!this.enabled || this.checkState() === 'checking') return;
-    this.latestConfirmed = false;
+    if (!this.enabled || this.checkInProgress) return;
+    this.checkInProgress = true;
     this.checkState.set('checking');
     try {
-      const found = await this.swUpdate.checkForUpdate();
-      if (found) this.updateAvailable.set(true);
-      this.checkState.set(found || this.latestConfirmed ? 'latest' : 'failed');
+      await this.swUpdate.checkForUpdate();
+      // 通信不能では結果イベントなしで終了するため、確認中のままなら失敗とする。
+      if (this.checkState() === 'checking') this.checkState.set('failed');
     } catch {
       this.checkState.set('failed');
+    } finally {
+      this.checkInProgress = false;
     }
   }
 

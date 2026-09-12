@@ -18,10 +18,11 @@ test.describe('任意のGoogleログイン', { tag: '@responsive' }, () => {
     await page.keyboard.up('Space');
     await expect(clock.locator('strong')).not.toHaveText('0.00');
     await page.keyboard.press('Space');
-    await expect(page.locator('.today strong')).toHaveText('1');
+    await page.getByRole('link', { name: 'History', exact: true }).click();
+    await expect(page.locator('app-solve-record')).toHaveCount(1);
 
     await page.reload();
-    await expect(page.locator('.today strong')).toHaveText('1');
+    await expect(page.locator('app-solve-record')).toHaveCount(1);
     await expect(page.getByTestId('solve-migration')).toHaveCount(0);
   });
 });

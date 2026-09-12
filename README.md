@@ -46,7 +46,7 @@ Browser storage is separated by browser and installation context. In particular,
 
 ## Settings
 
-Open **Settings** from the navigation to select English or Japanese. The language applies throughout the app and is saved in this browser for the next visit; existing language preferences are preserved.
+Open **Settings** at the bottom of the sidebar (in the bottom navigation on mobile) to select English or Japanese. On the first visit, Japanese is selected for a Japanese browser language; otherwise English is used. The language applies throughout the app and is saved in this browser for the next visit; existing language preferences are preserved.
 
 Select **Check for updates** to check for a new version. Settings displays checking, latest-version, update-available, and failure states. If an update is ready, select **Update now** to reload the app with the new version, even if you previously dismissed the update notification. A failed check or update can be retried. Update checking is unavailable in development builds and browsers without Service Worker support; Settings explains this instead of showing a latest-version result.
 
