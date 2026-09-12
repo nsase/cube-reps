@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { TranslocoService } from '@jsverse/transloco';
 import en from '../../../../../public/assets/i18n/en.json';
 import ja from '../../../../../public/assets/i18n/ja.json';
-import { CubeService } from '../../../core/cube';
+import { CubeService } from '../../../core/cube/cube';
 import { HistoryStore } from '../history.store';
 import { HistoryFilter } from './history-filter';
 

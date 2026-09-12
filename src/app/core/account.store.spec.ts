@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { AccountStore } from './account.store';
 import { AuthService } from './auth/auth.service';
-import { CubeService } from './cube';
-import { UserDataRepository } from './user-data-repository';
+import { CubeService } from './cube/cube';
+import { UserDataRepository } from './local-storage/user-data-repository';
 
 /** アカウント表示台帳の復元と認証情報の反映を検証する。 */
 describe('AccountStore', () => {

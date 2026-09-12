@@ -4,7 +4,7 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router
 import { TranslocoPipe } from '@jsverse/transloco';
 import { filter, map } from 'rxjs';
 import { FirestoreSyncService } from './core/firestore/firestore-sync.service';
-import { LocalSyncService } from './core/local/local-sync.service';
+import { LocalSyncService } from './core/local-storage/local-sync.service';
 import { SettingsStore } from './core/settings.store';
 import { Nav } from './nav';
 import { AppUpdate } from './shared/app-update/app-update';

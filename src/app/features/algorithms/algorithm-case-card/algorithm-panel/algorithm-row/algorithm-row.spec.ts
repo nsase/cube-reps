@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { PLL_CASES } from '../../../../../core/algorithm-cases';
-import { AlgorithmLibraryService } from '../../../../../core/algorithm-library';
+import { PLL_CASES } from '../../../../../core/algorithm/algorithm-cases';
+import { AlgorithmLibraryService } from '../../../../../core/algorithm/algorithm-library';
 import { ConfirmService } from '../../../../../shared/confirm-dialog/confirm.service';
 import { AlgorithmRow } from './algorithm-row';
 

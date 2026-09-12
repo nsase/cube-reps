@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { of } from 'rxjs';
-import { CubeService } from '../../../../core/cube';
+import { CubeService } from '../../../../core/cube/cube';
 import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
 import { SolveDetailDialog } from '../solve-detail-dialog/solve-detail-dialog';
 import { SolveRecord } from './solve-record';

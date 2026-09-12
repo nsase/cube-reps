@@ -6,7 +6,7 @@ import {
   isPllSolved,
   topLayerOrientationPatternFromScramble,
   topLayerPatternFromScramble,
-} from './cube-state';
+} from '../cube/cube-state';
 
 const cases = [...OLL_CASES, ...PLL_CASES];
 
@@ -140,7 +140,7 @@ describe('algorithm cases', () => {
 });
 
 /** @returns ケース種別と識別子を結合したテスト表示用のキー */
-function itemKey(item: import('./cube.models').AlgorithmCase): string {
+function itemKey(item: import('../cube/cube.models').AlgorithmCase): string {
   return `${item.kind} ${item.number}`;
 }
 

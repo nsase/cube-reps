@@ -3,8 +3,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { CubeService } from '../../../../core/cube';
-import { Solve } from '../../../../core/cube.models';
+import { CubeService } from '../../../../core/cube/cube';
+import { Solve } from '../../../../core/cube/cube.models';
 import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
 
 /** 履歴の計測記録に対するペナルティ、リトライ、削除操作を表示する。 */

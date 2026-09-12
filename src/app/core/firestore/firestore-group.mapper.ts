@@ -1,5 +1,5 @@
-import { RecordGroup } from '../cube.models';
-import { USER_DATA_SCHEMA_VERSION } from '../user-data-repository';
+import { RecordGroup } from '../cube/cube.models';
+import { USER_DATA_SCHEMA_VERSION } from '../local-storage/user-data-repository';
 import { isRecord, omitUndefined, readDate } from './utils';
 
 /** Firestoreへ保存するグループの現行形式。 */

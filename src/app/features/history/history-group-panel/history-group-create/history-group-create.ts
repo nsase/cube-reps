@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { CubeService } from '../../../../core/cube';
+import { CubeService } from '../../../../core/cube/cube';
 import { HistoryStore } from '../../history.store';
 import { TranslocoPipe } from '@jsverse/transloco';
 

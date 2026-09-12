@@ -1,8 +1,8 @@
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { AuthService } from '../../core/auth/auth.service';
-import { CubeService } from '../../core/cube';
-import { average } from '../../core/cube-statistics';
-import { Solve, SolveCategory } from '../../core/cube.models';
+import { CubeService } from '../../core/cube/cube';
+import { average } from '../../core/cube/cube-statistics';
+import { Solve, SolveCategory } from '../../core/cube/cube.models';
 import { MetadataOwnerService } from '../../core/metadata-owner';
 
 /** 履歴一覧の1行に表示する記録と、その計測時点の集計値。 */

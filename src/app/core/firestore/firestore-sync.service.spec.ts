@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { CubeService } from '../cube';
-import { RecordGroup, Solve } from '../cube.models';
-import { LocalSyncService } from '../local/local-sync.service';
-import { UserDataRepository } from '../user-data-repository';
+import { CubeService } from '../cube/cube';
+import { RecordGroup, Solve } from '../cube/cube.models';
+import { LocalSyncService } from '../local-storage/local-sync.service';
+import { UserDataRepository } from '../local-storage/user-data-repository';
 import { FirestoreSyncService } from './firestore-sync.service';
 
 /** 永続化済みの変更からクラウド再送を復元する境界を検証する。 */

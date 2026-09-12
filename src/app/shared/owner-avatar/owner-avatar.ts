@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { SyncMetadata } from '../../core/cube.models';
+import { SyncMetadata } from '../../core/cube/cube.models';
 import { MetadataOwnerService } from '../../core/metadata-owner';
 
 /** 1件の所有者を同じ大きさの画像・イニシャル・アイコンで表示する。 */

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { CubeService } from '../../../../core/cube';
+import { CubeService } from '../../../../core/cube/cube';
 import { HistoryStore } from '../../history.store';
 import { HistoryGroupCreate } from './history-group-create';
 

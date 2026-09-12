@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { SolveCategory } from '../../core/cube.models';
+import { SolveCategory } from '../../core/cube/cube.models';
 import { SolvePattern } from './solve-pattern';
 
 describe('SolvePattern', () => {

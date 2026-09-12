@@ -1,7 +1,10 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { AlgorithmCase, AlgorithmPreference, CaseAlgorithm } from './cube.models';
-import { USER_DATA_SCHEMA_VERSION, UserDataRepository } from './user-data-repository';
-export type { CaseAlgorithm } from './cube.models';
+import { AlgorithmCase, AlgorithmPreference, CaseAlgorithm } from '../cube/cube.models';
+import {
+  USER_DATA_SCHEMA_VERSION,
+  UserDataRepository,
+} from '../local-storage/user-data-repository';
+export type { CaseAlgorithm } from '../cube/cube.models';
 
 /** ケースキーごとのユーザー設定。 */
 type AlgorithmPreferences = Record<string, AlgorithmPreference>;

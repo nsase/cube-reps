@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { AuthService } from './auth/auth.service';
-import { LocalSyncService } from './local/local-sync.service';
-import { FirestoreSyncService } from './firestore/firestore-sync.service';
+import { AuthService } from '../auth/auth.service';
+import { LocalSyncService } from '../local-storage/local-sync.service';
+import { FirestoreSyncService } from '../firestore/firestore-sync.service';
 import { CubeService } from './cube';
 import { Penalty, Solve } from './cube.models';
-import { UserDataRepository } from './user-data-repository';
+import { UserDataRepository } from '../local-storage/user-data-repository';
 
 describe('CubeService record statistics', () => {
   beforeEach(() => {

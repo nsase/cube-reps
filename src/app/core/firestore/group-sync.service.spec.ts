@@ -1,10 +1,10 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../auth/auth.service';
-import { CubeService } from '../cube';
-import { GroupMutation } from '../cube.models';
+import { CubeService } from '../cube/cube';
+import { GroupMutation } from '../cube/cube.models';
 import { FirestoreSyncService } from './firestore-sync.service';
-import { RecordGroup } from '../cube.models';
+import { RecordGroup } from '../cube/cube.models';
 import { SystemStore } from '../system.store';
 import { FirestoreGroupRepository } from './firestore-group.repository';
 import { GroupSyncService } from './group-sync.service';

@@ -3,7 +3,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { By } from '@angular/platform-browser';
 import { TranslocoService } from '@jsverse/transloco';
 import { AccountStore } from '../../core/account.store';
-import { CubeService } from '../../core/cube';
+import { CubeService } from '../../core/cube/cube';
 import { OwnerAvatar } from './owner-avatar';
 
 describe('OwnerAvatar', () => {

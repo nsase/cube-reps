@@ -1,4 +1,4 @@
-import { RecordGroup } from '../cube.models';
+import { RecordGroup } from '../cube/cube.models';
 import { fromFirestoreRecordGroup, toFirestoreGroupRecord } from './firestore-group.mapper';
 
 /** グループの日時と端末専用情報の境界を検証する。 */

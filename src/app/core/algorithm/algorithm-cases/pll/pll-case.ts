@@ -1,4 +1,4 @@
-import { AlgorithmCase, CaseAlgorithm } from '../../cube.models';
+import { AlgorithmCase, CaseAlgorithm } from '../../../cube/cube.models';
 
 /** PLLケース生成時に必要な元データ。 */
 interface PllCaseDefinition {

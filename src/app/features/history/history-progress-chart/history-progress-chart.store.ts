@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { CubeService } from '../../../core/cube';
-import { average } from '../../../core/cube-statistics';
+import { CubeService } from '../../../core/cube/cube';
+import { average } from '../../../core/cube/cube-statistics';
 import { HistoryStore } from '../history.store';
 
 /** グラフに表示する集計系列。 */
