@@ -1,8 +1,8 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter, mergeMap } from 'rxjs';
-import { CubeService } from '../cube';
-import { GroupMutation, RecordGroup, Solve, SolveMutation } from '../cube.models';
+import { CubeService } from '../cube/cube';
+import { GroupMutation, RecordGroup, Solve, SolveMutation } from '../cube/cube.models';
 
 @Injectable({ providedIn: 'root' })
 export class FirestoreSyncService {

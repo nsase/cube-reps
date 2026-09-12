@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../auth/auth.service';
-import { CubeService } from '../cube';
-import { LocalSyncService } from '../local/local-sync.service';
-import { UserDataRepository } from '../user-data-repository';
+import { CubeService } from '../cube/cube';
+import { LocalSyncService } from '../local-storage/local-sync.service';
+import { UserDataRepository } from '../local-storage/user-data-repository';
 import { FirestoreSyncService } from './firestore-sync.service';
 import { SolveMigrationService } from './solve-migration.service';
 

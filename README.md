@@ -142,6 +142,10 @@ The shared Angular Material theme and application color variables are defined in
 ```text
 src/app/
 ├── core/       # Cube logic, statistics, algorithms, and persistent data
+│   ├── algorithm/     # Algorithm library and built-in OLL/PLL cases
+│   ├── cube/          # Record store, Group/Solve services, cube state, and statistics
+│   ├── local-storage/ # IndexedDB repository, legacy migration, and local save queue
+│   └── firestore/     # Cloud repositories and synchronization
 ├── features/   # Timer, algorithm library, history, and settings pages
 └── shared/     # Shared UI such as cube views and confirmation dialogs
 ```

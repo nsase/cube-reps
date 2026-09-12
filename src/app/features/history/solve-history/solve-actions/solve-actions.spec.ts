@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { CubeService } from '../../../../core/cube';
+import { CubeService } from '../../../../core/cube/cube';
 import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
 import { SolveActions } from './solve-actions';
 

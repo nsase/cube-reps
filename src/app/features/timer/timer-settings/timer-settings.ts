@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AlgorithmLibraryService } from '../../../core/algorithm-library';
-import { CubeService } from '../../../core/cube';
+import { AlgorithmLibraryService } from '../../../core/algorithm/algorithm-library';
+import { CubeService } from '../../../core/cube/cube';
 import { TimerStore } from '../timer.store';
 import { TranslocoPipe } from '@jsverse/transloco';
 

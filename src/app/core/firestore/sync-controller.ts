@@ -1,7 +1,7 @@
 import { effect, inject, signal, untracked, WritableSignal } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
-import { CubeService } from '../cube';
-import { SyncMetadata } from '../cube.models';
+import { CubeService } from '../cube/cube';
+import { SyncMetadata } from '../cube/cube.models';
 import { SystemStore } from '../system.store';
 
 /** ユーザーへ表示するユーザーデータ同期状態。 */

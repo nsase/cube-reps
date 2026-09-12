@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../../core/auth/auth.service';
-import { CubeService } from '../../core/cube';
+import { CubeService } from '../../core/cube/cube';
 import { HistoryStore } from './history.store';
 
 describe('HistoryStore', () => {

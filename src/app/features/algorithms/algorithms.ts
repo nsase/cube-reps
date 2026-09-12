@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { OLL_CASES, PLL_CASES } from '../../core/algorithm-cases';
+import { OLL_CASES, PLL_CASES } from '../../core/algorithm/algorithm-cases';
 import { AlgorithmCaseCard } from './algorithm-case-card/algorithm-case-card';
 import { AlgorithmTools } from './algorithm-tools/algorithm-tools';
 import { TranslocoPipe } from '@jsverse/transloco';

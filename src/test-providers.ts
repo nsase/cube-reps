@@ -6,8 +6,8 @@ import en from '../public/assets/i18n/en.json';
 import ja from '../public/assets/i18n/ja.json';
 import { LocalAccount } from './app/core/account.models';
 import { AuthenticatedUser, AuthGateway } from './app/core/auth/auth.gateway';
-import { AlgorithmPreference, RecordGroup, Solve } from './app/core/cube.models';
-import { StoredUserData, UserDataRepository } from './app/core/user-data-repository';
+import { AlgorithmPreference, RecordGroup, Solve } from './app/core/cube/cube.models';
+import { StoredUserData, UserDataRepository } from './app/core/local-storage/user-data-repository';
 
 /** コンポーネントテスト間でIndexedDB状態を共有しないメモリRepository。 */
 class TestUserDataRepository extends UserDataRepository {

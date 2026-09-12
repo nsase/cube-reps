@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../auth/auth.service';
-import { CubeService } from '../cube';
-import { StoredUserData, UserDataRepository } from '../user-data-repository';
+import { CubeService } from '../cube/cube';
+import { StoredUserData, UserDataRepository } from './user-data-repository';
 import { LocalSyncService } from './local-sync.service';
 
 /** クラウド通信と独立したローカル保存を検証する。 */

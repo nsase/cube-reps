@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CubeService } from '../../../core/cube';
+import { CubeService } from '../../../core/cube/cube';
 import { TimerStore } from '../timer.store';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { TimerSolveActions } from '../timer-solve-actions/timer-solve-actions';

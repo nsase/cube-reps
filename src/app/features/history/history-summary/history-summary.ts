@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { CubeService } from '../../../core/cube';
+import { CubeService } from '../../../core/cube/cube';
 import { HistoryStore } from '../history.store';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { average, mean } from '../../../core/cube-statistics';
+import { average, mean } from '../../../core/cube/cube-statistics';
 
 /** 履歴の絞り込み対象となる記録の集計値を表示するコンポーネント。 */
 @Component({

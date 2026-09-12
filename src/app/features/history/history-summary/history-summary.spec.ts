@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { CubeService } from '../../../core/cube';
-import { Solve } from '../../../core/cube.models';
+import { CubeService } from '../../../core/cube/cube';
+import { Solve } from '../../../core/cube/cube.models';
 import { HistoryStore } from '../history.store';
 import { HistorySummary } from './history-summary';
 

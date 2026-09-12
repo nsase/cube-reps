@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Solve } from '../cube.models';
+import { Solve } from '../cube/cube.models';
 import { FirestoreConnection } from './firestore-connection';
 import { fromFirestoreSolve, toFirestoreSolve } from './firestore-solve.mapper';
 

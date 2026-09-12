@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { translateSignal } from '@jsverse/transloco';
-import { CubeFace, CubeOrientation, cubeFacesFromScramble } from '../../core/cube-state';
-import { StickerColor } from '../../core/cube.models';
+import { CubeFace, CubeOrientation, cubeFacesFromScramble } from '../../core/cube/cube-state';
+import { StickerColor } from '../../core/cube/cube.models';
 
 /** 展開図に描画する1面分のデータ。 */
 interface NetFace {

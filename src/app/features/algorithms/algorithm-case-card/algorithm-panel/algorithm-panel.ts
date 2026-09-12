@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { AlgorithmLibraryService, CaseAlgorithm } from '../../../../core/algorithm-library';
-import { AlgorithmCase } from '../../../../core/cube.models';
+import {
+  AlgorithmLibraryService,
+  CaseAlgorithm,
+} from '../../../../core/algorithm/algorithm-library';
+import { AlgorithmCase } from '../../../../core/cube/cube.models';
 import { AlgorithmRow } from './algorithm-row/algorithm-row';
 import { TranslocoPipe } from '@jsverse/transloco';
 

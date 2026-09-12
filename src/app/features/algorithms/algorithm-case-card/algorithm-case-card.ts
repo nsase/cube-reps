@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { AlgorithmCase } from '../../../core/cube.models';
+import { AlgorithmCase } from '../../../core/cube/cube.models';
 import {
   topLayerOrientationPatternFromScramble,
   topLayerPatternFromScramble,
-} from '../../../core/cube-state';
+} from '../../../core/cube/cube-state';
 import { CubePatternView } from '../../../shared/cube-pattern/cube-pattern';
 import { AlgorithmPanel } from './algorithm-panel/algorithm-panel';
 import { TranslocoPipe } from '@jsverse/transloco';

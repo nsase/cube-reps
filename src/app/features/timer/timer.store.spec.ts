@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { AppUpdateService } from '../../core/app-update.service';
-import { CubeService } from '../../core/cube';
-import type { CaseAlgorithm } from '../../core/cube.models';
+import { CubeService } from '../../core/cube/cube';
+import type { CaseAlgorithm } from '../../core/cube/cube.models';
 import { TimerStore } from './timer.store';
 
 describe('TimerStore', () => {

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { PLL_CASES } from './algorithm-cases';
-import { UserDataRepository } from './user-data-repository';
+import { UserDataRepository } from '../local-storage/user-data-repository';
 import { AlgorithmLibraryService } from './algorithm-library';
 
 describe('AlgorithmLibraryService', () => {
