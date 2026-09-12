@@ -156,7 +156,8 @@ export class CubeService {
   }
 
   /**
-   * クラウドから取得した記録グループを、ローカルの計測記録と統合する。
+   * クラウドから受信したグループを端末へ反映する。
+   * 別端末の変更を再起動後も保持するためIndexedDBへ保存し、受信した削除はStoreとIndexedDBから除去する。
    */
   async mergeGroups(remoteGroups: readonly RecordGroup[]): Promise<void> {
     const currentGroups = this.userGroups();
@@ -164,15 +165,20 @@ export class CubeService {
     const changedGroups: RecordGroup[] = [];
     for (const remote of remoteGroups) {
       const local = groupsById.get(remote.id);
-      if (local && !this.remoteWins(local, remote)) continue;
+      if (!this.remoteWins(local, remote)) continue;
       groupsById.set(remote.id, remote);
       changedGroups.push(remote);
     }
-    if (changedGroups.length === 0) return;
+    if (changedGroups.length === 0) {
+      await this.reconcileDeletedGroups(remoteGroups);
+      return;
+    }
 
     // storeを更新
     this.userGroups.set(
-      [...groupsById.values()].sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      [...groupsById.values()]
+        .filter((group) => !group.deletedAt || group.pendingSync)
+        .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
     );
     // IndexedDBを更新
     const updatedGroups = changedGroups.filter((group) => !group.deletedAt);
@@ -183,20 +189,25 @@ export class CubeService {
     ]);
 
     // 削除済みグループに所属する計測記録を未分類グループへ移動する
-    await this.reconcileDeletedGroups();
+    await this.reconcileDeletedGroups(deletedGroups);
   }
 
   /**
-   * クラウドとの同期の終えたグループの同期中のフラグを解除して、IndexedDBへ保存する。
+   * この端末からクラウドへのグループ送信成功を反映する。
+   * 再起動後の不要な再送を防ぐためpendingSyncを解除し、削除済みならStoreとIndexedDBから除去する。
    *
-   * @param group クラウドとの同期を終えた記録グループ
+   * @param group クラウドへの送信が成功したグループの版
    */
   async groupSyncFinished(group: RecordGroup): Promise<void> {
     const current = this.userGroups().find((g) => g.id === group.id);
     if (!current || !this.isLatestSyncData(current, group)) return;
 
     const { pendingSync: _pending, ...saved } = group;
-    this.userGroups.update((groups) => groups.map((g) => (g.id === saved.id ? saved : g)));
+    this.userGroups.update((groups) =>
+      saved.deletedAt
+        ? groups.filter((g) => g.id !== saved.id)
+        : groups.map((g) => (g.id === saved.id ? saved : g)),
+    );
     if (saved.deletedAt) await this.userDataRepository.deleteRecordGroup(saved.id);
     else await this.userDataRepository.putRecordGroup(saved);
   }
@@ -345,7 +356,8 @@ export class CubeService {
   }
 
   /**
-   * クラウドから取得した計測記録を、ローカルの計測記録と統合する。
+   * クラウドから受信した計測記録を端末へ反映する。
+   * 別端末の変更を再起動後も保持するためIndexedDBへ保存し、受信した削除はStoreとIndexedDBから除去する。
    */
   async mergeSolves(remoteSolves: readonly Solve[]): Promise<void> {
     const currentSolves = this.storedSolves();
@@ -359,27 +371,41 @@ export class CubeService {
     }
     if (changedSolves.length === 0) return;
 
+    // storeを更新
     this.storedSolves.set(
-      [...solvesById.values()].sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      [...solvesById.values()]
+        .filter((s) => !s.deletedAt || s.pendingSync)
+        .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
     );
-    await Promise.all(changedSolves.map((solve) => this.userDataRepository.putSolve(solve)));
-
+    // IndexedDBを更新
+    const updatedSolves = changedSolves.filter((solve) => !solve.deletedAt);
+    const deletedSolves = changedSolves.filter((solve) => solve.deletedAt);
+    await Promise.all([
+      ...updatedSolves.map((solve) => this.userDataRepository.putSolve(solve)),
+      ...deletedSolves.map((solve) => this.userDataRepository.deleteSolve(solve.id)),
+    ]);
     // 削除済みグループに所属する計測記録を未分類グループへ移動する
     await this.reconcileDeletedGroups();
   }
 
   /**
-   * クラウドとの同期の終えた計測記録の同期中のフラグを解除して、IndexedDBへ保存する。
+   * この端末からクラウドへの送信成功を反映する。
+   * 再起動後の不要な再送を防ぐためpendingSyncを解除し、削除済みならStoreとIndexedDBから除去する。
    *
-   * @param solve クラウドとの同期を終えた計測記録
+   * @param solve クラウドへの送信が成功した計測記録の版
    */
   async solveSyncFinished(solve: Solve): Promise<void> {
     const current = this.storedSolves().find((s) => s.id === solve.id);
     if (!current || !this.isLatestSyncData(current, solve)) return;
 
     const { pendingSync: _pending, ...saved } = solve;
-    this.storedSolves.update((solves) => solves.map((s) => (s.id === saved.id ? saved : s)));
-    await this.userDataRepository.putSolve(saved);
+    this.storedSolves.update((solves) =>
+      saved.deletedAt
+        ? solves.filter((s) => s.id !== saved.id)
+        : solves.map((s) => (s.id === saved.id ? saved : s)),
+    );
+    if (saved.deletedAt) await this.userDataRepository.deleteSolve(saved.id);
+    else await this.userDataRepository.putSolve(saved);
   }
 
   /**
@@ -658,12 +684,30 @@ export class CubeService {
     // 削除済みグループに所属する計測記録を未分類グループへ移動する
     await this.reconcileDeletedGroups();
 
+    // 旧版が保持した送信済みtombstoneを除去し、未送信の削除だけを再送用に残す。
+    const deletedSolves = this.storedSolves().filter(
+      (solve) => solve.deletedAt && !solve.pendingSync,
+    );
+    const deletedGroups = this.userGroups().filter(
+      (group) => group.deletedAt && !group.pendingSync,
+    );
+    this.storedSolves.update((solves) =>
+      solves.filter((solve) => !solve.deletedAt || solve.pendingSync),
+    );
+    this.userGroups.update((groups) =>
+      groups.filter((group) => !group.deletedAt || group.pendingSync),
+    );
+    await Promise.all([
+      ...deletedSolves.map((solve) => this.userDataRepository.deleteSolve(solve.id)),
+      ...deletedGroups.map((group) => this.userDataRepository.deleteRecordGroup(group.id)),
+    ]);
+
     // データのロードが完了し、データが更新可能な状態になったことを通知する
     this.storageReady.set(true);
   }
 
   /**
-   * SolveとGroupの削除を通常更新より優先して、古い端末からの復活を防ぐ。
+   * Storeに保持している未送信の変更と、受信した変更の優先順位を決める。
    * 通常版同士では未送信の変更を保持し、同期済みの版を更新日時で比較する。
    *
    * @param local 同じIDで端末に保持している同期メタデータ
@@ -696,28 +740,60 @@ export class CubeService {
     );
   }
 
-  /** 取得順によらず削除済みグループを履歴の記録先として復活させない。 */
-  private async reconcileDeletedGroups(): Promise<void> {
-    // 削除済みのグループのIDを取得
-    const deletedGroupIds = new Set(
-      this.userGroups()
-        .filter((group) => group.deletedAt)
-        .map((group) => group.id),
+  /** GroupとSolveの取得成功後、現在のアカウントの存在しない所属先を整理する。
+   * 同一アカウントで複数端末から同時に追加・削除する操作は保証対象外とする。
+   * @param ownerId 今回の一覧取得が完了したアカウント
+   */
+  async reconcileMissingGroups(ownerId: string): Promise<void> {
+    const knownIds = new Set(
+      [...DEFAULT_GROUPS, ...this.userGroups().filter((group) => !group.deletedAt)].map(
+        (group) => group.id,
+      ),
     );
+    const missingGroupIds = new Set(
+      this.storedSolves()
+        .filter(
+          (solve) => solve.ownerType === 'account' && solve.ownerId === ownerId && !solve.deletedAt,
+        )
+        .map((solve) => solve.groupId)
+        .filter((groupId): groupId is string => !!groupId && !knownIds.has(groupId)),
+    );
+    await this.moveSolvesToDefault(missingGroupIds, ownerId);
+  }
 
-    // 削除されたグループに所属する計測記録を、未分類グループへ移動する
-    const changedSolves = this.storedSolves()
-      .filter((solve) => solve.groupId && deletedGroupIds.has(solve.groupId))
+  /** 削除を確認できたグループの所属を整理する。起動時には未取得を削除と判断しない。
+   * @param deletedGroupIds 今回受信した削除、または端末内に保持した削除のID
+   */
+  private async reconcileDeletedGroups(
+    deletedGroup: readonly RecordGroup[] = this.userGroups(),
+  ): Promise<void> {
+    const ids = new Set(deletedGroup.filter((group) => group.deletedAt).map((group) => group.id));
+    await this.moveSolvesToDefault(ids);
+  }
+
+  /** 対象グループの有効な記録だけを未分類へ移し、削除済み記録の再保存を防ぐ。
+   * @param groupIds 所属を解除するグループID
+   * @param ownerId 不明な所属を整理する場合の対象アカウント
+   */
+  private async moveSolvesToDefault(
+    groupIds: ReadonlySet<string>,
+    ownerId?: string,
+  ): Promise<void> {
+    const moved = this.storedSolves()
+      .filter(
+        (solve) =>
+          !solve.deletedAt &&
+          solve.groupId !== DEFAULT_GROUP.id &&
+          !!solve.groupId &&
+          groupIds.has(solve.groupId) &&
+          (!ownerId || (solve.ownerType === 'account' && solve.ownerId === ownerId)),
+      )
       .map((solve) => ({ ...solve, groupId: DEFAULT_GROUP.id }));
-
-    // ストアの計測記録を更新する
-    const solvesById = new Map(changedSolves.map((solve) => [solve.id, solve]));
-    this.storedSolves.update((solves) => solves.map((solve) => solvesById.get(solve.id) ?? solve));
-
-    // グループを移動した計測記録をIndexedDBへ保存する
-    await Promise.all(changedSolves.map((solve) => this.userDataRepository.putSolve(solve)));
-
-    // 削除されたグループがアクティブだった場合、規定グループをアクチブにする
-    if (deletedGroupIds.has(this.activeGroupId())) this.activeGroupId.set(DEFAULT_GROUP.id);
+    if (moved.length) {
+      const byId = new Map(moved.map((solve) => [solve.id, solve]));
+      this.storedSolves.update((solves) => solves.map((solve) => byId.get(solve.id) ?? solve));
+      await Promise.all(moved.map((solve) => this.userDataRepository.putSolve(solve)));
+    }
+    if (groupIds.has(this.activeGroupId())) this.activeGroupId.set(DEFAULT_GROUP.id);
   }
 }
