@@ -15,8 +15,7 @@ export class SettingsStore {
 
   /** 既存の保存キーを引き継ぎ、アプリ起動時に表示言語を復元する。 */
   constructor() {
-    const saved = localStorage.getItem('cube-reps.language');
-    this.setLanguage(saved === 'ja' ? 'ja' : 'en');
+    this.setLanguage(this.getLanguage());
   }
 
   /** 表示言語を変更し、このブラウザでの次回起動に備えて保存する。
@@ -27,5 +26,14 @@ export class SettingsStore {
     this.i18n.setActiveLang(language);
     this.document.documentElement.lang = language;
     localStorage.setItem('cube-reps.language', language);
+  }
+
+  /** 表示言語を返す */
+  private getLanguage(): string {
+    const saved = localStorage.getItem('cube-reps.language');
+    if (saved) return saved === 'ja' ? 'ja' : 'en';
+
+    const lang = navigator.language;
+    return lang.startsWith('ja') ? 'ja' : 'en';
   }
 }
