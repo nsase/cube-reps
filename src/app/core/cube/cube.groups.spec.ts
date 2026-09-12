@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { AuthService } from './auth/auth.service';
+import { AuthService } from '../auth/auth.service';
 import { CubeService } from './cube';
 import { RecordGroup, Solve } from './cube.models';
-import { FirestoreSyncService } from './firestore/firestore-sync.service';
-import { LocalSyncService } from './local/local-sync.service';
-import { UserDataRepository } from './user-data-repository';
+import { FirestoreSyncService } from '../firestore/firestore-sync.service';
+import { LocalSyncService } from '../local-storage/local-sync.service';
+import { UserDataRepository } from '../local-storage/user-data-repository';
 
 /** グループの同期と取り込みによる分類の維持を検証する。 */
 describe('CubeService group synchronization', () => {

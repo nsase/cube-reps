@@ -142,6 +142,10 @@ Angular Materialの共通テーマとアプリ用のカラー変数は、`src/st
 ```text
 src/app/
 ├── core/       # キューブ、集計、手順、永続データ
+│   ├── algorithm/     # 手順ライブラリとビルトインOLL/PLLケース
+│   ├── cube/          # 記録ストア、Group/Solveサービス、キューブ状態、集計
+│   ├── local-storage/ # IndexedDBの保存・旧データ移行・ローカル保存キュー
+│   └── firestore/     # クラウドのRepositoryと同期
 ├── features/   # タイマー、手順一覧、履歴、設定の各画面
 └── shared/     # キューブ表示や確認ダイアログなどの共通UI
 ```

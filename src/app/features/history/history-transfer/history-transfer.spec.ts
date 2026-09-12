@@ -5,7 +5,7 @@ import { TranslocoService } from '@jsverse/transloco';
 import en from '../../../../../public/assets/i18n/en.json';
 import ja from '../../../../../public/assets/i18n/ja.json';
 import { AuthService } from '../../../core/auth/auth.service';
-import { CubeService } from '../../../core/cube';
+import { CubeService } from '../../../core/cube/cube';
 import { HistoryStore } from '../history.store';
 import { HistoryTransfer } from './history-transfer';
 

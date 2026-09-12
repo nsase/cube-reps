@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { RecordGroup } from '../cube.models';
+import { RecordGroup } from '../cube/cube.models';
 import { FirestoreConnection } from './firestore-connection';
 import { fromFirestoreRecordGroup, toFirestoreGroupRecord } from './firestore-group.mapper';
 

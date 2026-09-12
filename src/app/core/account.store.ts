@@ -1,7 +1,7 @@
 import { Injectable, effect, inject, signal, untracked } from '@angular/core';
 import { LocalAccount } from './account.models';
 import { AuthService } from './auth/auth.service';
-import { UserDataRepository } from './user-data-repository';
+import { UserDataRepository } from './local-storage/user-data-repository';
 
 /** アカウント情報を保存するストア */
 @Injectable({ providedIn: 'root' })

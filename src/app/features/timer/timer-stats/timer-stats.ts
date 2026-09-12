@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CubeService } from '../../../core/cube';
+import { CubeService } from '../../../core/cube/cube';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 /** 現在の記録グループの集計値と履歴への導線を表示するコンポーネント。 */

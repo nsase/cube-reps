@@ -1,5 +1,5 @@
-import { Penalty, Solve, SolveCategory } from '../cube.models';
-import { USER_DATA_SCHEMA_VERSION } from '../user-data-repository';
+import { Penalty, Solve, SolveCategory } from '../cube/cube.models';
+import { USER_DATA_SCHEMA_VERSION } from '../local-storage/user-data-repository';
 import { isRecord, omitUndefined, readDate } from './utils';
 
 /** Firestoreへ保存する計測記録の現行形式。 */

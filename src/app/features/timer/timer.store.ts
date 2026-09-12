@@ -1,8 +1,8 @@
 import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
-import { OLL_CASES, PLL_CASES } from '../../core/algorithm-cases';
+import { OLL_CASES, PLL_CASES } from '../../core/algorithm/algorithm-cases';
 import { AppUpdateService } from '../../core/app-update.service';
-import { CubeService } from '../../core/cube';
-import { AlgorithmCase, Penalty, Solve, SolveCategory } from '../../core/cube.models';
+import { CubeService } from '../../core/cube/cube';
+import { AlgorithmCase, Penalty, Solve, SolveCategory } from '../../core/cube/cube.models';
 
 /** Timerコンポーネントツリー内で計測状態と操作を共有するStore。 */
 @Injectable()
