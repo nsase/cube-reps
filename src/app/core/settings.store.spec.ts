@@ -3,7 +3,27 @@ import { TranslocoService } from '@jsverse/transloco';
 import { SettingsStore } from './settings.store';
 
 describe('SettingsStore', () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+    vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US');
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it.each([
+    ['ja-JP', 'ja'],
+    ['en-US', 'en'],
+    ['fr-FR', 'en'],
+  ])('初回はブラウザ言語%sから%sを選ぶ', (browserLanguage, expected) => {
+    vi.spyOn(navigator, 'language', 'get').mockReturnValue(browserLanguage);
+    expect(TestBed.inject(SettingsStore).language()).toBe(expected);
+    expect(document.documentElement.lang).toBe(expected);
+  });
+
+  it('ブラウザ言語より保存した選択を優先する', () => {
+    vi.spyOn(navigator, 'language', 'get').mockReturnValue('ja-JP');
+    localStorage.setItem('cube-reps.language', 'en');
+    expect(TestBed.inject(SettingsStore).language()).toBe('en');
+  });
 
   it.each([null, 'invalid', 'en', 'ja'])('保存言語%sを検証して復元する', (saved) => {
     if (saved) localStorage.setItem('cube-reps.language', saved);
