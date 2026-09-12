@@ -27,13 +27,17 @@ export class FirestoreGroupRepository {
     await this.put(userId, group);
   }
 
-  /** 削除通知を含むグループを取得する。 */
+  /** 所属判定に使うグループ一覧をサーバーから取得する。
+   * 不完全なオフラインキャッシュを「グループが存在しない」と判断しないため、取得失敗は呼び出し元へ返す。
+   * @param userId 一覧取得対象のアカウント
+   * @returns 削除通知を含むグループ一覧
+   */
   async list(userId: string): Promise<RecordGroup[]> {
-    const [db, { collection, getDocs }] = await Promise.all([
+    const [db, { collection, getDocsFromServer }] = await Promise.all([
       this.connection.client(),
       import('firebase/firestore'),
     ]);
-    const snapshot = await getDocs(collection(db, 'users', userId, 'groups'));
+    const snapshot = await getDocsFromServer(collection(db, 'users', userId, 'groups'));
     return snapshot.docs.flatMap((item) => {
       const group = fromFirestoreRecordGroup(item.id, item.data(), userId);
       return group ? [group] : [];

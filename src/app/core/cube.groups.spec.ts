@@ -90,7 +90,7 @@ describe('CubeService group synchronization', () => {
   });
 
   for (const order of ['group-first', 'solve-first'] as const) {
-    it(`${order}: 削除通知をメモリに残し、所属Solveだけを未分類として保存する`, async () => {
+    it(`${order}: 削除通知を除去し、取得完了後に所属Solveだけを未分類として保存する`, async () => {
       const cube = TestBed.inject(CubeService);
       const repository = TestBed.inject(UserDataRepository);
       const sync = TestBed.inject(FirestoreSyncService);
@@ -103,7 +103,8 @@ describe('CubeService group synchronization', () => {
         cube.activeGroupId.set(group.id);
         await cube.mergeGroups([deleted]);
       }
-      expect(cube.userGroups()).toEqual([deleted]);
+      await cube.reconcileMissingGroups(account.uid);
+      expect(cube.userGroups()).toEqual([]);
       expect(cube.activeGroups().map((item) => item.id)).toEqual(['unclassified']);
       expect(cube.activeGroupId()).toBe('unclassified');
       expect(cube.activeSolves()[0].groupId).toBe('unclassified');
@@ -114,7 +115,7 @@ describe('CubeService group synchronization', () => {
     });
   }
 
-  it('未送信のグループ削除は保存し、送信成功後にIndexedDBからだけ削除する', async () => {
+  it('未送信のグループ削除は保存し、送信成功後にStoreとIndexedDBから削除する', async () => {
     const cube = TestBed.inject(CubeService);
     TestBed.inject(AuthService).user.set(account);
     const created = cube.addGroup('Practice')!;
@@ -126,8 +127,7 @@ describe('CubeService group synchronization', () => {
     expect(tombstone.pendingSync).toBe(true);
     await cube.groupSyncFinished(tombstone);
     expect((await repository.load()).groups).toEqual([]);
-    expect(cube.userGroups()[0].deletedAt).toBe(tombstone.deletedAt);
-    expect(cube.userGroups()[0].pendingSync).toBeUndefined();
+    expect(cube.userGroups()).toEqual([]);
   });
 
   it('同期待ちのグループは古いリモート版で上書きしない', async () => {
@@ -176,7 +176,7 @@ describe('CubeService group synchronization', () => {
     expect(remove).not.toHaveBeenCalled();
   });
 
-  it('削除通知は端末時計が進んだ名称更新より優先し、通常版で復活しない', async () => {
+  it('削除通知は端末時計が進んだ名称更新より優先する', async () => {
     const cube = TestBed.inject(CubeService);
     const future = { ...group, updatedAt: '2099-01-01T00:00:00.000Z' };
     await cube.mergeGroups([future]);
@@ -184,8 +184,6 @@ describe('CubeService group synchronization', () => {
     await cube.mergeGroups([deleted]);
     expect(cube.activeGroups().map((item) => item.id)).not.toContain(group.id);
     expect(cube.activeSolves()[0].groupId).toBe('unclassified');
-    await cube.mergeGroups([future]);
-    expect(cube.activeGroups().map((item) => item.id)).not.toContain(group.id);
   });
   it('未送信の名称変更より削除を優先し、遅れた送信完了でも復活しない', async () => {
     const cube = TestBed.inject(CubeService);
@@ -193,7 +191,54 @@ describe('CubeService group synchronization', () => {
     cube.userGroups.set([pending]);
     await cube.mergeGroups([deleted]);
     await cube.groupSyncFinished(pending);
-    expect(cube.userGroups()).toEqual([deleted]);
+    expect(cube.userGroups()).toEqual([]);
     expect(cube.activeGroups().map((item) => item.id)).not.toContain(group.id);
+  });
+  it('無関係な受信で未送信の削除を失わず、送信完了で両保存先から除去する', async () => {
+    const cube = TestBed.inject(CubeService);
+    const repository = TestBed.inject(UserDataRepository);
+    const pendingGroup = { ...deleted, pendingSync: true };
+    const pendingSolve = { ...solve, deletedAt: deleted.deletedAt, pendingSync: true };
+    cube.userGroups.set([pendingGroup]);
+    cube.storedSolves.set([pendingSolve]);
+    await repository.putRecordGroup(pendingGroup);
+    await repository.putSolve(pendingSolve);
+    await cube.mergeGroups([{ ...group, id: 'another-group' }]);
+    await cube.mergeSolves([{ ...solve, id: 'another-solve', groupId: 'another-group' }]);
+    expect(cube.userGroups()).toContainEqual(pendingGroup);
+    expect(cube.storedSolves()).toContainEqual(pendingSolve);
+    await cube.solveSyncFinished(pendingSolve);
+    await cube.groupSyncFinished(pendingGroup);
+    expect(cube.storedSolves().some((item) => item.id === solve.id)).toBe(false);
+    expect((await repository.load()).solves.some((item) => item.id === solve.id)).toBe(false);
+    expect(cube.userGroups().some((item) => item.id === group.id)).toBe(false);
+    expect((await repository.load()).groups.some((item) => item.id === group.id)).toBe(false);
+  });
+
+  it('Solveの削除受信後にグループを削除しても記録を再保存しない', async () => {
+    const cube = TestBed.inject(CubeService);
+    const repository = TestBed.inject(UserDataRepository);
+    await cube.mergeGroups([group]);
+    await cube.mergeSolves([solve]);
+    await cube.mergeSolves([
+      { ...solve, deletedAt: deleted.deletedAt, updatedAt: deleted.updatedAt },
+    ]);
+    const put = vi.spyOn(repository, 'putSolve');
+    await cube.mergeGroups([deleted]);
+    expect(put).not.toHaveBeenCalled();
+    expect((await repository.load()).solves).toEqual([]);
+  });
+
+  it('存在しない所属の整理は取得対象アカウントだけに適用し、未分類を再保存しない', async () => {
+    const cube = TestBed.inject(CubeService);
+    const repository = TestBed.inject(UserDataRepository);
+    const other = { ...solve, id: 'other', ownerId: 'other' };
+    const guest = { ...solve, id: 'guest', ownerType: 'guest' as const, ownerId: undefined };
+    cube.storedSolves.set([solve, other, guest]);
+    await cube.reconcileMissingGroups(account.uid);
+    expect(cube.storedSolves()).toEqual([{ ...solve, groupId: 'unclassified' }, other, guest]);
+    const put = vi.spyOn(repository, 'putSolve');
+    await cube.reconcileMissingGroups(account.uid);
+    expect(put).not.toHaveBeenCalled();
   });
 });

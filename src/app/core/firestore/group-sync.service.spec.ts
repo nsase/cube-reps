@@ -64,10 +64,11 @@ describe('GroupSyncService', () => {
     });
   });
 
-  it('ログイン時にアカウントのグループを一度取得してローカルへ統合する', async () => {
+  it('取得要求でアカウントのグループを取得してローカルへ統合する', async () => {
     const sync = TestBed.inject(GroupSyncService);
     auth.user.set(account);
     TestBed.tick();
+    void TestBed.inject(GroupSyncService).refresh();
 
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledWith(account.uid));
     expect(cube.mergeGroups).toHaveBeenCalledWith([group]);
@@ -78,6 +79,7 @@ describe('GroupSyncService', () => {
     const sync = TestBed.inject(GroupSyncService);
     auth.user.set(account);
     TestBed.tick();
+    void TestBed.inject(GroupSyncService).refresh();
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledTimes(1));
 
     sync.refresh();
@@ -85,10 +87,11 @@ describe('GroupSyncService', () => {
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledTimes(2));
   });
 
-  it('オフライン移行を表示へ反映し、オンライン復帰時に再取得する', async () => {
+  it('オフライン移行を表示へ反映し、オンライン復帰後の取得要求で再取得する', async () => {
     const sync = TestBed.inject(GroupSyncService);
     auth.user.set(account);
     TestBed.tick();
+    void TestBed.inject(GroupSyncService).refresh();
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledTimes(1));
 
     system.online.set(false);
@@ -98,16 +101,18 @@ describe('GroupSyncService', () => {
 
     system.online.set(true);
     TestBed.tick();
+    void TestBed.inject(GroupSyncService).refresh();
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledTimes(2));
     expect(sync.phase()).toBe('synced');
   });
 
-  it('オフライン中のログインではFirestoreキャッシュからの取得を試す', async () => {
+  it('取得要求の結果を反映してもオフライン状態は維持する', async () => {
     system.online.set(false);
     const sync = TestBed.inject(GroupSyncService);
 
     auth.user.set(account);
     TestBed.tick();
+    void TestBed.inject(GroupSyncService).refresh();
 
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledWith(account.uid));
     expect(cube.mergeGroups).toHaveBeenCalledWith([group]);
@@ -118,6 +123,7 @@ describe('GroupSyncService', () => {
     TestBed.inject(GroupSyncService);
     auth.user.set(account);
     TestBed.tick();
+    void TestBed.inject(GroupSyncService).refresh();
 
     queue.groupMutations.set([{ kind: 'put', data: group }]);
     TestBed.tick();
@@ -140,6 +146,7 @@ describe('GroupSyncService', () => {
     expect(cloud.put).not.toHaveBeenCalled();
     auth.user.set({ ...account, uid: 'other' });
     TestBed.tick();
+    void TestBed.inject(GroupSyncService).refresh();
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledWith('other'));
     expect(cloud.put).not.toHaveBeenCalled();
     expect(queue.groupMutations()).toHaveLength(1);
@@ -149,6 +156,7 @@ describe('GroupSyncService', () => {
     const sync = TestBed.inject(GroupSyncService);
     auth.user.set(account);
     TestBed.tick();
+    void TestBed.inject(GroupSyncService).refresh();
     await vi.waitFor(() => expect(sync.phase()).toBe('synced'));
     cloud.put.mockRejectedValueOnce(new Error('offline'));
     queue.groupMutations.set([
@@ -173,6 +181,7 @@ describe('GroupSyncService', () => {
     TestBed.inject(GroupSyncService);
     auth.user.set(account);
     TestBed.tick();
+    void TestBed.inject(GroupSyncService).refresh();
     await vi.waitFor(() => expect(cloud.list).toHaveBeenCalledTimes(1));
     auth.user.set(null);
     TestBed.tick();
@@ -186,6 +195,7 @@ describe('GroupSyncService', () => {
     TestBed.inject(GroupSyncService);
     auth.user.set(account);
     TestBed.tick();
+    void TestBed.inject(GroupSyncService).refresh();
     await vi.waitFor(() => expect(cube.mergeGroups).toHaveBeenCalledWith([group]));
   });
 });
