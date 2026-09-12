@@ -9,6 +9,10 @@ export type SyncPhase = 'signed-out' | 'syncing' | 'synced' | 'offline' | 'pendi
 
 /** 同期対象ごとの差分を共通コントローラーへ渡す境界。 */
 export interface SyncAdapter<T extends SyncMetadata, M> {
+  /** 他の同期処理から取得を制御する場合はfalse。送信と認証状態の監視は継続する。 */
+  autoPull?: boolean;
+  /** 依存データの取得成功を待つ。失敗時は本体の取得・統合を行わない。 */
+  beforePull?: () => Promise<boolean>;
   /** 永続化されたローカル変更。 */
   mutations: WritableSignal<readonly M[]>;
   /** 操作から同期レコードを取得する。 */
@@ -23,7 +27,7 @@ export interface SyncAdapter<T extends SyncMetadata, M> {
     tombstone(userId: string, record: T): Promise<void>;
   };
   /** 取得した一覧をローカルへ統合する。 */
-  merge(records: readonly T[]): Promise<void>;
+  merge(records: readonly T[], userId: string): Promise<void>;
   /** 転送した版の永続再送フラグを解除する。 */
   acknowledge(record: T): Promise<void>;
 }
@@ -67,7 +71,7 @@ export class SyncController<T extends SyncMetadata, M> {
       this.phase.set('signed-out');
       return;
     }
-    untracked(() => void this.pull(user.uid, requestId));
+    if (this.adapter.autoPull !== false) untracked(() => void this.pull(user.uid, requestId));
   });
 
   /** オフライン移行を表示へ反映し、オンライン復帰時に最新ユーザーデータを取得する。 */
@@ -85,7 +89,7 @@ export class SyncController<T extends SyncMetadata, M> {
       this.phase.set('offline');
       return;
     }
-    untracked(() => void this.pull(user.uid, requestId));
+    if (this.adapter.autoPull !== false) untracked(() => void this.pull(user.uid, requestId));
   });
 
   /** CubeServiceのローカル操作を、認証が維持されている間だけFirestoreへ転送する。 */
@@ -107,22 +111,24 @@ export class SyncController<T extends SyncMetadata, M> {
   });
 
   /** 失敗した直近の変更またはクラウドからの取得を再試行する。 */
-  retry(): void {
+  async retry(): Promise<void> {
     const user = this.auth.user();
     if (!user) return;
     if (this.failedMutations.length > 0) {
       const mutations = this.failedMutations.splice(0);
-      for (const mutation of mutations) void this.upload(user.uid, mutation);
+      await Promise.all(mutations.map((mutation) => this.upload(user.uid, mutation)));
       return;
     }
-    this.refresh();
+    await this.refresh();
   }
 
-  /** 現在のアカウントが所有する最新ユーザーデータを一度取得する。 */
-  refresh(): void {
+  /** 現在のアカウントの一覧を取得し、端末への反映完了まで待つ。
+   * @returns 取得・反映が成功した場合はtrue。失敗やアカウント変更時はfalse
+   */
+  async refresh(): Promise<boolean> {
     const user = this.auth.user();
-    if (!user) return;
-    void this.pull(user.uid, ++this.requestId);
+    if (!user) return false;
+    return this.pull(user.uid, ++this.requestId);
   }
 
   /**
@@ -131,17 +137,28 @@ export class SyncController<T extends SyncMetadata, M> {
    * @param userId 取得対象のFirebase UID
    * @param requestId 取得開始時のアカウント状態を識別する連番
    */
-  private async pull(userId: string, requestId: number): Promise<void> {
+  private async pull(userId: string, requestId: number): Promise<boolean> {
     this.phase.set(this.system.online() ? 'syncing' : 'offline');
     try {
       await this.cube.ready;
-      if (requestId !== this.requestId || this.auth.user()?.uid !== userId) return;
+      if (requestId !== this.requestId || this.auth.user()?.uid !== userId) return false;
+      if (this.adapter.beforePull && !(await this.adapter.beforePull())) {
+        if (requestId === this.requestId)
+          this.phase.set(this.system.online() ? 'error' : 'offline');
+        return false;
+      }
+      if (requestId !== this.requestId || this.auth.user()?.uid !== userId) return false;
       const remotes = await this.adapter.cloud.list(userId);
-      if (requestId !== this.requestId || this.auth.user()?.uid !== userId) return;
-      await this.adapter.merge(remotes.filter((remote) => remote.ownerId === userId));
+      if (requestId !== this.requestId || this.auth.user()?.uid !== userId) return false;
+      await this.adapter.merge(
+        remotes.filter((remote) => remote.ownerId === userId),
+        userId,
+      );
       if (requestId === this.requestId) this.setSettledPhase(userId);
+      return true;
     } catch {
-      if (requestId === this.requestId) this.phase.set('error');
+      if (requestId === this.requestId) this.phase.set(this.system.online() ? 'error' : 'offline');
+      return false;
     }
   }
 

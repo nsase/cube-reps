@@ -1,3 +1,4 @@
+import { GroupSyncService } from './group-sync.service';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../auth/auth.service';
@@ -34,6 +35,7 @@ describe('SolveSyncService', () => {
     ready: Promise<void>;
     solveSyncFinished: ReturnType<typeof vi.fn>;
     mergeSolves: ReturnType<typeof vi.fn>;
+    reconcileMissingGroups: ReturnType<typeof vi.fn>;
   };
   let queue: { solveMutations: ReturnType<typeof signal<readonly SolveMutation[]>> };
   let cloud: {
@@ -50,6 +52,7 @@ describe('SolveSyncService', () => {
       ready: Promise.resolve(),
       solveSyncFinished: vi.fn(async () => undefined),
       mergeSolves: vi.fn(async () => undefined),
+      reconcileMissingGroups: vi.fn(async () => undefined),
     };
     cloud = {
       list: vi.fn(async () => [solve]),
@@ -59,6 +62,7 @@ describe('SolveSyncService', () => {
     system = { online: signal(true) };
     TestBed.configureTestingModule({
       providers: [
+        { provide: GroupSyncService, useValue: { refresh: vi.fn(async () => true) } },
         { provide: AuthService, useValue: auth },
         { provide: CubeService, useValue: cube },
         { provide: FirestoreSyncService, useValue: queue },
@@ -191,5 +195,34 @@ describe('SolveSyncService', () => {
     auth.user.set(account);
     TestBed.tick();
     await vi.waitFor(() => expect(cube.mergeSolves).toHaveBeenCalledWith([solve]));
+  });
+  it('グループ取得完了を待ってからSolveを取得し、取得成功後だけ所属を整理する', async () => {
+    let finish!: (ok: boolean) => void;
+    const groups = TestBed.inject(GroupSyncService);
+    vi.mocked(groups.refresh).mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    TestBed.inject(SolveSyncService);
+    auth.user.set(account);
+    TestBed.tick();
+    await vi.waitFor(() => expect(groups.refresh).toHaveBeenCalledOnce());
+    expect(cloud.list).not.toHaveBeenCalled();
+    finish(true);
+    await vi.waitFor(() => expect(cube.reconcileMissingGroups).toHaveBeenCalledWith(account.uid));
+    expect(cube.mergeSolves).toHaveBeenCalledWith([solve]);
+  });
+
+  it('グループ取得失敗時はSolveの取得も所属整理も行わず再試行できる', async () => {
+    vi.mocked(TestBed.inject(GroupSyncService).refresh).mockResolvedValueOnce(false);
+    const service = TestBed.inject(SolveSyncService);
+    auth.user.set(account);
+    TestBed.tick();
+    await vi.waitFor(() => expect(service.phase()).toBe('error'));
+    expect(cloud.list).not.toHaveBeenCalled();
+    expect(cube.reconcileMissingGroups).not.toHaveBeenCalled();
+    await service.retry();
+    expect(cube.reconcileMissingGroups).toHaveBeenCalledWith(account.uid);
   });
 });

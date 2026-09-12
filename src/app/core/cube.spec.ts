@@ -357,7 +357,7 @@ describe('CubeService record statistics', () => {
     expect(cube.storedSolves().map(({ id }) => id)).toEqual([remote.id, local.id]);
   });
 
-  it('Solveの削除は新しい日時の通常版より優先され、再取得でも復活しない', async () => {
+  it('Solveの削除受信は新しい日時の通常版より優先し、StoreとIndexedDBから除去する', async () => {
     const cube = TestBed.inject(CubeService);
     await cube.ready;
     const remote = {
@@ -370,8 +370,8 @@ describe('CubeService record statistics', () => {
     const tombstone = { ...remote, deletedAt: remote.updatedAt };
     await cube.mergeSolves([tombstone]);
     expect(cube.activeSolves()).toEqual([]);
-    await cube.mergeSolves([future]);
-    expect(cube.storedSolves()).toEqual([tombstone]);
+    expect(cube.storedSolves()).toEqual([]);
+    expect((await TestBed.inject(UserDataRepository).load()).solves).toEqual([]);
     expect(cube.activeSolves()).toEqual([]);
   });
 
@@ -476,7 +476,7 @@ describe('CubeService record statistics', () => {
     await cube.mergeSolves([tombstone]);
     expect(cube.activeSolves()).toEqual([]);
     await cube.solveSyncFinished(pending);
-    expect(cube.storedSolves()).toEqual([tombstone]);
+    expect(cube.storedSolves()).toEqual([]);
   });
   it('送信中の編集を古い同期完了で上書きせず、最新版だけを保存済みにする', async () => {
     const cube = TestBed.inject(CubeService);
@@ -498,5 +498,21 @@ describe('CubeService record statistics', () => {
     expect(cube.activeSolves()[0].penalty).toBe('+2');
     expect(cube.activeSolves()[0].pendingSync).toBeUndefined();
     expect((await repository.load()).solves).toEqual(cube.activeSolves());
+  });
+  it('旧版の同期済みtombstoneは起動時に除去し、未送信削除は再送用に残す', async () => {
+    const repository = TestBed.inject(UserDataRepository);
+    const synced = {
+      ...solve(701, 1000),
+      ownerType: 'account' as const,
+      ownerId: 'account',
+      deletedAt: new Date(701).toISOString(),
+    };
+    const pending = { ...synced, id: 'pending', pendingSync: true };
+    await repository.putSolve(synced);
+    await repository.putSolve(pending);
+    const cube = TestBed.inject(CubeService);
+    await cube.ready;
+    expect(cube.storedSolves()).toEqual([pending]);
+    expect((await repository.load()).solves).toEqual([pending]);
   });
 });
