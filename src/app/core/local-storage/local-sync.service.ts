@@ -1,9 +1,9 @@
 import { effect, inject, Injectable, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { mergeMap } from 'rxjs';
-import { CubeService } from '../cube';
-import { GroupMutation, RecordGroup, Solve, SolveMutation } from '../cube.models';
-import { UserDataRepository } from '../user-data-repository';
+import { CubeService } from '../cube/cube';
+import { GroupMutation, RecordGroup, Solve, SolveMutation } from '../cube/cube.models';
+import { UserDataRepository } from './user-data-repository';
 
 @Injectable({ providedIn: 'root' })
 export class LocalSyncService {

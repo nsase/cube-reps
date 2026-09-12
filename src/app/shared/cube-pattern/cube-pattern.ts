@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { CubePattern, StickerColor } from '../../core/cube.models';
+import { CubePattern, StickerColor } from '../../core/cube/cube.models';
 
 /** OLL/PLLパターン表示を構成する1セル。 */
 interface PatternCell {

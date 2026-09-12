@@ -1,8 +1,8 @@
 import { computed, inject, Injectable } from '@angular/core';
 import { translateSignal } from '@jsverse/transloco';
 import { AccountStore } from './account.store';
-import { CubeService } from './cube';
-import { SyncMetadata } from './cube.models';
+import { CubeService } from './cube/cube';
+import { SyncMetadata } from './cube/cube.models';
 
 /** 所有者の分類キーと翻訳に追従する表示名を提供する。 */
 @Injectable({ providedIn: 'root' })

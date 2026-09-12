@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { Solve } from '../cube.models';
-import { USER_DATA_SCHEMA_VERSION } from '../user-data-repository';
+import { Solve } from '../cube/cube.models';
+import { USER_DATA_SCHEMA_VERSION } from '../local-storage/user-data-repository';
 import { fromFirestoreSolve, toFirestoreSolve } from './firestore-solve.mapper';
 
 describe('Firestore Solve mapper', () => {

@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { CubeService } from '../cube';
+import { CubeService } from '../cube/cube';
 import { FirestoreSolveRepository } from './firestore-solve.repository';
 import { FirestoreSyncService } from './firestore-sync.service';
 import { GroupSyncService } from './group-sync.service';

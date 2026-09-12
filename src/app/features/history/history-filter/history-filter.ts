@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { CubeService } from '../../../core/cube';
-import { SOLVE_CATEGORIES } from '../../../core/cube.models';
+import { CubeService } from '../../../core/cube/cube';
+import { SOLVE_CATEGORIES } from '../../../core/cube/cube.models';
 import { HistoryStore } from '../history.store';
 
 /** 履歴の表示・集計対象を切り替える固定フィルター。 */

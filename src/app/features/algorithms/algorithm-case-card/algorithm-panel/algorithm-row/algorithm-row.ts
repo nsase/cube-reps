@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { AlgorithmLibraryService, CaseAlgorithm } from '../../../../../core/algorithm-library';
-import { AlgorithmCase } from '../../../../../core/cube.models';
+import {
+  AlgorithmLibraryService,
+  CaseAlgorithm,
+} from '../../../../../core/algorithm/algorithm-library';
+import { AlgorithmCase } from '../../../../../core/cube/cube.models';
 import { ConfirmService } from '../../../../../shared/confirm-dialog/confirm.service';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 

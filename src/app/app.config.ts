@@ -9,8 +9,8 @@ import { routes } from './app.routes';
 import { AuthGateway, FirebaseAuthGateway } from './core/auth/auth.gateway';
 import { FirestoreSyncService } from './core/firestore/firestore-sync.service';
 import { TranslocoHttpLoader } from './core/i18n/transloco-loader';
-import { LocalSyncService } from './core/local/local-sync.service';
-import { IndexedDbUserDataRepository, UserDataRepository } from './core/user-data-repository';
+import { LocalSyncService } from './core/local-storage/local-sync.service';
+import { IndexedDbUserDataRepository, UserDataRepository } from './core/local-storage/user-data-repository';
 
 /** ルーター、エラーハンドリング、Material Icon、オフライン更新を構成するアプリケーション設定。 */
 export const appConfig: ApplicationConfig = {

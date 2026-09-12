@@ -1,8 +1,8 @@
 import { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { CubeService } from '../../../core/cube';
-import { Solve } from '../../../core/cube.models';
+import { CubeService } from '../../../core/cube/cube';
+import { Solve } from '../../../core/cube/cube.models';
 import { TimerStats } from './timer-stats';
 
 describe('TimerStats', () => {
