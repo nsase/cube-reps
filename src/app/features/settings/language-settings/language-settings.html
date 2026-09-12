@@ -1,0 +1,13 @@
+<section aria-labelledby="language-heading">
+  <h2 id="language-heading">{{ 'app.language' | transloco }}</h2>
+  <select
+    data-testid="language-select"
+    aria-labelledby="language-heading"
+    [value]="settings.language()"
+    (change)="settings.setLanguage($any($event.target).value)"
+  >
+    <option value="en">English</option>
+    <option value="ja">日本語</option>
+  </select>
+  <p>{{ 'settings.languageHint' | transloco }}</p>
+</section>

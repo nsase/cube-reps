@@ -38,12 +38,13 @@
     "timer": "PRACTICE SESSION",
     "algorithms": "ALGORITHM LIBRARY",
     "history": "YOUR PROGRESS",
-    "login": "Sign in"
+    "login": "Sign in",
+    "settings": "SETTINGS"
   },
   "nav": {
     "timer": "Timer",
     "history": "History",
-    "totalSolves": "Total Solves"
+    "settings": "Settings"
   },
   "solveCategories": {
     "full": "Full solve",
@@ -170,5 +171,18 @@
     "confirm": "Process {{count}} selected records.\nFrom: {{from}}\nTo: {{to}}\nThe original records remain in this browser.",
     "result": "Saved: {{completed}}. Not processed: {{failed}}. Check the sync status for cloud upload. Select unprocessed records to try again.",
     "savedGroup": "Saved group"
+  },
+  "settings": {
+    "languageHint": "This language is saved in this browser.",
+    "updateTitle": "App updates",
+    "unsupported": "Update checking is not available in this environment.",
+    "idle": "Check for a new version of CubeReps.",
+    "checking": "Checking for updates…",
+    "latest": "You are using the latest version.",
+    "available": "A new version is ready. Updating will reload the app.",
+    "failed": "Could not check for updates. Check your connection and try again.",
+    "checkUpdate": "Check for updates",
+    "applying": "Updating…",
+    "applyFailed": "Could not apply the update. Please try again."
   }
 }

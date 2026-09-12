@@ -48,13 +48,14 @@ test('一度読み込んだアプリを記録を保持したままオフライ�
   await page.keyboard.up('Space');
   await expect(clock.locator('strong')).not.toHaveText('0.00');
   await page.keyboard.press('Space');
-  await expect(page.locator('.today strong')).toHaveText('1');
+  await page.getByRole('link', { name: 'History', exact: true }).click();
+  await expect(page.locator('app-solve-record')).toHaveCount(1);
 
   await context.setOffline(true);
   try {
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await expect(page.locator('app-timer')).toBeVisible();
-    await expect(page.locator('.today strong')).toHaveText('1');
+    await expect(page.locator('app-history')).toBeVisible();
+    await expect(page.locator('app-solve-record')).toHaveCount(1);
   } finally {
     await context.setOffline(false);
   }

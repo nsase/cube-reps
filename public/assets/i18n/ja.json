@@ -38,12 +38,13 @@
     "timer": "PRACTICE SESSION",
     "algorithms": "ALGORITHM LIBRARY",
     "history": "YOUR PROGRESS",
-    "login": "ログイン"
+    "login": "ログイン",
+    "settings": "設定"
   },
   "nav": {
     "timer": "タイマー",
     "history": "記録",
-    "totalSolves": "総ソルブ数"
+    "settings": "設定"
   },
   "solveCategories": {
     "full": "フルソルブ",
@@ -170,5 +171,18 @@
     "confirm": "選択した{{count}}件を処理します。\n移行元・コピー元: {{from}}\n移行先・コピー先: {{to}}\n元の記録はこのブラウザに残ります。",
     "result": "保存済み: {{completed}}件。未処理: {{failed}}件。クラウドへの保存は同期状態で確認できます。未処理の記録は再選択してやり直せます。",
     "savedGroup": "保存済みグループ"
+  },
+  "settings": {
+    "languageHint": "表示言語はこのブラウザに保存されます。",
+    "updateTitle": "アプリの更新",
+    "unsupported": "この環境ではアプリの更新確認を利用できません。",
+    "idle": "CubeRepsの新しいバージョンを確認できます。",
+    "checking": "更新を確認しています…",
+    "latest": "最新バージョンを使用しています。",
+    "available": "新しいバージョンを利用できます。更新するとアプリを再読み込みします。",
+    "failed": "更新を確認できませんでした。接続を確認して再試行してください。",
+    "checkUpdate": "アップデートを確認",
+    "applying": "更新しています…",
+    "applyFailed": "更新を適用できませんでした。再試行してください。"
   }
 }
