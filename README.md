@@ -107,6 +107,8 @@ Build output is written to `dist/cube-reps`.
 
 The development server and local PWA builds use `CubeReps-local` for the page title and installed app name. To check offline PWA startup, run `npm run start:pwa:local`, open `http://localhost:4400` while online, and install the app from the browser. This command serves a production-mode build with Service Worker enabled; `npm start` does not enable Service Worker. The PWA build uses the configured Firebase cloud project, not the Firestore Emulator. Production builds retain the `CubeReps` name. The local PWA output is written to `dist/cube-reps-local`.
 
+The server listens on `0.0.0.0:4400` so it can be reached through container port forwarding. Forward port 4400 when using a dev container.
+
 The local HTML and Manifest are generated from `src/index.html` and `public/manifest.webmanifest`, changing only the page title and installation names. `npm start`, `npm run watch`, and `npm run start:pwa:local` regenerate them before starting. Edit the shared source files, then restart the command to apply changes. `.generated/local` is excluded from Git; do not edit generated files. When invoking Angular directly with the `local` configuration, run `npm run generate:local` first.
 
 ## Data storage
