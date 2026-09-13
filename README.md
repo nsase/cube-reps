@@ -93,6 +93,7 @@ Firestore development requires Java 21 or later. `npm run test:firestore` starts
 | `npm start`               | Start the development server                 |
 | `npm run start:firestore` | Start the local Firestore Emulator           |
 | `npm run start:local`     | Start both development services              |
+| `npm run start:pwa:local` | Serve an installable local PWA on port 4400  |
 | `npm run build`           | Create a production build                    |
 | `npm test`                | Run tests with Vitest                        |
 | `npm run test:firestore`  | Test Firestore with the Emulator             |
@@ -103,6 +104,8 @@ Firestore development requires Java 21 or later. `npm run test:firestore` starts
 Local verification uses `npm test` (unit and component tests) and `git diff --check`. Builds, Firestore Emulator tests, and browser tests run in CI; do not run browser tests locally. PRs targeting `develop` run `npm run test:e2e:pr` (desktop-wide); release PRs targeting `main` require all 7 projects with `npm run test:e2e`. CI also runs build, unit tests, and Firestore Emulator tests for both. For UI, layout, or responsive changes needing additional viewport coverage, shared style changes, or unclear impact, run the CI workflow manually with `browser_scope: all` and record the scope and results in the PR. Manual CI also accepts `browser_scope: pr` for Issue PR coverage. All required CI checks must pass before merging.
 
 Build output is written to `dist/cube-reps`.
+
+Development builds use `CubeReps-local` for the page title and installed app name. To check offline PWA startup, run `npm run start:pwa:local`, open `http://localhost:4400` while online, and install the app from the browser. This command serves a production-mode build with Service Worker enabled; `npm start` does not enable Service Worker. The PWA build uses the configured Firebase cloud project, not the Firestore Emulator. Production builds retain the `CubeReps` name. The local PWA output is written to `dist/cube-reps-local`.
 
 ## Data storage
 

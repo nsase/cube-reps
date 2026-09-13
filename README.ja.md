@@ -93,6 +93,7 @@ Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`�
 | `npm start`               | 開発サーバーを起動                               |
 | `npm run start:firestore` | ローカルFirestore Emulatorを起動                 |
 | `npm run start:local`     | 両方の開発サービスを同時に起動                   |
+| `npm run start:pwa:local` | インストール可能なローカルPWAをポート4400で配信  |
 | `npm run build`           | プロダクションビルドを作成                       |
 | `npm test`                | Vitestでテストを実行                             |
 | `npm run test:firestore`  | EmulatorでFirestoreをテスト                      |
@@ -103,6 +104,8 @@ Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`�
 ローカル検証は`npm test`（Unit Test・Component Test）と`git diff --check`を実行します。Build、Firestore Emulator Test、Browser TestはCIで実行し、ブラウザテストはローカルで実行しません。`develop`向けPRでは`npm run test:e2e:pr`（desktop-wide）、`main`向けリリースPRでは`npm run test:e2e`（全7プロジェクト）の成功を必須とします。Build、Unit Test、Firestore Emulator Testも両方のCIで実行します。UI、レイアウト、レスポンシブ表示の変更で追加のviewport確認が必要な場合、共通スタイルの変更、影響範囲が不明な場合は、手動CIの`browser_scope: all`で確認し、範囲と結果をPRへ記載します。手動CIでは`browser_scope: pr`でIssue PR相当の範囲も確認できます。merge前にすべての必須CIチェックの成功を確認します。
 
 ビルド成果物は`dist/cube-reps`へ出力されます。
+
+開発ビルドではページタイトルとインストール名が`CubeReps-local`になります。PWAのオフライン起動を確認する場合は、`npm run start:pwa:local`を実行し、オンラインで`http://localhost:4400`を開いてブラウザからインストールしてください。このコマンドはService Workerが有効なプロダクションモードのビルドを配信します。`npm start`ではService Workerは無効です。PWA用ビルドの接続先はFirestore Emulatorではなく、設定済みのFirebaseクラウドプロジェクトです。本番ビルドの名前は`CubeReps`のままです。ローカルPWAの成果物は`dist/cube-reps-local`へ出力されます。
 
 ## データの保存
 
