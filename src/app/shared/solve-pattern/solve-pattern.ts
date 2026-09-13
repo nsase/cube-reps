@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { translateSignal } from '@jsverse/transloco';
-import { SolveCategory } from '../../core/cube.models';
+import { SolveCategory } from '../../core/cube/cube.models';
 import {
   topLayerOrientationPatternFromScramble,
   topLayerPatternFromScramble,
-} from '../../core/cube-state';
+} from '../../core/cube/cube-state';
 import { CubeNetView } from '../cube-net/cube-net';
 import { CubePatternView } from '../cube-pattern/cube-pattern';
 

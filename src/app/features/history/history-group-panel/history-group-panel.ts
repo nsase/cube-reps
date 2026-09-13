@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CubeService } from '../../../core/cube';
+import { CubeService } from '../../../core/cube/cube';
 import { HistoryGroupCreate } from './history-group-create/history-group-create';
 import { RecordGroup } from './record-group/record-group';
 import { TranslocoPipe } from '@jsverse/transloco';

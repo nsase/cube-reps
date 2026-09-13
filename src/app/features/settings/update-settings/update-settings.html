@@ -1,0 +1,33 @@
+<section aria-labelledby="update-heading">
+  <h2 id="update-heading">{{ 'settings.updateTitle' | transloco }}</h2>
+  @if (!updates.enabled) {
+    <p role="status">{{ 'settings.unsupported' | transloco }}</p>
+  } @else {
+    <p role="status" data-testid="update-status">
+      {{ statusKey() | transloco }}
+    </p>
+    <div class="actions">
+      <button
+        mat-button
+        data-testid="check-update"
+        (click)="updates.checkForUpdate()"
+        [disabled]="updates.checkState() === 'checking' || applying()"
+      >
+        {{ 'settings.checkUpdate' | transloco }}
+      </button>
+      @if (updates.updateAvailable()) {
+        <button
+          mat-flat-button
+          data-testid="apply-update"
+          (click)="applyUpdate()"
+          [disabled]="applying() || updates.checkState() === 'checking'"
+        >
+          {{ (applying() ? 'settings.applying' : 'app.updateNow') | transloco }}
+        </button>
+      }
+    </div>
+    @if (applyFailed()) {
+      <p role="alert">{{ 'settings.applyFailed' | transloco }}</p>
+    }
+  }
+</section>

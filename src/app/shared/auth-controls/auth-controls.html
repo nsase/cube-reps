@@ -22,10 +22,10 @@
     @if (auth.initializing()) {
       <span role="status">{{ 'auth.checking' | transloco }}</span>
     } @else if (auth.user(); as user) {
-      <div data-testid="authenticated-account">
+      <div class="authenticated-account" data-testid="authenticated-account">
         <strong>{{ user.displayName || user.email || ('auth.account' | transloco) }}</strong>
         @if (user.displayName && user.email) {
-          <small>{{ user.email }}</small>
+          <span>{{ user.email }}</span>
         }
       </div>
     } @else {

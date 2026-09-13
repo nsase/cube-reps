@@ -1,0 +1,16 @@
+<nav>
+  <a routerLink="/timer" routerLinkActive="on" [attr.aria-label]="'nav.timer' | transloco"
+    >⏱ <em>{{ 'nav.timer' | transloco }}</em></a
+  >
+  <a routerLink="/algorithms" routerLinkActive="on">▦ <em>OLL / PLL</em></a>
+  <a routerLink="/history" routerLinkActive="on" [attr.aria-label]="'nav.history' | transloco"
+    >↗ <em>{{ 'nav.history' | transloco }}</em></a
+  >
+  <a
+    routerLink="/settings"
+    routerLinkActive="on"
+    data-testid="settings-link"
+    [attr.aria-label]="'nav.settings' | transloco"
+    >⚙ <em>{{ 'nav.settings' | transloco }}</em></a
+  >
+</nav>

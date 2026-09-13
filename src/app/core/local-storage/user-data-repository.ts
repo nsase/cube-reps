@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { DBSchema, IDBPDatabase, openDB } from 'idb';
-import { LocalAccount } from './account.models';
-import { AlgorithmPreference, RecordGroup, Solve, SolveCategory } from './cube.models';
+import { LocalAccount } from '../account.models';
+import { AlgorithmPreference, RecordGroup, Solve, SolveCategory } from '../cube/cube.models';
 
 /** 現行ユーザーデータのスキーマバージョン。 */
 export const USER_DATA_SCHEMA_VERSION = 3;

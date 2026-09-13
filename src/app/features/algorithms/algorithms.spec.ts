@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { PLL_CASES } from '../../core/algorithm-cases';
-import { topLayerPatternFromScramble } from '../../core/cube-state';
+import { PLL_CASES } from '../../core/algorithm/algorithm-cases';
+import { topLayerPatternFromScramble } from '../../core/cube/cube-state';
 import { routes } from '../../app.routes';
 import { Algorithms } from './algorithms';
 

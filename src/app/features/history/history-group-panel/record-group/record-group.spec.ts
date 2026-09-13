@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { FirestoreSyncService } from '../../../../core/firestore/firestore-sync.service';
-import { CubeService } from '../../../../core/cube';
+import { CubeService } from '../../../../core/cube/cube';
 import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.service';
 import { HistoryStore } from '../../history.store';
 import { RecordGroup } from './record-group';

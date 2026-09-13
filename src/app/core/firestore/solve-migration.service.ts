@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
-import { CubeService } from '../cube';
-import { Solve } from '../cube.models';
+import { CubeService } from '../cube/cube';
+import { Solve } from '../cube/cube.models';
 
 /** 履歴で確認された記録だけを移行・コピーし、アカウント変更後の追加処理を止める。 */
 @Injectable({ providedIn: 'root' })

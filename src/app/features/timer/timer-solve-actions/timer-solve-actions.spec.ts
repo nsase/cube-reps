@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
-import { CubeService } from '../../../core/cube';
+import { CubeService } from '../../../core/cube/cube';
 import { ConfirmService } from '../../../shared/confirm-dialog/confirm.service';
 import { TimerStore } from '../timer.store';
 import { TimerSolveActions } from './timer-solve-actions';
