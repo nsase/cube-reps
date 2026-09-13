@@ -10,6 +10,8 @@
 - Issueの実装が完了したら、Issueブランチから`develop`をbaseとするPull Requestを作成する。
 - Pull Requestを作成するときは、`.github/pull_request_template.md`を本文のベースとして使用し、既定のセクションと確認項目を維持する。
 - Pull Requestのチェック項目は実際の確認結果に合わせて更新し、未確認の項目を完了扱いにしない。
+- エージェントの作業は原則としてPull Requestの作成・更新までとし、作成後のCIの完了待ち・結果確認・手動CIの追加実行・mergeは、ユーザーから明示的に依頼された場合だけ行う。リリース依頼だけでは、これらの操作の依頼として扱わない。
+- PR作成後のCI結果の確認とmerge判断はユーザーが行う。CIで修正が必要な場合はユーザーの修正依頼を受けて対応し、エージェントが未確認のCI項目は未チェックのまま残す。以下のmerge前のCI成功条件は維持するが、エージェントが自動で確認する指示として扱わない。
 - Issue用Pull Requestには`Related to #<Issue番号>`を記載し、`develop`へのmerge時点ではIssueを閉じない。
 - Issue用Pull Requestでは、CIの`npm run build`、`npm test`、`npm run test:firestore`、`npm run test:e2e:pr`が成功し、ローカルの`git diff --check`に問題がないことを確認してからmergeする。
 - リリースは原則として1日1回を目安に、`develop`から`main`をbaseとするPull Requestを作成して行う。
