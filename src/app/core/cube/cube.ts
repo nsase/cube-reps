@@ -348,13 +348,20 @@ export class CubeService {
     return this.solves.displayTime(solve);
   }
 
-  /** @returns 3×3の合法状態を均等に選んだrandom-state scramble */
+  /**
+   * 3×3の合法状態を均等に選んだスクランブルを端末内で生成する。
+   * esbuild向けのWorker起動を優先し、ビルド後に存在しないURLへの不要な通信を避ける。
+   * @returns random-state scramble
+   */
   async createScramble(): Promise<string> {
     const [{ randomScrambleForEvent }, { setSearchDebug }] = await Promise.all([
       import('cubing/scramble'),
       import('cubing/search'),
     ]);
-    setSearchDebug({ logPerf: false });
+    setSearchDebug({
+      logPerf: false,
+      prioritizeEsbuildWorkaroundForWorkerInstantiation: true,
+    });
     return (await randomScrambleForEvent('333')).toString();
   }
 
