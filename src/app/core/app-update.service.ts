@@ -12,6 +12,18 @@ export const RELOAD_PAGE = new InjectionToken<() => void>('RELOAD_PAGE', {
   },
 });
 
+/** ブラウザの通常タブと、インストール済みPWAとしての起動を区別する。 */
+export const IS_PWA = new InjectionToken<boolean>('IS_PWA', {
+  providedIn: 'root',
+  factory: () => {
+    const window = inject(DOCUMENT).defaultView;
+    return (
+      window?.matchMedia?.('(display-mode: standalone)').matches === true ||
+      (window?.navigator as (Navigator & { standalone?: boolean }) | undefined)?.standalone === true
+    );
+  },
+});
+
 /** Service Workerが取得した新版をユーザー操作で安全に適用するサービス。 */
 @Injectable({ providedIn: 'root' })
 export class AppUpdateService {
@@ -29,8 +41,8 @@ export class AppUpdateService {
   );
   /** Angular Service Workerの更新イベントを提供するサービス。 */
   private readonly swUpdate = inject(SwUpdate);
-  /** この環境でService Workerによる更新を利用できるか。 */
-  readonly enabled = this.swUpdate.isEnabled;
+  /** PWAとして起動し、Service Workerによる更新を利用できるか。 */
+  readonly enabled = inject(IS_PWA) && this.swUpdate.isEnabled;
   /** 手動確認の進行状況。取得済みの新版はupdateAvailableで別途保持する。 */
   readonly checkState = signal<'idle' | 'checking' | 'latest' | 'failed'>('idle');
   /** 完了イベントからPromiseの終了までの間も重複した確認要求を防ぐ。 */
@@ -38,9 +50,9 @@ export class AppUpdateService {
   /** 適用済みの新版を表示するためにページを再読み込みする処理。 */
   private readonly reloadPage = inject(RELOAD_PAGE);
 
-  /** Service Workerが有効な環境だけで新版の取得完了を監視する。 */
+  /** Service Workerが有効なPWAだけで新版の取得完了を監視する。 */
   constructor() {
-    if (!this.swUpdate.isEnabled) return;
+    if (!this.enabled) return;
     this.swUpdate.versionUpdates.pipe(takeUntilDestroyed()).subscribe((event: VersionEvent) => {
       if (event.type === 'NO_NEW_VERSION_DETECTED' && this.checkState() === 'checking') {
         this.checkState.set('latest');
@@ -87,6 +99,7 @@ export class AppUpdateService {
 
   /** 待機中の新版を有効化し、同じURLを新版で読み直す。 */
   async applyUpdate(): Promise<void> {
+    if (!this.enabled) return;
     await this.swUpdate.activateUpdate();
     this.reloadPage();
   }
