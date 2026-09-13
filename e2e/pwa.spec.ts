@@ -1,5 +1,24 @@
 import { expect, test } from '@playwright/test';
 
+test('本番とローカルPWAをタイトルとインストール名で区別できる', async ({ page }) => {
+  for (const [origin, name] of [
+    ['http://127.0.0.1:4300', 'CubeReps'],
+    ['http://localhost:4400', 'CubeReps-local'],
+  ]) {
+    await page.goto(`${origin}/#/timer`);
+    await expect(page).toHaveTitle(name);
+    await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute(
+      'content',
+      name,
+    );
+    const manifestUrl = await page.locator('link[rel="manifest"]').getAttribute('href');
+    const response = await page.request.get(new URL(manifestUrl!, `${origin}/`).href);
+    expect(response.ok()).toBe(true);
+    expect(await response.json()).toMatchObject({ name, short_name: name });
+    await page.evaluate(async () => navigator.serviceWorker.ready);
+  }
+});
+
 test('Manifestがインストールに必要な情報とアイコンを提供する', async ({ request }) => {
   const response = await request.get('/manifest.webmanifest');
   expect(response.ok()).toBe(true);

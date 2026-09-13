@@ -51,12 +51,20 @@ const config = defineConfig({
       use: { ...devices['Pixel 7 landscape'] },
     },
   ],
-  webServer: {
-    command: 'npm run start:e2e',
-    url: 'http://127.0.0.1:4300',
-    reuseExistingServer: !process.env['CI'],
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: 'npm run start:e2e',
+      url: 'http://127.0.0.1:4300',
+      reuseExistingServer: !process.env['CI'],
+      timeout: 120_000,
+    },
+    {
+      command: 'npm run start:pwa:local',
+      url: 'http://localhost:4400',
+      reuseExistingServer: !process.env['CI'],
+      timeout: 120_000,
+    },
+  ],
 });
 
 export default config;
