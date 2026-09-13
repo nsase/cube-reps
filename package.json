@@ -15,7 +15,7 @@
     "prepare": "husky",
     "test:firestore": "firebase emulators:exec --only firestore --project cube-reps \"vitest run --config vitest.firestore.config.ts\"",
     "start:local": "concurrently --kill-others --names app,firestore \"npm run start\" \"npm run start:firestore\"",
-    "start:pwa:local": "ng build --configuration production,local --output-path dist/cube-reps-local && http-server dist/cube-reps-local/browser -a localhost -p 4400 -c-1",
+    "start:pwa:local": "ng build --configuration production,local --output-path dist/cube-reps-local && http-server dist/cube-reps-local/browser -a 0.0.0.0 -p 4400 -c-1",
     "generate:local": "node scripts/generate-local-assets.mjs",
     "prestart": "npm run generate:local",
     "prewatch": "npm run generate:local",
