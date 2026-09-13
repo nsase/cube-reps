@@ -52,7 +52,35 @@
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "index": "src/local/index.html",
+              "assets": [
+                {
+                  "glob": "**/*",
+                  "input": "public",
+                  "ignore": ["manifest.webmanifest"]
+                },
+                {
+                  "glob": "manifest.webmanifest",
+                  "input": "src/local",
+                  "output": "/"
+                }
+              ]
+            },
+            "local": {
+              "index": "src/local/index.html",
+              "assets": [
+                {
+                  "glob": "**/*",
+                  "input": "public",
+                  "ignore": ["manifest.webmanifest"]
+                },
+                {
+                  "glob": "manifest.webmanifest",
+                  "input": "src/local",
+                  "output": "/"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
