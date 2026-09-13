@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { SwUpdate, VersionEvent } from '@angular/service-worker';
 import { Subject } from 'rxjs';
-import { AppUpdateService, RELOAD_PAGE } from '../../core/app-update.service';
+import { AppUpdateService, IS_PWA, RELOAD_PAGE } from '../../core/app-update.service';
 import { Settings } from './settings';
 import en from '../../../../public/assets/i18n/en.json';
 import ja from '../../../../public/assets/i18n/ja.json';
@@ -21,6 +21,7 @@ describe('Settings', () => {
     TestBed.configureTestingModule({
       imports: [Settings],
       providers: [
+        { provide: IS_PWA, useValue: true },
         {
           provide: SwUpdate,
           useValue: { isEnabled: true, versionUpdates: events, checkForUpdate, activateUpdate },
@@ -104,6 +105,15 @@ describe('Settings', () => {
     apply.click();
     await fixture.whenStable();
     expect(reload).toHaveBeenCalledOnce();
+  });
+
+  it('Web版ではSWが有効でも更新操作を表示しない', async () => {
+    TestBed.overrideProvider(IS_PWA, { useValue: false });
+    const fixture = TestBed.createComponent(Settings);
+    await fixture.whenStable();
+    expect(fixture.nativeElement.textContent).toContain(en.settings.unsupported);
+    expect(fixture.nativeElement.querySelector('[data-testid="check-update"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[data-testid="apply-update"]')).toBeNull();
   });
 
   it('未対応環境では理由を表示し更新操作を表示しない', async () => {
