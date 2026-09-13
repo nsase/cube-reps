@@ -52,23 +52,10 @@
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true,
-              "index": "src/local/index.html",
-              "assets": [
-                {
-                  "glob": "**/*",
-                  "input": "public",
-                  "ignore": ["manifest.webmanifest"]
-                },
-                {
-                  "glob": "manifest.webmanifest",
-                  "input": "src/local",
-                  "output": "/"
-                }
-              ]
+              "sourceMap": true
             },
             "local": {
-              "index": "src/local/index.html",
+              "index": ".generated/local/index.html",
               "assets": [
                 {
                   "glob": "**/*",
@@ -77,7 +64,7 @@
                 },
                 {
                   "glob": "manifest.webmanifest",
-                  "input": "src/local",
+                  "input": ".generated/local",
                   "output": "/"
                 }
               ]
@@ -98,7 +85,7 @@
               "buildTarget": "cube-reps:build:production"
             },
             "development": {
-              "buildTarget": "cube-reps:build:development"
+              "buildTarget": "cube-reps:build:development,local"
             }
           },
           "defaultConfiguration": "development"
