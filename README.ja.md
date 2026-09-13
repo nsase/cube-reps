@@ -105,7 +105,9 @@ Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`�
 
 ビルド成果物は`dist/cube-reps`へ出力されます。
 
-開発ビルドではページタイトルとインストール名が`CubeReps-local`になります。PWAのオフライン起動を確認する場合は、`npm run start:pwa:local`を実行し、オンラインで`http://localhost:4400`を開いてブラウザからインストールしてください。このコマンドはService Workerが有効なプロダクションモードのビルドを配信します。`npm start`ではService Workerは無効です。PWA用ビルドの接続先はFirestore Emulatorではなく、設定済みのFirebaseクラウドプロジェクトです。本番ビルドの名前は`CubeReps`のままです。ローカルPWAの成果物は`dist/cube-reps-local`へ出力されます。
+開発サーバーとローカルPWA用ビルドではページタイトルとインストール名が`CubeReps-local`になります。PWAのオフライン起動を確認する場合は、`npm run start:pwa:local`を実行し、オンラインで`http://localhost:4400`を開いてブラウザからインストールしてください。このコマンドはService Workerが有効なプロダクションモードのビルドを配信します。`npm start`ではService Workerは無効です。PWA用ビルドの接続先はFirestore Emulatorではなく、設定済みのFirebaseクラウドプロジェクトです。本番ビルドの名前は`CubeReps`のままです。ローカルPWAの成果物は`dist/cube-reps-local`へ出力されます。
+
+ローカル用のHTMLとManifestは、共通の`src/index.html`と`public/manifest.webmanifest`からページタイトルとインストール名だけを差し替えて生成します。`npm start`、`npm run watch`、`npm run start:pwa:local`の起動前に毎回生成されます。変更は共通ファイルへ行い、コマンドを再起動して反映してください。生成先の`.generated/local`はGit管理対象外で、直接編集しません。Angularを`local`構成で直接実行する場合は、先に`npm run generate:local`を実行してください。
 
 ## データの保存
 
