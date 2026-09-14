@@ -8,12 +8,18 @@
 - 作業ブランチ名は、原則として`Issue番号/短い英語の説明`とする（例: `4/progress-chart`、`123/import-data`）。Issue番号の桁数は固定しない。
 - ユーザーからブランチ名の指定がある場合は、その名前を優先する。
 - Issueの実装が完了したら、Issueブランチから`develop`をbaseとするPull Requestを作成する。
-- Pull Requestを作成するときは、`.github/pull_request_template.md`を本文のベースとして使用し、既定のセクションと確認項目を維持する。
+- Pull Request本文は用途に応じて`.github/PULL_REQUEST_TEMPLATE/issue.md`、`version.md`、`release.md`をベースにし、既定のセクションと確認項目を維持する。`.github/pull_request_template.md`はIssue用の既定テンプレートとしてissue.mdと一致させる。
+- `gh pr create`では該当テンプレートをコピーして本文を埋め、`--body-file <本文ファイル>`で渡す。Issue PRとバージョン更新PRは`--base develop`、リリースPRは`--base main --head develop`を指定する。
 - Pull Requestのチェック項目は実際の確認結果に合わせて更新し、未確認の項目を完了扱いにしない。
 - エージェントの作業は原則としてPull Requestの作成・更新までとし、作成後のCIの完了待ち・結果確認・手動CIの追加実行・mergeは、ユーザーから明示的に依頼された場合だけ行う。リリース依頼だけでは、これらの操作の依頼として扱わない。
 - PR作成後のCI結果の確認とmerge判断はユーザーが行う。CIで修正が必要な場合はユーザーの修正依頼を受けて対応し、エージェントが未確認のCI項目は未チェックのまま残す。以下のmerge前のCI成功条件は維持するが、エージェントが自動で確認する指示として扱わない。
 - Issue用Pull Requestには`Related to #<Issue番号>`を記載し、`develop`へのmerge時点ではIssueを閉じない。
 - Issue用Pull Requestでは、CIの`npm run build`、`npm test`、`npm run test:firestore`、`npm run test:e2e:pr`が成功し、ローカルの`git diff --check`に問題がないことを確認してからmergeする。
+- バージョン番号は`package.json`を情報源とし、`package-lock.json`のトップレベルおよびルートパッケージと一致させる。画面はビルド時にpackage.jsonから取り込む。通常のIssue実装では番号を更新しない。
+- 更新種別は、互換性を保つ不具合修正がpatch、互換性を保つ機能追加がminor、互換性を失う変更がmajorとする。複数の変更を含む場合は最も大きい種別を選ぶ。0.xでも同じ基準を使う。
+- リリース準備を明示的に依頼された場合、バージョン更新PRの作成をその範囲に含める。作業ツリーをクリーンにしたうえで`npm run release:prepare -- patch`（またはminor/major）を実行する。最新origin/developから`version/<次の番号>`を作成し、`npm version --no-git-tag-version --ignore-scripts`で2ファイルを更新してdevelop向けPRを作る。main/developへ直接pushしない。Gitとnpmと認証済みのgh、およびoriginへのpush権限を必要とする。
+- バージョン更新PRのmerge後に`develop → main`のリリースPRを作成する。CI確認・mergeは明示的な依頼がある場合だけ行うため、それ以外はバージョン更新PR作成時点で止め、ユーザーのmerge後に続行する。同期用PRは作成しない。
+- 自動化が途中で失敗した場合は、git statusと既存のversionブランチ・PRを確認し、その地点から手動で再開する。既存ブランチの削除やforce pushは行わない。番号の再採番を目的に再実行しない。
 - リリースは原則として1日1回を目安に、`develop`から`main`をbaseとするPull Requestを作成して行う。
 - リリース用Pull Requestには、そのリリースで完了する各Issueの`Closes #<Issue番号>`を記載し、`main`へのmerge時にIssueを閉じる。
 - リリース用Pull Requestでは、CIの`npm run build`、`npm test`、`npm run test:firestore`、`npm run test:e2e`（全7プロジェクト）が成功し、ローカルの`git diff --check`に問題がないことを確認してからmergeする。
