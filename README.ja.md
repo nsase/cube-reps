@@ -46,6 +46,8 @@ CubeRepsは、スピードキューブの計測とトレーニングをブラウ
 
 ## 設定
 
+設定には、現在開いているアプリに埋め込まれたバージョンをオフラインでも表示します。ビルド時に`package.json`から取り込むため、新版のダウンロードだけでは番号は変わらず、その版へ再読み込みした後に切り替わります。
+
 サイドバー下部（スマートフォンでは画面下部のナビゲーション）の**設定**から、日本語・英語を選択できます。初回はブラウザ言語が日本語なら日本語、それ以外なら英語を選びます。言語はアプリ全体へ反映され、このブラウザでの次回起動時にも復元されます。既存の言語設定も引き継ぎます。
 
 **アップデートを確認**で新版を手動確認できます。確認中・最新版・更新あり・確認失敗を表示し、新版がある場合は**今すぐ更新**でアプリを再読み込みして切り替えます。更新通知を閉じた後も設定画面から適用でき、確認や適用に失敗した場合は再試行できます。更新通知と手動確認は、インストールしたPWAとして起動した場合のみ利用できます。通常のブラウザタブ、開発ビルドやService Worker未対応のブラウザでは、最新版とは表示せず更新確認を利用できない旨を案内します。
@@ -160,3 +162,24 @@ src/app/
 ## ライセンス
 
 [0BSD（Zero-Clause BSD）](LICENSE)で公開しています。個人・商用を問わず、利用、複製、変更、再配布が可能です。
+
+## リリースの準備
+
+バージョン番号の情報源は`package.json`です。`package-lock.json`のトップレベルとルートパッケージも同じ番号にします。通常のIssue PRでは採番しません。互換性を保つ不具合修正は`patch`、互換性を保つ機能追加は`minor`、互換性を失う変更は`major`を選びます。複数の変更がある場合は最も大きい種別を選び、0.xでも同じ基準を使います。
+
+作業ツリーをクリーンにし、Git、npm、認証済みのGitHub CLI（`gh auth login`）、`origin`へのpush権限を用意して実行します。
+
+```bash
+npm run release:prepare -- patch
+```
+
+必要に応じて`patch`を`minor`または`major`に変えます。コマンドは最新の`develop`を取得し、`version/<次の番号>`を作成して、Gitタグやversionライフサイクルスクリプトを実行せずに両packageファイルを更新します。その後commit、ブランチのpush、`develop`向けPR作成まで行います。mergeやCI完了待ちは行いません。途中で失敗した場合は`git status`と既存のブランチ・PRを確認して手動で再開し、ブランチの削除や別の番号を得るための再実行は行わないでください。
+
+CIを確認してバージョン更新PRを`develop`へmergeした後、`develop`から`main`へのリリースPRを作成します。Issue PRは`.github/PULL_REQUEST_TEMPLATE/issue.md`、バージョン更新PRは`version.md`（コマンドが本文を生成）、リリースPRは`release.md`を使います。テンプレートを一時的な本文ファイルにコピーし、各セクションと実際の確認結果を記入して明示的に渡します。
+
+```bash
+gh pr create --base develop --head <issue-branch> --body-file /tmp/issue-pr.md
+gh pr create --base main --head develop --title "Release <version>" --body-file /tmp/release-pr.md
+```
+
+Issue PRでは`Related to #<番号>`、リリースPRでは完了する各Issueの`Closes #<番号>`を記載します。未確認の項目は未チェックにします。リリース前にはCIのBuild、Unit Test、Firestore Emulator Test、全7プロジェクトのBrowser Test成功と、ローカルの`git diff --check`を確認します。リリース後も`develop`を維持します。バージョン更新PRの作成、そのmerge、リリースPRの作成は別のステップです。

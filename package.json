@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "release:prepare": "node scripts/prepare-release.mjs",
+    "test:release": "node --test scripts/prepare-release.test.mjs",
     "start": "ng serve",
     "start:firestore": "firebase emulators:start --only firestore --project cube-reps",
     "build": "ng build",
