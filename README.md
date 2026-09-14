@@ -46,6 +46,8 @@ Browser storage is separated by browser and installation context. In particular,
 
 ## Settings
 
+Settings displays the version embedded in the app currently open, including when offline. It reads `package.json` at build time, so a downloaded update does not change the displayed number until the app reloads into that version.
+
 Open **Settings** at the bottom of the sidebar (in the bottom navigation on mobile) to select English or Japanese. On the first visit, Japanese is selected for a Japanese browser language; otherwise English is used. The language applies throughout the app and is saved in this browser for the next visit; existing language preferences are preserved.
 
 Select **Check for updates** to check for a new version. Settings displays checking, latest-version, update-available, and failure states. If an update is ready, select **Update now** to reload the app with the new version, even if you previously dismissed the update notification. A failed check or update can be retried. Update notifications and manual checking are only available when running as an installed PWA. Update checking is unavailable in regular browser tabs, development builds, and browsers without Service Worker support; Settings explains this instead of showing a latest-version result.
@@ -160,3 +162,24 @@ src/app/
 ## License
 
 CubeReps is available under the [0BSD (Zero-Clause BSD) License](LICENSE). You may use, copy, modify, and redistribute it for personal or commercial purposes.
+
+## Preparing a release
+
+`package.json` is the version source; `package-lock.json` must match both at its top level and in its root package. Ordinary issue PRs do not bump versions. Choose `patch` for compatible fixes, `minor` for compatible features, or `major` for breaking changes; choose the largest applicable change, including during 0.x development.
+
+With a clean working tree, Git, npm, authenticated GitHub CLI (`gh auth login`), and push access to `origin`, run:
+
+```bash
+npm run release:prepare -- patch
+```
+
+Replace `patch` with `minor` or `major` as appropriate. The command fetches the latest `develop`, creates `version/<next-version>`, updates both package files without a Git tag or version lifecycle scripts, commits, pushes the branch, and creates a PR targeting `develop`. It does not merge or wait for CI. If it fails partway through, inspect `git status` and the existing branch/PR and resume manually; do not delete the branch or rerun to obtain another version.
+
+After reviewing CI and merging the version PR into `develop`, create the release PR from `develop` to `main`. Use `.github/PULL_REQUEST_TEMPLATE/issue.md` for issue PRs, `version.md` for version PRs (filled by the command), and `release.md` for release PRs. Copy the template to a temporary body file, fill in its sections and actual verification results, then pass it explicitly:
+
+```bash
+gh pr create --base develop --head <issue-branch> --body-file /tmp/issue-pr.md
+gh pr create --base main --head develop --title "Release <version>" --body-file /tmp/release-pr.md
+```
+
+Issue PRs use `Related to #<number>`; release PRs use `Closes #<number>` for each completed issue. Keep unverified checks unchecked. Release CI must pass Build, Unit Test, Firestore Emulator Test, and Browser Test across all seven projects; also run `git diff --check` locally. Keep `develop` after the release. Creating a version PR, merging it, and creating the release PR are separate steps.

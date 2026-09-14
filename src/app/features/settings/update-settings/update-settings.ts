@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { version } from '../../../../../package.json';
 import { AppUpdateService } from '../../../core/app-update.service';
 
 /** 更新通知を閉じた後でも新版の確認・適用ができる操作欄。 */
@@ -12,6 +13,8 @@ import { AppUpdateService } from '../../../core/app-update.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpdateSettings {
+  /** 現在開いているアプリのビルドに含まれるリリース番号。 */
+  protected readonly version = version;
   /** アプリ全体で共有する新版の取得状態と更新操作。 */
   protected readonly updates = inject(AppUpdateService);
   /** 確認中・失敗を優先し、通常時は取得済みの新版を案内する翻訳キー。 */

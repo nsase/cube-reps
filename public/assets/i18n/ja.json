@@ -173,6 +173,7 @@
     "savedGroup": "保存済みグループ"
   },
   "settings": {
+    "version": "バージョン",
     "languageHint": "表示言語はこのブラウザに保存されます。",
     "updateTitle": "アプリの更新",
     "unsupported": "この環境ではアプリの更新確認を利用できません。",

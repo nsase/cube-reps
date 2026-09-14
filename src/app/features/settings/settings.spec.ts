@@ -5,6 +5,7 @@ import { AppUpdateService, IS_PWA, RELOAD_PAGE } from '../../core/app-update.ser
 import { Settings } from './settings';
 import en from '../../../../public/assets/i18n/en.json';
 import ja from '../../../../public/assets/i18n/ja.json';
+import { version } from '../../../../package.json';
 
 describe('Settings', () => {
   let events: Subject<VersionEvent>;
@@ -37,16 +38,25 @@ describe('Settings', () => {
     await fixture.whenStable();
     const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
     expect(fixture.nativeElement.textContent).toContain(en.settings.updateTitle);
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="app-version"]').textContent,
+    ).toContain(`Version: ${version}`);
     select.value = 'ja';
     select.dispatchEvent(new Event('change'));
     await fixture.whenStable();
     expect(fixture.nativeElement.textContent).toContain(ja.settings.updateTitle);
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="app-version"]').textContent,
+    ).toContain(`バージョン: ${version}`);
     expect(fixture.nativeElement.textContent).toContain(ja.settings.idle);
     expect(localStorage.getItem('cube-reps.language')).toBe('ja');
     select.value = 'en';
     select.dispatchEvent(new Event('change'));
     await fixture.whenStable();
     expect(fixture.nativeElement.textContent).toContain(en.settings.updateTitle);
+    expect(
+      fixture.nativeElement.querySelector('[data-testid="app-version"]').textContent,
+    ).toContain(`Version: ${version}`);
   });
 
   it('確認中のボタンを無効にし、失敗から再試行して最新版を表示する', async () => {

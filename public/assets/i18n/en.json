@@ -173,6 +173,7 @@
     "savedGroup": "Saved group"
   },
   "settings": {
+    "version": "Version",
     "languageHint": "This language is saved in this browser.",
     "updateTitle": "App updates",
     "unsupported": "Update checking is not available in this environment.",
