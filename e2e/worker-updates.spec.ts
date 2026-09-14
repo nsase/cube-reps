@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto';
 async function serveVersions(legacy = false) {
   let revision = 1;
   const requests: string[] = [];
-  const legacyHtml = '<!doctype html><title>Legacy CubeReps</title><h1>Legacy CubeReps</h1>';
+  const legacyHtml = await readFile('e2e/fixtures/legacy-app.html', 'utf8');
   const server = createServer(async (request, response) => {
     const path = new URL(request.url!, 'http://localhost').pathname;
     requests.push(path);
@@ -68,6 +68,7 @@ async function serveVersions(legacy = false) {
         const manifest = JSON.parse(content.toString());
         const prefix = (url: string) => `/cube-reps${url}`;
         manifest.index = prefix(manifest.index);
+        manifest.navigationUrls = [{ positive: true, regex: '^/cube-reps/$' }];
         manifest.hashTable = Object.fromEntries(
           Object.entries(manifest.hashTable).map(([url, hash]) => [prefix(url), hash]),
         );
@@ -173,6 +174,7 @@ test('既存Angular SWをWorkboxへ移行し、保存データを保持してオ
   test.setTimeout(90_000);
   const site = await serveVersions(true);
   try {
+    await standalone(page);
     await page.goto(site.url);
     await page.evaluate(async () => {
       localStorage.setItem('cube-reps.language', 'ja');
@@ -196,7 +198,14 @@ test('既存Angular SWをWorkboxへ移行し、保存データを保持してオ
     });
     await page.reload();
     await expect(page.locator('h1')).toHaveText('Legacy CubeReps');
+    const legacyWindow = await context.newPage();
+    await legacyWindow.goto(site.url);
+    await expect(legacyWindow.locator('h1')).toHaveText('Legacy CubeReps');
     site.deploy();
+    await page.getByRole('button', { name: 'Check for updates', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Update now', exact: true })).toBeVisible({
+      timeout: 30_000,
+    });
     await page.evaluate(async () => {
       const registration = await navigator.serviceWorker.ready;
       await registration.update();
@@ -204,14 +213,26 @@ test('既存Angular SWをWorkboxへ移行し、保存データを保持してオ
     await expect
       .poll(() => page.evaluate(async () => Boolean((await navigator.serviceWorker.ready).waiting)))
       .toBe(true);
-    // 旧アプリをすべて閉じると、取得済みWorkboxへ安全に切り替わる。
-    await page.close();
-    const migrated = await context.newPage();
-    await migrated.goto(`${site.url}#/settings`);
-    await expect(migrated.getByTestId('language-select')).toHaveValue('ja');
+    // 旧Angularの適用操作と、その直後のオフライン再読み込みを検証する。
     await context.setOffline(true);
-    await migrated.reload();
-    await expect(migrated.getByTestId('language-select')).toHaveValue('ja');
+    await page.getByRole('button', { name: 'Update now', exact: true }).click();
+    await expect(page.locator('app-timer')).toBeVisible();
+    await page.getByTestId('settings-link').click();
+    await expect(page.getByTestId('language-select')).toHaveValue('ja');
+    // 旧版の画面を閉じなくても、Workboxへの切り替えを設定から完了できる。
+    await expect(page.getByTestId('apply-update')).toBeVisible();
+    await page.getByTestId('apply-update').click();
+    await expect(page.getByTestId('apply-update')).toHaveCount(0);
+    await expect(page.getByTestId('language-select')).toHaveValue('ja');
+    // 他のウィンドウに残った旧Angular画面からの適用にも応答する。
+    await legacyWindow.getByRole('button', { name: 'Check for updates', exact: true }).click();
+    await expect(
+      legacyWindow.getByRole('button', { name: 'Update now', exact: true }),
+    ).toBeVisible();
+    await legacyWindow.getByRole('button', { name: 'Update now', exact: true }).click();
+    await expect(legacyWindow.locator('app-timer')).toBeVisible();
+    await legacyWindow.close();
+    const migrated = page;
     expect(
       await migrated.evaluate(
         () =>
@@ -257,6 +278,33 @@ test('Web版ではSWが新版を取得しても更新操作・通知を表示し
     await expect(page.locator('app-update-snackbar')).toHaveCount(0);
   } finally {
     await page.close();
+    await site.close();
+  }
+});
+
+test('別ウィンドウで更新済みでも残った通知から新版へ切り替えられる', async ({ page, context }) => {
+  const site = await serveVersions();
+  const other = await context.newPage();
+  try {
+    await standalone(page);
+    await standalone(other);
+    await page.goto(`${site.url}#/settings`);
+    await page.evaluate(async () => navigator.serviceWorker.ready);
+    await page.reload();
+    await other.goto(`${site.url}#/settings`);
+    site.deploy();
+    await page.getByTestId('check-update').click();
+    await expect(page.getByTestId('apply-update')).toBeVisible();
+    await expect(other.getByTestId('apply-update')).toBeVisible();
+    await page.getByTestId('apply-update').click();
+    await expect(page.getByTestId('apply-update')).toHaveCount(0);
+    await other.getByTestId('apply-update').click();
+    await expect(other.getByTestId('apply-update')).toHaveCount(0);
+    await expect(other.getByTestId('check-update')).toBeVisible();
+    await expect(other.locator('app-update-settings [role="alert"]')).toHaveCount(0);
+  } finally {
+    await page.close();
+    await other.close();
     await site.close();
   }
 });

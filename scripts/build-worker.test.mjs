@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { buildWorker } from './build-worker.mjs';
+import { handleLegacyUpdate } from '../service-worker/legacy-updates.mjs';
 
 for (const base of ['/', '/cube-reps/']) {
   test(`Workboxと移行用マニフェストを生成する: ${base}`, async () => {
@@ -25,6 +26,11 @@ for (const base of ['/', '/cube-reps/']) {
       const legacy = JSON.parse(await readFile(join(directory, 'ngsw.json'), 'utf8'));
       assert.equal(legacy.configVersion, 1);
       assert.equal(legacy.index, `${base}index.html`);
+      assert.ok(
+        legacy.navigationUrls.some(
+          ({ positive, regex }) => positive && new RegExp(regex).test(base),
+        ),
+      );
       assert.equal(legacy.hashTable[legacy.index], createHash('sha1').update(html).digest('hex'));
       assert.deepEqual(
         legacy.assetGroups[0].urls.sort(),
@@ -40,3 +46,24 @@ for (const base of ['/', '/cube-reps/']) {
     }
   });
 }
+
+test('旧Angular画面からの確認・適用に応答し、再読み込みへ進める', () => {
+  const messages = [];
+  const source = { postMessage: (message) => messages.push(message) };
+  handleLegacyUpdate({ source, data: { action: 'CHECK_FOR_UPDATES', nonce: 1 } }, 'new-build');
+  assert.deepEqual(messages, [
+    {
+      type: 'VERSION_READY',
+      currentVersion: { hash: 'legacy-angular-client' },
+      latestVersion: { hash: 'new-build' },
+    },
+    { type: 'OPERATION_COMPLETED', nonce: 1, result: true },
+  ]);
+  messages.length = 0;
+  handleLegacyUpdate({ source, data: { action: 'ACTIVATE_UPDATE', nonce: 2 } }, 'new-build');
+  assert.deepEqual(messages, [{ type: 'OPERATION_COMPLETED', nonce: 2, result: true }]);
+  messages.length = 0;
+  handleLegacyUpdate({ source, data: { action: 'UNRELATED' } }, 'new-build');
+  handleLegacyUpdate({ data: { action: 'ACTIVATE_UPDATE' } }, 'new-build');
+  assert.deepEqual(messages, []);
+});

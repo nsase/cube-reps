@@ -111,7 +111,7 @@ Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`�
 
 サーバーは`0.0.0.0:4400`で待ち受けるため、コンテナのポート転送経由でも接続できます。開発コンテナを使用する場合はポート4400を転送してください。
 
-Workbox SWは`npm run build`と`npm run start:pwa:local`でAngularビルド後に生成します。SWのURLは既存の`ngsw-worker.js`を維持し、旧Angular SWからの移行専用に互換`ngsw.json`も生成します。移行中は一度オンラインで更新を取得し、更新操作またはアプリの全ウィンドウを閉じて再起動することで切り替わります。旧キャッシュやIndexedDBを一括削除しません。
+Workbox SWは`npm run build`と`npm run start:pwa:local`でAngularビルド後に生成します。SWのURLは既存の`ngsw-worker.js`を維持し、旧Angular SWからの移行専用に互換`ngsw.json`も生成します。移行中は一度オンラインで更新を取得し、更新操作またはアプリの全ウィンドウを閉じて再起動することで切り替わります。旧キャッシュやIndexedDBを一括削除しません。別ウィンドウでWorkboxへの切り替えが完了しても、残っている旧版の画面から更新操作を続けられます。
 
 ローカル用のHTMLとManifestは、共通の`src/index.html`と`public/manifest.webmanifest`からページタイトルとインストール名だけを差し替えて生成します。`npm start`、`npm run watch`、`npm run start:pwa:local`の起動前に毎回生成されます。変更は共通ファイルへ行い、コマンドを再起動して反映してください。生成先の`.generated/local`はGit管理対象外で、直接編集しません。Angularを`local`構成で直接実行する場合は、先に`npm run generate:local`を実行してください。
 

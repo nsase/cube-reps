@@ -165,14 +165,18 @@ export class WorkerUpdates {
     });
   }
 
-  /** ユーザーが選んだ新版を有効化する。完了後の再読み込みは呼び出し側が行う。 */
+  /** ユーザーが選んだ新版を有効化する。
+   * 別ウィンドウで既に有効化された新版も受け入れ、再読み込みで画面を切り替えられるようにする。
+   */
   async activateUpdate(): Promise<boolean> {
     const registration =
       this.registration ?? (await this.container?.getRegistration(this.document.baseURI));
-    const worker = registration?.waiting;
+    const worker =
+      registration?.waiting ??
+      (registration?.active === this.announced ? this.announced : undefined);
     if (!worker) throw new Error('No waiting worker');
     const activated = this.waitForState(worker, ['activated']);
-    worker.postMessage({ type: 'SKIP_WAITING' });
+    if (worker.state === 'installed') worker.postMessage({ type: 'SKIP_WAITING' });
     await activated;
     return true;
   }

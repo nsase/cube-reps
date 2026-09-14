@@ -55,7 +55,10 @@ export async function buildWorker(directory) {
               ],
               dataGroups: [],
               hashTable,
-              navigationUrls: [],
+              // ハッシュルーターの入口を旧SWでもキャッシュしたindexへ解決する。
+              navigationUrls: [
+                { positive: true, regex: `^${base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$` },
+              ],
               navigationRequestStrategy: 'performance',
             }),
           );

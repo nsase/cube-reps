@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Legacy CubeReps</title>
+  </head>
+  <body>
+    <h1>Legacy CubeReps</h1>
+    <button id="check">Check for updates</button>
+    <button id="apply" hidden>Update now</button>
+    <p role="alert" id="error"></p>
+    <script>
+      // 移行前のSwUpdateと同じメッセージ契約で、取得と適用を操作する。
+      let nonce = 0;
+      const pending = new Map();
+      navigator.serviceWorker.addEventListener('message', ({ data }) => {
+        if (data.type === 'VERSION_READY') document.querySelector('#apply').hidden = false;
+        if (data.type === 'OPERATION_COMPLETED') {
+          const operation = pending.get(data.nonce);
+          if (!operation) return;
+          pending.delete(data.nonce);
+          if (data.error) operation.reject(new Error(data.error));
+          else operation.resolve(data.result);
+        }
+      });
+      function send(action) {
+        return new Promise((resolve, reject) => {
+          const id = ++nonce;
+          pending.set(id, { resolve, reject });
+          navigator.serviceWorker.controller.postMessage({ action, nonce: id });
+        });
+      }
+      document.querySelector('#check').onclick = () => send('CHECK_FOR_UPDATES').catch(showError);
+      document.querySelector('#apply').onclick = () =>
+        send('ACTIVATE_UPDATE')
+          .then(() => location.reload())
+          .catch(showError);
+      function showError(error) {
+        document.querySelector('#error').textContent = error.message;
+      }
+    </script>
+  </body>
+</html>
