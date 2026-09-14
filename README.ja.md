@@ -42,6 +42,8 @@ CubeRepsは、スピードキューブの計測とトレーニングをブラウ
 
 最初のオンライン読み込みが完了すると、インストールしたアプリをオフラインで起動・再読み込みできます。計測記録、グループ、手順設定は端末内に保持されます。インストールしたPWAとして起動している場合、オンライン時に新版の取得が完了すると、CubeRepsに閉じることのできる更新通知と**今すぐ更新**が表示され、ユーザー操作で安全に切り替えられます。
 
+Workboxでアプリ資産を事前キャッシュします。ブラウザがオフラインと報告している間はSWの登録・更新確認を開始せず、オンライン復帰時に再開します。SW内の資産一覧を使うため、通常起動では`ngsw.json`を取得しません。ブラウザ自身によるSWスクリプトの更新確認は別途行われる場合があります。
+
 ブラウザの保存領域は、ブラウザとインストール方法によって分かれます。特にiOS・iPadOSではSafariとホーム画面Webアプリが既存データを共有しない場合があり、Safariで作成した記録がインストール後のアプリに表示されないことがあります。CubeRepsのインストールや更新自体がブラウザデータを削除することはありません。
 
 ## 設定
@@ -109,6 +111,8 @@ Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`�
 
 サーバーは`0.0.0.0:4400`で待ち受けるため、コンテナのポート転送経由でも接続できます。開発コンテナを使用する場合はポート4400を転送してください。
 
+Workbox SWは`npm run build`と`npm run start:pwa:local`でAngularビルド後に生成します。SWのURLは既存の`ngsw-worker.js`を維持し、旧Angular SWからの移行専用に互換`ngsw.json`も生成します。移行中は一度オンラインで更新を取得し、更新操作またはアプリの全ウィンドウを閉じて再起動することで切り替わります。旧キャッシュやIndexedDBを一括削除しません。
+
 ローカル用のHTMLとManifestは、共通の`src/index.html`と`public/manifest.webmanifest`からページタイトルとインストール名だけを差し替えて生成します。`npm start`、`npm run watch`、`npm run start:pwa:local`の起動前に毎回生成されます。変更は共通ファイルへ行い、コマンドを再起動して反映してください。生成先の`.generated/local`はGit管理対象外で、直接編集しません。Angularを`local`構成で直接実行する場合は、先に`npm run generate:local`を実行してください。
 
 ## データの保存
@@ -131,6 +135,7 @@ Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`�
 ## 技術構成
 
 - Angular 21
+- Workbox (`workbox-build` / `workbox-precaching`)
 - Angular Material
 - Angular Signals / Signal Store
 - Transloco

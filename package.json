@@ -5,9 +5,9 @@
     "ng": "ng",
     "start": "ng serve",
     "start:firestore": "firebase emulators:start --only firestore --project cube-reps",
-    "build": "ng build",
+    "build": "node scripts/build.mjs",
     "watch": "ng build --watch --configuration development,local",
-    "test": "ng test",
+    "test": "node --test scripts/build-worker.test.mjs && ng test",
     "test:e2e": "playwright test",
     "test:e2e:pr": "playwright test --project=desktop-wide",
     "start:e2e": "npm run build && http-server dist/cube-reps/browser -p 4300 -c-1",
@@ -15,7 +15,7 @@
     "prepare": "husky",
     "test:firestore": "firebase emulators:exec --only firestore --project cube-reps \"vitest run --config vitest.firestore.config.ts\"",
     "start:local": "concurrently --kill-others --names app,firestore \"npm run start\" \"npm run start:firestore\"",
-    "start:pwa:local": "ng build --configuration production,local --output-path dist/cube-reps-local && http-server dist/cube-reps-local/browser -a 0.0.0.0 -p 4400 -c-1",
+    "start:pwa:local": "node scripts/build.mjs --configuration production,local --output-path dist/cube-reps-local && http-server dist/cube-reps-local/browser -a 0.0.0.0 -p 4400 -c-1",
     "generate:local": "node scripts/generate-local-assets.mjs",
     "prestart": "npm run generate:local",
     "prewatch": "npm run generate:local",
@@ -32,7 +32,6 @@
     "@angular/material": "^21.2.14",
     "@angular/platform-browser": "^21.2.0",
     "@angular/router": "^21.2.0",
-    "@angular/service-worker": "21.2.20",
     "@jsverse/transloco": "^8.4.0",
     "cubing": "^0.63.3",
     "firebase": "^12.18.0",
@@ -48,6 +47,7 @@
     "@firebase/rules-unit-testing": "^5.0.2",
     "@playwright/test": "^1.62.1",
     "concurrently": "^10.0.5",
+    "esbuild": "^0.28.2",
     "fake-indexeddb": "^6.2.5",
     "firebase-tools": "^15.28.2",
     "http-server": "^14.1.1",
@@ -55,6 +55,8 @@
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2",
-    "vitest": "^4.0.8"
+    "vitest": "^4.0.8",
+    "workbox-build": "^7.4.1",
+    "workbox-precaching": "^7.4.1"
   }
 }

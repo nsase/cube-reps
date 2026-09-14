@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { SwUpdate, VersionEvent } from '@angular/service-worker';
+import { WorkerUpdates, VersionEvent } from './worker-updates.service';
 import { Subject } from 'rxjs';
 import { AppUpdateService, IS_PWA, RELOAD_PAGE } from './app-update.service';
 
@@ -15,7 +15,7 @@ describe('AppUpdateService', () => {
       providers: [
         { provide: IS_PWA, useValue: true },
         {
-          provide: SwUpdate,
+          provide: WorkerUpdates,
           useValue: { isEnabled: true, versionUpdates, activateUpdate, checkForUpdate },
         },
         { provide: RELOAD_PAGE, useValue: reloadPage },
@@ -128,7 +128,7 @@ describe('AppUpdateService', () => {
   });
 
   it('未対応環境では更新確認を呼び出さない', async () => {
-    TestBed.overrideProvider(SwUpdate, { useValue: { isEnabled: false, checkForUpdate } });
+    TestBed.overrideProvider(WorkerUpdates, { useValue: { isEnabled: false, checkForUpdate } });
     const service = TestBed.inject(AppUpdateService);
     await service.checkForUpdate();
     expect(service.enabled).toBe(false);
