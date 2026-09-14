@@ -1,4 +1,5 @@
 import { PrecacheController } from 'workbox-precaching';
+import { handleLegacyUpdate } from './legacy-updates.mjs';
 
 /** オフライン起動時に、キャッシュ欠落を理由とした通信も発生させない。 */
 const precache = new PrecacheController({
@@ -12,7 +13,10 @@ const precache = new PrecacheController({
     },
   ],
 });
-precache.addToCacheList(self.__WB_MANIFEST);
+/** 旧画面にも案内できる、ビルド時に埋め込んだアプリの版情報。 */
+const manifest = self.__WB_MANIFEST;
+precache.addToCacheList(manifest);
+const revision = manifest.find((entry) => entry.url === 'index.html')?.revision ?? 'workbox';
 
 self.addEventListener('install', (event) => {
   // 全資産の保存に成功するまで既存のSWを置き換えない。
@@ -23,6 +27,7 @@ self.addEventListener('activate', (event) => {
 });
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') event.waitUntil(self.skipWaiting());
+  else handleLegacyUpdate(event, revision);
 });
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);

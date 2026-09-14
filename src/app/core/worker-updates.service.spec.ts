@@ -17,6 +17,7 @@ class TestWorker extends EventTarget {
 describe('WorkerUpdates', () => {
   let online: boolean;
   let registration: EventTarget & {
+    active: TestWorker | null;
     installing: TestWorker | null;
     waiting: TestWorker | null;
     update: ReturnType<typeof vi.fn>;
@@ -27,6 +28,7 @@ describe('WorkerUpdates', () => {
   beforeEach(() => {
     online = true;
     registration = Object.assign(new EventTarget(), {
+      active: null,
       installing: null,
       waiting: null,
       update: vi.fn().mockResolvedValue(undefined),
@@ -100,6 +102,49 @@ describe('WorkerUpdates', () => {
     expect(events.filter((event) => event === 'VERSION_READY')).toHaveLength(1);
     await service.activateUpdate();
     expect(worker.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
+  });
+
+  it('通知した新版が別ウィンドウで適用済みでも画面を再読み込みできる', async () => {
+    const worker = new TestWorker();
+    worker.change('installed');
+    registration.waiting = worker;
+    const service = TestBed.inject(WorkerUpdates);
+    await service.checkForUpdate();
+    registration.waiting = null;
+    registration.active = worker;
+    worker.change('activated');
+    await expect(service.activateUpdate()).resolves.toBe(true);
+    expect(worker.postMessage).not.toHaveBeenCalled();
+  });
+
+  it('別ウィンドウで有効化中の新版は完了を待ってから切り替える', async () => {
+    const worker = new TestWorker();
+    worker.change('installed');
+    registration.waiting = worker;
+    const service = TestBed.inject(WorkerUpdates);
+    await service.checkForUpdate();
+    registration.waiting = null;
+    registration.active = worker;
+    worker.change('activating');
+    let finished = false;
+    const applying = service.activateUpdate().then(() => {
+      finished = true;
+    });
+    await Promise.resolve();
+    expect(finished).toBe(false);
+    worker.change('activated');
+    await applying;
+    expect(finished).toBe(true);
+    expect(worker.postMessage).not.toHaveBeenCalled();
+  });
+
+  it('通知した新版がなければ旧版を更新済みと扱わない', async () => {
+    const worker = new TestWorker();
+    worker.change('activated');
+    registration.active = worker;
+    await expect(TestBed.inject(WorkerUpdates).activateUpdate()).rejects.toThrow(
+      'No waiting worker',
+    );
   });
 
   it('更新取得に失敗しても次回の確認で回復する', async () => {

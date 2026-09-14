@@ -111,7 +111,7 @@ The development server and local PWA builds use `CubeReps-local` for the page ti
 
 The server listens on `0.0.0.0:4400` so it can be reached through container port forwarding. Forward port 4400 when using a dev container.
 
-`npm run build` and `npm run start:pwa:local` generate the Workbox SW after the Angular build. The SW retains the existing `ngsw-worker.js` URL, and a compatible `ngsw.json` is generated only for migration from the old Angular SW. Existing installations need to download the update online, then apply it or close all app windows and reopen the app. Migration does not clear all caches or IndexedDB.
+`npm run build` and `npm run start:pwa:local` generate the Workbox SW after the Angular build. The SW retains the existing `ngsw-worker.js` URL, and a compatible `ngsw.json` is generated only for migration from the old Angular SW. Existing installations need to download the update online, then apply it or close all app windows and reopen the app. Migration does not clear all caches or IndexedDB. Updates also remain usable in an older app window after another window has activated the Workbox worker.
 
 The local HTML and Manifest are generated from `src/index.html` and `public/manifest.webmanifest`, changing only the page title and installation names. `npm start`, `npm run watch`, and `npm run start:pwa:local` regenerate them before starting. Edit the shared source files, then restart the command to apply changes. `.generated/local` is excluded from Git; do not edit generated files. When invoking Angular directly with the `local` configuration, run `npm run generate:local` first.
 
