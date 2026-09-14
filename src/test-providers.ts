@@ -1,5 +1,5 @@
 import { importProvidersFrom } from '@angular/core';
-import { SwUpdate } from '@angular/service-worker';
+import { WorkerUpdates } from './app/core/worker-updates.service';
 import { TranslocoTestingModule } from '@jsverse/transloco';
 import { NEVER } from 'rxjs';
 import en from '../public/assets/i18n/en.json';
@@ -90,7 +90,7 @@ export default [
   { provide: AuthGateway, useClass: TestAuthGateway },
   { provide: UserDataRepository, useClass: TestUserDataRepository },
   {
-    provide: SwUpdate,
+    provide: WorkerUpdates,
     useValue: { isEnabled: false, versionUpdates: NEVER, activateUpdate: async () => false },
   },
   importProvidersFrom(

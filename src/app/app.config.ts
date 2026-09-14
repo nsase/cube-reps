@@ -1,8 +1,14 @@
 import { provideHttpClient } from '@angular/common/http';
-import { ApplicationConfig, isDevMode, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  isDevMode,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { MAT_ICON_DEFAULT_OPTIONS } from '@angular/material/icon';
 import { provideRouter, withHashLocation } from '@angular/router';
-import { provideServiceWorker } from '@angular/service-worker';
+import { WorkerUpdates } from './core/worker-updates.service';
 import { provideTransloco } from '@jsverse/transloco';
 
 import { routes } from './app.routes';
@@ -10,7 +16,10 @@ import { AuthGateway, FirebaseAuthGateway } from './core/auth/auth.gateway';
 import { FirestoreSyncService } from './core/firestore/firestore-sync.service';
 import { TranslocoHttpLoader } from './core/i18n/transloco-loader';
 import { LocalSyncService } from './core/local-storage/local-sync.service';
-import { IndexedDbUserDataRepository, UserDataRepository } from './core/local-storage/user-data-repository';
+import {
+  IndexedDbUserDataRepository,
+  UserDataRepository,
+} from './core/local-storage/user-data-repository';
 
 /** ルーター、エラーハンドリング、Material Icon、オフライン更新を構成するアプリケーション設定。 */
 export const appConfig: ApplicationConfig = {
@@ -18,10 +27,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(),
     provideRouter(routes, withHashLocation()),
-    provideServiceWorker('ngsw-worker.js', {
-      enabled: !isDevMode(),
-      registrationStrategy: 'registerWhenStable:30000',
-    }),
+    provideAppInitializer(() => inject(WorkerUpdates).start()),
     provideTransloco({
       config: {
         availableLangs: ['ja', 'en'],

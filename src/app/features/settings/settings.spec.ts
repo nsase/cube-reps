@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { SwUpdate, VersionEvent } from '@angular/service-worker';
+import { WorkerUpdates, VersionEvent } from '../../core/worker-updates.service';
 import { Subject } from 'rxjs';
 import { AppUpdateService, IS_PWA, RELOAD_PAGE } from '../../core/app-update.service';
 import { Settings } from './settings';
@@ -23,7 +23,7 @@ describe('Settings', () => {
       providers: [
         { provide: IS_PWA, useValue: true },
         {
-          provide: SwUpdate,
+          provide: WorkerUpdates,
           useValue: { isEnabled: true, versionUpdates: events, checkForUpdate, activateUpdate },
         },
         { provide: RELOAD_PAGE, useValue: reload },
@@ -117,7 +117,7 @@ describe('Settings', () => {
   });
 
   it('未対応環境では理由を表示し更新操作を表示しない', async () => {
-    TestBed.overrideProvider(SwUpdate, { useValue: { isEnabled: false } });
+    TestBed.overrideProvider(WorkerUpdates, { useValue: { isEnabled: false } });
     const fixture = TestBed.createComponent(Settings);
     await fixture.whenStable();
     expect(fixture.nativeElement.textContent).toContain(en.settings.unsupported);
