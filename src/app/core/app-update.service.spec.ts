@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { SwUpdate, VersionEvent } from '@angular/service-worker';
 import { Subject } from 'rxjs';
-import { AppUpdateService, RELOAD_PAGE } from './app-update.service';
+import { AppUpdateService, IS_PWA, RELOAD_PAGE } from './app-update.service';
 
 describe('AppUpdateService', () => {
   let versionUpdates: Subject<VersionEvent>;
@@ -13,6 +13,7 @@ describe('AppUpdateService', () => {
     versionUpdates = new Subject<VersionEvent>();
     TestBed.configureTestingModule({
       providers: [
+        { provide: IS_PWA, useValue: true },
         {
           provide: SwUpdate,
           useValue: { isEnabled: true, versionUpdates, activateUpdate, checkForUpdate },
@@ -23,6 +24,25 @@ describe('AppUpdateService', () => {
     checkForUpdate.mockReset();
     activateUpdate.mockClear();
     reloadPage.mockClear();
+  });
+
+  it('Web版ではSWが有効でも通知・確認・適用を行わない', async () => {
+    TestBed.overrideProvider(IS_PWA, { useValue: false });
+    const service = TestBed.inject(AppUpdateService);
+    versionUpdates.next({
+      type: 'VERSION_READY',
+      currentVersion: { hash: 'current' },
+      latestVersion: { hash: 'next' },
+    });
+    await service.checkForUpdate();
+    await service.applyUpdate();
+    expect(service.enabled).toBe(false);
+    expect(service.updateAvailable()).toBe(false);
+    expect(service.showUpdateNotice()).toBe(false);
+    expect(service.checkState()).toBe('idle');
+    expect(checkForUpdate).not.toHaveBeenCalled();
+    expect(activateUpdate).not.toHaveBeenCalled();
+    expect(reloadPage).not.toHaveBeenCalled();
   });
 
   it('新版の取得完了後だけ更新操作を案内する', () => {
@@ -142,5 +162,20 @@ describe('AppUpdateService', () => {
     await service.checkForUpdate();
     expect(service.checkState()).toBe('failed');
     expect(service.updateAvailable()).toBe(false);
+  });
+});
+
+describe('IS_PWA', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it.each([
+    [false, undefined, false],
+    [true, undefined, true],
+    [false, true, true],
+    [false, false, false],
+  ])('standalone表示=%s、iOS standalone=%sの起動判定', (displayMode, ios, expected) => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: displayMode }));
+    vi.stubGlobal('navigator', { standalone: ios });
+    expect(TestBed.inject(IS_PWA)).toBe(expected);
   });
 });

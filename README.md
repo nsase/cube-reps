@@ -40,7 +40,7 @@ After stopping, you can apply a penalty, delete the latest solve, or retry the s
 
 Open [CubeReps](https://nsase.github.io/cube-reps/) once while online. In a supported desktop or Android browser, use the browser menu or install button to install the app. On iPhone and iPad, open CubeReps in Safari, tap **Share**, and select **Add to Home Screen**.
 
-After the first online load completes, the installed app can be started and reloaded offline. Solve records, groups, and algorithm preferences remain on the device. When a new version has finished downloading online, CubeReps displays a dismissible update notification with an **Update now** action so that you can switch versions safely.
+After the first online load completes, the installed app can be started and reloaded offline. Solve records, groups, and algorithm preferences remain on the device. When running as an installed PWA, once a new version has finished downloading online, CubeReps displays a dismissible update notification with an **Update now** action so that you can switch versions safely.
 
 Browser storage is separated by browser and installation context. In particular, Safari and a Home Screen web app on iOS/iPadOS may not share existing data, so records created in Safari might not appear in the installed app. Installing or updating CubeReps does not itself delete browser data.
 
@@ -48,7 +48,7 @@ Browser storage is separated by browser and installation context. In particular,
 
 Open **Settings** at the bottom of the sidebar (in the bottom navigation on mobile) to select English or Japanese. On the first visit, Japanese is selected for a Japanese browser language; otherwise English is used. The language applies throughout the app and is saved in this browser for the next visit; existing language preferences are preserved.
 
-Select **Check for updates** to check for a new version. Settings displays checking, latest-version, update-available, and failure states. If an update is ready, select **Update now** to reload the app with the new version, even if you previously dismissed the update notification. A failed check or update can be retried. Update checking is unavailable in development builds and browsers without Service Worker support; Settings explains this instead of showing a latest-version result.
+Select **Check for updates** to check for a new version. Settings displays checking, latest-version, update-available, and failure states. If an update is ready, select **Update now** to reload the app with the new version, even if you previously dismissed the update notification. A failed check or update can be retried. Update notifications and manual checking are only available when running as an installed PWA. Update checking is unavailable in regular browser tabs, development builds, and browsers without Service Worker support; Settings explains this instead of showing a latest-version result.
 
 ## Google account sign-in
 
@@ -93,6 +93,7 @@ Firestore development requires Java 21 or later. `npm run test:firestore` starts
 | `npm start`               | Start the development server                 |
 | `npm run start:firestore` | Start the local Firestore Emulator           |
 | `npm run start:local`     | Start both development services              |
+| `npm run start:pwa:local` | Serve an installable local PWA on port 4400  |
 | `npm run build`           | Create a production build                    |
 | `npm test`                | Run tests with Vitest                        |
 | `npm run test:firestore`  | Test Firestore with the Emulator             |
@@ -103,6 +104,12 @@ Firestore development requires Java 21 or later. `npm run test:firestore` starts
 Local verification uses `npm test` (unit and component tests) and `git diff --check`. Builds, Firestore Emulator tests, and browser tests run in CI; do not run browser tests locally. PRs targeting `develop` run `npm run test:e2e:pr` (desktop-wide); release PRs targeting `main` require all 7 projects with `npm run test:e2e`. CI also runs build, unit tests, and Firestore Emulator tests for both. For UI, layout, or responsive changes needing additional viewport coverage, shared style changes, or unclear impact, run the CI workflow manually with `browser_scope: all` and record the scope and results in the PR. Manual CI also accepts `browser_scope: pr` for Issue PR coverage. All required CI checks must pass before merging.
 
 Build output is written to `dist/cube-reps`.
+
+The development server and local PWA builds use `CubeReps-local` for the page title and installed app name. To check offline PWA startup, run `npm run start:pwa:local`, open `http://localhost:4400` while online, and install the app from the browser. This command serves a production-mode build with Service Worker enabled; `npm start` does not enable Service Worker. The PWA build uses the configured Firebase cloud project, not the Firestore Emulator. Production builds retain the `CubeReps` name. The local PWA output is written to `dist/cube-reps-local`.
+
+The server listens on `0.0.0.0:4400` so it can be reached through container port forwarding. Forward port 4400 when using a dev container.
+
+The local HTML and Manifest are generated from `src/index.html` and `public/manifest.webmanifest`, changing only the page title and installation names. `npm start`, `npm run watch`, and `npm run start:pwa:local` regenerate them before starting. Edit the shared source files, then restart the command to apply changes. `.generated/local` is excluded from Git; do not edit generated files. When invoking Angular directly with the `local` configuration, run `npm run generate:local` first.
 
 ## Data storage
 
