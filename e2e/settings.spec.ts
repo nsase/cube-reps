@@ -1,3 +1,4 @@
+import { version } from '../package.json';
 import { expect, test } from '@playwright/test';
 import { expectNoHorizontalOverflow, expectResponsiveLayout } from './support/layout';
 
@@ -9,8 +10,10 @@ test(
     await page.getByTestId('settings-link').click();
     await expect(page).toHaveURL(/#\/settings$/);
     await expect(page.locator('h1')).toHaveText('SETTINGS');
+    await expect(page.getByTestId('app-version')).toHaveText(`Version: ${version}`);
     await page.getByTestId('language-select').selectOption('ja');
     await expect(page.locator('h1')).toHaveText('設定');
+    await expect(page.getByTestId('app-version')).toHaveText(`バージョン: ${version}`);
     await expect(page.locator('app-update-settings')).toContainText(
       'この環境ではアプリの更新確認を利用できません。',
     );
@@ -33,11 +36,13 @@ test(
     await page.reload();
     await expect(page.getByTestId('language-select')).toHaveValue('ja');
     await expect(page.locator('h1')).toHaveText('設定');
+    await expect(page.getByTestId('app-version')).toHaveText(`バージョン: ${version}`);
     await page.getByRole('link', { name: /タイマー/ }).click();
     await expect(page.locator('app-timer')).toBeVisible();
     await page.getByTestId('settings-link').click();
     await page.getByTestId('language-select').selectOption('en');
     await expect(page.locator('h1')).toHaveText('SETTINGS');
+    await expect(page.getByTestId('app-version')).toHaveText(`Version: ${version}`);
     await expectNoHorizontalOverflow(page);
   },
 );
