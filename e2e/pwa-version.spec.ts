@@ -28,12 +28,19 @@ test('PWA更新を適用すると表示番号が新版へ切り替わりオフ�
     const displayedVersion = page.getByTestId('app-version');
     await expect(displayedVersion).toHaveText(`Version: ${version}`);
     await page.evaluate(async () => navigator.serviceWorker.ready);
-    if (!(await page.evaluate(() => Boolean(navigator.serviceWorker.controller))))
-      await page.reload();
     await expect
       .poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller)))
       .toBe(true);
+    // controllerの取得だけでは、初回ページと旧版の紐付けは保証されない。
+    // SW経由で旧版を読み直し、更新通知を受け取れる既存クライアントにする。
+    await page.reload();
     await expect(displayedVersion).toHaveText(`Version: ${version}`);
+    await page.getByTestId('check-update').click();
+    await expect(page.getByTestId('update-status')).toHaveText(
+      'You are using the latest version.',
+      { timeout: 30_000 },
+    );
+    await expect(page.getByTestId('check-update')).toBeEnabled();
 
     server.publishUpdate();
     await page.getByTestId('check-update').click();
