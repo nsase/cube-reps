@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { AppUpdateService } from '../../core/app-update.service';
 import { CubeService } from '../../core/cube/cube';
 import type { CaseAlgorithm } from '../../core/cube/cube.models';
+import { NativeAppService } from '../../core/platform/native-app.service';
 import { TimerStore } from './timer.store';
 
 describe('TimerStore', () => {
@@ -87,6 +88,21 @@ describe('TimerStore', () => {
     store.press();
     await vi.waitFor(() => expect(secondRelease).toHaveBeenCalledOnce());
     expect(store.state()).toBe('idle');
+  });
+
+  it('Androidでは計測開始・停止と画面破棄に合わせて消灯防止を切り替える', () => {
+    const setKeepAwake = vi.fn();
+    TestBed.overrideProvider(NativeAppService, { useValue: { isNative: true, setKeepAwake } });
+    const store = TestBed.inject(TimerStore);
+    store.setCategory('pll');
+    setKeepAwake.mockClear();
+    store.state.set('ready');
+    store.release();
+    expect(setKeepAwake).toHaveBeenLastCalledWith(true);
+    store.press();
+    expect(setKeepAwake).toHaveBeenLastCalledWith(false);
+    store.ngOnDestroy();
+    expect(setKeepAwake).toHaveBeenLastCalledWith(false);
   });
 
   it('スクランブル生成に失敗した場合は計測を開始しない', async () => {

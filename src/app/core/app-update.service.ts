@@ -2,6 +2,7 @@ import { DOCUMENT } from '@angular/common';
 import { computed, inject, Injectable, InjectionToken, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SwUpdate, VersionEvent } from '@angular/service-worker';
+import { IS_NATIVE_APP } from './platform/native-platform';
 
 /** 新版へ切り替えた後に現在のページを再読み込みする処理。 */
 export const RELOAD_PAGE = new InjectionToken<() => void>('RELOAD_PAGE', {
@@ -42,7 +43,7 @@ export class AppUpdateService {
   /** Angular Service Workerの更新イベントを提供するサービス。 */
   private readonly swUpdate = inject(SwUpdate);
   /** PWAとして起動し、Service Workerによる更新を利用できるか。 */
-  readonly enabled = inject(IS_PWA) && this.swUpdate.isEnabled;
+  readonly enabled = !inject(IS_NATIVE_APP) && inject(IS_PWA) && this.swUpdate.isEnabled;
   /** 手動確認の進行状況。取得済みの新版はupdateAvailableで別途保持する。 */
   readonly checkState = signal<'idle' | 'checking' | 'latest' | 'failed'>('idle');
   /** 完了イベントからPromiseの終了までの間も重複した確認要求を防ぐ。 */

@@ -24,7 +24,8 @@
     ],
     "signedIn": "You are signed in.",
     "continueToTimer": "Continue to Timer",
-    "continueWithoutLogin": "Continue without signing in"
+    "continueWithoutLogin": "Continue without signing in",
+    "guestBuild": "This app supports guest use. Sign-in and cloud sync are not available."
   },
   "sync": {
     "signed-out": "Local only",
@@ -177,7 +178,6 @@
     "linksHint": "Open CubeReps in your browser, or visit GitHub for source code and issue reports. Links open in a new tab.",
     "openWebsite": "Open web version",
     "openGithub": "GitHub",
-
     "version": "Version",
     "languageHint": "This language is saved in this browser.",
     "updateTitle": "App updates",
@@ -189,6 +189,7 @@
     "failed": "Could not check for updates. Check your connection and try again.",
     "checkUpdate": "Check for updates",
     "applying": "Updating…",
-    "applyFailed": "Could not apply the update. Please try again."
+    "applyFailed": "Could not apply the update. Please try again.",
+    "storeUpdates": "Install a newer version from the app store or your app distributor."
   }
 }

@@ -129,3 +129,26 @@ test('設定の関連リンクからWeb版とGitHubを別タブで開く', async
     await expect(page).toHaveURL(/#\/settings$/);
   }
 });
+
+// 表示分岐と操作フローだけを検証する。Android実機でのネイティブAPI検証は別途必要。
+test('Android用の設定でストア更新を案内し、ゲストとしてタイマーへ進める', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.assign(window, { CapacitorCustomPlatform: { name: 'android' } });
+  });
+  await page.goto('/#/settings');
+  await expect(page.locator('app-update-settings')).toContainText(
+    'Install a newer version from the app store or your app distributor.',
+  );
+  await expect(page.getByTestId('check-update')).toHaveCount(0);
+  await page.getByTestId('language-select').selectOption('ja');
+  await expect(page.locator('app-update-settings')).toContainText(
+    'ストアまたは配布元から新しいバージョンをインストールしてください。',
+  );
+  await page.goto('/#/login');
+  await expect(page.getByTestId('google-sign-in')).toHaveCount(0);
+  await expect(page.locator('app-google-button')).toContainText(
+    'このアプリではゲストとして利用できます。',
+  );
+  await page.getByRole('link', { name: 'ログインしないで利用する' }).click();
+  await expect(page.locator('app-timer')).toBeVisible();
+});

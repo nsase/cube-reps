@@ -1,4 +1,5 @@
 import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
+import { NativeAppService } from '../../core/platform/native-app.service';
 import { OLL_CASES, PLL_CASES } from '../../core/algorithm/algorithm-cases';
 import { AppUpdateService } from '../../core/app-update.service';
 import { CubeService } from '../../core/cube/cube';
@@ -11,6 +12,8 @@ export class TimerStore implements OnDestroy {
   private readonly cube = inject(CubeService);
   /** 計測中に更新通知を抑止するアプリ更新サービス。 */
   private readonly appUpdates = inject(AppUpdateService);
+  /** ネイティブ端末の画面消灯防止を提供する境界。 */
+  private readonly nativeApp = inject(NativeAppService);
 
   /** 現在のsolveカテゴリー。 */
   readonly category = signal<SolveCategory>('full');
@@ -226,6 +229,10 @@ export class TimerStore implements OnDestroy {
 
   /** 計測中の画面消灯を防ぐWake Lockを、利用可能な環境で取得する。 */
   private requestWakeLock(): void {
+    if (this.nativeApp.isNative) {
+      this.nativeApp.setKeepAwake(true);
+      return;
+    }
     if (this.wakeLockRequest || (this.wakeLock && !this.wakeLock.released)) return;
     if (!('wakeLock' in navigator)) return;
 
@@ -246,6 +253,7 @@ export class TimerStore implements OnDestroy {
 
   /** 保持中のWake Lockを解除する。 */
   private releaseWakeLock(): void {
+    if (this.nativeApp.isNative) this.nativeApp.setKeepAwake(false);
     const wakeLock = this.wakeLock;
     this.wakeLock = undefined;
     if (wakeLock && !wakeLock.released) void wakeLock.release().catch(() => undefined);
