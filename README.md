@@ -42,6 +42,8 @@ Open [CubeReps](https://nsase.github.io/cube-reps/) once while online. In a supp
 
 After the first online load completes, the installed app can be started and reloaded offline. Solve records, groups, and algorithm preferences remain on the device. When running as an installed PWA, once a new version has finished downloading online, CubeReps displays a dismissible update notification with an **Update now** action so that you can switch versions safely.
 
+Workbox precaches the app assets. While the browser reports being offline, the app does not initiate SW registration or update checks; it resumes them when connectivity returns. The asset list is embedded in the SW, so normal startup does not fetch `ngsw.json`. The browser may still perform its own SW script update checks.
+
 Browser storage is separated by browser and installation context. In particular, Safari and a Home Screen web app on iOS/iPadOS may not share existing data, so records created in Safari might not appear in the installed app. Installing or updating CubeReps does not itself delete browser data.
 
 ## Settings
@@ -111,6 +113,8 @@ The development server and local PWA builds use `CubeReps-local` for the page ti
 
 The server listens on `0.0.0.0:4400` so it can be reached through container port forwarding. Forward port 4400 when using a dev container.
 
+`npm run build` and `npm run start:pwa:local` generate the Workbox SW after the Angular build. The SW retains the existing `ngsw-worker.js` URL, and a compatible `ngsw.json` is generated only for migration from the old Angular SW. Existing installations need to download the update online, then apply it or close all app windows and reopen the app. Migration does not clear all caches or IndexedDB. Updates also remain usable in an older app window after another window has activated the Workbox worker.
+
 The local HTML and Manifest are generated from `src/index.html` and `public/manifest.webmanifest`, changing only the page title and installation names. `npm start`, `npm run watch`, and `npm run start:pwa:local` regenerate them before starting. Edit the shared source files, then restart the command to apply changes. `.generated/local` is excluded from Git; do not edit generated files. When invoking Angular directly with the `local` configuration, run `npm run generate:local` first.
 
 ## Data storage
@@ -133,6 +137,7 @@ After explicit confirmation, guest import writes to the signed-in user’s `user
 ## Technology
 
 - Angular 21
+- Workbox (`workbox-build` / `workbox-precaching`)
 - Angular Material
 - Angular Signals / Signal Store
 - Transloco

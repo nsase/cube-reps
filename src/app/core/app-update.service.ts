@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { computed, inject, Injectable, InjectionToken, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { SwUpdate, VersionEvent } from '@angular/service-worker';
+import { WorkerUpdates, VersionEvent } from './worker-updates.service';
 
 /** 新版へ切り替えた後に現在のページを再読み込みする処理。 */
 export const RELOAD_PAGE = new InjectionToken<() => void>('RELOAD_PAGE', {
@@ -39,8 +39,8 @@ export class AppUpdateService {
   readonly showUpdateNotice = computed(
     () => this.updateAvailable() && !this.updateDismissed() && !this.notificationSuppressed(),
   );
-  /** Angular Service Workerの更新イベントを提供するサービス。 */
-  private readonly swUpdate = inject(SwUpdate);
+  /** Workbox SWの取得結果と更新操作を提供するサービス。 */
+  private readonly swUpdate = inject(WorkerUpdates);
   /** PWAとして起動し、Service Workerによる更新を利用できるか。 */
   readonly enabled = inject(IS_PWA) && this.swUpdate.isEnabled;
   /** 手動確認の進行状況。取得済みの新版はupdateAvailableで別途保持する。 */

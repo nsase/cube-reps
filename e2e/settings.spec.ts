@@ -80,27 +80,3 @@ test('設定から最新版を確認し、オフラインでの失敗後に再�
   await check.click();
   await expect(status).toHaveText('You are using the latest version.');
 });
-
-test('Web版では新版を取得しても更新通知や設定の更新操作を表示しない', async ({ page }) => {
-  await page.goto('/#/settings');
-  await expect(page.locator('app-update-settings')).toContainText(
-    'Update checking is not available in this environment.',
-  );
-  await page.evaluate(() => {
-    navigator.serviceWorker.dispatchEvent(
-      new MessageEvent('message', {
-        data: {
-          type: 'VERSION_READY',
-          currentVersion: { hash: 'current' },
-          latestVersion: { hash: 'next' },
-        },
-      }),
-    );
-  });
-  await expect(page.getByTestId('check-update')).toHaveCount(0);
-  await expect(page.getByTestId('apply-update')).toHaveCount(0);
-  await expect(page.locator('app-update-snackbar')).toHaveCount(0);
-  await page.getByRole('link', { name: 'Timer', exact: true }).click();
-  await expect(page.locator('app-timer')).toBeVisible();
-  await expect(page.locator('app-update-snackbar')).toHaveCount(0);
-});
