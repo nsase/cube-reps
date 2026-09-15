@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { DBSchema, IDBPDatabase, openDB } from 'idb';
 import { LocalAccount } from '../account.models';
-import { AlgorithmPreference, RecordGroup, Solve, SolveCategory } from '../cube/cube.models';
+import { AlgorithmPreference, RecordGroup, Solve } from '../cube/cube.models';
 
 /** 現行ユーザーデータのスキーマバージョン。 */
 export const USER_DATA_SCHEMA_VERSION = 3;
@@ -20,7 +20,7 @@ export interface StoredUserData {
 
 /** 同期対象ユーザーデータの永続化境界。 */
 export abstract class UserDataRepository {
-  /** @returns 移行を完了したローカルデータ */
+  /** ローカルに保存済みのユーザーデータを復元する。 */
   abstract load(): Promise<StoredUserData>;
 
   /** アカウントの表示情報だけをUID単位で保存する。 */
@@ -61,32 +61,19 @@ interface CubeRepsDatabase extends DBSchema {
   metadata: { key: string; value: string | number };
 }
 
-/** 旧localStorageデータを移行し、同期対象ユーザーデータをIndexedDBへ保存するRepository。 */
+/** 同期対象ユーザーデータをIndexedDBへ保存・復元するRepository。 */
 @Injectable()
 export class IndexedDbUserDataRepository extends UserDataRepository {
   /** IndexedDBデータベース名。 */
   static readonly databaseName = 'cube-reps';
-  /** 旧Solve配列のlocalStorageキー。 */
-  static readonly legacyStorageKey = 'cube-reps.solves';
-  /** ID付与済み移行データを再試行時にも維持するlocalStorageキー。 */
-  static readonly migrationStorageKey = 'cube-reps.solves-migration-v1';
-  /** 旧ユーザー定義グループ配列のlocalStorageキー。 */
-  static readonly legacyGroupsStorageKey = 'cube-reps.groups';
-  /** グループ移行の再試行データを保持するlocalStorageキー。 */
-  static readonly migrationGroupsStorageKey = 'cube-reps.groups-migration-v1';
-  /** 旧ユーザー手順設定のlocalStorageキー。 */
-  static readonly legacyAlgorithmsStorageKey = 'cube-reps.algorithm-preferences';
-  /** 手順設定移行の再試行データを保持するlocalStorageキー。 */
-  static readonly migrationAlgorithmsStorageKey = 'cube-reps.algorithm-preferences-migration-v1';
-
   /** 開いたデータベースを共有するPromise。 */
   private readonly database = this.openDatabase();
-  /** 複数サービスから同時に要求された初期移行を1回にまとめるPromise。 */
+  /** 複数サービスから同時に要求された初期読み込みを1回にまとめるPromise。 */
   private loadedData?: Promise<StoredUserData>;
   /** 通常操作の実行順を維持し、古い書き込みによるデータ復活を防ぐキュー。 */
   private writeQueue: Promise<void> = Promise.resolve();
 
-  /** @returns localStorage移行を完了したIndexedDB内のデータ */
+  /** IndexedDB内のユーザーデータを復元する。 */
   load(): Promise<StoredUserData> {
     this.loadedData ??= this.initialize().catch((error: unknown) => {
       this.loadedData = undefined;
@@ -95,14 +82,9 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
     return this.loadedData;
   }
 
-  /** @returns 3種類のユーザーデータを移行・復元した初期状態 */
+  /** ユーザーデータとアカウント表示台帳をIndexedDBから読み込む。 */
   private async initialize(): Promise<StoredUserData> {
     const database = await this.database;
-    await Promise.all([
-      this.migrateLegacySolves(database),
-      this.migrateLegacyGroups(database),
-      this.migrateLegacyAlgorithmPreferences(database),
-    ]);
     const solves = await database.getAllFromIndex('solves', 'createdAt');
     const groups = await database.getAllFromIndex('groups', 'createdAt');
     const algorithmPreferences = await database.getAll('algorithmPreferences');
@@ -222,201 +204,5 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
         }
       },
     });
-  }
-
-  /** localStorageの旧Solveを、再試行可能かつ重複しない形で移行する。 */
-  private async migrateLegacySolves(database: IDBPDatabase<CubeRepsDatabase>): Promise<void> {
-    const staged = this.readLegacyArray(IndexedDbUserDataRepository.migrationStorageKey);
-    const legacy = staged ?? this.readLegacyArray(IndexedDbUserDataRepository.legacyStorageKey);
-    if (!legacy) return;
-
-    const normalized = legacy.flatMap((value) => {
-      const solve = this.normalizeLegacySolve(value);
-      return solve ? [solve] : [];
-    });
-    if (!staged) {
-      localStorage.setItem(
-        IndexedDbUserDataRepository.migrationStorageKey,
-        JSON.stringify(normalized),
-      );
-    }
-
-    const transaction = database.transaction(['solves', 'metadata'], 'readwrite');
-    await Promise.all(normalized.map((solve) => transaction.objectStore('solves').put(solve)));
-    await transaction.objectStore('metadata').put(USER_DATA_SCHEMA_VERSION, 'solveSchemaVersion');
-    await transaction.done;
-    localStorage.removeItem(IndexedDbUserDataRepository.legacyStorageKey);
-    localStorage.removeItem(IndexedDbUserDataRepository.migrationStorageKey);
-  }
-
-  /** localStorageの旧グループを同期可能な形式へ移行する。 */
-  private async migrateLegacyGroups(database: IDBPDatabase<CubeRepsDatabase>): Promise<void> {
-    const staged = this.readLegacyArray(IndexedDbUserDataRepository.migrationGroupsStorageKey);
-    const legacy =
-      staged ?? this.readLegacyArray(IndexedDbUserDataRepository.legacyGroupsStorageKey);
-    if (!legacy) return;
-    const normalized = legacy.flatMap((value) => {
-      const group = this.normalizeLegacyGroup(value);
-      return group ? [group] : [];
-    });
-    if (!staged) {
-      localStorage.setItem(
-        IndexedDbUserDataRepository.migrationGroupsStorageKey,
-        JSON.stringify(normalized),
-      );
-    }
-    const transaction = database.transaction(['groups', 'metadata'], 'readwrite');
-    await Promise.all(normalized.map((group) => transaction.objectStore('groups').put(group)));
-    await transaction.objectStore('metadata').put(USER_DATA_SCHEMA_VERSION, 'groupSchemaVersion');
-    await transaction.done;
-    localStorage.removeItem(IndexedDbUserDataRepository.legacyGroupsStorageKey);
-    localStorage.removeItem(IndexedDbUserDataRepository.migrationGroupsStorageKey);
-  }
-
-  /** localStorageの旧ユーザー手順設定をケース単位のレコードへ移行する。 */
-  private async migrateLegacyAlgorithmPreferences(
-    database: IDBPDatabase<CubeRepsDatabase>,
-  ): Promise<void> {
-    const staged = this.readLegacyArray(IndexedDbUserDataRepository.migrationAlgorithmsStorageKey);
-    const legacy = this.readLegacyObject(IndexedDbUserDataRepository.legacyAlgorithmsStorageKey);
-    if (!staged && !legacy) return;
-    const normalized =
-      staged?.flatMap((value) => {
-        const preference = this.normalizeLegacyAlgorithmPreference(value);
-        return preference ? [preference] : [];
-      }) ??
-      Object.entries(legacy ?? {}).flatMap(([caseKey, value]) => {
-        const preference = this.normalizeLegacyAlgorithmPreference({
-          ...(value as object),
-          caseKey,
-        });
-        return preference ? [preference] : [];
-      });
-    if (!staged) {
-      localStorage.setItem(
-        IndexedDbUserDataRepository.migrationAlgorithmsStorageKey,
-        JSON.stringify(normalized),
-      );
-    }
-    const transaction = database.transaction(['algorithmPreferences', 'metadata'], 'readwrite');
-    await Promise.all(
-      normalized.map((preference) =>
-        transaction.objectStore('algorithmPreferences').put(preference),
-      ),
-    );
-    await transaction
-      .objectStore('metadata')
-      .put(USER_DATA_SCHEMA_VERSION, 'algorithmSchemaVersion');
-    await transaction.done;
-    localStorage.removeItem(IndexedDbUserDataRepository.legacyAlgorithmsStorageKey);
-    localStorage.removeItem(IndexedDbUserDataRepository.migrationAlgorithmsStorageKey);
-  }
-
-  private readLegacyArray(key: string): unknown[] | undefined {
-    const stored = localStorage.getItem(key);
-    if (stored === null) return undefined;
-    try {
-      const parsed: unknown = JSON.parse(stored);
-      return Array.isArray(parsed) ? parsed : undefined;
-    } catch {
-      return undefined;
-    }
-  }
-
-  /** @returns JSONオブジェクトとして読める場合の旧データ */
-  private readLegacyObject(key: string): Record<string, unknown> | undefined {
-    const stored = localStorage.getItem(key);
-    if (stored === null) return undefined;
-    try {
-      const parsed: unknown = JSON.parse(stored);
-      return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-        ? (parsed as Record<string, unknown>)
-        : undefined;
-    } catch {
-      return undefined;
-    }
-  }
-
-  /** @returns 必須項目を検証して同期可能な形式へ変換したグループ */
-  private normalizeLegacyGroup(value: unknown): RecordGroup | undefined {
-    if (!value || typeof value !== 'object') return undefined;
-    const group = value as Partial<RecordGroup>;
-    if (typeof group.name !== 'string' || typeof group.createdAt !== 'string') return undefined;
-    return {
-      id: typeof group.id === 'string' && group.id ? group.id : crypto.randomUUID(),
-      name: group.name,
-      createdAt: group.createdAt,
-      updatedAt: group.updatedAt ?? group.createdAt,
-      ownerType: group.ownerType ?? 'guest',
-      ...(group.ownerType === 'account' ? { ownerId: group.ownerId } : {}),
-      schemaVersion: USER_DATA_SCHEMA_VERSION,
-    };
-  }
-
-  /** @returns ユーザー手順IDとお気に入り参照を同期可能な形式へ変換した設定 */
-  private normalizeLegacyAlgorithmPreference(value: unknown): AlgorithmPreference | undefined {
-    if (!value || typeof value !== 'object') return undefined;
-    const preference = value as Partial<AlgorithmPreference>;
-    if (typeof preference.caseKey !== 'string' || !Array.isArray(preference.custom))
-      return undefined;
-    const idMap = new Map<string, string>();
-    const custom = preference.custom.flatMap((algorithm) => {
-      if (!algorithm || typeof algorithm.notation !== 'string') return [];
-      const oldId = typeof algorithm.id === 'string' ? algorithm.id : '';
-      const id = this.isUuid(oldId) ? oldId : crypto.randomUUID();
-      if (oldId) idMap.set(oldId, id);
-      return [{ id, notation: algorithm.notation, builtIn: false }];
-    });
-    return {
-      caseKey: preference.caseKey,
-      custom,
-      favoriteId: preference.favoriteId
-        ? (idMap.get(preference.favoriteId) ?? preference.favoriteId)
-        : undefined,
-      createdAt: preference.createdAt ?? new Date().toISOString(),
-      updatedAt: preference.updatedAt ?? new Date().toISOString(),
-      ownerType: preference.ownerType ?? 'guest',
-      ...(preference.ownerType === 'account' ? { ownerId: preference.ownerId } : {}),
-      schemaVersion: USER_DATA_SCHEMA_VERSION,
-    };
-  }
-
-  /** @returns 値がUUIDなら`true` */
-  private isUuid(value: string): boolean {
-    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-  }
-
-  /** @returns 必須項目を検証して現行形式へ変換したSolve */
-  private normalizeLegacySolve(value: unknown): Solve | undefined {
-    if (!value || typeof value !== 'object') return undefined;
-    const solve = value as Partial<Solve> & { date?: string };
-    const createdAt = solve.createdAt ?? solve.date;
-    if (
-      typeof solve.time !== 'number' ||
-      typeof solve.scramble !== 'string' ||
-      typeof createdAt !== 'string' ||
-      !this.isCategory(solve.category)
-    ) {
-      return undefined;
-    }
-    return {
-      id: typeof solve.id === 'string' && solve.id ? solve.id : crypto.randomUUID(),
-      time: solve.time,
-      scramble: solve.scramble,
-      createdAt,
-      updatedAt: solve.updatedAt ?? createdAt,
-      ownerType: solve.ownerType ?? 'guest',
-      ...(solve.ownerType === 'account' ? { ownerId: solve.ownerId } : {}),
-      schemaVersion: USER_DATA_SCHEMA_VERSION,
-      category: solve.category,
-      caseName: solve.caseName,
-      groupId: solve.groupId || 'unclassified',
-      penalty: solve.penalty ?? 'none',
-    };
-  }
-
-  /** @returns 値が対応済みsolveカテゴリーなら`true` */
-  private isCategory(value: unknown): value is SolveCategory {
-    return value === 'full' || value === 'oll' || value === 'pll';
   }
 }

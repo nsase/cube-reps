@@ -121,7 +121,7 @@ Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`�
 - 記録グループ
 - OLL・PLLの追加手順とお気に入り
 
-以前`localStorage`へ保存された既存データは、アプリ起動時に自動移行されます。次の端末固有設定は引き続き`localStorage`へ保存されます。
+次の端末固有設定は`localStorage`へ保存されます。
 
 - 現在の記録先
 - 表示言語
@@ -153,7 +153,7 @@ src/app/
 ├── core/       # キューブ、集計、手順、永続データ
 │   ├── algorithm/     # 手順ライブラリとビルトインOLL/PLLケース
 │   ├── cube/          # 記録ストア、Group/Solveサービス、キューブ状態、集計
-│   ├── local-storage/ # IndexedDBの保存・旧データ移行・ローカル保存キュー
+│   ├── local-storage/ # IndexedDBの保存・ローカル保存キュー
 │   └── firestore/     # クラウドのRepositoryと同期
 ├── features/   # タイマー、手順一覧、履歴、設定の各画面
 └── shared/     # キューブ表示や確認ダイアログなどの共通UI
