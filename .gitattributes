@@ -1,0 +1,4 @@
+
+# Gradle wrapper scripts must run on both Unix and Windows.
+android/gradlew text eol=lf
+android/gradlew.bat text eol=crlf

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { MatButtonModule } from '@angular/material/button';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { version } from '../../../../../package.json';
+import { IS_NATIVE_APP } from '../../../core/platform/native-platform';
 import { AppUpdateService } from '../../../core/app-update.service';
 
 /** 更新通知を閉じた後でも新版の確認・適用ができる操作欄。 */
@@ -13,6 +14,8 @@ import { AppUpdateService } from '../../../core/app-update.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpdateSettings {
+  /** ストア経由で更新するアプリとして起動しているか。 */
+  protected readonly isNative = inject(IS_NATIVE_APP);
   /** 現在開いているアプリのビルドに含まれるリリース番号。 */
   protected readonly version = version;
   /** アプリ全体で共有する新版の取得状態と更新操作。 */

@@ -1,6 +1,8 @@
 <section aria-labelledby="update-heading">
   <h2 id="update-heading">{{ 'settings.updateTitle' | transloco }}</h2>
-  @if (!updates.enabled) {
+  @if (isNative) {
+    <p role="status">{{ 'settings.storeUpdates' | transloco }}</p>
+  } @else if (!updates.enabled) {
     <p role="status">{{ 'settings.unsupported' | transloco }}</p>
   } @else {
     <p role="status" data-testid="update-status">

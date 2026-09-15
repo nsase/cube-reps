@@ -72,3 +72,37 @@ jobs:
       - name: Browser test (all 7 projects)
         if: github.event.pull_request.base.ref == 'main' || (github.event_name == 'workflow_dispatch' && inputs.browser_scope == 'all')
         run: npm run test:e2e
+
+  android:
+    name: Android debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - name: Use project npm version
+        run: npm install --global npm@11.6.2
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Android SDK packages
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Build and sync bundled app
+        run: npm run android:sync
+      - name: Assemble guest debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+      - name: Upload guest debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: cube-reps-android-guest-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

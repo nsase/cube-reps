@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { SwUpdate, VersionEvent } from '@angular/service-worker';
 import { Subject } from 'rxjs';
+import { IS_NATIVE_APP } from './platform/native-platform';
 import { AppUpdateService, IS_PWA, RELOAD_PAGE } from './app-update.service';
 
 describe('AppUpdateService', () => {
@@ -43,6 +44,22 @@ describe('AppUpdateService', () => {
     expect(checkForUpdate).not.toHaveBeenCalled();
     expect(activateUpdate).not.toHaveBeenCalled();
     expect(reloadPage).not.toHaveBeenCalled();
+  });
+
+  it('ネイティブ起動ではstandalone判定でもPWAの通知・確認・適用を行わない', async () => {
+    TestBed.overrideProvider(IS_NATIVE_APP, { useValue: true });
+    const service = TestBed.inject(AppUpdateService);
+    versionUpdates.next({
+      type: 'VERSION_READY',
+      currentVersion: { hash: 'current' },
+      latestVersion: { hash: 'next' },
+    });
+    await service.checkForUpdate();
+    await service.applyUpdate();
+    expect(service.enabled).toBe(false);
+    expect(service.showUpdateNotice()).toBe(false);
+    expect(checkForUpdate).not.toHaveBeenCalled();
+    expect(activateUpdate).not.toHaveBeenCalled();
   });
 
   it('新版の取得完了後だけ更新操作を案内する', () => {
