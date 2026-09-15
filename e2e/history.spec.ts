@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, Page } from '@playwright/test';
 
 import {
   expectElementsWithin,
@@ -16,107 +16,6 @@ test.beforeEach(async ({ page }) => {
   await expect(page.locator('app-history')).toBeVisible();
 });
 
-test('旧localStorageの記録をIndexedDBへ移行して履歴に表示する', async ({ page }) => {
-  await page.evaluate(() => {
-    localStorage.setItem(
-      'cube-reps.solves',
-      JSON.stringify([
-        {
-          time: 1234,
-          scramble: 'R U',
-          date: '2026-01-01T00:00:00.000Z',
-          category: 'full',
-          penalty: 'none',
-        },
-      ]),
-    );
-    localStorage.setItem(
-      'cube-reps.groups',
-      JSON.stringify([
-        {
-          id: 'competition',
-          name: 'Competition',
-          createdAt: '2026-01-02T00:00:00.000Z',
-        },
-      ]),
-    );
-    localStorage.setItem(
-      'cube-reps.algorithm-preferences',
-      JSON.stringify({
-        'PLL-Aa': {
-          custom: [{ id: 'user-1', notation: 'R U', builtIn: false }],
-          favoriteId: 'user-1',
-        },
-      }),
-    );
-  });
-  await page.reload();
-
-  await expect(page.locator('app-solve-record')).toHaveCount(1);
-  const migrated = await page.evaluate(
-    () =>
-      new Promise<{
-        id: string;
-        ownerType: string;
-        ownerId: string;
-        updatedAt: string;
-        schemaVersion: number;
-      }>((resolve, reject) => {
-        const request = indexedDB.open('cube-reps');
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => {
-          const transaction = request.result.transaction('solves', 'readonly');
-          const getAll = transaction.objectStore('solves').getAll();
-          getAll.onerror = () => reject(getAll.error);
-          getAll.onsuccess = () => resolve(getAll.result[0]);
-        };
-      }),
-  );
-
-  expect(migrated.id).toMatch(/^[0-9a-f-]{36}$/i);
-  expect(migrated.ownerType).toBe('guest');
-  expect(migrated.ownerId).toBeUndefined();
-  expect(migrated.updatedAt).toBe('2026-01-01T00:00:00.000Z');
-  expect(migrated.schemaVersion).toBe(3);
-  expect(await page.evaluate(() => localStorage.getItem('cube-reps.solves'))).toBeNull();
-  const related = await page.evaluate(
-    () =>
-      new Promise<{
-        groups: Array<Record<string, unknown>>;
-        preferences: Array<Record<string, unknown>>;
-      }>((resolve, reject) => {
-        const request = indexedDB.open('cube-reps');
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => {
-          const transaction = request.result.transaction(
-            ['groups', 'algorithmPreferences'],
-            'readonly',
-          );
-          const groups = transaction.objectStore('groups').getAll();
-          const preferences = transaction.objectStore('algorithmPreferences').getAll();
-          transaction.onerror = () => reject(transaction.error);
-          transaction.oncomplete = () =>
-            resolve({ groups: groups.result, preferences: preferences.result });
-        };
-      }),
-  );
-  expect(related.groups[0]).toMatchObject({
-    id: 'competition',
-    schemaVersion: 3,
-  });
-  expect(related.preferences[0]).toMatchObject({
-    caseKey: 'PLL-Aa',
-    schemaVersion: 3,
-  });
-  const custom = related.preferences[0]['custom'] as Array<{ id: string }>;
-  expect(custom[0].id).toMatch(/^[0-9a-f-]{36}$/i);
-  expect(related.preferences[0]['favoriteId']).toBe(custom[0].id);
-  expect(await page.evaluate(() => localStorage.getItem('cube-reps.groups'))).toBeNull();
-  expect(
-    await page.evaluate(() => localStorage.getItem('cube-reps.algorithm-preferences')),
-  ).toBeNull();
-});
-
 test('レスポンシブ配置が画面内に収まる', { tag: '@responsive' }, async ({ page }) => {
   await expectNoHorizontalOverflow(page);
   await expectResponsiveLayout(page, layoutItems);
@@ -127,14 +26,12 @@ test('フィルターをスクロール中も画面上部に表示する', { tag
     id: String(index),
     time: 1000 + index,
     scramble: 'R U',
-    date: new Date(index).toISOString(),
+    createdAt: new Date(index).toISOString(),
     category: 'full',
     groupId: 'unclassified',
     penalty: 'none',
   }));
-  await page.evaluate((storedSolves) => {
-    localStorage.setItem('cube-reps.solves', JSON.stringify(storedSolves));
-  }, solves);
+  await storeHistoryData(page, { solves });
   await page.reload();
 
   const filter = page.getByTestId('history-filter');
@@ -149,10 +46,8 @@ test('フィルターをスクロール中も画面上部に表示する', { tag
 
 test('TimerとHistoryで選択中のグループを共有する', async ({ page }) => {
   const groups = [{ id: 'competition', name: '大会', createdAt: new Date(1).toISOString() }];
-  await page.evaluate((storedGroups) => {
-    localStorage.setItem('cube-reps.groups', JSON.stringify(storedGroups));
-    localStorage.setItem('cube-reps.active-group', 'competition');
-  }, groups);
+  await storeHistoryData(page, { groups });
+  await page.evaluate(() => localStorage.setItem('cube-reps.active-group', 'competition'));
   await page.reload();
 
   const historyGroup = page.getByTestId('history-group-filter');
@@ -171,19 +66,13 @@ test('記録グループの削除後も所属記録を未分類で表示する',
     id: 'competition-solve',
     time: 1234,
     scramble: 'R U',
-    date: new Date(2).toISOString(),
+    createdAt: new Date(2).toISOString(),
     category: 'full',
     groupId: group.id,
     penalty: 'none',
   };
-  await page.evaluate(
-    ({ storedGroup, storedSolve }) => {
-      localStorage.setItem('cube-reps.groups', JSON.stringify([storedGroup]));
-      localStorage.setItem('cube-reps.solves', JSON.stringify([storedSolve]));
-      localStorage.setItem('cube-reps.active-group', storedGroup.id);
-    },
-    { storedGroup: group, storedSolve: solve },
-  );
+  await storeHistoryData(page, { groups: [group], solves: [solve] });
+  await page.evaluate(() => localStorage.setItem('cube-reps.active-group', 'competition'));
   await page.reload();
 
   const targetGroup = page.locator('app-record-group').filter({ hasText: '大会' });
@@ -213,14 +102,12 @@ test('途中のDNFを飛ばして前後の結果を線でつなぐ', async ({ pa
     id: String(index + 1),
     time: 10000 - index * 500,
     scramble: 'R U',
-    date: new Date(6 - index).toISOString(),
+    createdAt: new Date(6 - index).toISOString(),
     category: 'full',
     groupId: 'unclassified',
     penalty: index === 2 || index === 3 ? 'DNF' : 'none',
   }));
-  await page.evaluate((storedSolves) => {
-    localStorage.setItem('cube-reps.solves', JSON.stringify(storedSolves));
-  }, solves);
+  await storeHistoryData(page, { solves });
   await page.reload();
 
   const resultPath = page.locator('.series-line.result');
@@ -233,25 +120,19 @@ test('途中のDNFを飛ばして前後の結果を線でつなぐ', async ({ pa
 
 test('履歴のスクランブルを引き継いでタイマーでリトライする', async ({ page }) => {
   const scramble = 'R U F';
-  await page.evaluate(
-    ({ retryScramble }) => {
-      localStorage.setItem(
-        'cube-reps.solves',
-        JSON.stringify([
-          {
-            id: 'retry-solve',
-            time: 1234,
-            scramble: retryScramble,
-            date: new Date().toISOString(),
-            category: 'full',
-            groupId: 'unclassified',
-            penalty: 'none',
-          },
-        ]),
-      );
-    },
-    { retryScramble: scramble },
-  );
+  await storeHistoryData(page, {
+    solves: [
+      {
+        id: 'retry-solve',
+        time: 1234,
+        scramble,
+        createdAt: new Date().toISOString(),
+        category: 'full',
+        groupId: 'unclassified',
+        penalty: 'none',
+      },
+    ],
+  });
   await page.reload();
 
   await page.getByRole('button', { name: /リトライ|Retry/ }).click();
@@ -271,14 +152,12 @@ test(
       id: String(1234 - index),
       time: (index + 1) * 1000,
       scramble,
-      date: new Date(Date.UTC(2026, 0, 12 - index)).toISOString(),
+      createdAt: new Date(Date.UTC(2026, 0, 12 - index)).toISOString(),
       category: 'full',
       groupId: 'unclassified',
       penalty: 'none',
     }));
-    await page.evaluate((storedSolves) => {
-      localStorage.setItem('cube-reps.solves', JSON.stringify(storedSolves));
-    }, solves);
+    await storeHistoryData(page, { solves });
     await page.reload();
 
     const header = page.locator('.history-header');
@@ -507,14 +386,12 @@ test('旧版の削除済みグループを整理しても有効な記録は未�
       const transaction = db.transaction(['groups', 'solves'], 'readwrite');
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
-      transaction
-        .objectStore('groups')
-        .put({
-          ...metadata,
-          id: 'deleted-group',
-          name: 'Deleted practice',
-          deletedAt: metadata.updatedAt,
-        });
+      transaction.objectStore('groups').put({
+        ...metadata,
+        id: 'deleted-group',
+        name: 'Deleted practice',
+        deletedAt: metadata.updatedAt,
+      });
       const record = {
         ...metadata,
         id: 'remaining',
@@ -540,3 +417,37 @@ test('旧版の削除済みグループを整理しても有効な記録は未�
   await expect(page.locator('app-solve-record')).toHaveCount(1);
   await expect(page.locator('app-solve-record')).toContainText('1.23');
 });
+
+/** 履歴操作の前提データを現行形式で保存し、トランザクション完了後に画面を再読込できるようにする。 */
+async function storeHistoryData(
+  page: Page,
+  data: { solves?: Array<Record<string, unknown>>; groups?: Array<Record<string, unknown>> },
+): Promise<void> {
+  await page.evaluate(async (stored) => {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('cube-reps');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const transaction = database.transaction(['solves', 'groups'], 'readwrite');
+        transaction.oncomplete = () => resolve();
+        transaction.onabort = () => reject(transaction.error);
+        transaction.onerror = () => reject(transaction.error);
+        for (const name of ['solves', 'groups'] as const) {
+          for (const record of stored[name] ?? []) {
+            transaction.objectStore(name).put({
+              ownerType: 'guest',
+              schemaVersion: 3,
+              updatedAt: record['createdAt'],
+              ...record,
+            });
+          }
+        }
+      });
+    } finally {
+      database.close();
+    }
+  }, data);
+}
