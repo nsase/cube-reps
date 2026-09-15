@@ -121,7 +121,7 @@ The following synchronization-ready user data is stored in your browser's `Index
 - Record groups
 - Custom and favorite OLL and PLL algorithms
 
-Existing data previously stored in `localStorage` is migrated automatically when the app starts. The following device-specific settings remain in `localStorage`:
+The following device-specific settings are stored in `localStorage`:
 
 - Active record destination
 - Display language
@@ -153,7 +153,7 @@ src/app/
 ├── core/       # Cube logic, statistics, algorithms, and persistent data
 │   ├── algorithm/     # Algorithm library and built-in OLL/PLL cases
 │   ├── cube/          # Record store, Group/Solve services, cube state, and statistics
-│   ├── local-storage/ # IndexedDB repository, legacy migration, and local save queue
+│   ├── local-storage/ # IndexedDB repository and local save queue
 │   └── firestore/     # Cloud repositories and synchronization
 ├── features/   # Timer, algorithm library, history, and settings pages
 └── shared/     # Shared UI such as cube views and confirmation dialogs
