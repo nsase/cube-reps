@@ -173,6 +173,11 @@
     "savedGroup": "Saved group"
   },
   "settings": {
+    "linksTitle": "Related links",
+    "linksHint": "Open CubeReps in your browser, or visit GitHub for source code and issue reports. Links open in a new tab.",
+    "openWebsite": "Open web version",
+    "openGithub": "GitHub",
+
     "version": "Version",
     "languageHint": "This language is saved in this browser.",
     "updateTitle": "App updates",

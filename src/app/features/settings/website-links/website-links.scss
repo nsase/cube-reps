@@ -1,0 +1,12 @@
+h2 {
+  margin: 0 0 12px;
+  font-size: var(--font-size-large);
+}
+p {
+  color: var(--text-muted-color);
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
