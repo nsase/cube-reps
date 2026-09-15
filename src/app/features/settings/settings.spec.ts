@@ -37,6 +37,9 @@ describe('Settings', () => {
     const fixture = TestBed.createComponent(Settings);
     await fixture.whenStable();
     const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    expect(fixture.nativeElement.textContent).toContain(en.settings.linksTitle);
+    expect(fixture.nativeElement.textContent).toContain(en.settings.openWebsite);
+    expect(fixture.nativeElement.textContent).toContain(en.settings.linksHint);
     expect(fixture.nativeElement.textContent).toContain(en.settings.updateTitle);
     expect(
       fixture.nativeElement.querySelector('[data-testid="app-version"]').textContent,
@@ -44,6 +47,9 @@ describe('Settings', () => {
     select.value = 'ja';
     select.dispatchEvent(new Event('change'));
     await fixture.whenStable();
+    expect(fixture.nativeElement.textContent).toContain(ja.settings.linksTitle);
+    expect(fixture.nativeElement.textContent).toContain(ja.settings.openWebsite);
+    expect(fixture.nativeElement.textContent).toContain(ja.settings.linksHint);
     expect(fixture.nativeElement.textContent).toContain(ja.settings.updateTitle);
     expect(
       fixture.nativeElement.querySelector('[data-testid="app-version"]').textContent,
@@ -53,6 +59,9 @@ describe('Settings', () => {
     select.value = 'en';
     select.dispatchEvent(new Event('change'));
     await fixture.whenStable();
+    expect(fixture.nativeElement.textContent).toContain(en.settings.linksTitle);
+    expect(fixture.nativeElement.textContent).toContain(en.settings.openWebsite);
+    expect(fixture.nativeElement.textContent).toContain(en.settings.linksHint);
     expect(fixture.nativeElement.textContent).toContain(en.settings.updateTitle);
     expect(
       fixture.nativeElement.querySelector('[data-testid="app-version"]').textContent,

@@ -173,6 +173,11 @@
     "savedGroup": "保存済みグループ"
   },
   "settings": {
+    "linksTitle": "関連リンク",
+    "linksHint": "ブラウザで使えるWeb版と、ソースコード・不具合報告を確認できるGitHubです。リンクは別タブで開きます。",
+    "openWebsite": "Web版を開く",
+    "openGithub": "GitHub",
+
     "version": "バージョン",
     "languageHint": "表示言語はこのブラウザに保存されます。",
     "updateTitle": "アプリの更新",
