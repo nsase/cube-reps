@@ -18,7 +18,7 @@ export class AlgorithmLibraryService {
   private readonly preferences = signal<AlgorithmPreferences>({});
   /** IndexedDB初期化後の変更だけを保存するフラグ。 */
   private readonly storageReady = signal(false);
-  /** 旧データ移行とIndexedDBからの復元が完了したときに解決するPromise。 */
+  /** IndexedDBからの復元が完了したときに解決するPromise。 */
   readonly ready = this.initializeStorage();
 
   /** @returns 種別と番号を組み合わせたケース固有キー */
