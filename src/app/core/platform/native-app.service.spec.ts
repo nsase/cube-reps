@@ -2,18 +2,13 @@ import { Location } from '@angular/common';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
-import { App } from '@capacitor/app';
-import { KeepAwake } from '@capacitor-community/keep-awake';
 import { AppUpdateService } from '../app-update.service';
-import { NativeAppService } from './native-app.service';
+import { NativeAppService, NATIVE_APP_PLUGIN, NATIVE_KEEP_AWAKE_PLUGIN } from './native-app.service';
 import { IS_NATIVE_APP } from './native-platform';
 
-vi.mock('@capacitor/app', () => ({ App: { addListener: vi.fn(), minimizeApp: vi.fn() } }));
-vi.mock('@capacitor-community/keep-awake', () => ({
-  KeepAwake: { keepAwake: vi.fn(), allowSleep: vi.fn() },
-}));
-
 describe('NativeAppService', () => {
+  const app = { addListener: vi.fn(), minimizeApp: vi.fn() };
+  const keepAwake = { keepAwake: vi.fn(), allowSleep: vi.fn() };
   let back: (event: { canGoBack: boolean }) => void;
   const showNotices = signal(true);
   const goBack = vi.fn();
@@ -21,17 +16,19 @@ describe('NativeAppService', () => {
   const openDialogs: { close: () => void; disableClose?: boolean }[] = [];
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     showNotices.set(true);
     openDialogs.length = 0;
-    vi.mocked(App.addListener).mockImplementation((_event: unknown, handler: unknown) => {
+    app.addListener.mockImplementation((_event: unknown, handler: unknown) => {
       back = handler as typeof back;
       return Promise.resolve({ remove });
     });
-    vi.mocked(KeepAwake.keepAwake).mockResolvedValue();
-    vi.mocked(KeepAwake.allowSleep).mockResolvedValue();
-    // rootサービスが参照する環境判定も置き換え、Node.jsの実行環境によらず端末操作を検証する。
+    keepAwake.keepAwake.mockResolvedValue(undefined);
+    keepAwake.allowSleep.mockResolvedValue(undefined);
+    // 端末APIをDIで置き換え、ビルド時の共有チャンクやモジュールキャッシュに依存しない。
     TestBed.overrideProvider(IS_NATIVE_APP, { useValue: true });
+    TestBed.overrideProvider(NATIVE_APP_PLUGIN, { useValue: app });
+    TestBed.overrideProvider(NATIVE_KEEP_AWAKE_PLUGIN, { useValue: keepAwake });
     TestBed.configureTestingModule({
       providers: [
         { provide: Location, useValue: { back: goBack } },
@@ -42,17 +39,19 @@ describe('NativeAppService', () => {
   });
 
   it('計測中は戻る操作を無視し、通常時は履歴へ戻り、履歴がなければ最小化する', () => {
-    TestBed.inject(NativeAppService);
+    const service = TestBed.inject(NativeAppService);
+    expect(service.isNative).toBe(true);
+    expect(app.addListener).toHaveBeenCalledOnce();
     showNotices.set(false);
     back({ canGoBack: true });
     back({ canGoBack: false });
     expect(goBack).not.toHaveBeenCalled();
-    expect(App.minimizeApp).not.toHaveBeenCalled();
+    expect(app.minimizeApp).not.toHaveBeenCalled();
     showNotices.set(true);
     back({ canGoBack: true });
     expect(goBack).toHaveBeenCalledOnce();
     back({ canGoBack: false });
-    expect(App.minimizeApp).toHaveBeenCalledOnce();
+    expect(app.minimizeApp).toHaveBeenCalledOnce();
   });
 
   it('戻る操作は最前面の確認をキャンセルし、画面の履歴は変更しない', () => {
@@ -69,7 +68,7 @@ describe('NativeAppService', () => {
 
   it('開始要求が遅れて完了しても、停止時の消灯許可をその後に適用する', async () => {
     let finish!: () => void;
-    vi.mocked(KeepAwake.keepAwake).mockReturnValue(
+    keepAwake.keepAwake.mockReturnValue(
       new Promise<void>((resolve) => {
         finish = resolve;
       }),
@@ -78,32 +77,32 @@ describe('NativeAppService', () => {
     service.setKeepAwake(true);
     service.setKeepAwake(false);
     await Promise.resolve();
-    expect(KeepAwake.allowSleep).not.toHaveBeenCalled();
+    expect(keepAwake.allowSleep).not.toHaveBeenCalled();
     finish();
-    await vi.waitFor(() => expect(KeepAwake.allowSleep).toHaveBeenCalledOnce());
+    await vi.waitFor(() => expect(keepAwake.allowSleep).toHaveBeenCalledOnce());
   });
 
   it('端末APIに失敗しても次の開始要求を処理できる', async () => {
-    vi.mocked(KeepAwake.keepAwake).mockRejectedValueOnce(new Error('unavailable'));
+    keepAwake.keepAwake.mockRejectedValueOnce(new Error('unavailable'));
     const service = TestBed.inject(NativeAppService);
     service.setKeepAwake(true);
     service.setKeepAwake(false);
     service.setKeepAwake(true);
-    await vi.waitFor(() => expect(KeepAwake.keepAwake).toHaveBeenCalledTimes(2));
+    await vi.waitFor(() => expect(keepAwake.keepAwake).toHaveBeenCalledTimes(2));
   });
 
   it('破棄時に戻る操作の購読と画面消灯防止を解除する', async () => {
     TestBed.inject(NativeAppService);
     TestBed.resetTestingModule();
     await vi.waitFor(() => expect(remove).toHaveBeenCalledOnce());
-    expect(KeepAwake.allowSleep).toHaveBeenCalled();
+    expect(keepAwake.allowSleep).toHaveBeenCalled();
   });
 
   it('Web版ではネイティブAPIを呼び出さない', () => {
     TestBed.overrideProvider(IS_NATIVE_APP, { useValue: false });
     const service = TestBed.inject(NativeAppService);
     service.setKeepAwake(true);
-    expect(App.addListener).not.toHaveBeenCalled();
-    expect(KeepAwake.keepAwake).not.toHaveBeenCalled();
+    expect(app.addListener).not.toHaveBeenCalled();
+    expect(keepAwake.keepAwake).not.toHaveBeenCalled();
   });
 });

@@ -93,6 +93,8 @@ jobs:
           java-version: 21
       - name: Install dependencies
         run: npm ci
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
       - name: Install Android SDK packages
         run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
       - name: Build and sync bundled app
