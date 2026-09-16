@@ -30,9 +30,10 @@ describe('NativeAppService', () => {
     });
     vi.mocked(KeepAwake.keepAwake).mockResolvedValue();
     vi.mocked(KeepAwake.allowSleep).mockResolvedValue();
+    // rootサービスが参照する環境判定も置き換え、Node.jsの実行環境によらず端末操作を検証する。
+    TestBed.overrideProvider(IS_NATIVE_APP, { useValue: true });
     TestBed.configureTestingModule({
       providers: [
-        { provide: IS_NATIVE_APP, useValue: true },
         { provide: Location, useValue: { back: goBack } },
         { provide: MatDialog, useValue: { openDialogs } },
         { provide: AppUpdateService, useValue: { showNonEssentialNotices: showNotices } },
