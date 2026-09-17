@@ -68,6 +68,38 @@
                   "output": "/"
                 }
               ]
+            },
+            "native": {
+              "outputPath": "dist/cube-reps-native",
+              "baseHref": "/",
+              "serviceWorker": false,
+              "styles": ["src/styles.native.scss"],
+              "assets": [
+                {
+                  "glob": "**/*",
+                  "input": "public"
+                },
+                {
+                  "glob": "LICENSE",
+                  "input": "node_modules/@fontsource/dm-mono",
+                  "output": "licenses/dm-mono"
+                },
+                {
+                  "glob": "LICENSE",
+                  "input": "node_modules/@fontsource/outfit",
+                  "output": "licenses/outfit"
+                },
+                {
+                  "glob": "LICENSE",
+                  "input": "node_modules/@fontsource/roboto",
+                  "output": "licenses/roboto"
+                },
+                {
+                  "glob": "LICENSE",
+                  "input": "node_modules/@fontsource-variable/material-symbols-outlined",
+                  "output": "licenses/material-symbols-outlined"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"

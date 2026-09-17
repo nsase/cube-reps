@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { SwUpdate, VersionEvent } from '@angular/service-worker';
 import { Subject } from 'rxjs';
 import { AppUpdateService, IS_PWA, RELOAD_PAGE } from '../../core/app-update.service';
+import { IS_NATIVE_APP } from '../../core/platform/native-platform';
 import { Settings } from './settings';
 import en from '../../../../public/assets/i18n/en.json';
 import ja from '../../../../public/assets/i18n/ja.json';
@@ -133,6 +134,19 @@ describe('Settings', () => {
     expect(fixture.nativeElement.textContent).toContain(en.settings.unsupported);
     expect(fixture.nativeElement.querySelector('[data-testid="check-update"]')).toBeNull();
     expect(fixture.nativeElement.querySelector('[data-testid="apply-update"]')).toBeNull();
+  });
+
+  it('ネイティブアプリではストア更新を日英で案内し、PWA更新操作を表示しない', async () => {
+    TestBed.overrideProvider(IS_NATIVE_APP, { useValue: true });
+    const fixture = TestBed.createComponent(Settings);
+    await fixture.whenStable();
+    expect(fixture.nativeElement.textContent).toContain(en.settings.storeUpdates);
+    expect(fixture.nativeElement.querySelector('[data-testid="check-update"]')).toBeNull();
+    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    select.value = 'ja';
+    select.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    expect(fixture.nativeElement.textContent).toContain(ja.settings.storeUpdates);
   });
 
   it('未対応環境では理由を表示し更新操作を表示しない', async () => {

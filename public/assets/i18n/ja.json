@@ -24,7 +24,8 @@
     ],
     "signedIn": "ログインしました。",
     "continueToTimer": "タイマーへ進む",
-    "continueWithoutLogin": "ログインしないで利用する"
+    "continueWithoutLogin": "ログインしないで利用する",
+    "guestBuild": "このアプリではゲストとして利用できます。ログインとクラウド同期は利用できません。"
   },
   "sync": {
     "signed-out": "端末内のみ",
@@ -177,7 +178,6 @@
     "linksHint": "ブラウザで使えるWeb版と、ソースコード・不具合報告を確認できるGitHubです。リンクは別タブで開きます。",
     "openWebsite": "Web版を開く",
     "openGithub": "GitHub",
-
     "version": "バージョン",
     "languageHint": "表示言語はこのブラウザに保存されます。",
     "updateTitle": "アプリの更新",
@@ -189,6 +189,7 @@
     "failed": "更新を確認できませんでした。接続を確認して再試行してください。",
     "checkUpdate": "アップデートを確認",
     "applying": "更新しています…",
-    "applyFailed": "更新を適用できませんでした。再試行してください。"
+    "applyFailed": "更新を適用できませんでした。再試行してください。",
+    "storeUpdates": "ストアまたは配布元から新しいバージョンをインストールしてください。"
   }
 }

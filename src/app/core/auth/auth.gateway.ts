@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import type { Auth } from 'firebase/auth';
+import { IS_NATIVE_APP } from '../platform/native-platform';
 import { firebaseConfig } from './firebase.config';
 
 /** UIと認証状態が参照するアカウント情報。 */
@@ -52,14 +53,18 @@ export abstract class AuthGateway {
 /** Firebase Authenticationを使用する本番用認証Gateway。 */
 @Injectable({ providedIn: 'root' })
 export class FirebaseAuthGateway extends AuthGateway {
+  /** SDKの遅延ロード結果を共有し、認証操作に同じモジュールを使用する。 */
+  private readonly authSdk = import('firebase/auth');
   /** 初期化済みFirebaseアプリに紐づくAuthenticationクライアント。 */
   private readonly auth = this.initializeAuth();
+  /** ネイティブのGoogle認証からWeb SDKの共通セッションへ接続するか。 */
+  private readonly isNative = inject(IS_NATIVE_APP);
 
   /** @inheritdoc */
   override observe(next: (user: AuthenticatedUser | null) => void, error: () => void): () => void {
     let cancelled = false;
     let unsubscribe: (() => void) | undefined;
-    void Promise.all([this.auth, import('firebase/auth')])
+    void Promise.all([this.auth, this.authSdk])
       .then(([auth, { onAuthStateChanged }]) => {
         if (cancelled) return;
         unsubscribe = onAuthStateChanged(
@@ -90,8 +95,19 @@ export class FirebaseAuthGateway extends AuthGateway {
   override async signInWithGoogle(): Promise<void> {
     const [auth, { GoogleAuthProvider, signInWithPopup }] = await Promise.all([
       this.auth,
-      import('firebase/auth'),
+      this.authSdk,
     ]);
+    if (this.isNative) {
+      const [{ FirebaseAuthentication }, { signInWithCredential }] = await Promise.all([
+        import('@capacitor-firebase/authentication'),
+        this.authSdk,
+      ]);
+      const result = await FirebaseAuthentication.signInWithGoogle({ skipNativeAuth: true });
+      if (!result.credential?.idToken)
+        throw new Error('Google sign-in did not return an ID token.');
+      await signInWithCredential(auth, GoogleAuthProvider.credential(result.credential.idToken));
+      return;
+    }
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
@@ -104,7 +120,7 @@ export class FirebaseAuthGateway extends AuthGateway {
 
   /** @inheritdoc */
   override async signOut(): Promise<void> {
-    const [auth, { signOut }] = await Promise.all([this.auth, import('firebase/auth')]);
+    const [auth, { signOut }] = await Promise.all([this.auth, this.authSdk]);
     await signOut(auth);
   }
 
@@ -118,7 +134,7 @@ export class FirebaseAuthGateway extends AuthGateway {
   private async initializeAuth(): Promise<Auth> {
     const [{ getApp, getApps, initializeApp }, { getAuth }] = await Promise.all([
       import('firebase/app'),
-      import('firebase/auth'),
+      this.authSdk,
     ]);
     return getAuth(getApps().length > 0 ? getApp() : initializeApp(firebaseConfig));
   }

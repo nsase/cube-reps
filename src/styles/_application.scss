@@ -1,0 +1,114 @@
+@use '@angular/material' as mat;
+@use 'theme-colors' as cube-reps-theme;
+
+// Web版とアプリ版で同じテーマ・レイアウトを使用する。
+@mixin styles {
+  .material-symbols-outlined {
+    font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24;
+  }
+
+  html {
+    @include mat.theme(
+      (
+        color: (
+          primary: cube-reps-theme.$primary-palette,
+        ),
+        typography: Outfit,
+        density: 0,
+      )
+    );
+  }
+
+  :root {
+    // Brand and semantic colors
+    --primary-color: var(--mat-sys-secondary-fixed);
+    --background-color: #f4f3ef;
+    --surface-color: var(--mat-sys-surface-container-lowest);
+    --text-color: #181a17;
+    --danger-color: var(--mat-sys-error);
+    --outline-color-active: var(--mat-sys-outline);
+    --outline-color: var(--mat-sys-outline-variant);
+    --success-color: #69935e;
+    --text-muted-color: #7d8078;
+
+    // Angular Material buttons
+    --mat-sys-outline: #52bf52;
+    --mat-dialog-container-color: var(--background-color);
+    --mat-sys-surface-container-low: #e9f0e9;
+    --mat-snack-bar-supporting-text-color: #ffffff;
+
+    // Cube sticker colors
+    --cube-yellow: #ffe624;
+    --cube-white: #f7f7f3;
+    --cube-green: #36a866;
+    --cube-blue: #2d32ff;
+    --cube-red: #e53a3a;
+    --cube-orange: #f08a35;
+    --cube-none: #555555;
+    --cube-border: #181a17;
+
+    // Typography
+    --font-family-base: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-family-heading: 'Outfit', var(--font-family-base);
+    --font-family-mono: 'DM Mono', monospace;
+    --font-size-small: 0.8rem;
+    --font-size-base: 16px;
+    --font-size-large: 1.2rem;
+    --font-size-title: 1.5rem;
+    --font-size-display: 1.8rem;
+    --font-size-timer-min: 70px;
+    --font-size-timer-max: 128px;
+    --line-height-base: 1.5;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+    background: var(--background-color);
+    color: var(--text-color);
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+  }
+
+  small {
+    font-size: var(--font-size-small);
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    color: inherit;
+    font: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  @media (max-width: 620px) {
+    .app-update-snackbar-container.mat-mdc-snack-bar-container {
+      margin-bottom: 70px;
+    }
+  }
+
+  button[mat-icon-button] {
+    line-height: normal;
+  }
+
+  code,
+  kbd,
+  pre {
+    font-family: var(--font-family-mono);
+  }
+}

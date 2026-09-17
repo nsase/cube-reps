@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- API 26以降はadaptive icon、それ以前は同じブランド画像を使用する。 -->
+    <item type="mipmap" name="ic_launcher_round">@mipmap/ic_launcher</item>
+</resources>
