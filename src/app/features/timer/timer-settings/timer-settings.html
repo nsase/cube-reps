@@ -1,39 +1,35 @@
 <div class="record-context">
-  <div>
-    <small>{{ 'timer.recordGroup' | transloco }}</small
-    ><strong>{{ cube.groupName(cube.activeGroup().id) }}</strong>
-  </div>
-  <label
-    >{{ 'timer.recordDestination' | transloco
-    }}<select [(ngModel)]="cube.activeGroupId">
+  <div class="group">
+    <label>{{ 'timer.recordDestination' | transloco }}</label>
+    <select [(ngModel)]="cube.activeGroupId">
       @for (group of cube.activeGroups(); track group.id) {
         <option [value]="group.id">{{ cube.groupName(group.id) }}</option>
       }
-    </select></label
-  >
-</div>
-<div class="modes">
-  <button [class.on]="store.category() === 'full'" (click)="store.setCategory('full')">
-    3×3<small>{{ 'timer.fullSolve' | transloco }}</small>
-  </button>
-  <button [class.on]="store.category() === 'oll'" (click)="store.setCategory('oll')">
-    OLL<small>{{ 'timer.caseDrill' | transloco }}</small>
-  </button>
-  <button [class.on]="store.category() === 'pll'" (click)="store.setCategory('pll')">
-    PLL<small>{{ 'timer.caseDrill' | transloco }}</small>
-  </button>
+    </select>
+  </div>
+  <div class="modes">
+    <button matButton [class.on]="store.category() === 'full'" (click)="store.setCategory('full')">
+      3×3<small>{{ 'timer.fullSolve' | transloco }}</small>
+    </button>
+    <button matButton [class.on]="store.category() === 'oll'" (click)="store.setCategory('oll')">
+      OLL<small>{{ 'timer.caseDrill' | transloco }}</small>
+    </button>
+    <button matButton [class.on]="store.category() === 'pll'" (click)="store.setCategory('pll')">
+      PLL<small>{{ 'timer.caseDrill' | transloco }}</small>
+    </button>
+  </div>
 </div>
 @if (store.category() !== 'full') {
   <div class="case-select">
-    {{ 'timer.practiceCase' | transloco }}
+    <label>{{ 'timer.practiceCase' | transloco }}</label>
     <select
       data-testid="timer-drill-case-filter"
       [(ngModel)]="store.selectedCase"
       (change)="store.newScramble()"
     >
-      <option [ngValue]="'random'">{{ 'timer.randomCase' | transloco }}</option>
+      <option [value]="'random'">{{ 'timer.randomCase' | transloco }}</option>
       @for (item of store.drillCases(); track item.number; let index = $index) {
-        <option [ngValue]="index">{{ item.number }} — {{ item.name }}</option>
+        <option [value]="index">{{ item.number }} — {{ item.name }}</option>
       }
     </select>
     <code>{{ algorithmLibrary.primaryNotation(store.currentDrillCase()) }}</code>

@@ -1,9 +1,5 @@
-:host {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-}
-
 .clock {
+  height: 100%;
   display: flex;
   container-type: size;
   min-height: 0;
@@ -12,6 +8,7 @@
   justify-content: center;
   user-select: none;
   touch-action: none;
+  gap: 20px;
 }
 
 app-timer-solve-actions {
@@ -22,6 +19,7 @@ small {
   color: #999;
   font: 500 var(--font-size-small) var(--font-family-mono);
   letter-spacing: 1.5px;
+  white-space: nowrap;
 }
 
 strong {
@@ -43,14 +41,13 @@ strong {
 }
 
 i {
-  margin-top: clamp(10px, 2.5vh, 25px);
   color: #aaa;
   font: normal var(--font-size-base) var(--font-family-mono);
   letter-spacing: 2px;
+  white-space: nowrap;
 }
 
-@media (max-height: 600px) {
-  small,
+@container (max-height: 160px) {
   i {
     display: none;
   }
