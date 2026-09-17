@@ -210,9 +210,9 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl('/timer');
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(fixture.nativeElement.querySelector('app-timer-settings strong')?.textContent).toContain(
-      '未分類',
-    );
+    expect(
+      fixture.nativeElement.querySelector('app-timer-settings select option:checked')?.textContent,
+    ).toContain('未分類');
     expect(localStorage.getItem('cube-reps.language')).toBe('ja');
     expect(document.documentElement.lang).toBe('ja');
   });
