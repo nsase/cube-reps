@@ -1,7 +1,4 @@
-<div class="kind-selector">
-  <button routerLink="/algorithms/oll" [class.on]="kind() === 'OLL'">OLL <small>57</small></button
-  ><button routerLink="/algorithms/pll" [class.on]="kind() === 'PLL'">PLL <small>21</small></button>
-</div>
+<app-algorithm-kind-links class="kind-selector" />
 <label>
   <mat-icon aria-hidden="true">search</mat-icon>
   <input [placeholder]="'algorithms.search' | transloco" [(ngModel)]="query" />

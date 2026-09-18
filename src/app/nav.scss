@@ -24,7 +24,7 @@ nav {
     color: var(--primary-color);
   }
 
-  a:last-child {
+  > a:last-child {
     align-self: end;
   }
 }
@@ -55,5 +55,18 @@ nav {
     display: block;
     margin: 1px 0 0;
     font-size: var(--font-size-small);
+  }
+}
+
+.algorithm-submenu {
+  display: grid;
+  margin-left: 28px;
+}
+nav .algorithm-submenu a {
+  padding: 10px 14px;
+}
+@media (max-width: 900px) {
+  .algorithm-submenu {
+    display: none;
   }
 }

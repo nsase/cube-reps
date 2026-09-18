@@ -14,14 +14,13 @@ describe('AlgorithmTools', () => {
 
   it('種別ボタンでルート遷移し、検索文字列をModel Signalへ反映する', async () => {
     const fixture = TestBed.createComponent(AlgorithmTools);
-    fixture.componentRef.setInput('kind', 'PLL');
     fixture.componentRef.setInput('query', 'initial');
     fixture.detectChanges();
     await fixture.whenStable();
 
     const buttons = fixture.nativeElement.querySelectorAll(
-      'button',
-    ) as NodeListOf<HTMLButtonElement>;
+      'a[href="/algorithms/oll"]',
+    ) as NodeListOf<HTMLAnchorElement>;
     buttons[0].click();
 
     const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
@@ -31,7 +30,6 @@ describe('AlgorithmTools', () => {
     await fixture.whenStable();
 
     expect(TestBed.inject(Router).url).toBe('/algorithms/oll');
-    expect(fixture.componentInstance.kind()).toBe('PLL');
     expect(fixture.componentInstance.query()).toBe('search text');
   });
 });

@@ -45,7 +45,8 @@
   "nav": {
     "timer": "タイマー",
     "history": "記録",
-    "settings": "設定"
+    "settings": "設定",
+    "algorithms": "アルゴリズム"
   },
   "solveCategories": {
     "full": "フルソルブ",
@@ -109,7 +110,13 @@
     "copied": "コピーしました",
     "removeUserAlgorithm": "ユーザー手順を削除",
     "removeTitle": "ユーザー手順を削除しますか？",
-    "removeMessage": "{{kind}} {{number}} の手順「{{notation}}」を削除します。\nこの操作は取り消せません。"
+    "removeMessage": "{{kind}} {{number}} の手順「{{notation}}」を削除します。\nこの操作は取り消せません。",
+    "selection": {
+      "f2l": "最初の2層のコーナーとエッジを揃えます。現在準備中です。",
+      "oll": "最終層の向きを揃える57ケースを確認できます。",
+      "pll": "最終層の位置を揃える21ケースを確認できます。"
+    },
+    "f2lPlaceholder": "F2Lは現在準備中です。ケース一覧と練習機能は今後の更新で追加します。"
   },
   "history": {
     "unclassified": "未分類",

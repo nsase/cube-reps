@@ -1,0 +1,23 @@
+nav {
+  display: flex;
+  flex-wrap: wrap;
+}
+a {
+  white-space: nowrap;
+}
+a.on {
+  text-decoration: underline;
+  text-underline-offset: 6px;
+}
+small {
+  margin-left: 4px;
+}
+@media (max-width: 620px) {
+  a {
+    min-width: 48px;
+    padding-inline: 8px;
+  }
+  small {
+    display: none;
+  }
+}
