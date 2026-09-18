@@ -1,25 +1,8 @@
-:host {
-  display: block;
-  min-width: 0;
-}
-a {
-  display: block;
+mat-card {
+  cursor: pointer;
   height: 100%;
-  padding: 24px;
-  border: 1px solid var(--outline-color-variant);
-  border-radius: 7px;
-  background: var(--surface-color);
-  color: var(--text-color);
-  text-decoration: none;
+}
 
-  &:hover {
-    border-color: var(--text-color);
-  }
-}
-h2 {
-  margin: 0 0 12px;
-}
-p {
-  margin: 0;
+mat-card-content {
   color: var(--text-muted-color);
 }

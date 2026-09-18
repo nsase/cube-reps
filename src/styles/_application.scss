@@ -21,6 +21,12 @@
         density: 0,
       )
     );
+    @include mat.theme-overrides(
+      (
+        outline: #52bf52,
+        surface-container-low: #e9f0e9,
+      )
+    );
   }
 
   :root {
@@ -36,22 +42,6 @@
     --success-color: #69935e;
     --text-muted-color: #7d8078;
 
-    // Angular Material buttons
-    --mat-sys-outline: #52bf52;
-    --mat-dialog-container-color: var(--background-color);
-    --mat-sys-surface-container-low: #e9f0e9;
-    --mat-snack-bar-supporting-text-color: #ffffff;
-
-    // Cube sticker colors
-    --cube-yellow: #ffe624;
-    --cube-white: #f7f7f3;
-    --cube-green: #36a866;
-    --cube-blue: #2d32ff;
-    --cube-red: #e53a3a;
-    --cube-orange: #f08a35;
-    --cube-none: #555555;
-    --cube-border: #181a17;
-
     // Typography
     --font-family-base: system-ui, -apple-system, 'Segoe UI', sans-serif;
     --font-family-heading: 'Outfit', var(--font-family-base);
@@ -64,6 +54,33 @@
     --font-size-timer-min: 70px;
     --font-size-timer-max: 128px;
     --line-height-base: 1.5;
+
+    // Cube sticker colors
+    --cube-yellow: #ffe624;
+    --cube-white: #f7f7f3;
+    --cube-green: #36a866;
+    --cube-blue: #2d32ff;
+    --cube-red: #e53a3a;
+    --cube-orange: #f08a35;
+    --cube-none: #555555;
+    --cube-border: #181a17;
+
+    // Angular Material
+    @include mat.card-overrides(
+      (
+        outlined-container-color: var(--surface-color),
+      )
+    );
+    @include mat.dialog-overrides(
+      (
+        container-color: var(--background-color),
+      )
+    );
+    @include mat.snack-bar-overrides(
+      (
+        supporting-text-color: #ffffff,
+      )
+    );
   }
 
   * {
