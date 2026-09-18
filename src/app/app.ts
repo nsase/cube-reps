@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, Injector } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -6,6 +6,7 @@ import { filter, map } from 'rxjs';
 import { FirestoreSyncService } from './core/firestore/firestore-sync.service';
 import { LocalSyncService } from './core/local-storage/local-sync.service';
 import { SettingsStore } from './core/settings.store';
+import { IS_NATIVE_APP } from './core/platform/native-platform';
 import { Nav } from './nav';
 import { AppUpdate } from './shared/app-update/app-update';
 import { AuthControls } from './shared/auth-controls/auth-controls';
@@ -20,6 +21,16 @@ import { SyncStatus } from './shared/sync-status/sync-status';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
+  /** Webの初期表示へ端末操作用の依存を含めず、ネイティブ起動時だけ接続する。 */
+  constructor() {
+    if (!inject(IS_NATIVE_APP)) return;
+    const injector = inject(Injector);
+    const destroyRef = inject(DestroyRef);
+    void import('./core/platform/native-app.service').then(({ NativeAppService }) => {
+      if (!destroyRef.destroyed) injector.get(NativeAppService);
+    });
+  }
+
   /** 現在のルートとナビゲーションイベントを提供するサービス。 */
   private readonly router = inject(Router);
   /** アプリ起動時に端末設定を復元するStore。 */

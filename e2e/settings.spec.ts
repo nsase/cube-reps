@@ -32,7 +32,10 @@ test(
       page.viewportSize()!.height,
     );
     await expectNoHorizontalOverflow(page);
-    await expectResponsiveLayout(page, 'app-language-settings, app-update-settings');
+    await expectResponsiveLayout(
+      page,
+      'app-language-settings, app-update-settings, app-website-links',
+    );
     await page.reload();
     await expect(page.getByTestId('language-select')).toHaveValue('ja');
     await expect(page.locator('h1')).toHaveText('設定');
@@ -103,4 +106,49 @@ test('Web版では新版を取得しても更新通知や設定の更新操作�
   await page.getByRole('link', { name: 'Timer', exact: true }).click();
   await expect(page.locator('app-timer')).toBeVisible();
   await expect(page.locator('app-update-snackbar')).toHaveCount(0);
+});
+
+test('設定の関連リンクからWeb版とGitHubを別タブで開く', async ({ page, context }) => {
+  // 外部サイトの稼働状況に依存せず、実際のリンク操作と遷移先を確認する。
+  for (const url of ['https://nsase.github.io/cube-reps/', 'https://github.com/nsase/cube-reps']) {
+    await context.route(url, (route) =>
+      route.fulfill({ contentType: 'text/html', body: '<h1>Linked website</h1>' }),
+    );
+  }
+  await page.goto('/#/settings');
+  for (const [name, url] of [
+    ['Open web version', 'https://nsase.github.io/cube-reps/'],
+    ['GitHub', 'https://github.com/nsase/cube-reps'],
+  ]) {
+    const opened = context.waitForEvent('page');
+    await page.getByRole('link', { name, exact: true }).click();
+    const destination = await opened;
+    await expect(destination).toHaveURL(url);
+    await expect(destination.getByRole('heading')).toHaveText('Linked website');
+    await destination.close();
+    await expect(page).toHaveURL(/#\/settings$/);
+  }
+});
+
+// 表示分岐と操作フローだけを検証する。Android実機でのネイティブAPI検証は別途必要。
+test('Android用の設定でストア更新を案内し、ゲストとしてタイマーへ進める', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.assign(window, { CapacitorCustomPlatform: { name: 'android' } });
+  });
+  await page.goto('/#/settings');
+  await expect(page.locator('app-update-settings')).toContainText(
+    'Install a newer version from the app store or your app distributor.',
+  );
+  await expect(page.getByTestId('check-update')).toHaveCount(0);
+  await page.getByTestId('language-select').selectOption('ja');
+  await expect(page.locator('app-update-settings')).toContainText(
+    'ストアまたは配布元から新しいバージョンをインストールしてください。',
+  );
+  await page.goto('/#/login');
+  await expect(page.getByTestId('google-sign-in')).toHaveCount(0);
+  await expect(page.locator('app-google-button')).toContainText(
+    'このアプリではゲストとして利用できます。',
+  );
+  await page.getByRole('link', { name: 'ログインしないで利用する' }).click();
+  await expect(page.locator('app-timer')).toBeVisible();
 });

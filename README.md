@@ -26,6 +26,10 @@ CubeReps is a browser-based Rubik's Cube timer and training tool. Solve records 
 - Optional Google sign-in, confirmation-based guest record import, and cross-device solve synchronization
 - Responsive layouts for desktop, tablet, and mobile devices, with a 16px base font and larger scramble and supporting text
 
+## Related links
+
+In **Settings → Related links**, open the browser-based Web version or visit the GitHub repository for source code and issue reports. Both links open in a new tab.
+
 ## Using the timer
 
 Use the space bar with a keyboard or the on-screen timer on a touch device.
@@ -43,6 +47,21 @@ Open [CubeReps](https://nsase.github.io/cube-reps/) once while online. In a supp
 After the first online load completes, the installed app can be started and reloaded offline. Solve records, groups, and algorithm preferences remain on the device. When running as an installed PWA, once a new version has finished downloading online, CubeReps displays a dismissible update notification with an **Update now** action so that you can switch versions safely.
 
 Browser storage is separated by browser and installation context. In particular, Safari and a Home Screen web app on iOS/iPadOS may not share existing data, so records created in Safari might not appear in the installed app. Installing or updating CubeReps does not itself delete browser data.
+
+## Android app (in development)
+
+The Android app bundles the Angular UI, timer, and storage using Capacitor 8. It is distributed separately from the Web/PWA app and is not yet published on Google Play. iOS support is tracked in Issue #161.
+
+- Install Node.js 22+, JDK 21, Android SDK 36 (Build Tools 36.0.0), and Android Studio 2025.2.1+.
+- After `npm ci`, run `npm run android:debug` to create a development APK at `android/app/build/outputs/apk/debug/app-debug.apk`. For Android Studio, run `npm run android:sync` followed by `npm run android:open`.
+- Builds without Firebase Android configuration support guest use only. They hide sign-in and offer timing, record storage, and algorithm practice.
+- Screens, translations, and icons are bundled for offline use from the first launch. Google sign-in and cloud sync require a connection. Device verification results are tracked in Issue #160.
+- The app keeps the screen awake during timing and prevents Android Back from leaving an active timer. Otherwise, Back dismisses a dismissible confirmation dialog, navigates through screen history, or minimizes the app when there is no history.
+- The native app does not use PWA updates. Install a newer APK or a store update. Do not uninstall first when updating with the same application ID and signing key.
+
+Browser/PWA storage and Android app storage are separate. Existing web guest records do not migrate automatically. To transfer account-owned solves, migrate the desired guest records to your account on the web, confirm that sync has completed, then sign into the same account on Android. Data that is not currently cloud-synced, such as algorithm preferences, does not migrate automatically. Guest-only APKs cannot retrieve cloud records.
+
+See [Android development and distribution](docs/android.md) for authentication, signing, and device checks. CI builds a guest debug APK and uploads it as an artifact; this does not verify device startup, authentication, or data retention.
 
 ## Settings
 
@@ -121,7 +140,7 @@ The following synchronization-ready user data is stored in your browser's `Index
 - Record groups
 - Custom and favorite OLL and PLL algorithms
 
-Existing data previously stored in `localStorage` is migrated automatically when the app starts. The following device-specific settings remain in `localStorage`:
+The following device-specific settings are stored in `localStorage`:
 
 - Active record destination
 - Display language
@@ -153,7 +172,7 @@ src/app/
 ├── core/       # Cube logic, statistics, algorithms, and persistent data
 │   ├── algorithm/     # Algorithm library and built-in OLL/PLL cases
 │   ├── cube/          # Record store, Group/Solve services, cube state, and statistics
-│   ├── local-storage/ # IndexedDB repository, legacy migration, and local save queue
+│   ├── local-storage/ # IndexedDB repository and local save queue
 │   └── firestore/     # Cloud repositories and synchronization
 ├── features/   # Timer, algorithm library, history, and settings pages
 └── shared/     # Shared UI such as cube views and confirmation dialogs

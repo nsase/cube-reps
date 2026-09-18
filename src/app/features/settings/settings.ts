@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { LanguageSettings } from './language-settings/language-settings';
+import { WebsiteLinks } from './website-links/website-links';
 import { UpdateSettings } from './update-settings/update-settings';
 
 /** アプリ共通設定の各操作欄を構成する画面。 */
 @Component({
   selector: 'app-settings',
-  imports: [LanguageSettings, UpdateSettings],
-  template: '<app-language-settings /><app-update-settings />',
+  imports: [LanguageSettings, UpdateSettings, WebsiteLinks],
+  template: '<app-language-settings /><app-update-settings /><app-website-links />',
   styles: `
     :host {
       display: grid;

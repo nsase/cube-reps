@@ -1,6 +1,6 @@
 import { IDBFactory } from 'fake-indexeddb';
 import 'fake-indexeddb/auto';
-import { deleteDB, openDB } from 'idb';
+import { openDB } from 'idb';
 import { IndexedDbUserDataRepository, USER_DATA_SCHEMA_VERSION } from './user-data-repository';
 
 describe('IndexedDbUserDataRepository', () => {
@@ -9,111 +9,51 @@ describe('IndexedDbUserDataRepository', () => {
     localStorage.clear();
   });
   afterEach(() => vi.unstubAllGlobals());
-  it('旧localStorageの同期対象データを現行形式へ移行し、以後はIndexedDBだけから復元する', async () => {
-    await deleteDB(IndexedDbUserDataRepository.databaseName);
-    localStorage.clear();
-    localStorage.setItem(
-      IndexedDbUserDataRepository.legacyStorageKey,
-      JSON.stringify([
-        {
-          time: 1234,
-          scramble: 'R U',
-          date: '2026-01-01T00:00:00.000Z',
-          category: 'full',
-          penalty: 'none',
-        },
-        {
-          id: 'existing-id',
-          time: 2345,
-          scramble: 'U R',
-          date: '2026-01-02T00:00:00.000Z',
-          category: 'pll',
-          caseName: 'T',
-          penalty: '+2',
-        },
-      ]),
-    );
-    localStorage.setItem(
-      IndexedDbUserDataRepository.legacyGroupsStorageKey,
-      JSON.stringify([
-        {
-          id: 'group-id',
-          name: 'Competition',
-          createdAt: '2026-01-03T00:00:00.000Z',
-        },
-      ]),
-    );
-    localStorage.setItem(
-      IndexedDbUserDataRepository.legacyAlgorithmsStorageKey,
-      JSON.stringify({
-        'PLL-Aa': {
-          custom: [{ id: 'user-123', notation: 'R U', builtIn: false }],
-          favoriteId: 'user-123',
-        },
-      }),
-    );
-
-    const firstRepository = new IndexedDbUserDataRepository();
-    const originalPut = IDBObjectStore.prototype.put;
-    const putSpy = vi.spyOn(IDBObjectStore.prototype, 'put').mockImplementation(function (
-      this: IDBObjectStore,
-      value: unknown,
-      key?: IDBValidKey,
-    ) {
-      if (value && typeof value === 'object' && 'time' in value) {
-        throw new DOMException('quota exceeded', 'QuotaExceededError');
-      }
-      return key === undefined ? originalPut.call(this, value) : originalPut.call(this, value, key);
-    });
-
-    await expect(firstRepository.load()).rejects.toThrow('quota exceeded');
-    const staged = JSON.parse(
-      localStorage.getItem(IndexedDbUserDataRepository.migrationStorageKey) ?? '[]',
-    ) as Array<{ id: string }>;
-    expect(localStorage.getItem(IndexedDbUserDataRepository.legacyStorageKey)).not.toBeNull();
-    putSpy.mockRestore();
-    const migrated = await firstRepository.load();
-
-    expect(migrated.solves).toHaveLength(2);
-    expect(migrated.solves[0].id).toBe('existing-id');
-    expect(migrated.solves[1]).toMatchObject({
+  it('IndexedDBの記録・グループ・手順設定を復元し、更新・削除を永続化する', async () => {
+    const metadata = {
+      createdAt: '2026-01-01T00:00:00.000Z',
       updatedAt: '2026-01-01T00:00:00.000Z',
-      ownerType: 'guest',
+      ownerType: 'guest' as const,
       schemaVersion: USER_DATA_SCHEMA_VERSION,
-      groupId: 'unclassified',
-    });
-    expect(migrated.solves[1].id).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-    );
-    expect(migrated.solves[1].id).toBe(staged[0].id);
-    expect(localStorage.getItem(IndexedDbUserDataRepository.legacyStorageKey)).toBeNull();
-    expect(localStorage.getItem(IndexedDbUserDataRepository.migrationStorageKey)).toBeNull();
-    expect(migrated.groups).toEqual([
-      expect.objectContaining({
-        id: 'group-id',
-        name: 'Competition',
-        updatedAt: '2026-01-03T00:00:00.000Z',
-        schemaVersion: USER_DATA_SCHEMA_VERSION,
-      }),
-    ]);
-    expect(migrated.algorithmPreferences).toHaveLength(1);
-    const preference = migrated.algorithmPreferences[0];
-    expect(preference).toMatchObject({
+    };
+    const firstRepository = new IndexedDbUserDataRepository();
+    const solve = {
+      ...metadata,
+      id: 'solve-1',
+      time: 1234,
+      scramble: 'R U',
+      category: 'full' as const,
+      penalty: 'none' as const,
+      groupId: 'group-id',
+    };
+    const group = { ...metadata, id: 'group-id', name: 'Competition' };
+    const preference = {
+      ...metadata,
       caseKey: 'PLL-Aa',
-      schemaVersion: USER_DATA_SCHEMA_VERSION,
+      custom: [{ id: 'custom-id', notation: 'R U', builtIn: false }],
+      favoriteId: 'custom-id',
+    };
+    await firstRepository.putSolve(solve);
+    await firstRepository.putSolve({
+      ...solve,
+      id: 'solve-2',
+      createdAt: '2026-01-02T00:00:00.000Z',
     });
-    expect(preference.custom[0].id).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-    );
-    expect(preference.favoriteId).toBe(preference.custom[0].id);
-    expect(localStorage.getItem(IndexedDbUserDataRepository.legacyGroupsStorageKey)).toBeNull();
-    expect(localStorage.getItem(IndexedDbUserDataRepository.legacyAlgorithmsStorageKey)).toBeNull();
-
-    const updated = { ...migrated.solves[0], penalty: 'DNF' as const };
-    const addedGroup = { ...migrated.groups[0], id: 'other-group', name: 'Other' };
+    await firstRepository.putRecordGroup(group);
+    await firstRepository.putAlgorithmPreference(preference);
+    const stored = await firstRepository.load();
+    expect(stored.solves.map((record) => record.id)).toEqual(['solve-2', 'solve-1']);
+    expect(stored.groups).toEqual([group]);
+    expect(stored.algorithmPreferences).toEqual([preference]);
+    const updated = { ...stored.solves[0], penalty: 'DNF' as const };
+    const updatedGroup = { ...group, name: 'Updated competition' };
+    const updatedPreference = { ...preference, favoriteId: 'builtin-1' };
+    const addedGroup = { ...stored.groups[0], id: 'other-group', name: 'Other' };
     const addedPreference = { ...preference, caseKey: 'OLL-01' };
     await Promise.all([
       firstRepository.putSolve(updated),
+      firstRepository.putRecordGroup(updatedGroup),
+      firstRepository.putAlgorithmPreference(updatedPreference),
       firstRepository.putRecordGroup(addedGroup),
       firstRepository.putAlgorithmPreference(addedPreference),
     ]);
@@ -121,10 +61,10 @@ describe('IndexedDbUserDataRepository', () => {
     const restored = await secondRepository.load();
 
     expect(restored.accounts).toEqual([]);
-    expect(restored.solves).toEqual([updated, migrated.solves[1]]);
-    expect(restored.groups).toEqual(expect.arrayContaining([...migrated.groups, addedGroup]));
+    expect(restored.solves).toEqual([updated, stored.solves[1]]);
+    expect(restored.groups).toEqual(expect.arrayContaining([updatedGroup, addedGroup]));
     expect(restored.algorithmPreferences).toEqual(
-      expect.arrayContaining([...migrated.algorithmPreferences, addedPreference]),
+      expect.arrayContaining([updatedPreference, addedPreference]),
     );
 
     const latest = { ...updated, penalty: 'none' as const };
@@ -137,9 +77,38 @@ describe('IndexedDbUserDataRepository', () => {
     const finalRepository = new IndexedDbUserDataRepository();
     const finalData = await finalRepository.load();
 
-    expect(finalData.solves).toEqual([migrated.solves[1]]);
-    expect(finalData.groups).toEqual(migrated.groups);
-    expect(finalData.algorithmPreferences).toEqual(migrated.algorithmPreferences);
+    expect(finalData.solves).toEqual([stored.solves[1]]);
+    expect(finalData.groups).toEqual([updatedGroup]);
+    expect(finalData.algorithmPreferences).toEqual([updatedPreference]);
+  });
+  it('旧キーとステージングが残っていてもlocalStorageにアクセスしない', async () => {
+    for (const key of ['solves', 'groups', 'algorithm-preferences']) {
+      localStorage.setItem('cube-reps.' + key, '[{"id":"legacy"}]');
+      localStorage.setItem('cube-reps.' + key + '-migration-v1', '[{"id":"staged"}]');
+    }
+    localStorage.setItem('cube-reps.active-group', 'competition');
+    localStorage.setItem('cube-reps.language', 'en');
+    const get = vi.spyOn(Storage.prototype, 'getItem');
+    const set = vi.spyOn(Storage.prototype, 'setItem');
+    const remove = vi.spyOn(Storage.prototype, 'removeItem');
+    try {
+      const repository = new IndexedDbUserDataRepository();
+      await expect(repository.load()).resolves.toEqual({
+        solves: [],
+        groups: [],
+        algorithmPreferences: [],
+        accounts: [],
+      });
+      expect(get).not.toHaveBeenCalled();
+      expect(set).not.toHaveBeenCalled();
+      expect(remove).not.toHaveBeenCalled();
+    } finally {
+      get.mockRestore();
+      set.mockRestore();
+      remove.mockRestore();
+    }
+    expect(localStorage.getItem('cube-reps.active-group')).toBe('competition');
+    expect(localStorage.getItem('cube-reps.language')).toBe('en');
   });
   it('v2の異なるゲストIDを除去し、記録・グループ・お気に入りの参照とアカウント所有を維持する', async () => {
     const old = await openDB(IndexedDbUserDataRepository.databaseName, 2, {
