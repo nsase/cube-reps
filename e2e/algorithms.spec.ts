@@ -32,22 +32,20 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
     test(`${route}画面の切替ボタン内でケース数を折り返さない`, async ({ page }) => {
       await page.goto(`/#/${route}`);
 
-      const sameLineResults = await page
-        .locator('app-algorithm-tools button')
-        .evaluateAll((buttons) =>
-          buttons.map((button) => {
-            const labelNode = button.firstChild;
-            const count = button.querySelector('small');
-            if (!labelNode || !count || getComputedStyle(count).display === 'none') {
-              return true;
-            }
-            const labelRange = document.createRange();
-            labelRange.selectNode(labelNode);
-            const labelBox = labelRange.getBoundingClientRect();
-            const countBox = count.getBoundingClientRect();
-            return labelBox.top < countBox.bottom && countBox.top < labelBox.bottom;
-          }),
-        );
+      const sameLineResults = await page.locator('app-algorithm-tools a').evaluateAll((buttons) =>
+        buttons.map((button) => {
+          const labelNode = button.firstChild;
+          const count = button.querySelector('small');
+          if (!labelNode || !count || getComputedStyle(count).display === 'none') {
+            return true;
+          }
+          const labelRange = document.createRange();
+          labelRange.selectNode(labelNode);
+          const labelBox = labelRange.getBoundingClientRect();
+          const countBox = count.getBoundingClientRect();
+          return labelBox.top < countBox.bottom && countBox.top < labelBox.bottom;
+        }),
+      );
 
       expect(sameLineResults).not.toContain(false);
     });
@@ -64,11 +62,60 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
       expect(selectorBox).not.toBeNull();
       expect(searchBox).not.toBeNull();
       expect(Math.abs(selectorBox!.y - searchBox!.y)).toBeLessThanOrEqual(1);
-      const caseCounts = page.locator('app-algorithm-tools button small');
+      const caseCounts = page.locator('app-algorithm-tools a small');
       await expect(caseCounts).toHaveCount(2);
       await expect(caseCounts.first()).toBeHidden();
       await expect(caseCounts.last()).toBeHidden();
       await expectNoHorizontalOverflow(page);
     });
   }
+});
+
+test.describe('アルゴリズムの画面遷移', { tag: '@responsive' }, () => {
+  test('メニュー・選択画面・各種別を移動できる', async ({ page }) => {
+    await page.goto('/#/timer');
+    const menu = page.getByTestId('algorithms-link');
+    await expect(menu).toHaveAccessibleName('Algorithms');
+    if ((page.viewportSize()?.width ?? 0) > 900) {
+      const submenu = page.getByTestId('algorithm-submenu');
+      for (const kind of ['F2L', 'OLL', 'PLL']) {
+        await submenu.getByRole('link', { name: kind, exact: true }).click();
+        await expect(page).toHaveURL(new RegExp(`/algorithms/${kind.toLowerCase()}$`));
+        await expect(submenu.getByRole('link', { name: kind, exact: true })).toHaveAttribute(
+          'aria-current',
+          'page',
+        );
+      }
+      await expectResponsiveLayout(page, 'app-nav a');
+    } else {
+      await expect(page.getByTestId('algorithm-submenu')).toBeHidden();
+    }
+    await menu.click();
+    await expect(page).toHaveURL(/\/algorithms$/);
+    await expect(page.locator('app-algorithm-choice')).toHaveCount(3);
+    await expectResponsiveLayout(page, 'app-algorithm-choice');
+    for (const kind of ['F2L', 'OLL', 'PLL']) {
+      const choice = page
+        .locator('app-algorithm-choice')
+        .getByRole('link', { name: new RegExp(`^${kind}`) });
+      await choice.focus();
+      await page.keyboard.press('Enter');
+      await expect(page).toHaveURL(new RegExp(`/algorithms/${kind.toLowerCase()}$`));
+      if (kind === 'F2L') {
+        await expect(page.getByText('F2L is coming soon.', { exact: false })).toBeVisible();
+      } else {
+        await expect(page.locator('app-algorithm-case-card')).toHaveCount(kind === 'OLL' ? 57 : 21);
+      }
+      await expectNoHorizontalOverflow(page);
+      await expectResponsiveLayout(page, 'app-algorithm-kind-links button');
+      await page
+        .locator('app-algorithm-kind-links')
+        .getByRole('button', { name: 'F2L 41', exact: true })
+        .click();
+      await expect(page).toHaveURL(/\/algorithms\/f2l$/);
+      await menu.click();
+    }
+    await expectResponsiveLayout(page, 'app-nav a');
+    await expectNoHorizontalOverflow(page);
+  });
 });

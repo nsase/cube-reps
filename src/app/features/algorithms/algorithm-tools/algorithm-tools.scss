@@ -1,5 +1,3 @@
-$ink: var(--text-color);
-$lime: var(--primary-color);
 $line: var(--outline-color-variant);
 $muted: var(--text-muted-color);
 
@@ -9,6 +7,7 @@ $muted: var(--text-muted-color);
   top: 0;
   display: flex;
   justify-content: space-between;
+  gap: 8px;
   padding: 8px 0;
   background: var(--background-color);
   box-shadow: 0 1px 0 $line;
@@ -17,28 +16,6 @@ $muted: var(--text-muted-color);
 .kind-selector {
   display: flex;
   flex: 0 0 auto;
-}
-
-button {
-  padding: 10px 25px;
-  border: 1px solid $line;
-  background: var(--surface-color);
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-button:first-child {
-  border-radius: 7px 0 0 7px;
-}
-
-button:nth-child(2) {
-  border-radius: 0 7px 7px 0;
-}
-
-button.on {
-  border-color: $ink;
-  background: $ink;
-  color: $lime;
 }
 
 label {
@@ -70,14 +47,6 @@ input {
 @media (max-width: 620px) {
   :host {
     gap: 6px;
-  }
-
-  button {
-    padding-inline: 12px;
-  }
-
-  button small {
-    display: none;
   }
 
   label {

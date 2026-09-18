@@ -12,6 +12,14 @@ export const routes: Routes = [
     loadComponent: () => import('./features/timer/timer').then(({ Timer }) => Timer),
   },
   {
+    path: 'algorithms/f2l',
+    data: { titleKey: 'routes.algorithms' },
+    loadComponent: () =>
+      import('./features/algorithms/f2l-placeholder/f2l-placeholder').then(
+        ({ F2lPlaceholder }) => F2lPlaceholder,
+      ),
+  },
+  {
     path: 'algorithms/oll',
     data: { kind: 'OLL', titleKey: 'routes.algorithms' },
     loadComponent: loadAlgorithms,
@@ -24,7 +32,11 @@ export const routes: Routes = [
   {
     path: 'algorithms',
     pathMatch: 'full',
-    redirectTo: 'algorithms/pll',
+    data: { titleKey: 'routes.algorithms' },
+    loadComponent: () =>
+      import('./features/algorithms/algorithm-selection/algorithm-selection').then(
+        ({ AlgorithmSelection }) => AlgorithmSelection,
+      ),
   },
   {
     path: 'history',

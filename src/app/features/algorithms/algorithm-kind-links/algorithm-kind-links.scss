@@ -1,0 +1,34 @@
+$ink: var(--text-color);
+$lime: var(--primary-color);
+$line: var(--outline-color-variant);
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 10px 25px;
+  border: 1px solid $line;
+  background: var(--surface-color);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+button {
+  border-radius: 0;
+}
+
+button:first-child {
+  border-radius: 7px 0 0 7px;
+}
+
+button:last-child {
+  border-radius: 0 7px 7px 0;
+}
+
+button.on {
+  border-color: $ink;
+  background: $ink;
+  color: $lime;
+}

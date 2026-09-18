@@ -2,7 +2,20 @@
   <a routerLink="/timer" routerLinkActive="on" [attr.aria-label]="'nav.timer' | transloco"
     >⏱ <em>{{ 'nav.timer' | transloco }}</em></a
   >
-  <a routerLink="/algorithms" routerLinkActive="on">▦ <em>OLL / PLL</em></a>
+  <div class="algorithm-menu">
+    <a
+      routerLink="/algorithms"
+      routerLinkActive="on"
+      data-testid="algorithms-link"
+      [attr.aria-label]="'nav.algorithms' | transloco"
+      >▦ <em>{{ 'nav.algorithms' | transloco }}</em></a
+    >
+    <div class="algorithm-submenu" data-testid="algorithm-submenu">
+      <a routerLink="/algorithms/f2l" routerLinkActive="on" ariaCurrentWhenActive="page">F2L</a>
+      <a routerLink="/algorithms/oll" routerLinkActive="on" ariaCurrentWhenActive="page">OLL</a>
+      <a routerLink="/algorithms/pll" routerLinkActive="on" ariaCurrentWhenActive="page">PLL</a>
+    </div>
+  </div>
   <a routerLink="/history" routerLinkActive="on" [attr.aria-label]="'nav.history' | transloco"
     >↗ <em>{{ 'nav.history' | transloco }}</em></a
   >
