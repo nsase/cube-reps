@@ -44,10 +44,10 @@ describe('Algorithm navigation', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/algorithms/f2l', F2lPlaceholder);
     expect(harness.routeNativeElement!.querySelector('h2')!.textContent).toBe('F2L');
-    expect(harness.routeNativeElement!.querySelectorAll('a')).toHaveLength(3);
-    expect(harness.routeNativeElement!.querySelector('[aria-current="page"]')!.textContent).toBe(
-      'F2L',
-    );
+    expect(harness.routeNativeElement!.querySelectorAll('button')).toHaveLength(3);
+    expect(
+      harness.routeNativeElement!.querySelector('[aria-current="page"]')!.textContent,
+    ).toContain('F2L');
   });
 
   it('選択項目に種類に対応する説明とリンクを表示する', async () => {
@@ -58,13 +58,13 @@ describe('Algorithm navigation', () => {
     expect(fixture.nativeElement.textContent).toContain('57');
   });
 
-  it('共通の切り替えリンクでOLLとPLLへ移動する', async () => {
+  it('共通の切り替えボタンでOLLとPLLへ移動する', async () => {
     const fixture = TestBed.createComponent(AlgorithmKindLinks);
     await fixture.whenStable();
     for (const kind of ['oll', 'pll']) {
-      const link = fixture.nativeElement.querySelector(
-        `a[href="/algorithms/${kind}"]`,
-      ) as HTMLAnchorElement;
+      const link = Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('button'),
+      ).find((button) => button.textContent?.includes(kind.toUpperCase()))!;
       link.click();
       await fixture.whenStable();
       expect(TestBed.inject(Router).url).toBe(`/algorithms/${kind}`);

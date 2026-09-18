@@ -7,14 +7,16 @@ import { TranslocoPipe } from '@jsverse/transloco';
 @Component({
   selector: 'app-algorithm-choice',
   imports: [MatCardModule, RouterLink, TranslocoPipe],
-  template: ` <mat-card appearance="outlined" [routerLink]="'/algorithms/' + kind()">
-    <mat-card-header>
-      <mat-card-title>{{ kind().toUpperCase() }}</mat-card-title>
-    </mat-card-header>
-    <mat-card-content
-      ><p>{{ 'algorithms.selection.' + kind() | transloco }}</p></mat-card-content
-    >
-  </mat-card>`,
+  template: ` <a [routerLink]="'/algorithms/' + kind()">
+    <mat-card appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>{{ kind().toUpperCase() }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content
+        ><p>{{ 'algorithms.selection.' + kind() | transloco }}</p></mat-card-content
+      >
+    </mat-card>
+  </a>`,
   styleUrl: './algorithm-choice.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

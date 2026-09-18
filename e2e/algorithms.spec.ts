@@ -107,10 +107,10 @@ test.describe('アルゴリズムの画面遷移', { tag: '@responsive' }, () =>
         await expect(page.locator('app-algorithm-case-card')).toHaveCount(kind === 'OLL' ? 57 : 21);
       }
       await expectNoHorizontalOverflow(page);
-      await expectResponsiveLayout(page, 'app-algorithm-kind-links a');
+      await expectResponsiveLayout(page, 'app-algorithm-kind-links button');
       await page
         .locator('app-algorithm-kind-links')
-        .getByRole('link', { name: 'F2L', exact: true })
+        .getByRole('button', { name: 'F2L 41', exact: true })
         .click();
       await expect(page).toHaveURL(/\/algorithms\/f2l$/);
       await menu.click();

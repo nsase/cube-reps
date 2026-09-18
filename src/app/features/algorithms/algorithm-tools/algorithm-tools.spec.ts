@@ -19,8 +19,8 @@ describe('AlgorithmTools', () => {
     await fixture.whenStable();
 
     const buttons = fixture.nativeElement.querySelectorAll(
-      'a[href="/algorithms/oll"]',
-    ) as NodeListOf<HTMLAnchorElement>;
+      'button[routerLink="/algorithms/oll"]',
+    ) as NodeListOf<HTMLButtonElement>;
     buttons[0].click();
 
     const input = fixture.nativeElement.querySelector('input') as HTMLInputElement;
