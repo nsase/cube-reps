@@ -18,3 +18,12 @@ button.on {
 button.delete {
   color: var(--danger-color);
 }
+
+@media (max-width: 400px) {
+  button {
+    --mat-button-text-icon-spacing: 0;
+    .label {
+      display: none;
+    }
+  }
+}
