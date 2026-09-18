@@ -4,10 +4,11 @@ nav {
 }
 a {
   white-space: nowrap;
-}
-a.on {
-  text-decoration: underline;
-  text-underline-offset: 6px;
+
+  &.on {
+    text-decoration: underline;
+    text-underline-offset: 6px;
+  }
 }
 small {
   margin-left: 4px;

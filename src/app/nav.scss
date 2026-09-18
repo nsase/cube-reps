@@ -14,14 +14,21 @@ nav {
     border-radius: 7px;
     font-weight: 600;
     text-decoration: none;
+
+    &.on {
+      background: #2a2d28;
+      color: var(--primary-color);
+    }
   }
   em {
     font-style: normal;
     margin-left: 12px;
   }
-  a.on {
-    background: #2a2d28;
-    color: var(--primary-color);
+
+  .algorithm-submenu {
+    a {
+      padding: 10px 14px;
+    }
   }
 
   > a:last-child {
@@ -30,12 +37,15 @@ nav {
 }
 
 @media (max-width: 900px) {
-  nav a {
-    text-align: center;
-    font-size: var(--font-size-large);
-  }
-  nav em {
-    display: none;
+  nav {
+    a {
+      text-align: center;
+      font-size: var(--font-size-large);
+    }
+
+    em {
+      display: none;
+    }
   }
 }
 
@@ -44,26 +54,27 @@ nav {
     margin: 0;
     display: flex;
     justify-content: space-around;
-  }
-  nav a,
-  nav a.on {
-    font-size: var(--font-size-base);
-    padding: 6px 10px;
-    line-height: 1.25;
-  }
-  nav em {
-    display: block;
-    margin: 1px 0 0;
-    font-size: var(--font-size-small);
+
+    a {
+      &,
+      &.on {
+        font-size: var(--font-size-base);
+        padding: 6px 10px;
+        line-height: 1.25;
+      }
+    }
+
+    em {
+      display: block;
+      margin: 1px 0 0;
+      font-size: var(--font-size-small);
+    }
   }
 }
 
 .algorithm-submenu {
   display: grid;
   margin-left: 28px;
-}
-nav .algorithm-submenu a {
-  padding: 10px 14px;
 }
 @media (max-width: 900px) {
   .algorithm-submenu {

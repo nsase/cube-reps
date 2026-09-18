@@ -11,9 +11,10 @@ a {
   background: var(--surface-color);
   color: var(--text-color);
   text-decoration: none;
-}
-a:hover {
-  border-color: var(--text-color);
+
+  &:hover {
+    border-color: var(--text-color);
+  }
 }
 h2 {
   margin: 0 0 12px;
