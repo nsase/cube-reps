@@ -1,5 +1,9 @@
+:host {
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
 .clock {
-  height: 100%;
   display: flex;
   container-type: size;
   min-height: 0;
