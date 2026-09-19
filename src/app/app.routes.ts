@@ -14,10 +14,7 @@ export const routes: Routes = [
   {
     path: 'algorithms/f2l',
     data: { titleKey: 'routes.algorithms' },
-    loadComponent: () =>
-      import('./features/algorithms/f2l-placeholder/f2l-placeholder').then(
-        ({ F2lPlaceholder }) => F2lPlaceholder,
-      ),
+    loadComponent: () => import('./features/algorithms/f2l/f2l').then(({ F2l }) => F2l),
   },
   {
     path: 'algorithms/oll',
