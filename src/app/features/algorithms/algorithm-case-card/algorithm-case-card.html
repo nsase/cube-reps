@@ -4,10 +4,17 @@
   </mat-card-header>
   <mat-card-content>
     <div class="pattern">
-      <app-cube-pattern
-        [pattern]="pattern()"
-        [label]="'algorithms.pattern' | transloco: { name: item().name }"
-      />
+      @if (item().kind === 'F2L') {
+        <app-cube-quarter-view
+          [pattern]="quarterPattern()"
+          [label]="'algorithms.quarterPattern' | transloco: { name: item().name }"
+        />
+      } @else {
+        <app-cube-pattern
+          [pattern]="pattern()"
+          [label]="'algorithms.pattern' | transloco: { name: item().name }"
+        />
+      }
       <div class="group">
         <h2>{{ item().name }}</h2>
         <p>{{ item().group }}</p>

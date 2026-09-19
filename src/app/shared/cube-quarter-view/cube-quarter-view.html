@@ -1,0 +1,14 @@
+<svg viewBox="0 0 160 156" aria-hidden="true" focusable="false">
+  @for (face of faces(); track face.name) {
+    <g [attr.data-face]="face.name">
+      @for (sticker of face.stickers; track sticker.row * 3 + sticker.column) {
+        <polygon
+          [attr.points]="sticker.points"
+          [attr.data-row]="sticker.row"
+          [attr.data-column]="sticker.column"
+          [attr.data-color]="sticker.color"
+        />
+      }
+    </g>
+  }
+</svg>

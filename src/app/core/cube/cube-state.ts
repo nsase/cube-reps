@@ -13,6 +13,9 @@ export type CubeFaces = Readonly<Record<CubeFace, CubeFaceState>>;
 /** 6面を9行12列へ配置した展開図。 */
 export type CubeNet = ReadonlyArray<ReadonlyArray<StickerColor>>;
 
+/** クォータービューで見える上面・前面・右面の認識用ステッカー。 */
+export type CubeQuarterPattern = Readonly<Record<'U' | 'F' | 'R', CubePattern>>;
+
 /** 3次元座標上に配置した1枚のステッカー。 */
 interface Sticker {
   /** キューブ中心を原点とするステッカー位置。 */
@@ -114,6 +117,35 @@ export function cubeFacesFromScramble(
   const stickers = createSolvedStickers(orientation);
   for (const parsedMove of parseAlgorithm(scramble)) applyMove(stickers, parsedMove);
   return stickersToFaces(stickers);
+}
+
+/**
+ * 白下・緑正面の完成状態からF2L用の3面の認識図を生成する。
+ * 黄色を含む最終層ピースは側面のステッカーも灰色にし、F2Lペアの認識を妨げないようにする。
+ * @param scramble 対象ケースを作るSetup
+ * @returns 上面・前面・右面の認識図。最終層ピースと上面センターはnoneで表す
+ */
+export function f2lQuarterPatternFromScramble(scramble: string): CubeQuarterPattern {
+  const stickers = createSolvedStickers('yellow-top');
+  for (const move of parseAlgorithm(scramble)) applyMove(stickers, move);
+  const lastLayerPositions = new Set(
+    stickers.filter(({ color }) => color === 'yellow').map(({ position }) => position.join(',')),
+  );
+  const pattern = Object.fromEntries(
+    (['U', 'F', 'R'] as const).map((face) => [
+      face,
+      Array.from({ length: 3 }, () => Array<StickerColor>(3).fill('none')),
+    ]),
+  ) as Record<'U' | 'F' | 'R', StickerColor[][]>;
+  for (const sticker of stickers) {
+    const face = faceForNormal(sticker.normal);
+    if (face !== 'U' && face !== 'F' && face !== 'R') continue;
+    const [row, column] = faceCoordinates(face, sticker.position);
+    if (!lastLayerPositions.has(sticker.position.join(','))) {
+      pattern[face][row][column] = sticker.color;
+    }
+  }
+  return pattern;
 }
 
 /**
