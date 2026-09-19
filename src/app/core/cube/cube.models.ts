@@ -84,10 +84,10 @@ export interface AlgorithmPreference extends SyncMetadata {
   favoriteId?: string;
 }
 
-/** F2L・OLL・PLLに共通するケースと登録済み手順。 */
+/** OLLまたはPLLのケースと登録済み手順。 */
 export interface AlgorithmCase {
   /** ケースの種別。 */
-  kind: 'F2L' | 'OLL' | 'PLL';
+  kind: 'OLL' | 'PLL';
   /**
    * ケース番号または識別名。
    * OLL: 01～57, PLL: Aa, Tなど
@@ -131,17 +131,3 @@ export type SolveMutation = DocumentMutation<Solve>;
 
 /** グループの同期データ */
 export type GroupMutation = DocumentMutation<RecordGroup>;
-
-/** 保存と練習に対応済みの最終層ケース。 */
-export interface LastLayerAlgorithmCase extends AlgorithmCase {
-  /** 最終層の種別。 */
-  kind: 'OLL' | 'PLL';
-}
-
-/** 共通ケースに番号変更の影響を受けない永続IDを追加したF2Lケース。 */
-export interface F2lCase extends AlgorithmCase {
-  /** 最初の2層の種別。 */
-  kind: 'F2L';
-  /** 番号変更後もケースを識別する永続ID。 */
-  readonly id: string;
-}

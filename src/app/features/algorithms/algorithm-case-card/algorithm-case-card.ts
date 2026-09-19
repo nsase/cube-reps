@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { LastLayerAlgorithmCase } from '../../../core/cube/cube.models';
+import { AlgorithmCase } from '../../../core/cube/cube.models';
 import {
   topLayerOrientationPatternFromScramble,
   topLayerPatternFromScramble,
@@ -18,7 +18,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 })
 export class AlgorithmCaseCard {
   /** 表示するOLLまたはPLLケース。 */
-  readonly item = input.required<LastLayerAlgorithmCase>();
+  readonly item = input.required<AlgorithmCase>();
 
   /** SetupからOLLは黄色方向、PLLは側面色を含む認識図を生成する。 */
   protected readonly pattern = computed(() => {

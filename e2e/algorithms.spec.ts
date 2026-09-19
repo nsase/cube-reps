@@ -102,10 +102,7 @@ test.describe('アルゴリズムの画面遷移', { tag: '@responsive' }, () =>
       await page.keyboard.press('Enter');
       await expect(page).toHaveURL(new RegExp(`/algorithms/${kind.toLowerCase()}$`));
       if (kind === 'F2L') {
-        await expect(page.locator('app-f2l-case-card')).toHaveCount(41);
-        await expect(
-          page.getByText('Solve and Setup are dummy algorithms', { exact: false }),
-        ).toBeVisible();
+        await expect(page.getByText('F2L is coming soon.', { exact: false })).toBeVisible();
       } else {
         await expect(page.locator('app-algorithm-case-card')).toHaveCount(kind === 'OLL' ? 57 : 21);
       }
@@ -121,23 +118,4 @@ test.describe('アルゴリズムの画面遷移', { tag: '@responsive' }, () =>
     await expectResponsiveLayout(page, 'app-nav a');
     await expectNoHorizontalOverflow(page);
   });
-});
-
-test('F2Lの41カードを最後まで閲覧できる', { tag: '@responsive' }, async ({ page }) => {
-  await page.goto('/#/algorithms/f2l');
-  const cards = page.locator('app-f2l-case-card');
-  await expect(cards).toHaveCount(41);
-  await expect(cards.first().getByRole('heading')).toHaveText('F2L 1');
-  await cards.last().scrollIntoViewIfNeeded();
-  await expect(cards.last().getByRole('heading')).toHaveText('F2L 41');
-  await expect(cards.last().getByText("R U R'", { exact: true })).toBeVisible();
-  await expect(cards.last().getByText("R U' R'", { exact: true })).toBeVisible();
-  await expectResponsiveLayout(page, 'app-f2l-case-card');
-  const search = page.locator('app-algorithm-tools input');
-  await search.fill('41');
-  await expect(cards).toHaveCount(1);
-  await expect(cards.getByRole('heading')).toHaveText('F2L 41');
-  await search.clear();
-  await expect(cards).toHaveCount(41);
-  await expectNoHorizontalOverflow(page);
 });

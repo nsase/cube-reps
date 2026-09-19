@@ -4,7 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { AlgorithmKindLinks } from '../algorithm-kind-links/algorithm-kind-links';
 import { TranslocoPipe } from '@jsverse/transloco';
 
-/** アルゴリズムの表示種別を切り替え、F2L・OLL・PLLの検索条件を入力するツールバー。 */
+/** アルゴリズムの表示種別を切り替え、OLL/PLLの検索条件を入力するツールバー。 */
 @Component({
   selector: 'app-algorithm-tools',
   imports: [FormsModule, MatIconModule, AlgorithmKindLinks, TranslocoPipe],
