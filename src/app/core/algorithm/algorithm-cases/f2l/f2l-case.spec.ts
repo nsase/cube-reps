@@ -2,7 +2,7 @@ import { F2L_CASES } from './index';
 import { defineF2lCase } from './f2l-case';
 
 describe('F2Lケース定義', () => {
-  it('41ファイルのケースを番号順にまとめ、基準スロットとダミー手順を持つ', () => {
+  it('41ケースを番号順にまとめ、基準スロットと識別可能な組み込み手順を持つ', () => {
     expect(F2L_CASES.map(({ number }) => number)).toEqual(
       Array.from({ length: 41 }, (_, index) => String(index + 1).padStart(2, '0')),
     );
@@ -11,10 +11,14 @@ describe('F2Lケース定義', () => {
       expect(item.kind).toBe('F2L');
       expect(item.name).toBe(item.number);
       expect(item.slot).toBe('FR');
-      expect(item.setup).toBe("R U' R'");
-      expect(item.algorithms).toEqual([
-        { id: expect.any(String), notation: "R U R'", builtIn: true },
-      ]);
+      expect(item.setup.trim()).not.toBe('');
+      expect(item.algorithms.length).toBeGreaterThan(0);
+      expect(new Set(item.algorithms.map(({ id }) => id)).size).toBe(item.algorithms.length);
+      for (const algorithm of item.algorithms) {
+        expect(algorithm.id.trim()).not.toBe('');
+        expect(algorithm.notation.trim()).not.toBe('');
+        expect(algorithm.builtIn).toBe(true);
+      }
     }
   });
 

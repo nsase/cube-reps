@@ -8,7 +8,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
   selector: 'app-algorithm-choice',
   imports: [MatCardModule, RouterLink, TranslocoPipe],
   template: ` <a [routerLink]="'/algorithms/' + kind()">
-    <mat-card appearance="outlined">
+    <mat-card>
       <mat-card-header>
         <mat-card-title>{{ kind().toUpperCase() }}</mat-card-title>
       </mat-card-header>

@@ -1,13 +1,18 @@
-<div class="casehead">
-  <b>{{ item().number }}</b
-  ><small>{{ item().kind }}</small>
-</div>
-<app-cube-pattern
-  [pattern]="pattern()"
-  [label]="'algorithms.pattern' | transloco: { name: item().name }"
-/>
-<div>
-  <h2>{{ item().name }}</h2>
-  <p>{{ item().group }}</p>
-</div>
-<app-algorithm-panel [item]="item()" />
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>{{ item().number }}</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="pattern">
+      <app-cube-pattern
+        [pattern]="pattern()"
+        [label]="'algorithms.pattern' | transloco: { name: item().name }"
+      />
+      <div class="group">
+        <h2>{{ item().name }}</h2>
+        <p>{{ item().group }}</p>
+      </div>
+    </div>
+    <app-algorithm-panel [item]="item()" />
+  </mat-card-content>
+</mat-card>

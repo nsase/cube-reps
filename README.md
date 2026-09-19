@@ -166,6 +166,8 @@ Each page uses standalone components and route-level lazy loading. The root `Set
 
 The shared Angular Material theme and application color variables are defined in `src/styles/_material-theme.scss`. Material component colors should be customized through that theme instead of being overridden in individual component styles.
 
+Card appearance defaults to `outlined` through `MAT_CARD_CONFIG` in `src/app/app.config.ts`; individual cards only need an `appearance` attribute when overriding that default.
+
 ## Project structure
 
 ```text

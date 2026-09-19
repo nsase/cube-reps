@@ -77,7 +77,11 @@ describe('F2L共通カード', () => {
 
   it('共通カードでF2L手順を追加・お気に入り指定し、確認後に削除する', async () => {
     const fixture = TestBed.createComponent(AlgorithmCaseCard);
-    const item = F2L_CASES[0];
+    // 組み込み手順の追加・修正に左右されず、カードの操作契約を検証する。
+    const item = {
+      ...F2L_CASES[0],
+      algorithms: [{ id: 'test-built-in', notation: "R U R'", builtIn: true }],
+    };
     fixture.componentRef.setInput('item', item);
     const library = TestBed.inject(AlgorithmLibraryService);
     await library.ready;

@@ -2,8 +2,8 @@ import { expect, test } from '@playwright/test';
 
 import { expectNoHorizontalOverflow, expectResponsiveLayout } from './support/layout';
 
-/** 手順一覧画面で検証するOLL・PLLルート。 */
-const routes = ['algorithms/oll', 'algorithms/pll'] as const;
+/** 手順一覧画面で検証するF2L・OLL・PLLルート。 */
+const routes = ['algorithms/f2l', 'algorithms/oll', 'algorithms/pll'] as const;
 
 /** 手順一覧画面で独立して配置される主要要素。 */
 const layoutItems = 'app-algorithm-tools, .grid > app-algorithm-case-card';
@@ -32,13 +32,17 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
     test(`${route}画面の切替ボタン内でケース数を折り返さない`, async ({ page }) => {
       await page.goto(`/#/${route}`);
 
-      const sameLineResults = await page.locator('app-algorithm-tools a').evaluateAll((buttons) =>
+      const buttons = page.locator('app-algorithm-kind-links button');
+      await expect(buttons).toHaveCount(3);
+      const sameLineResults = await buttons.evaluateAll((buttons) =>
         buttons.map((button) => {
-          const labelNode = button.firstChild;
-          const count = button.querySelector('small');
-          if (!labelNode || !count || getComputedStyle(count).display === 'none') {
-            return true;
+          const walker = document.createTreeWalker(button, NodeFilter.SHOW_TEXT);
+          let labelNode: Node | null = walker.nextNode();
+          while (labelNode && !/^(F2L|OLL|PLL)$/.test(labelNode.textContent?.trim() ?? '')) {
+            labelNode = walker.nextNode();
           }
+          const count = button.querySelector('small');
+          if (!labelNode || !count) return false;
           const labelRange = document.createRange();
           labelRange.selectNode(labelNode);
           const labelBox = labelRange.getBoundingClientRect();
@@ -62,10 +66,9 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
       expect(selectorBox).not.toBeNull();
       expect(searchBox).not.toBeNull();
       expect(Math.abs(selectorBox!.y - searchBox!.y)).toBeLessThanOrEqual(1);
-      const caseCounts = page.locator('app-algorithm-tools a small');
-      await expect(caseCounts).toHaveCount(2);
-      await expect(caseCounts.first()).toBeHidden();
-      await expect(caseCounts.last()).toBeHidden();
+      const caseCounts = page.locator('app-algorithm-kind-links button small');
+      await expect(caseCounts).toHaveText(['41', '57', '21']);
+      for (const count of await caseCounts.all()) await expect(count).toBeVisible();
       await expectNoHorizontalOverflow(page);
     });
   }
@@ -130,7 +133,7 @@ test('F2Lの41カードを最後まで閲覧できる', { tag: '@responsive' }, 
   await expect(cards.first().getByRole('heading')).toHaveText('01');
   await cards.last().scrollIntoViewIfNeeded();
   await expect(cards.last().getByRole('heading')).toHaveText('41');
-  await expect(cards.last().locator('app-algorithm-row code')).toHaveText("R U R'");
+  await expect(cards.last().getByRole('button', { name: 'Add', exact: true })).toBeVisible();
 
   await expectResponsiveLayout(page, 'app-algorithm-case-card');
   const search = page.locator('app-algorithm-tools input');
@@ -147,16 +150,22 @@ test('F2Lの共通カードで手順とお気に入りを保存し、再読込�
   await page.locator('app-algorithm-tools input').fill('01');
   const card = page.locator('app-algorithm-case-card');
   await expect(card).toHaveCount(1);
-  await card.getByPlaceholder('Enter a new algorithm').fill("U R U' R'");
+  const rows = card.locator('app-algorithm-row');
+  await expect(rows.first()).toBeVisible();
+  const builtInCount = await rows.count();
+  const originalFavorite = await card.locator('.favorite-algorithm code').innerText();
+  const customNotation = 'R2 U2 R2 U2 R2 U2';
+  await card.getByPlaceholder('Enter a new algorithm').fill(customNotation);
   await card.getByRole('button', { name: 'Add', exact: true }).click();
-  const customRow = card.locator('app-algorithm-row').filter({ hasText: "U R U' R'" });
+  await expect(rows).toHaveCount(builtInCount + 1);
+  const customRow = rows.filter({ hasText: customNotation });
   await customRow.getByRole('button', { name: 'Set as favorite', exact: true }).click();
-  await expect(card.locator('.favorite-algorithm code')).toHaveText("U R U' R'");
+  await expect(card.locator('.favorite-algorithm code')).toHaveText(customNotation);
   await page.reload();
   await page.locator('app-algorithm-tools input').fill('01');
-  await expect(card.locator('.favorite-algorithm code')).toHaveText("U R U' R'");
+  await expect(card.locator('.favorite-algorithm code')).toHaveText(customNotation);
   await customRow.getByRole('button', { name: 'Delete custom algorithm', exact: true }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
-  await expect(card.locator('app-algorithm-row')).toHaveCount(1);
-  await expect(card.locator('.favorite-algorithm code')).toHaveText("R U R'");
+  await expect(rows).toHaveCount(builtInCount);
+  await expect(card.locator('.favorite-algorithm code')).toHaveText(originalFavorite);
 });
