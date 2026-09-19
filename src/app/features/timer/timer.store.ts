@@ -1,9 +1,9 @@
 import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
-import { NativeAppService } from '../../core/platform/native-app.service';
 import { OLL_CASES, PLL_CASES } from '../../core/algorithm/algorithm-cases';
 import { AppUpdateService } from '../../core/app-update.service';
 import { CubeService } from '../../core/cube/cube';
 import { AlgorithmCase, Penalty, Solve, SolveCategory } from '../../core/cube/cube.models';
+import { NativeAppService } from '../../core/platform/native-app.service';
 
 /** Timerコンポーネントツリー内で計測状態と操作を共有するStore。 */
 @Injectable()
@@ -36,6 +36,7 @@ export class TimerStore implements OnDestroy {
     this.category() === 'oll' ? OLL_CASES : PLL_CASES,
   );
   /** 現在のスクランブルで出題しているOLL・PLLケース。 */
+  // notes: 空配列とかでいけるか？初期表示はPLLではない
   readonly currentDrillCase = signal<AlgorithmCase>(PLL_CASES[0]);
 
   /** 計測表示を更新するタイマーID。 */

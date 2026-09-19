@@ -109,6 +109,15 @@ export interface AlgorithmCase<Kind extends 'F2L' | 'OLL' | 'PLL' = 'F2L' | 'OLL
   algorithms: readonly CaseAlgorithm[];
 }
 
+/** コーナーとエッジのペアを入れる、ユーザーから見たF2Lスロット。 */
+export type F2lSlot = 'FL' | 'FR' | 'BL' | 'BR';
+
+/** F2L固有の手順の対象スロットを持つケース。 */
+export interface F2lAlgorithmCase extends AlgorithmCase<'F2L'> {
+  /** Setupと解法手順の基準スロット。選択位置への持ち替えはこの位置を基準とする。 */
+  readonly slot: F2lSlot;
+}
+
 /** 保存・同期せず画面表示にだけ使用するアプリ組み込みグループ。 */
 export interface BuiltInRecordGroup extends Omit<RecordGroup, keyof SyncMetadata> {
   /** 表示言語に応じてグループ名を切り替える翻訳キー。 */
@@ -131,12 +140,3 @@ export type SolveMutation = DocumentMutation<Solve>;
 
 /** グループの同期データ */
 export type GroupMutation = DocumentMutation<RecordGroup>;
-
-/** コーナーとエッジのペアを入れる、ユーザーから見たF2Lスロット。 */
-export type F2lSlot = 'FL' | 'FR' | 'BL' | 'BR';
-
-/** F2L固有の手順の対象スロットを持つケース。 */
-export interface F2lAlgorithmCase extends AlgorithmCase<'F2L'> {
-  /** Setupと解法手順の基準スロット。選択位置への持ち替えはこの位置を基準とする。 */
-  readonly slot: F2lSlot;
-}

@@ -4,6 +4,8 @@ import { CaseAlgorithm, F2lAlgorithmCase, F2lSlot } from '../../../cube/cube.mod
 interface F2lCaseDefinition {
   /** 1〜41の表示番号。 */
   number: string;
+  /** F2Lグループ。 */
+  group: string;
   /** Setupと解法手順の基準スロット。 */
   slot: F2lSlot;
   /** 完成状態から対象ケースを作る共通Setup。 */
@@ -21,8 +23,8 @@ export function defineF2lCase(definition: F2lCaseDefinition): F2lAlgorithmCase {
   return {
     kind: 'F2L',
     number: definition.number,
-    name: `F2L ${Number(definition.number)}`,
-    group: '',
+    name: definition.number,
+    group: definition.group,
     slot: definition.slot,
     setup: definition.setup,
     algorithms: definition.algorithms.map((algorithm) => ({ ...algorithm, builtIn: true })),
