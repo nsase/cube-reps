@@ -18,7 +18,7 @@ describe('F2l', () => {
     }),
   );
 
-  it('41ケースを番号順に表示し、独立した一意のIDを持つ', async () => {
+  it('41ケースを番号順に表示する', async () => {
     const fixture = TestBed.createComponent(Algorithms);
     await fixture.whenStable();
     const cards = (fixture.nativeElement as HTMLElement).querySelectorAll('app-f2l-case-card');
@@ -26,8 +26,6 @@ describe('F2l', () => {
     expect(Array.from(cards, (card) => card.querySelector('h3')!.textContent)).toEqual(
       Array.from({ length: 41 }, (_, i) => `F2L ${i + 1}`),
     );
-    expect(new Set(F2L_CASES.map((item) => item.id)).size).toBe(41);
-    expect(F2L_CASES.every((item) => item.id !== String(item.number))).toBe(true);
   });
 
   it('共通の検索欄でF2L番号を絞り込み、該当なしと検索解除を表示する', async () => {

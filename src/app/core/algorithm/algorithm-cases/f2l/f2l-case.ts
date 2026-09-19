@@ -2,8 +2,6 @@ import { CaseAlgorithm, F2lAlgorithmCase, F2lSlot } from '../../../cube/cube.mod
 
 /** F2Lケース生成時に必要な元データ。 */
 interface F2lCaseDefinition {
-  /** 表示番号から独立した永続ID。 */
-  id: string;
   /** 1〜41の表示番号。 */
   number: string;
   /** Setupと解法手順の基準スロット。 */
@@ -21,7 +19,6 @@ interface F2lCaseDefinition {
  */
 export function defineF2lCase(definition: F2lCaseDefinition): F2lAlgorithmCase {
   return {
-    id: definition.id,
     kind: 'F2L',
     number: definition.number,
     name: `F2L ${Number(definition.number)}`,

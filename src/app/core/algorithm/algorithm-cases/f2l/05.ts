@@ -2,7 +2,6 @@ import { defineF2lCase } from './f2l-case';
 
 /** F2L 05のケース定義。Solve・Setupは画面構築用のダミー。 */
 export const F2L_05_CASE = defineF2lCase({
-  id: '1df52fd1-c5c8-4479-88bd-07b7bc0ce63a',
   number: '5',
   slot: 'FR',
   setup: "R U' R'",

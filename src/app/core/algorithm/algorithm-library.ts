@@ -21,9 +21,15 @@ export class AlgorithmLibraryService {
   /** IndexedDBからの復元が完了したときに解決するPromise。 */
   readonly ready = this.initializeStorage();
 
-  /** @returns 種別と永続ID（未設定の既存ケースでは番号）を組み合わせたケース固有キー */
-  caseKey(item: AlgorithmCase): string {
-    return `${item.kind}-${item.id ?? item.number}`;
+  /** @returns 種別と番号、F2Lでは対象スロットも組み合わせたケース固有キー */
+  caseKey<T extends AlgorithmCase>(item: T): string {
+    if (item.kind === 'F2L') {
+      if (!('slot' in item) || !['FL', 'FR', 'BL', 'BR'].includes(String(item.slot))) {
+        throw new Error('F2L case requires a valid slot');
+      }
+      return `F2L-${item.number.padStart(2, '0')}-${item.slot}`;
+    }
+    return `${item.kind}-${item.number}`;
   }
 
   /** @returns 組み込み手順の後ろにユーザー手順を連結した一覧 */

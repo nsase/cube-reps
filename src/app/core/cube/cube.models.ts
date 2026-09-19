@@ -88,8 +88,6 @@ export interface AlgorithmPreference extends SyncMetadata {
 export interface AlgorithmCase<Kind extends 'F2L' | 'OLL' | 'PLL' = 'F2L' | 'OLL' | 'PLL'> {
   /** ケースの種別。 */
   kind: Kind;
-  /** 表示番号と独立したケースID。既存のOLL/PLLでは種別と番号を識別に使用する。 */
-  readonly id?: string;
   /**
    * ケース番号または識別名。
    * F2L: 1～41, OLL: 01～57, PLL: Aa, Tなど
@@ -137,10 +135,8 @@ export type GroupMutation = DocumentMutation<RecordGroup>;
 /** コーナーとエッジのペアを入れる、ユーザーから見たF2Lスロット。 */
 export type F2lSlot = 'FL' | 'FR' | 'BL' | 'BR';
 
-/** F2L固有の永続IDと手順の対象スロットを持つケース。 */
+/** F2L固有の手順の対象スロットを持つケース。 */
 export interface F2lAlgorithmCase extends AlgorithmCase<'F2L'> {
-  /** 番号変更後もケースを識別する永続ID。 */
-  readonly id: string;
   /** Setupと解法手順の基準スロット。選択位置への持ち替えはこの位置を基準とする。 */
   readonly slot: F2lSlot;
 }
