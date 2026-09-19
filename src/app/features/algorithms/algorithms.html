@@ -1,8 +1,18 @@
 <section>
   <app-algorithm-tools [(query)]="query" />
+  @if (kind() === 'F2L') {
+    <div>
+      <h2>F2L</h2>
+      <p>{{ 'algorithms.f2lNotice' | transloco }}</p>
+    </div>
+  }
   <div class="grid">
-    @for (item of cases(); track item.kind + item.number) {
-      <app-algorithm-case-card [item]="item" />
+    @for (item of cases(); track item.kind === 'F2L' ? item.id : item.kind + item.number) {
+      @if (item.kind === 'F2L') {
+        <app-f2l-case-card [item]="item" />
+      } @else {
+        <app-algorithm-case-card [item]="item" />
+      }
     } @empty {
       <div class="empty">{{ 'algorithms.empty' | transloco }}</div>
     }

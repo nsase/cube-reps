@@ -5,7 +5,7 @@ import {
   AlgorithmLibraryService,
   CaseAlgorithm,
 } from '../../../../../core/algorithm/algorithm-library';
-import { AlgorithmCase } from '../../../../../core/cube/cube.models';
+import { LastLayerAlgorithmCase } from '../../../../../core/cube/cube.models';
 import { ConfirmService } from '../../../../../shared/confirm-dialog/confirm.service';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
@@ -19,7 +19,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 })
 export class AlgorithmRow {
   /** 手順が属するOLLまたはPLLケース。 */
-  readonly item = input.required<AlgorithmCase>();
+  readonly item = input.required<LastLayerAlgorithmCase>();
   /** 表示する手順。 */
   readonly algorithm = input.required<CaseAlgorithm>();
   /** 手順一覧内での表示順位。 */

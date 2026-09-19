@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { F2lCase } from '../../../../core/algorithm/algorithm-cases/f2l/f2l-cases';
+import { F2lCase } from '../../../../core/cube/cube.models';
 
 /** F2Lの1ケースと仮のSolve・Setupを表示するカード。 */
 @Component({

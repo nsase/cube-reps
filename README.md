@@ -15,7 +15,7 @@ CubeReps is a browser-based Rubik's Cube timer and training tool. Solve records 
 - Timers for full solves, OLL, and PLL
 - Random-state scrambles with a cube net preview
 - Searchable references for all 57 OLL cases and 21 PLL cases
-- The Algorithms menu opens an F2L / OLL / PLL selection page. Wide screens also offer direct submenu links. Switch types within each algorithm page; F2L shows 41 numbered cards with one dummy Solve and Setup each. Case-specific algorithms, cube diagrams, position selection, and timing are not implemented yet.
+- The Algorithms menu opens an F2L / OLL / PLL selection page. Wide screens also offer direct submenu links. Switch types within each algorithm page; F2L shares the searchable algorithm page with OLL/PLL and shows 41 numbered cards with one dummy Solve and Setup each. Case-specific algorithms, cube diagrams, position selection, and timing are not implemented yet.
 - Case-specific drills with scrambles for a selected or random case
 - Add, delete, copy, and favorite algorithms
 - Create, rename, and delete record groups, moving their records to Unclassified on deletion, with one shared selection across timer and history
