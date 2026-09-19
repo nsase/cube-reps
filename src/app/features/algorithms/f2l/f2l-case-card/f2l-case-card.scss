@@ -1,0 +1,36 @@
+:host {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 17px;
+  border: 1px solid var(--outline-color);
+  border-radius: 9px;
+  background: var(--surface-color);
+}
+h3 {
+  margin: 0;
+  font-size: var(--font-size-large);
+}
+.status,
+dt {
+  color: var(--text-muted-color);
+  font-size: var(--font-size-small);
+}
+dl {
+  grid-column: 1 / -1;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+dl > div {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+}
+dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-family-mono);
+}
