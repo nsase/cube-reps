@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { F2L_CASES, OLL_CASES, PLL_CASES } from '../../core/algorithm/algorithm-cases';
 import { AlgorithmCaseCard } from './algorithm-case-card/algorithm-case-card';
 import { AlgorithmTools } from './algorithm-tools/algorithm-tools';
-import { TranslocoPipe } from '@jsverse/transloco';
 
 /** F2L・OLL・PLLケースの検索、手順登録、お気に入りを扱う画面。 */
 @Component({
@@ -27,13 +27,21 @@ export class Algorithms {
   });
   /** ケース一覧の検索文字列。 */
   protected readonly query = signal('');
-  /** 種別と検索文字列で絞り込んだケース一覧。 */
+
+  /** 種別で絞り込んだケース一覧 */
   protected readonly cases = computed(() => {
+    const kind = this.kind();
+    if (kind === 'F2L') return F2L_CASES;
+    if (kind === 'OLL') return OLL_CASES;
+    if (kind === 'PLL') return PLL_CASES;
+    return [];
+  });
+
+  /** 種別と検索文字列で絞り込んだケース一覧。 */
+  protected readonly filteredCases = computed(() => {
     const query = this.query().trim().toLowerCase();
-    return [...F2L_CASES, ...OLL_CASES, ...PLL_CASES].filter(
-      (item) =>
-        item.kind === this.kind() &&
-        `${item.name} ${item.number} ${item.group}`.toLowerCase().includes(query),
+    return this.cases().filter((item) =>
+      `${item.name} ${item.number} ${item.group}`.toLowerCase().includes(query),
     );
   });
 }
