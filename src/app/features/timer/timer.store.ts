@@ -1,9 +1,9 @@
 import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
-import { NativeAppService } from '../../core/platform/native-app.service';
 import { OLL_CASES, PLL_CASES } from '../../core/algorithm/algorithm-cases';
 import { AppUpdateService } from '../../core/app-update.service';
 import { CubeService } from '../../core/cube/cube';
 import { AlgorithmCase, Penalty, Solve, SolveCategory } from '../../core/cube/cube.models';
+import { NativeAppService } from '../../core/platform/native-app.service';
 
 /** Timerコンポーネントツリー内で計測状態と操作を共有するStore。 */
 @Injectable()
@@ -32,7 +32,9 @@ export class TimerStore implements OnDestroy {
   /** OLL・PLL練習で選択中のケースまたはランダムモード。 */
   readonly selectedCase = signal<number | 'random'>('random');
   /** 現在のドリル種別に対応するケース選択肢。 */
-  readonly drillCases = computed(() => (this.category() === 'oll' ? OLL_CASES : PLL_CASES));
+  readonly drillCases = computed<AlgorithmCase[]>(() =>
+    this.category() === 'oll' ? OLL_CASES : PLL_CASES,
+  );
   /** 現在のスクランブルで出題しているOLL・PLLケース。 */
   readonly currentDrillCase = signal<AlgorithmCase>(PLL_CASES[0]);
 

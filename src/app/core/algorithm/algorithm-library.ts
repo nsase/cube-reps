@@ -9,7 +9,7 @@ export type { CaseAlgorithm } from '../cube/cube.models';
 /** ケースキーごとのユーザー設定。 */
 type AlgorithmPreferences = Record<string, AlgorithmPreference>;
 
-/** OLL/PLL手順のお気に入りとユーザー追加手順を管理するサービス。 */
+/** F2L・OLL・PLL手順のお気に入りとユーザー追加手順を管理するサービス。 */
 @Injectable({ providedIn: 'root' })
 export class AlgorithmLibraryService {
   /** ユーザー設定の永続化を画面から分離するRepository。 */
@@ -21,9 +21,16 @@ export class AlgorithmLibraryService {
   /** IndexedDBからの復元が完了したときに解決するPromise。 */
   readonly ready = this.initializeStorage();
 
-  /** @returns 種別と番号を組み合わせたケース固有キー */
-  caseKey(item: AlgorithmCase): string {
-    return `${item.kind}-${item.number}`;
+  /** @returns 種別と番号、F2Lでは対象スロットも組み合わせたケース固有キー */
+  caseKey<T extends AlgorithmCase>(item: T): string {
+    const key = [item.kind, item.number];
+    if (item.kind === 'F2L') {
+      if (!('slot' in item) || !['FL', 'FR', 'BL', 'BR'].includes(String(item.slot))) {
+        throw new Error('F2L case requires a valid slot');
+      }
+      key.push(item.slot as string);
+    }
+    return key.join('-');
   }
 
   /** @returns 組み込み手順の後ろにユーザー手順を連結した一覧 */

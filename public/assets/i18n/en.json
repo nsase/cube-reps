@@ -112,11 +112,14 @@
     "removeTitle": "Delete custom algorithm?",
     "removeMessage": "Delete algorithm “{{notation}}” from {{kind}} {{number}}?\nThis action cannot be undone.",
     "selection": {
-      "f2l": "Pair and insert first two layer pieces. Coming soon.",
+      "f2l": "Pair and insert first two layer pieces. Browse 41 cases with dummy algorithms.",
       "oll": "Orient the last layer. Browse 57 cases.",
       "pll": "Permute the last layer. Browse 21 cases."
     },
-    "f2lPlaceholder": "F2L is coming soon. Cases and practice will be added in a future update."
+    "f2lNotice": "Browse 41 F2L cases. Solve and Setup are dummy algorithms and do not represent each case yet. The diagram is a temporary top-layer view generated from the dummy Setup.",
+    "dummy": "Dummy",
+    "solve": "Solve",
+    "setup": "Setup"
   },
   "history": {
     "unclassified": "Unclassified",

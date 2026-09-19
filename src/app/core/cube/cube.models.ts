@@ -84,13 +84,13 @@ export interface AlgorithmPreference extends SyncMetadata {
   favoriteId?: string;
 }
 
-/** OLLまたはPLLのケースと登録済み手順。 */
-export interface AlgorithmCase {
+/** F2L・OLL・PLLに共通するケースと登録済み手順。 */
+export interface AlgorithmCase<Kind extends 'F2L' | 'OLL' | 'PLL' = 'F2L' | 'OLL' | 'PLL'> {
   /** ケースの種別。 */
-  kind: 'OLL' | 'PLL';
+  kind: Kind;
   /**
    * ケース番号または識別名。
-   * OLL: 01～57, PLL: Aa, Tなど
+   * F2L: 1～41, OLL: 01～57, PLL: Aa, Tなど
    */
   number: string;
   /**
@@ -107,6 +107,15 @@ export interface AlgorithmCase {
   setup: string;
   /** 組み込み手順の一覧。 */
   algorithms: readonly CaseAlgorithm[];
+}
+
+/** コーナーとエッジのペアを入れる、ユーザーから見たF2Lスロット。 */
+export type F2lSlot = 'FL' | 'FR' | 'BL' | 'BR';
+
+/** F2L固有の手順の対象スロットを持つケース。 */
+export interface F2lAlgorithmCase extends AlgorithmCase<'F2L'> {
+  /** Setupと解法手順の基準スロット。選択位置への持ち替えはこの位置を基準とする。 */
+  readonly slot: F2lSlot;
 }
 
 /** 保存・同期せず画面表示にだけ使用するアプリ組み込みグループ。 */

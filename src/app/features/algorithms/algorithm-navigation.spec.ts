@@ -7,14 +7,14 @@ import { routes } from '../../app.routes';
 import { AlgorithmSelection } from './algorithm-selection/algorithm-selection';
 import { AlgorithmChoice } from './algorithm-choice/algorithm-choice';
 import { AlgorithmKindLinks } from './algorithm-kind-links/algorithm-kind-links';
-import { F2lPlaceholder } from './f2l-placeholder/f2l-placeholder';
+import { Algorithms } from './algorithms';
 
 describe('Algorithm navigation', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
   });
 
-  it('選択画面からF2L仮ページへ移動し、言語変更を反映する', async () => {
+  it('選択画面からF2Lページへ移動し、言語変更を反映する', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/algorithms', AlgorithmSelection);
     await firstValueFrom(TestBed.inject(TranslocoService).load('en'));
@@ -34,17 +34,19 @@ describe('Algorithm navigation', () => {
     ).click();
     await harness.fixture.whenStable();
     expect(TestBed.inject(Router).url).toBe('/algorithms/f2l');
-    expect(harness.routeNativeElement!.textContent).toContain('F2Lは現在準備中');
+    expect(harness.routeNativeElement!.textContent).toContain('F2Lの41ケース');
     i18n.setActiveLang('en');
     await harness.fixture.whenStable();
-    expect(harness.routeNativeElement!.textContent).toContain('F2L is coming soon');
+    expect(harness.routeNativeElement!.textContent).toContain('Browse 41 F2L cases');
   });
 
   it('F2LのURLを直接開き、他の種類への切り替えを表示する', async () => {
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/algorithms/f2l', F2lPlaceholder);
+    await harness.navigateByUrl('/algorithms/f2l', Algorithms);
     expect(harness.routeNativeElement!.querySelector('h2')!.textContent).toBe('F2L');
-    expect(harness.routeNativeElement!.querySelectorAll('button')).toHaveLength(3);
+    expect(
+      harness.routeNativeElement!.querySelectorAll('app-algorithm-kind-links button'),
+    ).toHaveLength(3);
     expect(
       harness.routeNativeElement!.querySelector('[aria-current="page"]')!.textContent,
     ).toContain('F2L');

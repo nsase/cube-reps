@@ -18,7 +18,7 @@ interface PllCaseDefinition {
  * @param definition PLLケースの元データ
  * @returns 種別と表示名を補完したケース
  */
-export function definePllCase(definition: PllCaseDefinition): AlgorithmCase {
+export function definePllCase(definition: PllCaseDefinition): AlgorithmCase<'PLL'> {
   return {
     kind: 'PLL',
     number: definition.number,

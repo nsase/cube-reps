@@ -18,7 +18,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlgorithmPanel {
-  /** 手順を表示するOLLまたはPLLケース。 */
+  /** 手順を表示するF2L・OLL・PLLケース。 */
   readonly item = input.required<AlgorithmCase>();
 
   /** ケースごとの表示手順とユーザー設定を管理するサービス。 */

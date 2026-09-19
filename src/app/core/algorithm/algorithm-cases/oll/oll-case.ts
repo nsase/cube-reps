@@ -20,7 +20,7 @@ interface OllCaseDefinition {
  * @param definition OLLケースの元データ
  * @returns 種別と表示用のケース名を補完したケース
  */
-export function defineOllCase(definition: OllCaseDefinition): AlgorithmCase {
+export function defineOllCase(definition: OllCaseDefinition): AlgorithmCase<'OLL'> {
   return {
     kind: 'OLL',
     number: definition.number,

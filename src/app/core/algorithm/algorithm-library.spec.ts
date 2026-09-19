@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { PLL_CASES } from './algorithm-cases';
+import { F2L_CASES, PLL_CASES } from './algorithm-cases';
 import { UserDataRepository } from '../local-storage/user-data-repository';
 import { AlgorithmLibraryService } from './algorithm-library';
 
@@ -15,6 +15,22 @@ describe('AlgorithmLibraryService', () => {
     TestBed.configureTestingModule({});
     return TestBed.inject(AlgorithmLibraryService);
   }
+
+  it('既存ケースのキーを維持し、F2Lは2桁の番号とスロットで識別する', () => {
+    const service = createService();
+    expect(service.caseKey(item)).toBe(`${item.kind}-${item.number}`);
+    for (const slot of ['FL', 'FR', 'BL', 'BR'] as const) {
+      expect(service.caseKey({ ...F2L_CASES[0], slot })).toBe(`F2L-01-${slot}`);
+      expect(service.caseKey({ ...F2L_CASES[0], number: '01', slot })).toBe(`F2L-01-${slot}`);
+      expect(service.caseKey({ ...F2L_CASES[40], slot })).toBe(`F2L-41-${slot}`);
+    }
+  });
+
+  it('スロット未指定のF2Lを曖昧なキーで保存しない', () => {
+    const service = createService();
+    const { slot, ...item } = F2L_CASES[0];
+    expect(() => service.caseKey(item)).toThrow('F2L case requires a valid slot');
+  });
 
   it('keeps built-in algorithms in source order and defaults the favorite to the first', () => {
     const service = createService();
