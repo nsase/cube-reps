@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { PLL_CASES } from './algorithm-cases';
+import { F2L_CASES, PLL_CASES } from './algorithm-cases';
 import { UserDataRepository } from '../local-storage/user-data-repository';
 import { AlgorithmLibraryService } from './algorithm-library';
 
@@ -15,6 +15,14 @@ describe('AlgorithmLibraryService', () => {
     TestBed.configureTestingModule({});
     return TestBed.inject(AlgorithmLibraryService);
   }
+
+  it('既存ケースのキーを維持し、F2Lのキーは表示番号を変更しても変わらない', () => {
+    const service = createService();
+    expect(service.caseKey(item)).toBe(`${item.kind}-${item.number}`);
+    const f2l = F2L_CASES[0];
+    expect(service.caseKey(f2l)).toBe(`F2L-${f2l.id}`);
+    expect(service.caseKey({ ...f2l, number: '41' })).toBe(service.caseKey(f2l));
+  });
 
   it('keeps built-in algorithms in source order and defaults the favorite to the first', () => {
     const service = createService();

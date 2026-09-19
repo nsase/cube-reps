@@ -1,4 +1,4 @@
-import { LastLayerAlgorithmCase, CaseAlgorithm } from '../../../cube/cube.models';
+import { AlgorithmCase, CaseAlgorithm } from '../../../cube/cube.models';
 
 /** PLLケース生成時に必要な元データ。 */
 interface PllCaseDefinition {
@@ -18,7 +18,7 @@ interface PllCaseDefinition {
  * @param definition PLLケースの元データ
  * @returns 種別と表示名を補完したケース
  */
-export function definePllCase(definition: PllCaseDefinition): LastLayerAlgorithmCase {
+export function definePllCase(definition: PllCaseDefinition): AlgorithmCase<'PLL'> {
   return {
     kind: 'PLL',
     number: definition.number,

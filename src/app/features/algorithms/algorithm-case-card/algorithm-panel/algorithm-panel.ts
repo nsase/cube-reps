@@ -5,7 +5,7 @@ import {
   AlgorithmLibraryService,
   CaseAlgorithm,
 } from '../../../../core/algorithm/algorithm-library';
-import { LastLayerAlgorithmCase } from '../../../../core/cube/cube.models';
+import { AlgorithmCase } from '../../../../core/cube/cube.models';
 import { AlgorithmRow } from './algorithm-row/algorithm-row';
 import { TranslocoPipe } from '@jsverse/transloco';
 
@@ -19,7 +19,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 })
 export class AlgorithmPanel {
   /** 手順を表示するOLLまたはPLLケース。 */
-  readonly item = input.required<LastLayerAlgorithmCase>();
+  readonly item = input.required<AlgorithmCase>();
 
   /** ケースごとの表示手順とユーザー設定を管理するサービス。 */
   protected readonly library = inject(AlgorithmLibraryService);

@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { LastLayerAlgorithmCase, AlgorithmPreference, CaseAlgorithm } from '../cube/cube.models';
+import { AlgorithmCase, AlgorithmPreference, CaseAlgorithm } from '../cube/cube.models';
 import {
   USER_DATA_SCHEMA_VERSION,
   UserDataRepository,
@@ -21,25 +21,25 @@ export class AlgorithmLibraryService {
   /** IndexedDBからの復元が完了したときに解決するPromise。 */
   readonly ready = this.initializeStorage();
 
-  /** @returns 種別と番号を組み合わせたケース固有キー */
-  caseKey(item: LastLayerAlgorithmCase): string {
-    return `${item.kind}-${item.number}`;
+  /** @returns 種別と永続ID（未設定の既存ケースでは番号）を組み合わせたケース固有キー */
+  caseKey(item: AlgorithmCase): string {
+    return `${item.kind}-${item.id ?? item.number}`;
   }
 
   /** @returns 組み込み手順の後ろにユーザー手順を連結した一覧 */
-  algorithmsFor(item: LastLayerAlgorithmCase): CaseAlgorithm[] {
+  algorithmsFor(item: AlgorithmCase): CaseAlgorithm[] {
     return [...item.algorithms, ...this.preferenceFor(item).custom];
   }
 
   /** @returns お気に入り手順。未設定または不明なIDの場合は先頭手順 */
-  favoriteFor(item: LastLayerAlgorithmCase): CaseAlgorithm | undefined {
+  favoriteFor(item: AlgorithmCase): CaseAlgorithm | undefined {
     const algorithms = this.algorithmsFor(item);
     const favoriteId = this.preferenceFor(item).favoriteId;
     return algorithms.find((algorithm) => algorithm.id === favoriteId) ?? algorithms[0];
   }
 
   /** @returns 代表表示する手順。手順がない場合は案内文 */
-  primaryNotation(item: LastLayerAlgorithmCase): string {
+  primaryNotation(item: AlgorithmCase): string {
     return this.favoriteFor(item)?.notation ?? '手順未登録';
   }
 
@@ -49,7 +49,7 @@ export class AlgorithmLibraryService {
    * @param item 対象ケース
    * @param id お気に入りにする手順ID
    */
-  setFavorite(item: LastLayerAlgorithmCase, id: string): void {
+  setFavorite(item: AlgorithmCase, id: string): void {
     if (!this.algorithmsFor(item).some((algorithm) => algorithm.id === id)) return;
     this.save(item, { ...this.preferenceFor(item), favoriteId: id });
   }
@@ -61,7 +61,7 @@ export class AlgorithmLibraryService {
    * @param notation 追加する手順
    * @returns 追加できた場合は`true`
    */
-  add(item: LastLayerAlgorithmCase, notation: string): boolean {
+  add(item: AlgorithmCase, notation: string): boolean {
     const value = notation.trim();
     if (!value) return false;
     if (this.algorithmsFor(item).some((algorithm) => algorithm.notation === value)) return false;
@@ -79,7 +79,7 @@ export class AlgorithmLibraryService {
    * @param item 対象ケース
    * @param id 削除するユーザー手順ID
    */
-  remove(item: LastLayerAlgorithmCase, id: string): void {
+  remove(item: AlgorithmCase, id: string): void {
     const preference = this.preferenceFor(item);
     if (!preference.custom.some((algorithm) => algorithm.id === id)) return;
     this.save(item, {
@@ -90,7 +90,7 @@ export class AlgorithmLibraryService {
   }
 
   /** @returns ケースの保存済み設定。未保存の場合は同期情報付きの空設定 */
-  private preferenceFor(item: LastLayerAlgorithmCase): AlgorithmPreference {
+  private preferenceFor(item: AlgorithmCase): AlgorithmPreference {
     const caseKey = this.caseKey(item);
     return (
       this.preferences()[caseKey] ?? {
@@ -105,7 +105,7 @@ export class AlgorithmLibraryService {
   }
 
   /** 指定ケースの設定を状態へ保存し、変更されたケースだけを永続化する。 */
-  private save(item: LastLayerAlgorithmCase, preference: AlgorithmPreference): void {
+  private save(item: AlgorithmCase, preference: AlgorithmPreference): void {
     const caseKey = this.caseKey(item);
     const updated: AlgorithmPreference = {
       ...preference,

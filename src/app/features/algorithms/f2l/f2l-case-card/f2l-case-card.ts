@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { F2lCase } from '../../../../core/cube/cube.models';
+import { F2lAlgorithmCase } from '../../../../core/cube/cube.models';
 
 /** F2Lの1ケースと仮のSolve・Setupを表示するカード。 */
 @Component({
@@ -12,5 +12,5 @@ import { F2lCase } from '../../../../core/cube/cube.models';
 })
 export class F2lCaseCard {
   /** このカードに表示するケース。 */
-  readonly item = input.required<F2lCase>();
+  readonly item = input.required<F2lAlgorithmCase>();
 }

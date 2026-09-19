@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
-import { F2L_CASES } from '../../../core/algorithm/algorithm-cases/f2l/f2l-cases';
+import { F2L_CASES } from '../../../core/algorithm/algorithm-cases/f2l';
 import { Algorithms } from '../algorithms';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
