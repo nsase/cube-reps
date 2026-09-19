@@ -166,6 +166,8 @@ Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`�
 
 Angular Materialの共通テーマとアプリ用のカラー変数は、`src/styles/_material-theme.scss`で定義しています。Materialコンポーネントの配色は、個別コンポーネントのスタイルで上書きせず、このテーマで調整します。
 
+カードの外観は`src/app/app.config.ts`の`MAT_CARD_CONFIG`で`outlined`を既定にしています。個別のカードでは、既定と異なる外観を使う場合だけ`appearance`を指定します。
+
 ## ディレクトリ構成
 
 ```text
