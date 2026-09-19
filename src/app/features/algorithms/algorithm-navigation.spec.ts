@@ -44,7 +44,9 @@ describe('Algorithm navigation', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/algorithms/f2l', Algorithms);
     expect(harness.routeNativeElement!.querySelector('h2')!.textContent).toBe('F2L');
-    expect(harness.routeNativeElement!.querySelectorAll('button')).toHaveLength(3);
+    expect(
+      harness.routeNativeElement!.querySelectorAll('app-algorithm-kind-links button'),
+    ).toHaveLength(3);
     expect(
       harness.routeNativeElement!.querySelector('[aria-current="page"]')!.textContent,
     ).toContain('F2L');

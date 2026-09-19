@@ -102,7 +102,7 @@ test.describe('アルゴリズムの画面遷移', { tag: '@responsive' }, () =>
       await page.keyboard.press('Enter');
       await expect(page).toHaveURL(new RegExp(`/algorithms/${kind.toLowerCase()}$`));
       if (kind === 'F2L') {
-        await expect(page.locator('app-f2l-case-card')).toHaveCount(41);
+        await expect(page.locator('app-algorithm-case-card')).toHaveCount(41);
         await expect(
           page.getByText('Solve and Setup are dummy algorithms', { exact: false }),
         ).toBeVisible();
@@ -125,19 +125,38 @@ test.describe('アルゴリズムの画面遷移', { tag: '@responsive' }, () =>
 
 test('F2Lの41カードを最後まで閲覧できる', { tag: '@responsive' }, async ({ page }) => {
   await page.goto('/#/algorithms/f2l');
-  const cards = page.locator('app-f2l-case-card');
+  const cards = page.locator('app-algorithm-case-card');
   await expect(cards).toHaveCount(41);
-  await expect(cards.first().getByRole('heading')).toHaveText('F2L 1');
+  await expect(cards.first().getByRole('heading')).toHaveText('01');
   await cards.last().scrollIntoViewIfNeeded();
-  await expect(cards.last().getByRole('heading')).toHaveText('F2L 41');
-  await expect(cards.last().getByText("R U R'", { exact: true })).toBeVisible();
-  await expect(cards.last().getByText("R U' R'", { exact: true })).toBeVisible();
-  await expectResponsiveLayout(page, 'app-f2l-case-card');
+  await expect(cards.last().getByRole('heading')).toHaveText('41');
+  await expect(cards.last().locator('app-algorithm-row code')).toHaveText("R U R'");
+
+  await expectResponsiveLayout(page, 'app-algorithm-case-card');
   const search = page.locator('app-algorithm-tools input');
   await search.fill('41');
   await expect(cards).toHaveCount(1);
-  await expect(cards.getByRole('heading')).toHaveText('F2L 41');
+  await expect(cards.getByRole('heading')).toHaveText('41');
   await search.clear();
   await expect(cards).toHaveCount(41);
   await expectNoHorizontalOverflow(page);
+});
+
+test('F2Lの共通カードで手順とお気に入りを保存し、再読込後に削除できる', async ({ page }) => {
+  await page.goto('/#/algorithms/f2l');
+  await page.locator('app-algorithm-tools input').fill('01');
+  const card = page.locator('app-algorithm-case-card');
+  await expect(card).toHaveCount(1);
+  await card.getByPlaceholder('Enter a new algorithm').fill("U R U' R'");
+  await card.getByRole('button', { name: 'Add', exact: true }).click();
+  const customRow = card.locator('app-algorithm-row').filter({ hasText: "U R U' R'" });
+  await customRow.getByRole('button', { name: 'Set as favorite', exact: true }).click();
+  await expect(card.locator('.favorite-algorithm code')).toHaveText("U R U' R'");
+  await page.reload();
+  await page.locator('app-algorithm-tools input').fill('01');
+  await expect(card.locator('.favorite-algorithm code')).toHaveText("U R U' R'");
+  await customRow.getByRole('button', { name: 'Delete custom algorithm', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+  await expect(card.locator('app-algorithm-row')).toHaveCount(1);
+  await expect(card.locator('.favorite-algorithm code')).toHaveText("R U R'");
 });

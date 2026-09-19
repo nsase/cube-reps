@@ -9,7 +9,7 @@ export type { CaseAlgorithm } from '../cube/cube.models';
 /** ケースキーごとのユーザー設定。 */
 type AlgorithmPreferences = Record<string, AlgorithmPreference>;
 
-/** OLL/PLL手順のお気に入りとユーザー追加手順を管理するサービス。 */
+/** F2L・OLL・PLL手順のお気に入りとユーザー追加手順を管理するサービス。 */
 @Injectable({ providedIn: 'root' })
 export class AlgorithmLibraryService {
   /** ユーザー設定の永続化を画面から分離するRepository。 */

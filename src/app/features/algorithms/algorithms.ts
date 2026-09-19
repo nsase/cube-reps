@@ -4,13 +4,12 @@ import { ActivatedRoute } from '@angular/router';
 import { F2L_CASES, OLL_CASES, PLL_CASES } from '../../core/algorithm/algorithm-cases';
 import { AlgorithmCaseCard } from './algorithm-case-card/algorithm-case-card';
 import { AlgorithmTools } from './algorithm-tools/algorithm-tools';
-import { F2lCaseCard } from './f2l/f2l-case-card/f2l-case-card';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 /** F2L・OLL・PLLケースの検索、手順登録、お気に入りを扱う画面。 */
 @Component({
   selector: 'app-algorithms',
-  imports: [AlgorithmTools, AlgorithmCaseCard, F2lCaseCard, TranslocoPipe],
+  imports: [AlgorithmTools, AlgorithmCaseCard, TranslocoPipe],
   templateUrl: './algorithms.html',
   styleUrl: './algorithms.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

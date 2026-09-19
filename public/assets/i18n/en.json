@@ -116,7 +116,7 @@
       "oll": "Orient the last layer. Browse 57 cases.",
       "pll": "Permute the last layer. Browse 21 cases."
     },
-    "f2lNotice": "Browse 41 F2L cases. Solve and Setup are dummy algorithms and do not represent each case yet.",
+    "f2lNotice": "Browse 41 F2L cases. Solve and Setup are dummy algorithms and do not represent each case yet. The diagram is a temporary top-layer view generated from the dummy Setup.",
     "dummy": "Dummy",
     "solve": "Solve",
     "setup": "Setup"

@@ -8,11 +8,7 @@
   }
   <div class="grid">
     @for (item of cases(); track item.kind + item.number + (item.kind === 'F2L' ? item.slot : '')) {
-      @if (item.kind === 'F2L') {
-        <app-f2l-case-card [item]="item" />
-      } @else {
-        <app-algorithm-case-card [item]="item" />
-      }
+      <app-algorithm-case-card [item]="item" />
     } @empty {
       <div class="empty">{{ 'algorithms.empty' | transloco }}</div>
     }
