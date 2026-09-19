@@ -150,7 +150,10 @@ test('F2Lの41カードを最後まで閲覧できる', { tag: '@responsive' }, 
   await expect(cards.last().getByRole('button', { name: 'Add', exact: true })).toBeVisible();
 
   await expectResponsiveLayout(page, 'app-algorithm-case-card');
-  await expectResponsiveLayout(page, 'app-algorithm-case-card .pattern > *');
+  await expectResponsiveLayout(
+    page,
+    'app-algorithm-case-card .pattern app-cube-quarter-view svg, app-algorithm-case-card .pattern .group',
+  );
   const search = page.locator('app-algorithm-tools input');
   await search.fill('41');
   await expect(cards).toHaveCount(1);

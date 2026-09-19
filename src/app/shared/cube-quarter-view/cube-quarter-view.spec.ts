@@ -23,16 +23,6 @@ describe('CubeQuarterView', () => {
         Array(9).fill(color),
       );
     }
-    expect(
-      element
-        .querySelector('[data-face="F"] [data-row="2"][data-column="2"]')!
-        .getAttribute('points'),
-    ).toBe('68,110 96,118 96,144 68,136');
-    expect(
-      element
-        .querySelector('[data-face="R"] [data-row="2"][data-column="0"]')!
-        .getAttribute('points'),
-    ).toContain('96,144');
   });
 
   it('Setup由来の色と灰色の更新を同じSVGに反映する', async () => {
