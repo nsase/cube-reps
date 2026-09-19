@@ -106,11 +106,17 @@ test.describe('アルゴリズムの画面遷移', { tag: '@responsive' }, () =>
       await expect(page).toHaveURL(new RegExp(`/algorithms/${kind.toLowerCase()}$`));
       if (kind === 'F2L') {
         await expect(page.locator('app-algorithm-case-card')).toHaveCount(41);
+        await expect(page.locator('app-cube-quarter-view')).toHaveCount(41);
+        await expect(page.locator('app-cube-pattern')).toHaveCount(0);
         await expect(
-          page.getByText('Solve and Setup are dummy algorithms', { exact: false }),
+          page.getByText('Some Solve and Setup algorithms are still placeholders', {
+            exact: false,
+          }),
         ).toBeVisible();
       } else {
         await expect(page.locator('app-algorithm-case-card')).toHaveCount(kind === 'OLL' ? 57 : 21);
+        await expect(page.locator('app-cube-pattern')).toHaveCount(kind === 'OLL' ? 57 : 21);
+        await expect(page.locator('app-cube-quarter-view')).toHaveCount(0);
       }
       await expectNoHorizontalOverflow(page);
       await expectResponsiveLayout(page, 'app-algorithm-kind-links button');
@@ -131,11 +137,23 @@ test('F2Lの41カードを最後まで閲覧できる', { tag: '@responsive' }, 
   const cards = page.locator('app-algorithm-case-card');
   await expect(cards).toHaveCount(41);
   await expect(cards.first().getByRole('heading')).toHaveText('01');
+  await expect(
+    cards
+      .first()
+      .getByRole('img', { name: 'Quarter view for F2L 01: top, front, and right faces' }),
+  ).toBeVisible();
   await cards.last().scrollIntoViewIfNeeded();
   await expect(cards.last().getByRole('heading')).toHaveText('41');
+  await expect(
+    cards.last().getByRole('img', { name: 'Quarter view for F2L 41: top, front, and right faces' }),
+  ).toBeVisible();
   await expect(cards.last().getByRole('button', { name: 'Add', exact: true })).toBeVisible();
 
   await expectResponsiveLayout(page, 'app-algorithm-case-card');
+  await expectResponsiveLayout(
+    page,
+    'app-algorithm-case-card .pattern app-cube-quarter-view svg, app-algorithm-case-card .pattern .group',
+  );
   const search = page.locator('app-algorithm-tools input');
   await search.fill('41');
   await expect(cards).toHaveCount(1);
