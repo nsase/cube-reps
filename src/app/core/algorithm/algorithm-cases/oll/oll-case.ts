@@ -1,4 +1,4 @@
-import { AlgorithmCase, CaseAlgorithm } from '../../../cube/cube.models';
+import { LastLayerAlgorithmCase, CaseAlgorithm } from '../../../cube/cube.models';
 
 /** OLLケース生成時に必要な元データ。 */
 interface OllCaseDefinition {
@@ -20,7 +20,7 @@ interface OllCaseDefinition {
  * @param definition OLLケースの元データ
  * @returns 種別と表示用のケース名を補完したケース
  */
-export function defineOllCase(definition: OllCaseDefinition): AlgorithmCase {
+export function defineOllCase(definition: OllCaseDefinition): LastLayerAlgorithmCase {
   return {
     kind: 'OLL',
     number: definition.number,

@@ -140,7 +140,7 @@ describe('algorithm cases', () => {
 });
 
 /** @returns ケース種別と識別子を結合したテスト表示用のキー */
-function itemKey(item: import('../cube/cube.models').AlgorithmCase): string {
+function itemKey(item: import('../cube/cube.models').LastLayerAlgorithmCase): string {
   return `${item.kind} ${item.number}`;
 }
 

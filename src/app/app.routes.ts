@@ -13,8 +13,8 @@ export const routes: Routes = [
   },
   {
     path: 'algorithms/f2l',
-    data: { titleKey: 'routes.algorithms' },
-    loadComponent: () => import('./features/algorithms/f2l/f2l').then(({ F2l }) => F2l),
+    data: { kind: 'F2L', titleKey: 'routes.algorithms' },
+    loadComponent: loadAlgorithms,
   },
   {
     path: 'algorithms/oll',

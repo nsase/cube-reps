@@ -133,5 +133,11 @@ test('F2Lの41カードを最後まで閲覧できる', { tag: '@responsive' }, 
   await expect(cards.last().getByText("R U R'", { exact: true })).toBeVisible();
   await expect(cards.last().getByText("R U' R'", { exact: true })).toBeVisible();
   await expectResponsiveLayout(page, 'app-f2l-case-card');
+  const search = page.locator('app-algorithm-tools input');
+  await search.fill('41');
+  await expect(cards).toHaveCount(1);
+  await expect(cards.getByRole('heading')).toHaveText('F2L 41');
+  await search.clear();
+  await expect(cards).toHaveCount(41);
   await expectNoHorizontalOverflow(page);
 });

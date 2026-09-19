@@ -7,7 +7,7 @@ import { routes } from '../../app.routes';
 import { AlgorithmSelection } from './algorithm-selection/algorithm-selection';
 import { AlgorithmChoice } from './algorithm-choice/algorithm-choice';
 import { AlgorithmKindLinks } from './algorithm-kind-links/algorithm-kind-links';
-import { F2l } from './f2l/f2l';
+import { Algorithms } from './algorithms';
 
 describe('Algorithm navigation', () => {
   beforeEach(() => {
@@ -42,7 +42,7 @@ describe('Algorithm navigation', () => {
 
   it('F2LのURLを直接開き、他の種類への切り替えを表示する', async () => {
     const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/algorithms/f2l', F2l);
+    await harness.navigateByUrl('/algorithms/f2l', Algorithms);
     expect(harness.routeNativeElement!.querySelector('h2')!.textContent).toBe('F2L');
     expect(harness.routeNativeElement!.querySelectorAll('button')).toHaveLength(3);
     expect(
