@@ -116,10 +116,11 @@
       "oll": "Orient the last layer. Browse 57 cases.",
       "pll": "Permute the last layer. Browse 21 cases."
     },
-    "f2lNotice": "Browse 41 F2L cases. Solve and Setup are dummy algorithms and do not represent each case yet. The diagram is a temporary top-layer view generated from the dummy Setup.",
+    "f2lNotice": "Browse 41 F2L cases. Some Solve and Setup algorithms are still placeholders. The quarter view shows the Setup state, with last-layer pieces in gray.",
     "dummy": "Dummy",
     "solve": "Solve",
-    "setup": "Setup"
+    "setup": "Setup",
+    "quarterPattern": "Quarter view for F2L {{name}}: top, front, and right faces"
   },
   "history": {
     "unclassified": "Unclassified",

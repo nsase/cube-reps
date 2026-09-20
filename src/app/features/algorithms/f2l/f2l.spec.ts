@@ -4,7 +4,7 @@ import { firstValueFrom, of } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
 import { F2L_CASES } from '../../../core/algorithm/algorithm-cases/f2l';
 import { AlgorithmLibraryService } from '../../../core/algorithm/algorithm-library';
-import { topLayerPatternFromScramble } from '../../../core/cube/cube-state';
+import { f2lQuarterPatternFromScramble } from '../../../core/cube/cube-state';
 import { ConfirmService } from '../../../shared/confirm-dialog/confirm.service';
 import { Algorithms } from '../algorithms';
 import { AlgorithmCaseCard } from '../algorithm-case-card/algorithm-case-card';
@@ -19,22 +19,26 @@ describe('F2L共通カード', () => {
     }),
   );
 
-  it('41ケースを共通カードで番号順に表示し、グループと仮の上面図を表示する', async () => {
+  it('41ケースを共通カードで番号順に表示し、グループとクォータービューを表示する', async () => {
     const fixture = TestBed.createComponent(Algorithms);
     await fixture.whenStable();
     const cards = (fixture.nativeElement as HTMLElement).querySelectorAll(
       'app-algorithm-case-card',
     );
     expect(cards).toHaveLength(41);
+    expect(fixture.nativeElement.querySelectorAll('app-cube-quarter-view')).toHaveLength(41);
+    expect(fixture.nativeElement.querySelector('app-cube-pattern')).toBeNull();
     expect(Array.from(cards, (card) => card.querySelector('h2')!.textContent)).toEqual(
       F2L_CASES.map(({ name }) => name),
     );
     expect(Array.from(cards, (card) => card.querySelector('p')!.textContent)).toEqual(
       F2L_CASES.map(({ group }) => group),
     );
-    const expected = topLayerPatternFromScramble(F2L_CASES[0].setup);
-    const sticker = cards[0].querySelector<HTMLElement>('[data-x="1"][data-y="0"]')!;
-    expect(sticker.dataset['color']).toBe(expected[0][1]);
+    const expected = f2lQuarterPatternFromScramble(F2L_CASES[0].setup);
+    const sticker = cards[0].querySelector<SVGElement>(
+      '[data-face="F"] [data-row="1"][data-column="1"]',
+    )!;
+    expect(sticker.dataset['color']).toBe(expected.F[1][1]);
   });
 
   it('共通の検索欄で番号・グループを絞り込み、該当なしと検索解除を表示する', async () => {
@@ -62,13 +66,16 @@ describe('F2L共通カード', () => {
     const fixture = TestBed.createComponent(Algorithms);
     const i18n = TestBed.inject(TranslocoService);
     for (const [lang, notice, copyLabel] of [
-      ['ja', '仮の上面図', '手順をコピー'],
-      ['en', 'temporary top-layer view', 'Copy algorithm'],
+      ['ja', '最終層のピースを灰色', '手順をコピー'],
+      ['en', 'last-layer pieces in gray', 'Copy algorithm'],
     ]) {
       await firstValueFrom(i18n.load(lang));
       i18n.setActiveLang(lang);
       await fixture.whenStable();
       expect(fixture.nativeElement.textContent).toContain(notice);
+      expect(
+        fixture.nativeElement.querySelector('app-cube-quarter-view').getAttribute('aria-label'),
+      ).toContain(lang === 'ja' ? 'クォータービュー' : 'Quarter view');
       expect(
         fixture.nativeElement.querySelector(`button[aria-label="${copyLabel}"]`),
       ).not.toBeNull();
