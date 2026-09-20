@@ -23,7 +23,6 @@ export function defineF2lCase(definition: F2lCaseDefinition): F2lAlgorithmCase {
   return {
     kind: 'F2L',
     number: definition.number,
-    name: definition.number,
     group: definition.group,
     slot: definition.slot,
     setup: definition.setup,
