@@ -128,15 +128,21 @@ export function cubeFacesFromScramble(
 export function f2lQuarterPatternFromScramble(scramble: string): CubeQuarterPattern {
   const stickers = createSolvedStickers('yellow-top');
   for (const move of parseAlgorithm(scramble)) applyMove(stickers, move);
+  // F2Lは下2レイヤーが対象のため、ラストレイヤー（LL）は色を表示する必要がない。
+  // 黄色（U面）を含むピースの色を'none'にして描画対象外とするため、まずは該当するピースの位置を特定する。
   const lastLayerPositions = new Set(
     stickers.filter(({ color }) => color === 'yellow').map(({ position }) => position.join(',')),
   );
+
+  // 描画される、U, F, R面のデータを色なしで初期化する
   const pattern = Object.fromEntries(
-    (['U', 'F', 'R'] as const).map((face) => [
+    ['U', 'F', 'R'].map((face) => [
       face,
       Array.from({ length: 3 }, () => Array<StickerColor>(3).fill('none')),
     ]),
   ) as Record<'U' | 'F' | 'R', StickerColor[][]>;
+
+  // ステッカーを描画データに反映する。ラストレイヤーは反映せずnoneのままにする
   for (const sticker of stickers) {
     const face = faceForNormal(sticker.normal);
     if (face !== 'U' && face !== 'F' && face !== 'R') continue;
