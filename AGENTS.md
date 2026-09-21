@@ -40,6 +40,9 @@
 
 ## Angular Material
 
+- UI部品は原則としてAngular Materialを使用する。対応するコンポーネントがある場合は、それを優先する。
+- カードには`MatCardModule`の`mat-card`を使用する。
+- 選択肢をまとめて切り替えるボタングループには、`MatButtonToggleModule`の`mat-button-toggle-group`と`mat-button-toggle`を使用する。
 - Angular Materialのディレクティブを使用するコンポーネントでは、対応するModuleを明示的に`imports`へ追加する。
 - `mat-icon-button`を使用する場合は、`MatButtonModule`と`MatIconModule`をimportする。
 - ボタンには可能な限り`mat-button`、`mat-flat-button`、`mat-icon-button`を使用する。
