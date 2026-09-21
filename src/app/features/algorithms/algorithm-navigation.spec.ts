@@ -41,12 +41,15 @@ describe('Algorithm navigation', () => {
   it('F2LのURLを直接開き、他の種類への切り替えを表示する', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/algorithms/f2l', Algorithms);
+    await harness.fixture.whenStable();
     expect(harness.routeNativeElement!.querySelector('h2')!.textContent).toBe('F2L');
     expect(
       harness.routeNativeElement!.querySelectorAll('app-algorithm-kind-links button'),
     ).toHaveLength(3);
     expect(
-      harness.routeNativeElement!.querySelector('button[aria-checked="true"]')!.textContent,
+      harness.routeNativeElement!.querySelector(
+        'app-algorithm-kind-links button[aria-checked="true"]',
+      )!.textContent,
     ).toContain('F2L');
   });
 
@@ -58,10 +61,10 @@ describe('Algorithm navigation', () => {
     expect(fixture.nativeElement.textContent).toContain('57');
   });
 
-  it('共通の切り替えボタンでOLLとPLLへ移動する', async () => {
+  it('共通の切り替えボタンでOLL・PLL・F2Lへ移動する', async () => {
     const fixture = TestBed.createComponent(AlgorithmKindLinks);
     await fixture.whenStable();
-    for (const kind of ['oll', 'pll']) {
+    for (const kind of ['oll', 'pll', 'f2l']) {
       const link = Array.from(
         (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('button'),
       ).find((button) => button.textContent?.includes(kind.toUpperCase()))!;
@@ -69,6 +72,20 @@ describe('Algorithm navigation', () => {
       await fixture.whenStable();
       expect(TestBed.inject(Router).url).toBe(`/algorithms/${kind}`);
       expect(link.getAttribute('aria-checked')).toBe('true');
+    }
+  });
+
+  it('外部からのルート変更でも種別グループの選択を同期する', async () => {
+    const fixture = TestBed.createComponent(AlgorithmKindLinks);
+    await fixture.whenStable();
+    for (const kind of ['pll', 'f2l', 'oll']) {
+      await TestBed.inject(Router).navigateByUrl(`/algorithms/${kind}`);
+      await fixture.whenStable();
+      const selected = (fixture.nativeElement as HTMLElement).querySelectorAll(
+        'button[aria-checked="true"]',
+      );
+      expect(selected).toHaveLength(1);
+      expect(selected[0].textContent).toContain(kind.toUpperCase());
     }
   });
 });

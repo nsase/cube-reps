@@ -264,10 +264,16 @@ test('種別グループをキーボードで切り替え、履歴移動でも�
   await expect(f2l).toBeChecked();
   await f2l.focus();
   await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/algorithms\/oll$/);
   await expect(types.getByRole('radio', { name: 'OLL 57', exact: true })).toBeChecked();
   await page.goBack();
+  await expect(page).toHaveURL(/\/algorithms\/f2l$/);
   await expect(f2l).toBeChecked();
+  await expect(types.getByRole('radio', { name: 'OLL 57', exact: true })).not.toBeChecked();
+  await page.goForward();
+  await expect(page).toHaveURL(/\/algorithms\/oll$/);
+  await expect(types.getByRole('radio', { name: 'OLL 57', exact: true })).toBeChecked();
 });
 
 test(

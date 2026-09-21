@@ -1,11 +1,26 @@
 <mat-button-toggle-group [attr.aria-label]="'nav.algorithms' | transloco">
-  <mat-button-toggle value="f2l" routerLink="/algorithms/f2l" routerLinkActive="on"
+  <mat-button-toggle
+    value="f2l"
+    routerLink="/algorithms/f2l"
+    routerLinkActive="on"
+    #f2lLink="routerLinkActive"
+    [checked]="f2lLink.isActive"
     >F2L <small>41</small></mat-button-toggle
   >
-  <mat-button-toggle value="oll" routerLink="/algorithms/oll" routerLinkActive="on"
+  <mat-button-toggle
+    value="oll"
+    routerLink="/algorithms/oll"
+    routerLinkActive="on"
+    #ollLink="routerLinkActive"
+    [checked]="ollLink.isActive"
     >OLL <small>57</small></mat-button-toggle
   >
-  <mat-button-toggle value="pll" routerLink="/algorithms/pll" routerLinkActive="on"
+  <mat-button-toggle
+    value="pll"
+    routerLink="/algorithms/pll"
+    routerLinkActive="on"
+    #pllLink="routerLinkActive"
+    [checked]="pllLink.isActive"
     >PLL <small>21</small></mat-button-toggle
   >
 </mat-button-toggle-group>
