@@ -7,6 +7,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 import { Capacitor } from '@capacitor/core';
 import { provideTransloco } from '@jsverse/transloco';
 
+import { MAT_BUTTON_TOGGLE_DEFAULT_OPTIONS } from '@angular/material/button-toggle';
 import { routes } from './app.routes';
 import { AuthGateway, FirebaseAuthGateway } from './core/auth/auth.gateway';
 import { FirestoreSyncService } from './core/firestore/firestore-sync.service';
@@ -39,6 +40,13 @@ export const appConfig: ApplicationConfig = {
     }),
     { provide: AuthGateway, useExisting: FirebaseAuthGateway },
     { provide: UserDataRepository, useClass: IndexedDbUserDataRepository },
+    {
+      provide: MAT_BUTTON_TOGGLE_DEFAULT_OPTIONS,
+      useValue: {
+        hideSingleSelectionIndicator: true,
+        hideMultipleSelectionIndicator: true,
+      },
+    },
     {
       provide: MAT_ICON_DEFAULT_OPTIONS,
       useValue: { fontSet: 'material-symbols-outlined' },
