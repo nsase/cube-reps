@@ -14,6 +14,7 @@ describe('Algorithm navigation', () => {
     TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
   });
 
+  // 全41ケースの実手順とMaterialボタンを描画するため、並列実行時の余裕を持たせる。
   it('選択画面の言語変更を反映し、F2Lページへ移動する', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/algorithms', AlgorithmSelection);
@@ -35,7 +36,7 @@ describe('Algorithm navigation', () => {
     await harness.fixture.whenStable();
     expect(TestBed.inject(Router).url).toBe('/algorithms/f2l');
     expect(harness.routeNativeElement!.textContent).toContain('F2Lの41ケース');
-  });
+  }, 15000);
 
   it('F2LのURLを直接開き、他の種類への切り替えを表示する', async () => {
     const harness = await RouterTestingHarness.create();

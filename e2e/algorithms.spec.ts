@@ -136,14 +136,14 @@ test('F2Lの41カードを最後まで閲覧できる', { tag: '@responsive' }, 
   await page.goto('/#/algorithms/f2l');
   const cards = page.locator('app-algorithm-case-card');
   await expect(cards).toHaveCount(41);
-  await expect(cards.first().getByRole('heading')).toHaveText('01');
+  await expect(cards.first().locator('.number > .number')).toHaveText('01');
   await expect(
     cards
       .first()
       .getByRole('img', { name: 'Quarter view for F2L 01: top, front, and right faces' }),
   ).toBeVisible();
   await cards.last().scrollIntoViewIfNeeded();
-  await expect(cards.last().getByRole('heading')).toHaveText('41');
+  await expect(cards.last().locator('.number > .number')).toHaveText('41');
   await expect(
     cards.last().getByRole('img', { name: 'Quarter view for F2L 41: top, front, and right faces' }),
   ).toBeVisible();
@@ -157,11 +157,44 @@ test('F2Lの41カードを最後まで閲覧できる', { tag: '@responsive' }, 
   const search = page.locator('app-algorithm-tools input');
   await search.fill('41');
   await expect(cards).toHaveCount(1);
-  await expect(cards.getByRole('heading')).toHaveText('41');
+  await expect(cards.locator('.number > .number')).toHaveText('41');
   await search.clear();
   await expect(cards).toHaveCount(41);
   await expectNoHorizontalOverflow(page);
 });
+
+test(
+  'F2Lの4スロットでSetupと手順を切り替え、お気に入りを分けて保存する',
+  { tag: '@responsive' },
+  async ({ page }) => {
+    await page.goto('/#/algorithms/f2l');
+    await page.locator('app-algorithm-tools input').fill('01');
+    const card = page.locator('app-algorithm-case-card');
+    const custom = 'R2 U2 R2 U2 R2 U2';
+    const frSetup = await card.locator('.setup').innerText();
+    for (const [slot, rotation] of [
+      ['FL', 'y'],
+      ['BL', 'y2'],
+      ['BR', "y'"],
+    ] as const) {
+      await card.getByRole('button', { name: slot, exact: true }).click();
+      await expect(card.locator('.setup')).toHaveText(`${frSetup.trim()} ${rotation}`);
+      await expect(card.locator('app-algorithm-row').first()).toBeVisible();
+      await expectNoHorizontalOverflow(page);
+    }
+    await card.getByRole('button', { name: 'BL', exact: true }).click();
+    await card.getByPlaceholder('Enter a new algorithm').fill(custom);
+    await card.getByRole('button', { name: 'Add', exact: true }).click();
+    const customRow = card.locator('app-algorithm-row').filter({ hasText: custom });
+    await customRow.getByRole('button', { name: 'Set as favorite', exact: true }).click();
+    await card.getByRole('button', { name: 'FR', exact: true }).click();
+    await expect(customRow).toHaveCount(0);
+    await page.reload();
+    await page.locator('app-algorithm-tools input').fill('01');
+    await card.getByRole('button', { name: 'BL', exact: true }).click();
+    await expect(card.locator('.favorite-algorithm code')).toHaveText(custom);
+  },
+);
 
 test('F2Lの共通カードで手順とお気に入りを保存し、再読込後に削除できる', async ({ page }) => {
   await page.goto('/#/algorithms/f2l');

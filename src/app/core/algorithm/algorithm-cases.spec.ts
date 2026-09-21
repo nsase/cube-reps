@@ -20,7 +20,10 @@ describe('algorithm cases', () => {
   it('provides algorithms and nine yellow stickers for every OLL case', () => {
     for (const item of OLL_CASES) {
       expect(item.kind).toBe('OLL');
-      expect(item.name.length).toBeGreaterThan(0);
+      /** ケース名は省略可能だが、指定された場合は空でないことを確認する。 */
+      if (item.name !== undefined) {
+        expect(item.name.trim().length).toBeGreaterThan(0);
+      }
       expect(item.algorithms.length).toBeGreaterThan(0);
       const pattern = topLayerOrientationPatternFromScramble(item.setup);
       const yellowCount = pattern.flat().filter((color) => color === 'yellow').length;

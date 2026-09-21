@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { firstValueFrom, of } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
+import { f2lCaseForSlot } from '../../../core/algorithm/algorithm-cases/f2l/f2l-case';
 import { F2L_CASES } from '../../../core/algorithm/algorithm-cases/f2l';
 import { AlgorithmLibraryService } from '../../../core/algorithm/algorithm-library';
 import { f2lQuarterPatternFromScramble } from '../../../core/cube/cube-state';
@@ -19,6 +20,7 @@ describe('F2L共通カード', () => {
     }),
   );
 
+  // 全41ケースの実手順とMaterialボタンを描画するため、並列実行時の余裕を持たせる。
   it('41ケースを共通カードで番号順に表示し、グループとクォータービューを表示する', async () => {
     const fixture = TestBed.createComponent(Algorithms);
     await fixture.whenStable();
@@ -28,17 +30,49 @@ describe('F2L共通カード', () => {
     expect(cards).toHaveLength(41);
     expect(fixture.nativeElement.querySelectorAll('app-cube-quarter-view')).toHaveLength(41);
     expect(fixture.nativeElement.querySelector('app-cube-pattern')).toBeNull();
-    expect(Array.from(cards, (card) => card.querySelector('h2')!.textContent)).toEqual(
-      F2L_CASES.map(({ name }) => name),
-    );
-    expect(Array.from(cards, (card) => card.querySelector('p')!.textContent)).toEqual(
+    expect(
+      Array.from(cards, (card) => card.querySelector('.number > .number')!.textContent),
+    ).toEqual(F2L_CASES.map(({ number }) => number));
+    expect(Array.from(cards, (card) => card.querySelector('.group')!.textContent)).toEqual(
       F2L_CASES.map(({ group }) => group),
     );
+    /** 名前を省略したケースでは、番号と重複する名前欄を表示しない。 */
+    expect(fixture.nativeElement.querySelector('.name')).toBeNull();
     const expected = f2lQuarterPatternFromScramble(F2L_CASES[0].setup);
     const sticker = cards[0].querySelector<SVGElement>(
       '[data-face="F"] [data-row="1"][data-column="1"]',
     )!;
     expect(sticker.dataset['color']).toBe(expected.F[1][1]);
+  }, 15000);
+
+  it('4スロットを切り替えてSetup・手順・お気に入りを独立して操作する', async () => {
+    const fixture = TestBed.createComponent(AlgorithmCaseCard);
+    fixture.componentRef.setInput('item', F2L_CASES[0]);
+    const library = TestBed.inject(AlgorithmLibraryService);
+    await library.ready;
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    for (const slot of ['FR', 'FL', 'BL', 'BR'] as const) {
+      const button = Array.from(element.querySelectorAll<HTMLButtonElement>('.slots button')).find(
+        (button) => button.textContent?.trim() === slot,
+      )!;
+      button.click();
+      await fixture.whenStable();
+      const data = f2lCaseForSlot(F2L_CASES[0], slot);
+      expect(button.getAttribute('aria-pressed')).toBe('true');
+      expect(element.querySelector('.setup')!.textContent).toContain(data.setup);
+      expect(
+        Array.from(element.querySelectorAll('app-algorithm-row code'), (row) =>
+          row.textContent?.trim(),
+        ),
+      ).toEqual(data.algorithms.map(({ notation }) => notation));
+      const projected = f2lCaseForSlot(F2L_CASES[0], slot);
+      library.add(projected, 'R2 U2 R2');
+      const custom = library.algorithmsFor(projected).find(({ builtIn }) => !builtIn)!;
+      library.setFavorite(projected, custom.id);
+      await fixture.whenStable();
+      expect(element.querySelector('.favorite-algorithm code')!.textContent).toBe('R2 U2 R2');
+    }
   });
 
   it('共通の検索欄で番号・グループを絞り込み、該当なしと検索解除を表示する', async () => {
@@ -57,12 +91,14 @@ describe('F2L共通カード', () => {
       await fixture.whenStable();
       const cards = element.querySelectorAll('app-algorithm-case-card');
       expect(cards).toHaveLength(count);
-      if (query === '41') expect(cards[0].querySelector('h2')!.textContent).toBe('41');
+      if (query === '41') {
+        expect(cards[0].querySelector('.number > .number')!.textContent).toBe('41');
+      }
       if (count === 0) expect(element.querySelector('.empty')).not.toBeNull();
     }
   });
 
-  it('ダミーの案内と共通カードの操作ラベルを言語切替に追従させる', async () => {
+  it('F2Lの案内と共通カードの操作ラベルを言語切替に追従させる', async () => {
     const fixture = TestBed.createComponent(Algorithms);
     const i18n = TestBed.inject(TranslocoService);
     for (const [lang, notice, copyLabel] of [
@@ -73,6 +109,9 @@ describe('F2L共通カード', () => {
       i18n.setActiveLang(lang);
       await fixture.whenStable();
       expect(fixture.nativeElement.textContent).toContain(notice);
+      expect(fixture.nativeElement.querySelector('.slots').getAttribute('aria-label')).toBe(
+        lang === 'ja' ? 'スロット' : 'Slot',
+      );
       expect(
         fixture.nativeElement.querySelector('app-cube-quarter-view').getAttribute('aria-label'),
       ).toContain(lang === 'ja' ? 'クォータービュー' : 'Quarter view');
@@ -86,7 +125,7 @@ describe('F2L共通カード', () => {
     const fixture = TestBed.createComponent(AlgorithmCaseCard);
     // 組み込み手順の追加・修正に左右されず、カードの操作契約を検証する。
     const item = {
-      ...F2L_CASES[0],
+      ...f2lCaseForSlot(F2L_CASES[0], 'FR'),
       algorithms: [{ id: 'test-built-in', notation: "R U R'", builtIn: true }],
     };
     fixture.componentRef.setInput('item', item);

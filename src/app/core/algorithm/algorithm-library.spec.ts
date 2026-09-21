@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { f2lCaseForSlot } from './algorithm-cases/f2l/f2l-case';
 import { F2L_CASES, PLL_CASES } from './algorithm-cases';
 import { UserDataRepository } from '../local-storage/user-data-repository';
 import { AlgorithmLibraryService } from './algorithm-library';
@@ -20,15 +21,21 @@ describe('AlgorithmLibraryService', () => {
     const service = createService();
     expect(service.caseKey(item)).toBe(`${item.kind}-${item.number}`);
     for (const slot of ['FL', 'FR', 'BL', 'BR'] as const) {
-      expect(service.caseKey({ ...F2L_CASES[0], slot })).toBe(`F2L-01-${slot}`);
-      expect(service.caseKey({ ...F2L_CASES[0], number: '01', slot })).toBe(`F2L-01-${slot}`);
-      expect(service.caseKey({ ...F2L_CASES[40], slot })).toBe(`F2L-41-${slot}`);
+      expect(service.caseKey({ ...f2lCaseForSlot(F2L_CASES[0], slot), slot })).toBe(
+        `F2L-01-${slot}`,
+      );
+      expect(service.caseKey({ ...f2lCaseForSlot(F2L_CASES[0], slot), number: '01', slot })).toBe(
+        `F2L-01-${slot}`,
+      );
+      expect(service.caseKey({ ...f2lCaseForSlot(F2L_CASES[40], slot), slot })).toBe(
+        `F2L-41-${slot}`,
+      );
     }
   });
 
   it('スロット未指定のF2Lを曖昧なキーで保存しない', () => {
     const service = createService();
-    const { slot, ...item } = F2L_CASES[0];
+    const { slot, ...item } = f2lCaseForSlot(F2L_CASES[0], 'FR');
     expect(() => service.caseKey(item)).toThrow('F2L case requires a valid slot');
   });
 

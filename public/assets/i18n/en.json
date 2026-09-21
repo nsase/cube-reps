@@ -112,11 +112,12 @@
     "removeTitle": "Delete custom algorithm?",
     "removeMessage": "Delete algorithm “{{notation}}” from {{kind}} {{number}}?\nThis action cannot be undone.",
     "selection": {
-      "f2l": "Pair and insert first two layer pieces. Browse 41 cases with dummy algorithms.",
+      "f2l": "Pair and insert first two layer pieces. Browse algorithms for all four slots in 41 cases.",
       "oll": "Orient the last layer. Browse 57 cases.",
       "pll": "Permute the last layer. Browse 21 cases."
     },
-    "f2lNotice": "Browse 41 F2L cases. Some Solve and Setup algorithms are still placeholders. The quarter view shows the Setup state, with last-layer pieces in gray.",
+    "slot": "Slot",
+    "f2lNotice": "Browse 41 F2L cases and switch between FR, FL, BL, and BR to view each slot’s Setup and algorithms. The quarter view shows the Setup state, with last-layer pieces in gray.",
     "solve": "Solve",
     "setup": "Setup",
     "quarterPattern": "Quarter view for F2L {{name}}: top, front, and right faces"

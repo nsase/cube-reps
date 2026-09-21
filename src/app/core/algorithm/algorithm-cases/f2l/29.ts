@@ -1,10 +1,88 @@
 import { defineF2lCase } from './f2l-case';
 
-/** F2L 29のケース定義。Solve・Setupは画面構築用のダミー。 */
+/** F2L 29のFR基準の共通Setupと4スロット分の組み込み手順。 */
+// SpeedCube 30
+// CubeRoot L+
 export const F2L_29_CASE = defineF2lCase({
   number: '29',
   group: 'Corner in Slot',
-  slot: 'FR',
-  setup: "R U' R'",
-  algorithms: [{ id: '54445579-3c40-432d-a1f7-c45311067f78-dummy', notation: "R U R'" }],
+  setup: "R U' R' U R U' R'",
+  slots: {
+    FR: {
+      algorithms: [
+        {
+          id: 'e0cdd1a4-2e1e-41fd-8476-0d5faa353718',
+          notation: "R U R' U' R U R'",
+        },
+        {
+          id: '6c48390f-e3a0-489c-ae07-702545c50603',
+          notation: "U' R U2 R' U2 R U R'",
+        },
+        {
+          id: '1b0906b3-44ba-4173-b30a-00f8eb8265ae',
+          notation: "U' F R' F' R2 U R'",
+        },
+        {
+          id: '3137be82-c1c6-4e63-8032-9570c6df5de6',
+          notation: "U2 F' U F R U R'",
+        },
+      ],
+    },
+    FL: {
+      algorithms: [
+        {
+          id: '5b841e8e-5b9a-4521-b534-6ff3585e2d7a',
+          notation: "L F' L' F U' L' U L",
+        },
+        {
+          id: '8c40eef1-942d-4e4a-8706-837a56596de0',
+          notation: "y' R U R' U' R U R'",
+        },
+        {
+          id: 'fd199936-efbb-498a-9c4c-85bbfecffdd7',
+          notation: "U' F U' R U2 R' F'",
+        },
+        {
+          id: 'adcec8a6-7065-4d92-b6b9-eefd6d7b61e9',
+          notation: "y L U L' U' L U L'",
+        },
+        {
+          id: '1a553443-c416-4557-81b9-13b0b2564fa7',
+          notation: "L F' L' F L F' L' F",
+        },
+      ],
+    },
+    BL: {
+      algorithms: [
+        {
+          id: 'ad721ea5-fc02-4f15-8c32-edc4ad50023b',
+          notation: "L U L' U' L U L'",
+        },
+        {
+          id: '9c833468-0cb5-4c2e-84d1-2b75fe808f01',
+          notation: "U' L U2 L' U2 L U L'",
+        },
+      ],
+    },
+    BR: {
+      algorithms: [
+        {
+          id: 'ed690088-a35d-4d53-8bf3-c4d315a16bc9',
+          notation: "y' L U L' U' L U L'",
+        },
+        {
+          id: '1fb086b2-d8be-4b1e-953d-6694657df3eb',
+          notation: "Fw R Fw' U' Fw R Fw'",
+        },
+        {
+          id: '938f3eb6-bf27-4522-bc28-abc628ddfce1',
+          notation: "U2 R' U R Fw R Fw'",
+        },
+        {
+          id: '2f39c05a-e075-4731-bb27-70c194e4fbba',
+          notation: "y R U R' U' R U R'",
+        },
+      ],
+    },
+  },
 });
