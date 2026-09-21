@@ -33,12 +33,3 @@ mat-card-title {
     font-weight: normal;
   }
 }
-
-.slots {
-  max-width: 100%;
-  --mat-button-toggle-label-text-size: 12px;
-
-  ::ng-deep .mat-button-toggle-label-content {
-    padding-inline: 8px;
-  }
-}

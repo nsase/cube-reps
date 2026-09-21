@@ -236,7 +236,13 @@ test('iPhone SE幅で4スロット名を1行に表示し、すべて選択でき
   await page.locator('app-algorithm-tools input').fill('01');
   const slots = page.locator('app-algorithm-case-card .slots');
   const buttons = slots.getByRole('radio');
-  await expect(buttons).toHaveText(['Front Right', 'Front Left', 'Back Left', 'Back Right']);
+  await expect(slots.locator('.full-label:visible')).toHaveText([
+    'Front Right',
+    'Front Left',
+    'Back Left',
+    'Back Right',
+  ]);
+  await expect(slots.locator('.short-label:visible')).toHaveCount(0);
   const bounds = await slots.boundingBox();
   const content = await page.locator('app-algorithm-case-card mat-card-content').boundingBox();
   expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(content!.x + content!.width);
@@ -263,3 +269,33 @@ test('種別グループをキーボードで切り替え、履歴移動でも�
   await page.goBack();
   await expect(f2l).toBeChecked();
 });
+
+test(
+  'カード幅に応じてスロット名を切り替え、選択した手順を維持する',
+  { tag: '@responsive' },
+  async ({ page }) => {
+    await page.goto('/#/algorithms/f2l');
+    await page.locator('app-algorithm-tools input').fill('01');
+    const card = page.locator('app-algorithm-case-card');
+    const slots = card.locator('app-slot-button-group');
+    await slots.getByRole('radio', { name: 'Back Left', exact: true }).click();
+    const setup = await card.locator('.setup').innerText();
+    for (const width of [375, 640, 1440, 640, 375]) {
+      await page.setViewportSize({ width, height: 900 });
+      const compact = width === 640;
+      await expect(slots.locator('.short-label:visible')).toHaveCount(compact ? 4 : 0);
+      await expect(slots.locator('.full-label:visible')).toHaveCount(compact ? 0 : 4);
+      await expect(
+        slots.locator(compact ? '.short-label:visible' : '.full-label:visible'),
+      ).toHaveText(
+        compact
+          ? ['FR', 'FL', 'BL', 'BR']
+          : ['Front Right', 'Front Left', 'Back Left', 'Back Right'],
+      );
+      await expect(slots.getByRole('radio', { name: 'Back Left', exact: true })).toBeChecked();
+      await expect(card.locator('.setup')).toHaveText(setup);
+      await expectElementsWithin(page, 'app-slot-button-group', 'app-slot-button-group button');
+      await expectNoHorizontalOverflow(page);
+    }
+  },
+);

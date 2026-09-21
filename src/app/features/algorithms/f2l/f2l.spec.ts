@@ -59,7 +59,7 @@ describe('F2L共通カード', () => {
       ['BR', 'Back Right'],
     ] as const) {
       const button = Array.from(element.querySelectorAll<HTMLButtonElement>('.slots button')).find(
-        (button) => button.textContent?.trim() === label,
+        (button) => button.getAttribute('aria-label') === label,
       )!;
       button.click();
       await fixture.whenStable();
@@ -120,7 +120,7 @@ describe('F2L共通カード', () => {
           (fixture.nativeElement as HTMLElement)
             .querySelector('.slots')!
             .querySelectorAll('button'),
-          (button) => button.textContent?.trim(),
+          (button) => button.getAttribute('aria-label'),
         ),
       ).toEqual(['Front Right', 'Front Left', 'Back Left', 'Back Right']);
       expect(fixture.nativeElement.querySelector('.slots').getAttribute('aria-label')).toBe(

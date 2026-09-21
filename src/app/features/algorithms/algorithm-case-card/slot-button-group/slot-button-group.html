@@ -1,0 +1,14 @@
+<mat-button-toggle-group
+  class="slots"
+  [(ngModel)]="slot"
+  [attr.aria-label]="'algorithms.slot' | transloco"
+>
+  @for (position of slots; track position) {
+    <mat-button-toggle [value]="position" [aria-label]="'algorithms.slots.' + position | transloco">
+      <span class="full-label" aria-hidden="true">{{
+        'algorithms.slots.' + position | transloco
+      }}</span>
+      <span class="short-label" aria-hidden="true">{{ position }}</span>
+    </mat-button-toggle>
+  }
+</mat-button-toggle-group>

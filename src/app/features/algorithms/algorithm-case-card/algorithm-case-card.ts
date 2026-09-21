@@ -6,8 +6,7 @@ import {
   topLayerOrientationPatternFromScramble,
   topLayerPatternFromScramble,
 } from '../../../core/cube/cube-state';
-import { FormsModule } from '@angular/forms';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { SlotButtonGroup } from './slot-button-group/slot-button-group';
 import { f2lCaseForSlot } from '../../../core/algorithm/algorithm-cases/f2l/f2l-case';
 import { AlgorithmCase, F2lCase, F2lSlot } from '../../../core/cube/cube.models';
 import { CubeQuarterView } from '../../../shared/cube-quarter-view/cube-quarter-view';
@@ -18,8 +17,7 @@ import { AlgorithmPanel } from './algorithm-panel/algorithm-panel';
 @Component({
   selector: 'app-algorithm-case-card',
   imports: [
-    FormsModule,
-    MatButtonToggleModule,
+    SlotButtonGroup,
     MatCardModule,
     CubePatternView,
     CubeQuarterView,
@@ -36,8 +34,6 @@ export class AlgorithmCaseCard {
 
   /** このカードで表示・編集するスロット。 */
   protected readonly slot = signal<F2lSlot>('FR');
-  /** スロット選択肢の表示順。 */
-  protected readonly slots = ['FR', 'FL', 'BL', 'BR'] as const;
   /** 4スロットを持つケースに選択操作を表示する。 */
   protected readonly hasSlots = computed(() => 'slots' in this.item());
   /** 選択スロットの手順と保存キーを共通パネルへ渡す。 */

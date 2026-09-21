@@ -1,0 +1,29 @@
+:host {
+  display: block;
+  min-width: 0;
+  container: f2l-slots / inline-size;
+}
+
+.slots {
+  max-width: 100%;
+  --mat-button-toggle-label-text-size: 12px;
+
+  ::ng-deep .mat-button-toggle-label-content {
+    padding-inline: 8px;
+  }
+}
+
+.short-label {
+  display: none;
+}
+
+// 2カラム時も画面幅ではなく、カード内で実際に使える幅に合わせる。
+@container f2l-slots (max-width: 300px) {
+  .full-label {
+    display: none;
+  }
+
+  .short-label {
+    display: inline;
+  }
+}
