@@ -1,27 +1,34 @@
 $muted: var(--text-muted-color);
 
-.pattern {
+:host {
+  ::ng-deep .mat-mdc-card-header-text {
+    width: 100%;
+  }
+}
+
+mat-card-title {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto 1fr;
   gap: 12px;
-  margin: 10px 0;
+}
 
-  .group {
-    min-width: 0;
-    overflow-wrap: anywhere;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 4px;
+.info {
+  .number {
+    display: grid;
+    grid-template-columns: 1fr auto;
 
-    h2 {
-      margin: 0;
-      font-size: var(--font-size-base);
-    }
-
-    p {
-      margin: 0;
+    .group {
       color: $muted;
     }
+  }
+
+  .name {
+    font-size: var(--font-size-base);
+    font-weight: normal;
+  }
+
+  .setup {
+    font-size: var(--font-size-base);
+    font-weight: normal;
   }
 }

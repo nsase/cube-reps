@@ -22,7 +22,6 @@ export function definePllCase(definition: PllCaseDefinition): AlgorithmCase<'PLL
   return {
     kind: 'PLL',
     number: definition.number,
-    name: definition.number + '-perm',
     group: definition.group,
     setup: definition.setup,
     algorithms: definition.algorithms.map((algorithm) => ({ ...algorithm, builtIn: true })),

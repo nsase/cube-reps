@@ -97,7 +97,7 @@ export interface AlgorithmCase<Kind extends 'F2L' | 'OLL' | 'PLL' = 'F2L' | 'OLL
    * ケース名。複数の呼称がある場合は表示用に連結した文字列。
    * OLL: Sune, Bowtieなど, PLL: Aa-perm, T-permなど
    */
-  name: string;
+  name?: string;
   /**
    * ケースの分類名。
    * OLL: Dot, Small L Shape, T Shapeなど, PLL: Corner, Edge, Mixed
