@@ -46,7 +46,7 @@ describe('Algorithm navigation', () => {
       harness.routeNativeElement!.querySelectorAll('app-algorithm-kind-links button'),
     ).toHaveLength(3);
     expect(
-      harness.routeNativeElement!.querySelector('[aria-current="page"]')!.textContent,
+      harness.routeNativeElement!.querySelector('button[aria-checked="true"]')!.textContent,
     ).toContain('F2L');
   });
 
@@ -68,7 +68,7 @@ describe('Algorithm navigation', () => {
       link.click();
       await fixture.whenStable();
       expect(TestBed.inject(Router).url).toBe(`/algorithms/${kind}`);
-      expect(link.getAttribute('aria-current')).toBe('page');
+      expect(link.getAttribute('aria-checked')).toBe('true');
     }
   });
 });

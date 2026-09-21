@@ -46,26 +46,34 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
   });
 });
 
-test('OLL・PLL Drillではランダムをケース選択肢の先頭に表示する', async ({ page }) => {
-  await page.getByRole('button', { name: /OLL/ }).click();
-  const caseSelect = page.getByTestId('timer-drill-case-filter');
+test(
+  'OLL・PLL Drillではランダムをケース選択肢の先頭に表示する',
+  { tag: '@responsive' },
+  async ({ page }) => {
+    await page.getByRole('radio', { name: /OLL/ }).click();
+    const caseSelect = page.getByTestId('timer-drill-case-filter');
 
-  await expect(caseSelect.locator('option')).toHaveCount(58);
-  await expect(caseSelect.locator('option').first()).toHaveText(/ランダム|Random/);
-  await expect(caseSelect.locator('option:checked')).toHaveText(/ランダム|Random/);
-  await expect(page.getByTestId('timer-scramble-refresh')).toBeVisible();
+    await expect(caseSelect.locator('option')).toHaveCount(58);
+    await expect(caseSelect.locator('option').first()).toHaveText(/ランダム|Random/);
+    await expect(caseSelect.locator('option:checked')).toHaveText(/ランダム|Random/);
+    await expect(page.getByTestId('timer-scramble-refresh')).toBeVisible();
 
-  await caseSelect.selectOption({ index: 1 });
-  await expect(page.locator('app-timer-scramble p')).toHaveText("F R' F' R U2 F R' F' R2 U2 R'");
+    await caseSelect.selectOption({ index: 1 });
+    await expect(page.locator('app-timer-scramble p')).toHaveText("F R' F' R U2 F R' F' R2 U2 R'");
 
-  await expect(page.getByTestId('timer-scramble-refresh')).toBeHidden();
+    await expect(page.getByTestId('timer-scramble-refresh')).toBeHidden();
 
-  await page.getByRole('button', { name: /PLL/ }).click();
+    await page.getByRole('radio', { name: /PLL/ }).click();
 
-  await expect(caseSelect.locator('option')).toHaveCount(22);
-  await expect(caseSelect.locator('option:checked')).toHaveText(/ランダム|Random/);
-  await expect(page.getByTestId('timer-scramble-refresh')).toBeVisible();
-});
+    await expect(caseSelect.locator('option')).toHaveCount(22);
+    await expectResponsiveLayout(page, 'app-timer-settings .modes button');
+    await expectNoHorizontalOverflow(page);
+    await expect(caseSelect.locator('option:checked')).toHaveText(/ランダム|Random/);
+    await expect(page.getByTestId('timer-scramble-refresh')).toBeVisible();
+    await page.getByRole('radio', { name: /3×3/ }).click();
+    await expect(caseSelect).toBeHidden();
+  },
+);
 
 test('スクランブル再作成後のSpace操作でタイマーを開始する', async ({ page }) => {
   const refreshButton = page.getByTestId('timer-scramble-refresh');

@@ -35,11 +35,10 @@ mat-card-title {
 }
 
 .slots {
-  display: flex;
-  flex-wrap: wrap;
+  max-width: 100%;
+  --mat-button-toggle-label-text-size: 12px;
 
-  button[aria-pressed='true'] {
-    font-weight: 700;
-    text-decoration: underline;
+  ::ng-deep .mat-button-toggle-label-content {
+    padding-inline: 8px;
   }
 }

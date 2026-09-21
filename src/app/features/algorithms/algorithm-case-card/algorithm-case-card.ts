@@ -6,7 +6,8 @@ import {
   topLayerOrientationPatternFromScramble,
   topLayerPatternFromScramble,
 } from '../../../core/cube/cube-state';
-import { MatButtonModule } from '@angular/material/button';
+import { FormsModule } from '@angular/forms';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { f2lCaseForSlot } from '../../../core/algorithm/algorithm-cases/f2l/f2l-case';
 import { AlgorithmCase, F2lCase, F2lSlot } from '../../../core/cube/cube.models';
 import { CubeQuarterView } from '../../../shared/cube-quarter-view/cube-quarter-view';
@@ -17,7 +18,8 @@ import { AlgorithmPanel } from './algorithm-panel/algorithm-panel';
 @Component({
   selector: 'app-algorithm-case-card',
   imports: [
-    MatButtonModule,
+    FormsModule,
+    MatButtonToggleModule,
     MatCardModule,
     CubePatternView,
     CubeQuarterView,

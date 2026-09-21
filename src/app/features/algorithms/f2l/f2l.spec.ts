@@ -52,14 +52,20 @@ describe('F2L共通カード', () => {
     await library.ready;
     await fixture.whenStable();
     const element = fixture.nativeElement as HTMLElement;
-    for (const slot of ['FR', 'FL', 'BL', 'BR'] as const) {
+    for (const [slot, label] of [
+      ['FR', 'Front Right'],
+      ['FL', 'Front Left'],
+      ['BL', 'Back Left'],
+      ['BR', 'Back Right'],
+    ] as const) {
       const button = Array.from(element.querySelectorAll<HTMLButtonElement>('.slots button')).find(
-        (button) => button.textContent?.trim() === slot,
+        (button) => button.textContent?.trim() === label,
       )!;
       button.click();
       await fixture.whenStable();
       const data = f2lCaseForSlot(F2L_CASES[0], slot);
-      expect(button.getAttribute('aria-pressed')).toBe('true');
+      expect(button.getAttribute('aria-checked')).toBe('true');
+      expect(element.querySelectorAll('.slots button[aria-checked="true"]')).toHaveLength(1);
       expect(element.querySelector('.setup')!.textContent).toContain(data.setup);
       expect(
         Array.from(element.querySelectorAll('app-algorithm-row code'), (row) =>
@@ -109,6 +115,14 @@ describe('F2L共通カード', () => {
       i18n.setActiveLang(lang);
       await fixture.whenStable();
       expect(fixture.nativeElement.textContent).toContain(notice);
+      expect(
+        Array.from(
+          (fixture.nativeElement as HTMLElement)
+            .querySelector('.slots')!
+            .querySelectorAll('button'),
+          (button) => button.textContent?.trim(),
+        ),
+      ).toEqual(['Front Right', 'Front Left', 'Back Left', 'Back Right']);
       expect(fixture.nativeElement.querySelector('.slots').getAttribute('aria-label')).toBe(
         lang === 'ja' ? 'スロット' : 'Slot',
       );

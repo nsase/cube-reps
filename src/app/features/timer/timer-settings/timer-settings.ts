@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -11,7 +11,7 @@ import { TimerStore } from '../timer.store';
 /** 記録先、計測モード、PLL練習ケースを選択するコンポーネント。 */
 @Component({
   selector: 'app-timer-settings',
-  imports: [FormsModule, MatSelectModule, MatOptionModule, MatButtonModule, TranslocoPipe],
+  imports: [FormsModule, MatSelectModule, MatOptionModule, MatButtonToggleModule, TranslocoPipe],
   templateUrl: './timer-settings.html',
   styleUrl: './timer-settings.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
