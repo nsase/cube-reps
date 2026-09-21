@@ -4,6 +4,7 @@ $muted: var(--text-muted-color);
 :host {
   display: block;
   grid-column: 1 / -1;
+  margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid $line;
 }
