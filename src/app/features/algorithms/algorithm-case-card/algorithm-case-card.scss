@@ -19,6 +19,7 @@ mat-card-title {
 
     .group {
       color: $muted;
+      font-size: var(--font-size-base);
     }
   }
 
@@ -30,5 +31,15 @@ mat-card-title {
   .setup {
     font-size: var(--font-size-base);
     font-weight: normal;
+  }
+}
+
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+
+  button[aria-pressed='true'] {
+    font-weight: 700;
+    text-decoration: underline;
   }
 }

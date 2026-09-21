@@ -112,6 +112,14 @@ export interface AlgorithmCase<Kind extends 'F2L' | 'OLL' | 'PLL' = 'F2L' | 'OLL
 /** コーナーとエッジのペアを入れる、ユーザーから見たF2Lスロット。 */
 export type F2lSlot = 'FL' | 'FR' | 'BL' | 'BR';
 
+/** 番号・分類を共有し、4スロットそれぞれに解法を持つF2Lケース。 */
+export interface F2lCase extends Omit<AlgorithmCase<'F2L'>, 'algorithms'> {
+  /** FR基準の共通Setup。ほかのスロットは末尾に持ち替えを追加して作る。 */
+  setup: string;
+  /** 各スロットの解法一覧。 */
+  slots: Record<F2lSlot, Pick<AlgorithmCase<'F2L'>, 'algorithms'>>;
+}
+
 /** F2L固有の手順の対象スロットを持つケース。 */
 export interface F2lAlgorithmCase extends AlgorithmCase<'F2L'> {
   /** Setupと解法手順の基準スロット。選択位置への持ち替えはこの位置を基準とする。 */

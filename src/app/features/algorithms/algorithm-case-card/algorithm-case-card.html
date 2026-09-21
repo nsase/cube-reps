@@ -4,12 +4,18 @@
       @if (item().kind === 'F2L') {
         <app-cube-quarter-view
           [pattern]="quarterPattern()"
-          [label]="'algorithms.quarterPattern' | transloco: { name: item().name }"
+          [label]="
+            'algorithms.quarterPattern'
+              | transloco: { name: item().name || item().kind + ' ' + item().number }
+          "
         />
       } @else {
         <app-cube-pattern
           [pattern]="pattern()"
-          [label]="'algorithms.pattern' | transloco: { name: item().name }"
+          [label]="
+            'algorithms.pattern'
+              | transloco: { name: item().name || item().kind + ' ' + item().number }
+          "
         />
       }
       <div class="info">
@@ -20,11 +26,27 @@
         @if (item().name) {
           <div class="name">{{ item().name }}</div>
         }
-        <code class="setup">{{ 'algorithms.setup' | transloco }}: {{ item().setup }}</code>
+        <code class="setup">{{ 'algorithms.setup' | transloco }}: {{ displayItem().setup }}</code>
       </div>
     </mat-card-title>
   </mat-card-header>
   <mat-card-content>
-    <app-algorithm-panel [item]="item()" />
+    @if (hasSlots()) {
+      <div role="group" class="slots" [attr.aria-label]="'algorithms.slot' | transloco">
+        @for (position of slots; track position) {
+          <button
+            mat-button
+            type="button"
+            [attr.aria-pressed]="slot() === position"
+            (click)="slot.set(position)"
+          >
+            {{ position }}
+          </button>
+        }
+      </div>
+    }
+    @for (selected of [displayItem()]; track selected.kind + selected.number + slot()) {
+      <app-algorithm-panel [item]="selected" />
+    }
   </mat-card-content>
 </mat-card>
