@@ -18,6 +18,12 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
       await page.goto(`/#/${route}`);
       await expect(page.locator('app-algorithms')).toBeVisible();
 
+      const searchBox = await page.locator('app-algorithm-tools .search-field').boundingBox();
+      const groupBox = await page.locator('app-algorithm-tools .group-filter').boundingBox();
+      expect(searchBox).not.toBeNull();
+      expect(groupBox).not.toBeNull();
+      expect(Math.abs(searchBox!.height - groupBox!.height)).toBeLessThanOrEqual(1);
+      expect(groupBox!.height).toBeLessThanOrEqual(42);
       await expectNoHorizontalOverflow(page);
       await expectResponsiveLayout(page, layoutItems);
       await expectResponsiveLayout(

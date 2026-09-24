@@ -3,12 +3,15 @@
   <mat-icon aria-hidden="true">search</mat-icon>
   <input [placeholder]="'algorithms.search' | transloco" [(ngModel)]="query" />
 </label>
-<mat-form-field class="group-filter" appearance="outline" subscriptSizing="dynamic">
-  <mat-label>{{ 'algorithms.groupFilter' | transloco }}</mat-label>
-  <mat-select [(ngModel)]="group" data-testid="algorithm-group-filter">
+<div class="group-filter">
+  <mat-select
+    [(ngModel)]="group"
+    [aria-label]="'algorithms.groupFilter' | transloco"
+    data-testid="algorithm-group-filter"
+  >
     <mat-option value="">{{ 'algorithms.allGroups' | transloco }}</mat-option>
     @for (groupName of groups(); track groupName) {
       <mat-option [value]="groupName">{{ groupName }}</mat-option>
     }
   </mat-select>
-</mat-form-field>
+</div>

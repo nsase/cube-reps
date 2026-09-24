@@ -152,7 +152,7 @@ describe('F2L共通カード', () => {
       i18n.setActiveLang(lang);
       await fixture.whenStable();
       expect(fixture.nativeElement.textContent).toContain(notice);
-      expect(fixture.nativeElement.querySelector('mat-label').textContent).toBe(
+      expect(fixture.nativeElement.querySelector('mat-select').getAttribute('aria-label')).toBe(
         lang === 'ja' ? 'グループ' : 'Group',
       );
       expect(fixture.nativeElement.querySelector('mat-select').textContent).toContain(
