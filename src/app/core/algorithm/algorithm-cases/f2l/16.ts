@@ -1,8 +1,5 @@
 import { defineF2lCase } from './f2l-case';
 
-/** F2L 16のFR基準の共通Setupと4スロット分の組み込み手順。 */
-// SpeedCube 11
-// CubeRoot X-
 export const F2L_16_CASE = defineF2lCase({
   number: '16',
   group: 'Connected Pairs',
@@ -13,14 +10,6 @@ export const F2L_16_CASE = defineF2lCase({
         {
           id: 'd408692c-ffa8-4d2c-a4b7-73f3f08b15c5',
           notation: "U' R U2 R' U F' U' F",
-        },
-        {
-          id: '2a5121b1-efb2-4c2b-8fb9-c10867791cf6',
-          notation: "y' R U2 R2 U' R2 U' R'",
-        },
-        {
-          id: '7cafcf92-a4f2-4853-b161-02f8b12d6c1a',
-          notation: "U' R U2 R' Dw R' U' R",
         },
         {
           id: 'c26d6ae9-9131-4896-8b05-fc79d05ff454',
@@ -51,10 +40,6 @@ export const F2L_16_CASE = defineF2lCase({
           notation: "U' L' U L U L' U' L U L' U' L",
         },
         {
-          id: 'b2c9333e-46a3-4d30-8cc0-73129cc67f48',
-          notation: "L D L' U2 L D' L2 U' L",
-        },
-        {
           id: '1ff7a967-0ada-4f6f-93ec-61ce9195f7d6',
           notation: "L' U L U' L' U L U L' U2 L",
         },
@@ -67,16 +52,8 @@ export const F2L_16_CASE = defineF2lCase({
           notation: "U' L U2 L' U Fw' L' Fw",
         },
         {
-          id: 'c34830db-cfe3-4503-bdb5-1483bd8ed68a',
-          notation: "U' L U2 L' Dw L' U' L",
-        },
-        {
           id: '11c029c5-e6f4-4da1-bf74-cbddefaca7b6',
           notation: "L U2 L' U' Lw U' Lw' U2 Lw U Lw'",
-        },
-        {
-          id: '5065291f-f35c-4310-8baf-3c41374207ba',
-          notation: "y R U2 R2 U' R2 U' R'",
         },
       ],
     },
@@ -95,16 +72,8 @@ export const F2L_16_CASE = defineF2lCase({
           notation: "R' U R U' R' U R U R' U2 R",
         },
         {
-          id: 'c5f95130-97f8-4d2a-92e7-74636afcc730',
-          notation: "Dw' R U2 R' U F' U' F",
-        },
-        {
           id: '3b25b3c1-3b06-4a58-a419-ca20d1ca03d7',
           notation: "U' R' U R U R' U' R U R' U' R",
-        },
-        {
-          id: '581f1628-7467-4c5c-a48a-27803571d6b6',
-          notation: "R D R' U2 R D' R2 U' R",
         },
       ],
     },

@@ -39,6 +39,18 @@ describe('F2Lケース定義', () => {
     }
   });
 
+  /** y回転で持ち替える手順と、S・E・B・D・Dwを使う手順の再混入を防ぐ。 */
+  it('全スロットにS・E・B・D・Dw・yを含まない手順だけを掲載する', () => {
+    for (const item of F2L_CASES) {
+      for (const data of Object.values(item.slots)) {
+        expect(data.algorithms.length).toBeGreaterThan(0);
+        for (const { notation } of data.algorithms) {
+          expect(notation).not.toMatch(/(?:^|[\s(])(?:[SEBy]|Dw?)(?:2'?|')?(?=[\s)]|$)/);
+        }
+      }
+    }
+  });
+
   for (const item of F2L_CASES) {
     for (const slot of ['FR', 'FL', 'BL', 'BR'] as const) {
       it(`${item.number}/${slot}の全手順がSetupからクロスと4ペアを完成させる`, () => {

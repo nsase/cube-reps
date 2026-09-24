@@ -1,8 +1,5 @@
 import { defineF2lCase } from './f2l-case';
 
-/** F2L 23のFR基準の共通Setupと4スロット分の組み込み手順。 */
-// SpeedCube 23
-// CubeRoot G+
 export const F2L_23_CASE = defineF2lCase({
   number: '23',
   group: 'Connected Pairs',
@@ -21,10 +18,6 @@ export const F2L_23_CASE = defineF2lCase({
         {
           id: '16a9bb9b-2229-4a2d-9e2a-6c7dff2735cc',
           notation: "U2 R2 U2 R' U' R U' R2",
-        },
-        {
-          id: '61b6c9a1-f215-4f9b-be6b-969d73f2c5b7',
-          notation: "R U' R2 D' R U2 R' D R",
         },
       ],
     },
@@ -66,10 +59,6 @@ export const F2L_23_CASE = defineF2lCase({
           id: 'c8f6f546-9687-4955-83c7-65253be4d30e',
           notation: "U2 L2 U2 L' U' L U' L2",
         },
-        {
-          id: 'b7a79b59-2e3e-4b67-ad8e-6ca69a85623f',
-          notation: "L U' L2 D' L U2 L' D L",
-        },
       ],
     },
     BR: {
@@ -77,10 +66,6 @@ export const F2L_23_CASE = defineF2lCase({
         {
           id: '346b317e-9be1-4a34-97a7-e779b012d93f',
           notation: "U R' F R' F' R2 U' R' U R",
-        },
-        {
-          id: '27596e16-54ae-42d7-bf9b-1348100d6cd7',
-          notation: "U2 Lw' U' L U' L' U2 B' Lw",
         },
         {
           id: 'be2cef8a-fb9e-4b00-bbaa-ad5395550b67',

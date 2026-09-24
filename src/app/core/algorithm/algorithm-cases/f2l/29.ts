@@ -1,8 +1,5 @@
 import { defineF2lCase } from './f2l-case';
 
-/** F2L 29のFR基準の共通Setupと4スロット分の組み込み手順。 */
-// SpeedCube 30
-// CubeRoot L+
 export const F2L_29_CASE = defineF2lCase({
   number: '29',
   group: 'Corner in Slot',
@@ -35,16 +32,8 @@ export const F2L_29_CASE = defineF2lCase({
           notation: "L F' L' F U' L' U L",
         },
         {
-          id: '8c40eef1-942d-4e4a-8706-837a56596de0',
-          notation: "y' R U R' U' R U R'",
-        },
-        {
           id: 'fd199936-efbb-498a-9c4c-85bbfecffdd7',
           notation: "U' F U' R U2 R' F'",
-        },
-        {
-          id: 'adcec8a6-7065-4d92-b6b9-eefd6d7b61e9',
-          notation: "y L U L' U' L U L'",
         },
         {
           id: '1a553443-c416-4557-81b9-13b0b2564fa7',
@@ -67,20 +56,12 @@ export const F2L_29_CASE = defineF2lCase({
     BR: {
       algorithms: [
         {
-          id: 'ed690088-a35d-4d53-8bf3-c4d315a16bc9',
-          notation: "y' L U L' U' L U L'",
-        },
-        {
           id: '1fb086b2-d8be-4b1e-953d-6694657df3eb',
           notation: "Fw R Fw' U' Fw R Fw'",
         },
         {
           id: '938f3eb6-bf27-4522-bc28-abc628ddfce1',
           notation: "U2 R' U R Fw R Fw'",
-        },
-        {
-          id: '2f39c05a-e075-4731-bb27-70c194e4fbba',
-          notation: "y R U R' U' R U R'",
         },
       ],
     },
