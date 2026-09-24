@@ -20,6 +20,10 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
 
       await expectNoHorizontalOverflow(page);
       await expectResponsiveLayout(page, layoutItems);
+      await expectResponsiveLayout(
+        page,
+        'app-algorithm-tools .kind-selector, app-algorithm-tools .search-field, app-algorithm-tools .group-filter',
+      );
     });
 
     test(`${route}画面で操作欄がスクロール中も上部に表示される`, async ({ page }) => {
@@ -62,7 +66,7 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
       test.skip((page.viewportSize()?.width ?? 0) > 620, 'スマートフォン幅だけで検証する');
       await page.goto(`/#/${route}`);
       const selector = page.locator('app-algorithm-tools .kind-selector');
-      const search = page.locator('app-algorithm-tools label');
+      const search = page.locator('app-algorithm-tools .search-field');
 
       const selectorBox = await selector.boundingBox();
       const searchBox = await search.boundingBox();
@@ -305,3 +309,41 @@ test(
     }
   },
 );
+
+for (const kind of ['f2l', 'oll', 'pll'] as const) {
+  test(`${kind}のグループ選択を自由入力と併用できる`, async ({ page }) => {
+    await page.goto(`/#/algorithms/${kind}`);
+    const select = page.getByTestId('algorithm-group-filter');
+    await select.click();
+    // OLL/PLLも画面に表示された選択肢からグループを選ぶ。
+    const option =
+      kind === 'f2l'
+        ? page.getByRole('option', { name: 'Connected Pairs', exact: true })
+        : page.getByRole('option').nth(1);
+    const selectedGroup = (await option.innerText()).trim();
+    await option.click();
+    const cards = page.locator('app-algorithm-case-card');
+    await expect(cards.first()).toBeVisible();
+    for (const label of await cards.locator('.group').all()) {
+      await expect(label).toHaveText(selectedGroup);
+    }
+    const number = await cards.first().locator('.number > .number').innerText();
+    await page.locator('app-algorithm-tools input').fill(number);
+    await expect(cards).toHaveCount(1);
+    await page.locator('app-algorithm-tools input').clear();
+    await select.click();
+    await page.getByRole('option', { name: 'All groups', exact: true }).click();
+    await expect(cards).toHaveCount(kind === 'f2l' ? 41 : kind === 'oll' ? 57 : 21);
+    await select.click();
+    await page.getByRole('option', { name: selectedGroup, exact: true }).click();
+    await page
+      .locator('app-algorithm-kind-links')
+      .getByRole('radio', {
+        name: kind === 'pll' ? 'OLL 57' : 'PLL 21',
+        exact: true,
+      })
+      .click();
+    await expect(select).toContainText('All groups');
+    await expect(cards).toHaveCount(kind === 'pll' ? 57 : 21);
+  });
+}

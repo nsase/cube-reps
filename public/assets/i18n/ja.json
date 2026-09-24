@@ -99,6 +99,8 @@
     "solvePattern": "スクランブルの上段パターン: {{scramble}}"
   },
   "algorithms": {
+    "groupFilter": "グループ",
+    "allGroups": "すべてのグループ",
     "search": "番号・名前・グループで検索",
     "empty": "該当するケースがありません。",
     "pattern": "{{name}} のパターン",

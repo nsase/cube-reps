@@ -99,6 +99,8 @@
     "solvePattern": "Top-layer pattern for scramble: {{scramble}}"
   },
   "algorithms": {
+    "groupFilter": "Group",
+    "allGroups": "All groups",
     "search": "Search by number, name, or group",
     "empty": "No matching cases.",
     "pattern": "Pattern for {{name}}",

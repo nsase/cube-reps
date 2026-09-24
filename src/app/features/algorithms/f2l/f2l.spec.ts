@@ -1,3 +1,5 @@
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { firstValueFrom, of } from 'rxjs';
@@ -43,6 +45,41 @@ describe('F2L共通カード', () => {
       '[data-face="F"] [data-row="1"][data-column="1"]',
     )!;
     expect(sticker.dataset['color']).toBe(expected.F[1][1]);
+  }, 15000);
+
+  it('グループを完全一致で絞り込み、検索との併用と解除ができる', async () => {
+    const fixture = TestBed.createComponent(Algorithms);
+    await fixture.whenStable();
+    const select = await TestbedHarnessEnvironment.loader(fixture).getHarness(MatSelectHarness);
+    await select.open();
+    await select.clickOptions({ text: 'Connected Pairs' });
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelectorAll('app-algorithm-case-card')).toHaveLength(
+      F2L_CASES.filter((item) => item.group === 'Connected Pairs').length,
+    );
+    expect(
+      Array.from(
+        element.querySelectorAll('app-algorithm-case-card .group'),
+        (node) => node.textContent,
+      ),
+    ).toEqual(
+      F2L_CASES.filter((item) => item.group === 'Connected Pairs').map((item) => item.group),
+    );
+    const input = element.querySelector('app-algorithm-tools input') as HTMLInputElement;
+    input.value = '18';
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(element.querySelectorAll('app-algorithm-case-card')).toHaveLength(1);
+    input.value = 'missing';
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(element.querySelector('.empty')).not.toBeNull();
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    await select.open();
+    await select.clickOptions({ text: 'All groups' });
+    await fixture.whenStable();
+    expect(element.querySelectorAll('app-algorithm-case-card')).toHaveLength(41);
   }, 15000);
 
   it('4スロットを切り替えてSetup・手順・お気に入りを独立して操作する', async () => {
@@ -115,6 +152,12 @@ describe('F2L共通カード', () => {
       i18n.setActiveLang(lang);
       await fixture.whenStable();
       expect(fixture.nativeElement.textContent).toContain(notice);
+      expect(fixture.nativeElement.querySelector('mat-label').textContent).toBe(
+        lang === 'ja' ? 'グループ' : 'Group',
+      );
+      expect(fixture.nativeElement.querySelector('mat-select').textContent).toContain(
+        lang === 'ja' ? 'すべてのグループ' : 'All groups',
+      );
       expect(
         Array.from(
           (fixture.nativeElement as HTMLElement)

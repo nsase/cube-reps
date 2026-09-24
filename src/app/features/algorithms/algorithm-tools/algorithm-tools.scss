@@ -7,6 +7,8 @@ $muted: var(--text-muted-color);
   top: 0;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 8px 0;
   background: var(--background-color);
@@ -18,7 +20,7 @@ $muted: var(--text-muted-color);
   flex: 0 0 auto;
 }
 
-label {
+.search-field {
   display: flex;
   min-width: 0;
   align-items: center;
@@ -49,7 +51,7 @@ input {
     gap: 6px;
   }
 
-  label {
+  .search-field {
     min-width: 0;
     width: auto;
     flex: 1;
@@ -60,5 +62,16 @@ input {
   input {
     min-width: 0;
     padding-inline: 7px;
+  }
+}
+
+.group-filter {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+@media (max-width: 620px) {
+  .group-filter {
+    flex-basis: 100%;
   }
 }

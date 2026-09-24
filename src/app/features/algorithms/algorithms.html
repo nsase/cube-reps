@@ -1,5 +1,5 @@
 <section>
-  <app-algorithm-tools [(query)]="query" />
+  <app-algorithm-tools [(query)]="query" [(group)]="group" [groups]="groups()" />
   @if (kind() === 'F2L') {
     <div>
       <h2>F2L</h2>
