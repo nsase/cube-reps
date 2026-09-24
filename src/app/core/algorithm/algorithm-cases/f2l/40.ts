@@ -1,8 +1,5 @@
 import { defineF2lCase } from './f2l-case';
 
-/** F2L 40のFR基準の共通Setupと4スロット分の組み込み手順。 */
-// SpeedCube 40
-// CubeRoot C+
 export const F2L_40_CASE = defineF2lCase({
   number: '40',
   group: 'Pieces in Slot',
@@ -22,10 +19,6 @@ export const F2L_40_CASE = defineF2lCase({
           id: '1a93f677-e601-4af4-8843-77f936a159ae',
           notation: "R U' R' F R U R' U' F' R U' R'",
         },
-        {
-          id: '16c6d87e-e886-4d5c-9dd0-98c67b86cd72',
-          notation: "R U' R' U' R U' R' U y' R' U' R",
-        },
       ],
     },
     FL: {
@@ -41,18 +34,6 @@ export const F2L_40_CASE = defineF2lCase({
         {
           id: 'adbc90f2-ca52-4798-9656-e7c12107b7fc',
           notation: "L' U L R' F R U2 R' F' R",
-        },
-        {
-          id: 'ec60a4b0-bc1f-4559-aeed-6916c12b8932',
-          notation: "L' U L U2 y L U L' U L U' L'",
-        },
-        {
-          id: '70607a66-4884-4c37-8dde-da946fd689bc',
-          notation: "L' U' L U y' M U L F' L' U' M'",
-        },
-        {
-          id: '8fc55d57-4488-495c-b80c-c989480c1424',
-          notation: "L' U' L U L' U L U2 y L U L'",
         },
       ],
     },
@@ -74,10 +55,6 @@ export const F2L_40_CASE = defineF2lCase({
           id: 'b2750e7a-e913-4367-a945-5451bcb5d1ab',
           notation: "Fw' L Fw U2 L U L' U2 L U2 L'",
         },
-        {
-          id: 'ea2d9ba7-baa2-4f9b-b07d-4fb1e0c48c9b',
-          notation: "L U' L' U' L U' L' U y' L' U' L",
-        },
       ],
     },
     BR: {
@@ -97,10 +74,6 @@ export const F2L_40_CASE = defineF2lCase({
         {
           id: '7cd1bea0-6190-49c0-bf94-c642b13bd994',
           notation: "R2 F' U' F U R U' R",
-        },
-        {
-          id: 'aa206795-d52a-44b4-a3a0-0be8b8c62458',
-          notation: "R' U' R U R' U R U2 y R U R'",
         },
       ],
     },

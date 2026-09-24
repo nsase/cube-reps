@@ -1,8 +1,5 @@
 import { defineF2lCase } from './f2l-case';
 
-/** F2L 34のFR基準の共通Setupと4スロット分の組み込み手順。 */
-// SpeedCube 34
-// CubeRoot U-
 export const F2L_34_CASE = defineF2lCase({
   number: '34',
   group: 'Edge in Slot',
@@ -17,14 +14,6 @@ export const F2L_34_CASE = defineF2lCase({
         {
           id: '6192c810-b86a-41a0-86c0-f7ad8a686922',
           notation: "U' R U2 R' U R U R'",
-        },
-        {
-          id: '35c28188-9c8e-468e-9922-7b2f6cd18d78',
-          notation: "U R' D' R U' R' D R",
-        },
-        {
-          id: 'dde589b3-973b-4688-862d-46daa8d8b247',
-          notation: "y U L' U L U2 L' U L",
         },
       ],
     },
@@ -51,16 +40,8 @@ export const F2L_34_CASE = defineF2lCase({
           notation: "U L U L' U2 L U L'",
         },
         {
-          id: '6d135f35-5074-4844-adcf-55bf6864e71d',
-          notation: "U L' D' L U' L' D L",
-        },
-        {
           id: 'cac14f4d-6943-41e9-a5ce-7f39f31480bf',
           notation: "U' L U2 L' U L U L'",
-        },
-        {
-          id: '0259c524-8b22-4937-9387-3449f9cb11bc',
-          notation: "U2 R D' R' U' R D R'",
         },
       ],
     },

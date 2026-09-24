@@ -1,8 +1,5 @@
 import { defineF2lCase } from './f2l-case';
 
-/** F2L 22のFR基準の共通Setupと4スロット分の組み込み手順。 */
-// SpeedCube 18
-// CubeRoot H-
 export const F2L_22_CASE = defineF2lCase({
   number: '22',
   group: 'Connected Pairs',
@@ -10,14 +7,6 @@ export const F2L_22_CASE = defineF2lCase({
   slots: {
     FR: {
       algorithms: [
-        {
-          id: '84d33de0-0a1d-4dd4-be39-45a1b98e5e5b',
-          notation: "y' R' U2 R U R' U' R",
-        },
-        {
-          id: '7af465e2-9ef5-436b-975a-20663c099fc0',
-          notation: "y L' U2 L U L' U' L",
-        },
         {
           id: '4152a068-a3dc-4d91-b065-3bfb5adc6296',
           notation: "F' U2 F U F' U' F",
@@ -42,10 +31,6 @@ export const F2L_22_CASE = defineF2lCase({
     },
     BL: {
       algorithms: [
-        {
-          id: 'b5e2eaf2-6c8a-4e9d-9405-6d9b3d16c8a2',
-          notation: "y R' U2 R U R' U' R",
-        },
         {
           id: 'a7477d7e-c187-451f-9e78-6605311b1c67',
           notation: "U F U R U' R' F' L U L'",

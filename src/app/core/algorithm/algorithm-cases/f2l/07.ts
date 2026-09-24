@@ -1,8 +1,5 @@
 import { defineF2lCase } from './f2l-case';
 
-/** F2L 07のFR基準の共通Setupと4スロット分の組み込み手順。 */
-// SpeedCube 7
-// CubeRoot M+
 export const F2L_07_CASE = defineF2lCase({
   number: '07',
   group: 'Disconnected Pairs',
@@ -33,10 +30,6 @@ export const F2L_07_CASE = defineF2lCase({
         {
           id: 'd1ce3f7f-dd43-4b0e-a2b6-29573fee193a',
           notation: "F U R U2 R' U F'",
-        },
-        {
-          id: '7a441f4b-1f78-4fb4-8a25-b9520d07239c',
-          notation: "Dw' L U2 L' U2 L U' L'",
         },
         {
           id: '2a69303e-7db8-4ab1-96fd-5a91a79ca27e',
@@ -73,14 +66,6 @@ export const F2L_07_CASE = defineF2lCase({
         {
           id: 'c0c520c9-8b80-4094-a6da-b8095bb45e6e',
           notation: "F R U R2 U' R F'",
-        },
-        {
-          id: '6dce5aba-bc77-4dc2-b75c-cba47f9c0ef4',
-          notation: "y' U' L U2 L' U2 L U' L'",
-        },
-        {
-          id: '6166a4d0-540d-4e10-af50-d70395423fc8',
-          notation: "y U' R U2 R' U2 R U' R'",
         },
       ],
     },

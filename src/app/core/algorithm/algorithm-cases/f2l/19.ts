@@ -1,8 +1,5 @@
 import { defineF2lCase } from './f2l-case';
 
-/** F2L 19のFR基準の共通Setupと4スロット分の組み込み手順。 */
-// SpeedCube 15
-// CubeRoot I+
 export const F2L_19_CASE = defineF2lCase({
   number: '19',
   group: 'Connected Pairs',
@@ -19,10 +16,6 @@ export const F2L_19_CASE = defineF2lCase({
           notation: "R U R' U2 R U' R' U R U' R'",
         },
         {
-          id: 'e820c88f-e425-4492-9782-aee31379d568',
-          notation: "R' D' R U' R' D R U R U' R'",
-        },
-        {
           id: 'f0c68abd-fbd4-47d0-b74a-d122a298b0e6',
           notation: "F' U F U2 R U R'",
         },
@@ -37,10 +30,6 @@ export const F2L_19_CASE = defineF2lCase({
         {
           id: 'f87597e6-6189-47ef-9a1b-c2f4e06fdd6a',
           notation: "L' U L U2 F U F'",
-        },
-        {
-          id: '034754cc-dbf3-410b-abbf-a549c632be9b',
-          notation: "L' U L U2 y L U L'",
         },
         {
           id: '2c899c20-cad1-41dd-bf3b-08f31dd9da3e',
@@ -74,10 +63,6 @@ export const F2L_19_CASE = defineF2lCase({
           id: 'd5f45e3b-aaf1-4314-b461-8774c9087480',
           notation: "L U2 L' U L U L' U L U' L'",
         },
-        {
-          id: '12064fc5-173d-40a4-94b4-8b2e668d77b1',
-          notation: "L' D' L U' L' D L U L U' L'",
-        },
       ],
     },
     BR: {
@@ -91,16 +76,8 @@ export const F2L_19_CASE = defineF2lCase({
           notation: "R2 F R F' R U R' U2 R",
         },
         {
-          id: '503298bc-7a97-43e7-9a91-e14225413294',
-          notation: "R' U R U' Dw' R U R'",
-        },
-        {
           id: '6df721d0-7f29-43e3-8baa-ff927507ebd5',
           notation: "R2 F R F' R U2 R' U R",
-        },
-        {
-          id: '9bd55e45-d79b-494e-9cfc-c7c6ff8adb02',
-          notation: "R' U R U2 y R U R'",
         },
         {
           id: 'c4ec8d54-91fe-4707-8e1d-9b2939abc8a3',
