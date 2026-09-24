@@ -4,14 +4,14 @@
   <input [placeholder]="'algorithms.search' | transloco" [(ngModel)]="query" />
 </label>
 <div class="group-filter">
-  <mat-select
+  <select
     [(ngModel)]="group"
-    [aria-label]="'algorithms.groupFilter' | transloco"
+    [attr.aria-label]="'algorithms.groupFilter' | transloco"
     data-testid="algorithm-group-filter"
   >
-    <mat-option value="">{{ 'algorithms.allGroups' | transloco }}</mat-option>
+    <option value="">{{ 'algorithms.allGroups' | transloco }}</option>
     @for (groupName of groups(); track groupName) {
-      <mat-option [value]="groupName">{{ groupName }}</mat-option>
+      <option [value]="groupName">{{ groupName }}</option>
     }
-  </mat-select>
+  </select>
 </div>

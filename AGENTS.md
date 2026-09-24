@@ -41,6 +41,7 @@
 ## Angular Material
 
 - UI部品は原則としてAngular Materialを使用する。対応するコンポーネントがある場合は、それを優先する。
+- selectはスマートフォンでのOS標準の選択操作を優先し、`mat-select`よりHTML標準の`select`を使用する。
 - カードには`MatCardModule`の`mat-card`を使用する。
 - 選択肢をまとめて切り替えるボタングループには、`MatButtonToggleModule`の`mat-button-toggle-group`と`mat-button-toggle`を使用する。
 - Angular Materialのディレクティブを使用するコンポーネントでは、対応するModuleを明示的に`imports`へ追加する。
