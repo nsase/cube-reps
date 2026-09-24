@@ -170,7 +170,11 @@ describe('F2L共通カード', () => {
       );
       expect(
         fixture.nativeElement.querySelector('app-cube-quarter-view').getAttribute('aria-label'),
-      ).toContain(lang === 'ja' ? 'クォータービュー' : 'Quarter view');
+      ).toBe(
+        lang === 'ja'
+          ? 'F2L 01のクォータービュー（上面・前面・右面）'
+          : 'Quarter view for F2L 01: top, front, and right faces',
+      );
       expect(
         fixture.nativeElement.querySelector(`button[aria-label="${copyLabel}"]`),
       ).not.toBeNull();

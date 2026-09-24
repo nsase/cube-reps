@@ -68,7 +68,7 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
       expect(sameLineResults).not.toContain(false);
     });
 
-    test(`${route}画面の狭幅では切替と検索を1行に表示する`, async ({ page }) => {
+    test(`${route}画面の狭幅で切替・検索・グループ選択が重ならない`, async ({ page }) => {
       test.skip((page.viewportSize()?.width ?? 0) > 620, 'スマートフォン幅だけで検証する');
       await page.goto(`/#/${route}`);
       const selector = page.locator('app-algorithm-tools .kind-selector');
@@ -79,7 +79,10 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
 
       expect(selectorBox).not.toBeNull();
       expect(searchBox).not.toBeNull();
-      expect(Math.abs(selectorBox!.y - searchBox!.y)).toBeLessThanOrEqual(1);
+      await expectResponsiveLayout(
+        page,
+        'app-algorithm-tools .kind-selector, app-algorithm-tools .search-field, app-algorithm-tools .group-filter',
+      );
       const caseCounts = page.locator('app-algorithm-kind-links button small');
       await expect(caseCounts).toHaveText(['41', '57', '21']);
       for (const count of await caseCounts.all()) await expect(count).toBeVisible();
@@ -123,9 +126,12 @@ test.describe('アルゴリズムの画面遷移', { tag: '@responsive' }, () =>
         await expect(page.locator('app-cube-quarter-view')).toHaveCount(41);
         await expect(page.locator('app-cube-pattern')).toHaveCount(0);
         await expect(
-          page.getByText('Some Solve and Setup algorithms are still placeholders', {
-            exact: false,
-          }),
+          page.getByText(
+            'Browse 41 F2L cases and switch between Front Right, Front Left, Back Left, and Back Right',
+            {
+              exact: false,
+            },
+          ),
         ).toBeVisible();
       } else {
         await expect(page.locator('app-algorithm-case-card')).toHaveCount(kind === 'OLL' ? 57 : 21);
@@ -166,7 +172,7 @@ test('F2Lの41カードを最後まで閲覧できる', { tag: '@responsive' }, 
   await expectResponsiveLayout(page, 'app-algorithm-case-card');
   await expectResponsiveLayout(
     page,
-    'app-algorithm-case-card .pattern app-cube-quarter-view svg, app-algorithm-case-card .pattern .group',
+    'app-algorithm-case-card app-cube-quarter-view svg, app-algorithm-case-card .group',
   );
   const search = page.locator('app-algorithm-tools input');
   await search.fill('41');
@@ -259,6 +265,8 @@ test('iPhone SE幅で4スロット名を1行に表示し、すべて選択でき
   for (const button of await buttons.all()) {
     await button.click();
     await expect(button).toHaveAttribute('aria-checked', 'true');
+    // クリックによる自動スクロール後の座標同士を比較する。
+    const bounds = await slots.boundingBox();
     const box = await button.boundingBox();
     expect(box!.x).toBeGreaterThanOrEqual(bounds!.x);
     expect(box!.x + box!.width).toBeLessThanOrEqual(bounds!.x + bounds!.width);
@@ -274,7 +282,6 @@ test('種別グループをキーボードで切り替え、履歴移動でも�
   await expect(f2l).toBeChecked();
   await f2l.focus();
   await page.keyboard.press('ArrowRight');
-  await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/algorithms\/oll$/);
   await expect(types.getByRole('radio', { name: 'OLL 57', exact: true })).toBeChecked();
   await page.goBack();
@@ -295,6 +302,7 @@ test(
     const card = page.locator('app-algorithm-case-card');
     const slots = card.locator('app-slot-button-group');
     await slots.getByRole('radio', { name: 'Back Left', exact: true }).click();
+    await expect(card.locator('.setup')).toHaveText(/ y2$/);
     const setup = await card.locator('.setup').innerText();
     for (const width of [375, 640, 1440, 640, 375]) {
       await page.setViewportSize({ width, height: 900 });
