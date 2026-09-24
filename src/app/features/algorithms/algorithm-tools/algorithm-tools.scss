@@ -7,6 +7,8 @@ $muted: var(--text-muted-color);
   top: 0;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 8px 0;
   background: var(--background-color);
@@ -18,17 +20,34 @@ $muted: var(--text-muted-color);
   flex: 0 0 auto;
 }
 
-label {
+.search-field,
+.group-filter {
+  box-sizing: border-box;
+  height: 42px;
   display: flex;
   min-width: 0;
   align-items: center;
-  flex: 0 1 360px;
-  width: 360px;
   padding: 0 13px;
   border: 1px solid $line;
   border-radius: 7px;
   background: var(--surface-color);
   --mat-icon-color: #{$muted};
+}
+
+.search-field {
+  flex: 2;
+  min-width: 300px;
+}
+
+select {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: var(--font-size-small);
 }
 
 mat-icon {
@@ -49,16 +68,25 @@ input {
     gap: 6px;
   }
 
-  label {
-    min-width: 0;
+  .search-field {
     width: auto;
     flex: 1;
-    height: 42px;
     padding-inline: 8px;
   }
 
   input {
     min-width: 0;
     padding-inline: 7px;
+  }
+}
+
+.group-filter {
+  flex: 1;
+  min-width: 150px;
+}
+
+@media (max-width: 620px) {
+  .group-filter {
+    flex-basis: 100%;
   }
 }

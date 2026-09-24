@@ -45,6 +45,42 @@ describe('F2L共通カード', () => {
     expect(sticker.dataset['color']).toBe(expected.F[1][1]);
   }, 15000);
 
+  it('グループを完全一致で絞り込み、検索との併用と解除ができる', async () => {
+    const fixture = TestBed.createComponent(Algorithms);
+    await fixture.whenStable();
+    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    select.value = 'Connected Pairs';
+    select.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelectorAll('app-algorithm-case-card')).toHaveLength(
+      F2L_CASES.filter((item) => item.group === 'Connected Pairs').length,
+    );
+    expect(
+      Array.from(
+        element.querySelectorAll('app-algorithm-case-card .group'),
+        (node) => node.textContent,
+      ),
+    ).toEqual(
+      F2L_CASES.filter((item) => item.group === 'Connected Pairs').map((item) => item.group),
+    );
+    const input = element.querySelector('app-algorithm-tools input') as HTMLInputElement;
+    input.value = '18';
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(element.querySelectorAll('app-algorithm-case-card')).toHaveLength(1);
+    input.value = 'missing';
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(element.querySelector('.empty')).not.toBeNull();
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    select.value = '';
+    select.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    expect(element.querySelectorAll('app-algorithm-case-card')).toHaveLength(41);
+  }, 15000);
+
   it('4スロットを切り替えてSetup・手順・お気に入りを独立して操作する', async () => {
     const fixture = TestBed.createComponent(AlgorithmCaseCard);
     fixture.componentRef.setInput('item', F2L_CASES[0]);
@@ -115,6 +151,12 @@ describe('F2L共通カード', () => {
       i18n.setActiveLang(lang);
       await fixture.whenStable();
       expect(fixture.nativeElement.textContent).toContain(notice);
+      expect(fixture.nativeElement.querySelector('select').getAttribute('aria-label')).toBe(
+        lang === 'ja' ? 'グループ' : 'Group',
+      );
+      expect(
+        fixture.nativeElement.querySelector('select').selectedOptions[0].textContent,
+      ).toContain(lang === 'ja' ? 'すべてのグループ' : 'All groups');
       expect(
         Array.from(
           (fixture.nativeElement as HTMLElement)
@@ -128,7 +170,11 @@ describe('F2L共通カード', () => {
       );
       expect(
         fixture.nativeElement.querySelector('app-cube-quarter-view').getAttribute('aria-label'),
-      ).toContain(lang === 'ja' ? 'クォータービュー' : 'Quarter view');
+      ).toBe(
+        lang === 'ja'
+          ? 'F2L 01のクォータービュー（上面・前面・右面）'
+          : 'Quarter view for F2L 01: top, front, and right faces',
+      );
       expect(
         fixture.nativeElement.querySelector(`button[aria-label="${copyLabel}"]`),
       ).not.toBeNull();

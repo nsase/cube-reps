@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { AlgorithmKindLinks } from '../algorithm-kind-links/algorithm-kind-links';
@@ -15,4 +15,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
 export class AlgorithmTools {
   /** ケース一覧の検索文字列。 */
   readonly query = model.required<string>();
+  /** 種別に対応するグループの選択肢。 */
+  readonly groups = input<string[]>([]);
+  /** 空文字で全グループを表示する選択条件。 */
+  readonly group = model('');
 }

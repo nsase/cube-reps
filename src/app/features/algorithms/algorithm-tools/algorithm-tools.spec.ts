@@ -19,7 +19,7 @@ describe('AlgorithmTools', () => {
     await fixture.whenStable();
 
     const buttons = fixture.nativeElement.querySelectorAll(
-      'mat-button-toggle[routerLink="/algorithms/oll"] button',
+      'mat-button-toggle[value="oll"] button',
     ) as NodeListOf<HTMLButtonElement>;
     buttons[0].click();
 

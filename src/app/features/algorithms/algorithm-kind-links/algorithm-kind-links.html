@@ -1,4 +1,7 @@
-<mat-button-toggle-group [attr.aria-label]="'nav.algorithms' | transloco">
+<mat-button-toggle-group
+  (change)="navigate($event.value)"
+  [attr.aria-label]="'nav.algorithms' | transloco"
+>
   <mat-button-toggle
     value="f2l"
     routerLink="/algorithms/f2l"

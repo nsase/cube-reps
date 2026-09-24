@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -37,11 +44,22 @@ export class Algorithms {
     return [];
   });
 
-  /** 種別と検索文字列で絞り込んだケース一覧。 */
+  /** 現在の種別で選択できるグループを掲載順に返す。 */
+  protected readonly groups = computed(() => [...new Set(this.cases().map((item) => item.group))]);
+
+  /** 種別変更時に解除するグループ条件。 */
+  protected readonly group = linkedSignal(() => {
+    this.kind();
+    return '';
+  });
+
+  /** グループの完全一致と検索文字列で絞り込んだケース一覧。 */
   protected readonly filteredCases = computed(() => {
     const query = this.query().trim().toLowerCase();
-    return this.cases().filter((item) =>
-      `${item.name} ${item.number} ${item.group}`.toLowerCase().includes(query),
+    return this.cases().filter(
+      (item) =>
+        (!this.group() || item.group === this.group()) &&
+        `${item.name} ${item.number} ${item.group}`.toLowerCase().includes(query),
     );
   });
 }

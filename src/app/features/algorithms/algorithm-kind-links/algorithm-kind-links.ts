@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 /** 各アルゴリズム画面に共通の種別切り替えを表示する。 */
@@ -11,4 +11,12 @@ import { TranslocoPipe } from '@jsverse/transloco';
   styleUrl: './algorithm-kind-links.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AlgorithmKindLinks {}
+export class AlgorithmKindLinks {
+  /** 種別の選択とブラウザ履歴の移動を同じルートへ同期する。 */
+  private readonly router = inject(Router);
+
+  /** 選択した種別へ移動する。Materialの矢印キー操作はclickを発火しないため、changeでも遷移を通知する。 */
+  protected navigate(kind: string): void {
+    void this.router.navigate(['/algorithms', kind]);
+  }
+}

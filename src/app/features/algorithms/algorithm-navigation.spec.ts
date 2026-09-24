@@ -75,6 +75,26 @@ describe('Algorithm navigation', () => {
     }
   });
 
+  it('矢印キーで種別を切り替え、戻る操作後の選択も同期する', async () => {
+    const fixture = TestBed.createComponent(AlgorithmKindLinks);
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/algorithms/f2l');
+    await fixture.whenStable();
+    const buttons = fixture.nativeElement.querySelectorAll(
+      'button',
+    ) as NodeListOf<HTMLButtonElement>;
+    buttons[0].dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', keyCode: 39, bubbles: true }),
+    );
+    await fixture.whenStable();
+    expect(router.url).toBe('/algorithms/oll');
+    expect(buttons[1].getAttribute('aria-checked')).toBe('true');
+    await router.navigateByUrl('/algorithms/f2l');
+    await fixture.whenStable();
+    expect(buttons[0].getAttribute('aria-checked')).toBe('true');
+    expect(buttons[1].getAttribute('aria-checked')).toBe('false');
+  });
+
   it('外部からのルート変更でも種別グループの選択を同期する', async () => {
     const fixture = TestBed.createComponent(AlgorithmKindLinks);
     await fixture.whenStable();
