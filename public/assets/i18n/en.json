@@ -74,6 +74,7 @@
   "timer": {
     "recordGroup": "RECORD GROUP",
     "recordDestination": "Record to",
+    "mode": "Timer mode",
     "fullSolve": "FULL SOLVE",
     "caseDrill": "CASE DRILL",
     "practiceCase": "Practice case",
@@ -116,8 +117,9 @@
       "oll": "Orient the last layer. Browse 57 cases.",
       "pll": "Permute the last layer. Browse 21 cases."
     },
+    "slots": { "FR": "Front Right", "FL": "Front Left", "BL": "Back Left", "BR": "Back Right" },
     "slot": "Slot",
-    "f2lNotice": "Browse 41 F2L cases and switch between FR, FL, BL, and BR to view each slot’s Setup and algorithms. The quarter view shows the Setup state, with last-layer pieces in gray.",
+    "f2lNotice": "Browse 41 F2L cases and switch between Front Right, Front Left, Back Left, and Back Right to view each slot’s Setup and algorithms. The quarter view shows the Setup state, with last-layer pieces in gray.",
     "solve": "Solve",
     "setup": "Setup",
     "quarterPattern": "Quarter view for F2L {{name}}: top, front, and right faces"

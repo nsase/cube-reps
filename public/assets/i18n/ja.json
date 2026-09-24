@@ -74,6 +74,7 @@
   "timer": {
     "recordGroup": "RECORD GROUP",
     "recordDestination": "記録先",
+    "mode": "計測モード",
     "fullSolve": "FULL SOLVE",
     "caseDrill": "CASE DRILL",
     "practiceCase": "練習ケース",
@@ -116,8 +117,9 @@
       "oll": "最終層の向きを揃える57ケースを確認できます。",
       "pll": "最終層の位置を揃える21ケースを確認できます。"
     },
+    "slots": { "FR": "Front Right", "FL": "Front Left", "BL": "Back Left", "BR": "Back Right" },
     "slot": "スロット",
-    "f2lNotice": "F2Lの41ケースを表示しています。各ケースのFR・FL・BL・BRスロットを切り替えてSetupと手順を確認できます。クォータービューはSetup後の状態を表示し、最終層のピースを灰色にしています。",
+    "f2lNotice": "F2Lの41ケースを表示しています。各ケースのFront Right・Front Left・Back Left・Back Rightスロットを切り替えてSetupと手順を確認できます。クォータービューはSetup後の状態を表示し、最終層のピースを灰色にしています。",
     "solve": "Solve",
     "setup": "Setup",
     "quarterPattern": "F2L {{name}}のクォータービュー（上面・前面・右面）"

@@ -32,18 +32,7 @@
   </mat-card-header>
   <mat-card-content>
     @if (hasSlots()) {
-      <div role="group" class="slots" [attr.aria-label]="'algorithms.slot' | transloco">
-        @for (position of slots; track position) {
-          <button
-            mat-button
-            type="button"
-            [attr.aria-pressed]="slot() === position"
-            (click)="slot.set(position)"
-          >
-            {{ position }}
-          </button>
-        }
-      </div>
+      <app-slot-button-group [(slot)]="slot" />
     }
     @for (selected of [displayItem()]; track selected.kind + selected.number + slot()) {
       <app-algorithm-panel [item]="selected" />

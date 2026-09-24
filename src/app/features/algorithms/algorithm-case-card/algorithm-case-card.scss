@@ -33,13 +33,3 @@ mat-card-title {
     font-weight: normal;
   }
 }
-
-.slots {
-  display: flex;
-  flex-wrap: wrap;
-
-  button[aria-pressed='true'] {
-    font-weight: 700;
-    text-decoration: underline;
-  }
-}

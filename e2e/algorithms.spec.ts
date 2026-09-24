@@ -1,6 +1,10 @@
 import { expect, test } from '@playwright/test';
 
-import { expectNoHorizontalOverflow, expectResponsiveLayout } from './support/layout';
+import {
+  expectElementsWithin,
+  expectNoHorizontalOverflow,
+  expectResponsiveLayout,
+} from './support/layout';
 
 /** 手順一覧画面で検証するF2L・OLL・PLLルート。 */
 const routes = ['algorithms/f2l', 'algorithms/oll', 'algorithms/pll'] as const;
@@ -122,7 +126,7 @@ test.describe('アルゴリズムの画面遷移', { tag: '@responsive' }, () =>
       await expectResponsiveLayout(page, 'app-algorithm-kind-links button');
       await page
         .locator('app-algorithm-kind-links')
-        .getByRole('button', { name: 'F2L 41', exact: true })
+        .getByRole('radio', { name: 'F2L 41', exact: true })
         .click();
       await expect(page).toHaveURL(/\/algorithms\/f2l$/);
       await menu.click();
@@ -170,28 +174,33 @@ test(
     await page.goto('/#/algorithms/f2l');
     await page.locator('app-algorithm-tools input').fill('01');
     const card = page.locator('app-algorithm-case-card');
+    await expectElementsWithin(
+      page,
+      'app-algorithm-case-card mat-card-content',
+      'app-algorithm-case-card .slots button',
+    );
     const custom = 'R2 U2 R2 U2 R2 U2';
     const frSetup = await card.locator('.setup').innerText();
     for (const [slot, rotation] of [
-      ['FL', 'y'],
-      ['BL', 'y2'],
-      ['BR', "y'"],
+      ['Front Left', 'y'],
+      ['Back Left', 'y2'],
+      ['Back Right', "y'"],
     ] as const) {
-      await card.getByRole('button', { name: slot, exact: true }).click();
+      await card.getByRole('radio', { name: slot, exact: true }).click();
       await expect(card.locator('.setup')).toHaveText(`${frSetup.trim()} ${rotation}`);
       await expect(card.locator('app-algorithm-row').first()).toBeVisible();
       await expectNoHorizontalOverflow(page);
     }
-    await card.getByRole('button', { name: 'BL', exact: true }).click();
+    await card.getByRole('radio', { name: 'Back Left', exact: true }).click();
     await card.getByPlaceholder('Enter a new algorithm').fill(custom);
     await card.getByRole('button', { name: 'Add', exact: true }).click();
     const customRow = card.locator('app-algorithm-row').filter({ hasText: custom });
     await customRow.getByRole('button', { name: 'Set as favorite', exact: true }).click();
-    await card.getByRole('button', { name: 'FR', exact: true }).click();
+    await card.getByRole('radio', { name: 'Front Right', exact: true }).click();
     await expect(customRow).toHaveCount(0);
     await page.reload();
     await page.locator('app-algorithm-tools input').fill('01');
-    await card.getByRole('button', { name: 'BL', exact: true }).click();
+    await card.getByRole('radio', { name: 'Back Left', exact: true }).click();
     await expect(card.locator('.favorite-algorithm code')).toHaveText(custom);
   },
 );
@@ -220,3 +229,79 @@ test('F2Lの共通カードで手順とお気に入りを保存し、再読込�
   await expect(rows).toHaveCount(builtInCount);
   await expect(card.locator('.favorite-algorithm code')).toHaveText(originalFavorite);
 });
+
+test('iPhone SE幅で4スロット名を1行に表示し、すべて選択できる', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.goto('/#/algorithms/f2l');
+  await page.locator('app-algorithm-tools input').fill('01');
+  const slots = page.locator('app-algorithm-case-card .slots');
+  const buttons = slots.getByRole('radio');
+  await expect(slots.locator('.full-label:visible')).toHaveText([
+    'Front Right',
+    'Front Left',
+    'Back Left',
+    'Back Right',
+  ]);
+  await expect(slots.locator('.short-label:visible')).toHaveCount(0);
+  const bounds = await slots.boundingBox();
+  const content = await page.locator('app-algorithm-case-card mat-card-content').boundingBox();
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(content!.x + content!.width);
+  for (const button of await buttons.all()) {
+    await button.click();
+    await expect(button).toHaveAttribute('aria-checked', 'true');
+    const box = await button.boundingBox();
+    expect(box!.x).toBeGreaterThanOrEqual(bounds!.x);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(bounds!.x + bounds!.width);
+    expect(Math.abs(box!.y - bounds!.y)).toBeLessThanOrEqual(1);
+  }
+  await expectNoHorizontalOverflow(page);
+});
+
+test('種別グループをキーボードで切り替え、履歴移動でも選択を同期する', async ({ page }) => {
+  await page.goto('/#/algorithms/f2l');
+  const types = page.locator('app-algorithm-kind-links');
+  const f2l = types.getByRole('radio', { name: 'F2L 41', exact: true });
+  await expect(f2l).toBeChecked();
+  await f2l.focus();
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/algorithms\/oll$/);
+  await expect(types.getByRole('radio', { name: 'OLL 57', exact: true })).toBeChecked();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/algorithms\/f2l$/);
+  await expect(f2l).toBeChecked();
+  await expect(types.getByRole('radio', { name: 'OLL 57', exact: true })).not.toBeChecked();
+  await page.goForward();
+  await expect(page).toHaveURL(/\/algorithms\/oll$/);
+  await expect(types.getByRole('radio', { name: 'OLL 57', exact: true })).toBeChecked();
+});
+
+test(
+  'カード幅に応じてスロット名を切り替え、選択した手順を維持する',
+  { tag: '@responsive' },
+  async ({ page }) => {
+    await page.goto('/#/algorithms/f2l');
+    await page.locator('app-algorithm-tools input').fill('01');
+    const card = page.locator('app-algorithm-case-card');
+    const slots = card.locator('app-slot-button-group');
+    await slots.getByRole('radio', { name: 'Back Left', exact: true }).click();
+    const setup = await card.locator('.setup').innerText();
+    for (const width of [375, 640, 1440, 640, 375]) {
+      await page.setViewportSize({ width, height: 900 });
+      const compact = width === 640;
+      await expect(slots.locator('.short-label:visible')).toHaveCount(compact ? 4 : 0);
+      await expect(slots.locator('.full-label:visible')).toHaveCount(compact ? 0 : 4);
+      await expect(
+        slots.locator(compact ? '.short-label:visible' : '.full-label:visible'),
+      ).toHaveText(
+        compact
+          ? ['FR', 'FL', 'BL', 'BR']
+          : ['Front Right', 'Front Left', 'Back Left', 'Back Right'],
+      );
+      await expect(slots.getByRole('radio', { name: 'Back Left', exact: true })).toBeChecked();
+      await expect(card.locator('.setup')).toHaveText(setup);
+      await expectElementsWithin(page, 'app-slot-button-group', 'app-slot-button-group button');
+      await expectNoHorizontalOverflow(page);
+    }
+  },
+);

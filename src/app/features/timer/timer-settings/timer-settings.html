@@ -7,17 +7,22 @@
       }
     </select>
   </div>
-  <div class="modes">
-    <button matButton [class.on]="store.category() === 'full'" (click)="store.setCategory('full')">
+  <mat-button-toggle-group
+    class="modes"
+    [value]="store.category()"
+    (change)="store.setCategory($event.value)"
+    [attr.aria-label]="'timer.mode' | transloco"
+  >
+    <mat-button-toggle value="full">
       3×3<small>{{ 'timer.fullSolve' | transloco }}</small>
-    </button>
-    <button matButton [class.on]="store.category() === 'oll'" (click)="store.setCategory('oll')">
+    </mat-button-toggle>
+    <mat-button-toggle value="oll">
       OLL<small>{{ 'timer.caseDrill' | transloco }}</small>
-    </button>
-    <button matButton [class.on]="store.category() === 'pll'" (click)="store.setCategory('pll')">
+    </mat-button-toggle>
+    <mat-button-toggle value="pll">
       PLL<small>{{ 'timer.caseDrill' | transloco }}</small>
-    </button>
-  </div>
+    </mat-button-toggle>
+  </mat-button-toggle-group>
 </div>
 @if (store.category() !== 'full') {
   <div class="case-select">

@@ -66,6 +66,13 @@
     --cube-border: #181a17;
 
     // Angular Material
+    @include mat.button-toggle-overrides(
+      (
+        shape: 10px,
+        // selected-state-background-color: var(--mat-sys-surface-container-highest),
+        selected-state-background-color: #96d096,
+      )
+    );
     @include mat.card-overrides(
       (
         outlined-container-color: var(--surface-color),
