@@ -4,20 +4,26 @@
 >
   <mat-button-toggle
     value="f2l"
-    [class.on]="currentUrl() === '/algorithms/f2l'"
-    [checked]="currentUrl() === '/algorithms/f2l'"
+    routerLink="/algorithms/f2l"
+    routerLinkActive="on"
+    #f2lLink="routerLinkActive"
+    [checked]="f2lLink.isActive"
     >F2L <small>41</small></mat-button-toggle
   >
   <mat-button-toggle
     value="oll"
-    [class.on]="currentUrl() === '/algorithms/oll'"
-    [checked]="currentUrl() === '/algorithms/oll'"
+    routerLink="/algorithms/oll"
+    routerLinkActive="on"
+    #ollLink="routerLinkActive"
+    [checked]="ollLink.isActive"
     >OLL <small>57</small></mat-button-toggle
   >
   <mat-button-toggle
     value="pll"
-    [class.on]="currentUrl() === '/algorithms/pll'"
-    [checked]="currentUrl() === '/algorithms/pll'"
+    routerLink="/algorithms/pll"
+    routerLinkActive="on"
+    #pllLink="routerLinkActive"
+    [checked]="pllLink.isActive"
     >PLL <small>21</small></mat-button-toggle
   >
 </mat-button-toggle-group>
