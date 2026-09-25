@@ -62,6 +62,17 @@ describe('SolveDetailDialog', () => {
     expect(fixture.nativeElement.querySelector('.result').textContent).toContain('3.23');
   });
 
+  it('F2Lのケース番号・対象位置とクォータービューを履歴詳細に表示する', async () => {
+    TestBed.inject(CubeService).storedSolves.set([
+      { ...solve, category: 'f2l', caseName: '41', f2lCaseId: 'F2L-41', f2lSlot: 'BL' },
+    ]);
+    const fixture = TestBed.createComponent(SolveDetailDialog);
+    await fixture.whenStable();
+    expect(fixture.nativeElement.textContent).toContain('F2L · 41');
+    expect(fixture.nativeElement.textContent).toContain('Back Left');
+    expect(fixture.nativeElement.querySelector('app-cube-quarter-view')).toBeTruthy();
+  });
+
   it('言語切替後に計測日時のロケールを更新する', () => {
     TestBed.inject(CubeService).storedSolves.set([solve]);
     const i18n = TestBed.inject(TranslocoService);

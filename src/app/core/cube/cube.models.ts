@@ -1,6 +1,7 @@
 /** 集計単位として扱うsolveカテゴリーの定義。 */
 export const SOLVE_CATEGORIES = [
   { id: 'full', labelKey: 'solveCategories.full' },
+  { id: 'f2l', labelKey: 'solveCategories.f2l' },
   { id: 'oll', labelKey: 'solveCategories.oll' },
   { id: 'pll', labelKey: 'solveCategories.pll' },
 ] as const satisfies ReadonlyArray<{ id: string; labelKey: string }>;
@@ -50,8 +51,12 @@ export interface Solve extends SyncMetadata {
   scramble: string;
   /** 記録を独立して集計するsolveカテゴリー。 */
   category: SolveCategory;
-  /** PLL練習時のケース名。 */
+  /** ケース練習時の表示番号またはケース名。 */
   caseName?: string;
+  /** 表示番号の変更に影響されないF2Lケース識別子。 */
+  f2lCaseId?: string;
+  /** F2L計測で解いた対象スロット。 */
+  f2lSlot?: F2lSlot;
   /** 記録が属するグループID。 */
   groupId?: string;
   /** 記録へ適用されたペナルティ。 */
@@ -114,6 +119,8 @@ export type F2lSlot = 'FL' | 'FR' | 'BL' | 'BR';
 
 /** 番号・分類を共有し、4スロットそれぞれに解法を持つF2Lケース。 */
 export interface F2lCase extends Omit<AlgorithmCase<'F2L'>, 'algorithms'> {
+  /** 表示番号を変更しても維持する固定のケース識別子。 */
+  caseId: string;
   /** FR基準の共通Setup。ほかのスロットは末尾に持ち替えを追加して作る。 */
   setup: string;
   /** 各スロットの解法一覧。 */
@@ -122,6 +129,8 @@ export interface F2lCase extends Omit<AlgorithmCase<'F2L'>, 'algorithms'> {
 
 /** F2L固有の手順の対象スロットを持つケース。 */
 export interface F2lAlgorithmCase extends AlgorithmCase<'F2L'> {
+  /** 保存済み記録・手順設定と対応づける固定識別子。 */
+  caseId: string;
   /** Setupと解法手順の基準スロット。選択位置への持ち替えはこの位置を基準とする。 */
   readonly slot: F2lSlot;
 }

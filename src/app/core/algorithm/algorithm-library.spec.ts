@@ -17,16 +17,16 @@ describe('AlgorithmLibraryService', () => {
     return TestBed.inject(AlgorithmLibraryService);
   }
 
-  it('既存ケースのキーを維持し、F2Lは2桁の番号とスロットで識別する', () => {
+  it('既存ケースのキーを維持し、F2Lは表示番号を変えても固定IDとスロットで識別する', () => {
     const service = createService();
     expect(service.caseKey(item)).toBe(`${item.kind}-${item.number}`);
     for (const slot of ['FL', 'FR', 'BL', 'BR'] as const) {
       expect(service.caseKey({ ...f2lCaseForSlot(F2L_CASES[0], slot), slot })).toBe(
         `F2L-01-${slot}`,
       );
-      expect(service.caseKey({ ...f2lCaseForSlot(F2L_CASES[0], slot), number: '01', slot })).toBe(
-        `F2L-01-${slot}`,
-      );
+      expect(
+        service.caseKey({ ...f2lCaseForSlot(F2L_CASES[0], slot), number: 'renumbered', slot }),
+      ).toBe(`F2L-01-${slot}`);
       expect(service.caseKey({ ...f2lCaseForSlot(F2L_CASES[40], slot), slot })).toBe(
         `F2L-41-${slot}`,
       );

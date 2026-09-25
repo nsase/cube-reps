@@ -1,6 +1,7 @@
 import { defineF2lCase } from './f2l-case';
 
 export const F2L_14_CASE = defineF2lCase({
+  caseId: 'F2L-14',
   number: '14',
   group: 'Disconnected Pairs',
   setup: "F' L' U2 L F",

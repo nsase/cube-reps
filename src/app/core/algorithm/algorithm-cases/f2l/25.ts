@@ -1,6 +1,7 @@
 import { defineF2lCase } from './f2l-case';
 
 export const F2L_25_CASE = defineF2lCase({
+  caseId: 'F2L-25',
   number: '25',
   group: 'Corner in Slot',
   setup: "F' R U R' U' R' F R",

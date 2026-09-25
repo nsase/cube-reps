@@ -49,6 +49,7 @@
     "algorithms": "Algorithms"
   },
   "solveCategories": {
+    "f2l": "F2L",
     "full": "Full solve",
     "oll": "OLL drill",
     "pll": "PLL drill"
@@ -72,6 +73,8 @@
     "recentAverage": "Last 5 average"
   },
   "timer": {
+    "selectRandomDrill": "Select another random case or slot",
+    "f2lDrillHint": "Time one pair after completing the Setup and final cube rotation. Start with white down and green in front.",
     "recordGroup": "RECORD GROUP",
     "recordDestination": "Record to",
     "mode": "Timer mode",

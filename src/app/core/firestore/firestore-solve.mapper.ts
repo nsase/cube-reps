@@ -1,4 +1,4 @@
-import { Penalty, Solve, SolveCategory } from '../cube/cube.models';
+import { F2lSlot, Penalty, Solve, SolveCategory } from '../cube/cube.models';
 import { USER_DATA_SCHEMA_VERSION } from '../local-storage/user-data-repository';
 import { isRecord, omitUndefined, readDate } from './utils';
 
@@ -22,8 +22,12 @@ export interface FirestoreSolveDocument {
   readonly schemaVersion: number;
   /** 計測記録のカテゴリー。 */
   readonly category: SolveCategory;
-  /** PLL練習時のケース名。 */
+  /** ケース練習時の表示番号またはケース名。 */
   readonly caseName?: string;
+  /** F2Lの表示番号から独立した固定識別子。 */
+  readonly f2lCaseId?: string;
+  /** F2Lで解いた対象位置。 */
+  readonly f2lSlot?: F2lSlot;
   /** 記録が属するグループID。 */
   readonly groupId?: string;
   /** 記録へ適用されたペナルティ。 */
@@ -56,6 +60,7 @@ export function toFirestoreSolve(solve: Solve, userId: string): FirestoreSolveDo
 /**
  * Firestoreの現行・旧形式をアプリの現行Solveへ正規化する。
  * 追加フィールドや省略可能項目の欠落を許容し、将来の段階的な移行でも読み込みを継続できるようにする。
+ * F2Lのケース・スロットが不正な記録は、別の条件で再計測されることを防ぐため読み込まない。
  *
  * @param id FirestoreドキュメントID
  * @param value Firestoreから取得したデータ
@@ -70,6 +75,15 @@ export function fromFirestoreSolve(id: string, value: unknown, userId: string): 
   if (!createdAt) return undefined;
   const updatedAt = readDate(value['updatedAt']) ?? createdAt;
   const category = readCategory(value['category']);
+  if (
+    category === 'f2l' &&
+    (typeof value['f2lCaseId'] !== 'string' ||
+      !/^F2L-(0[1-9]|[1-3][0-9]|4[01])$/.test(value['f2lCaseId']) ||
+      typeof value['f2lSlot'] !== 'string' ||
+      !['FR', 'FL', 'BL', 'BR'].includes(value['f2lSlot']) ||
+      typeof value['caseName'] !== 'string')
+  )
+    return undefined;
   const penalty = readPenalty(value['penalty']);
   return omitUndefined({
     id,
@@ -82,6 +96,9 @@ export function fromFirestoreSolve(id: string, value: unknown, userId: string): 
     schemaVersion: typeof value['schemaVersion'] === 'number' ? value['schemaVersion'] : 0,
     category,
     caseName: typeof value['caseName'] === 'string' ? value['caseName'] : undefined,
+    ...(category === 'f2l'
+      ? { f2lCaseId: value['f2lCaseId'] as string, f2lSlot: value['f2lSlot'] as F2lSlot }
+      : {}),
     groupId: typeof value['groupId'] === 'string' ? value['groupId'] : undefined,
     penalty,
     deletedAt: readDate(value['deletedAt']),
@@ -90,7 +107,7 @@ export function fromFirestoreSolve(id: string, value: unknown, userId: string): 
 
 /** 未知の旧カテゴリーをフルソルブへ寄せる。 */
 function readCategory(value: unknown): SolveCategory {
-  return value === 'oll' || value === 'pll' ? value : 'full';
+  return value === 'f2l' || value === 'oll' || value === 'pll' ? value : 'full';
 }
 
 /** 未知または欠落した旧ペナルティを未適用へ寄せる。 */

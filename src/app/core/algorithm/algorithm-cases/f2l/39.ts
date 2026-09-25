@@ -4,6 +4,7 @@ import { defineF2lCase } from './f2l-case';
 // SpeedCube 39
 // CubeRoot D-
 export const F2L_39_CASE = defineF2lCase({
+  caseId: 'F2L-39',
   number: '39',
   group: 'Pieces in Slot',
   setup: "R2 U2 R' U' R U' R' U2 R'",

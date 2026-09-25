@@ -21,13 +21,14 @@ export class AlgorithmLibraryService {
   /** IndexedDBからの復元が完了したときに解決するPromise。 */
   readonly ready = this.initializeStorage();
 
-  /** @returns 種別と番号、F2Lでは対象スロットも組み合わせたケース固有キー */
+  /** @returns 種別と番号、F2Lでは固定識別子とスロットを組み合わせたケース固有キー */
   caseKey<T extends AlgorithmCase>(item: T): string {
     const key = [item.kind, item.number];
     if (item.kind === 'F2L') {
       if (!('slot' in item) || !['FL', 'FR', 'BL', 'BR'].includes(String(item.slot))) {
         throw new Error('F2L case requires a valid slot');
       }
+      if ('caseId' in item && typeof item.caseId === 'string') return `${item.caseId}-${item.slot}`;
       key.push(item.slot as string);
     }
     return key.join('-');

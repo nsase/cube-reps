@@ -20,6 +20,12 @@
         }}{{ currentSolve().caseName ? ' · ' + currentSolve().caseName : '' }}
       </dd>
     </div>
+    @if (currentSolve().f2lSlot) {
+      <div>
+        <dt>{{ 'algorithms.slot' | transloco }}</dt>
+        <dd>{{ 'algorithms.slots.' + currentSolve().f2lSlot | transloco }}</dd>
+      </div>
+    }
     <div>
       <dt>{{ 'history.recordGroup' | transloco }}</dt>
       <dd>{{ cube.groupName(currentSolve().groupId) }}</dd>

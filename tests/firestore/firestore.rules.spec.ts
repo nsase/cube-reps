@@ -54,6 +54,28 @@ describe('Firestore Solve Security Rules', () => {
     expect((await getDoc(reference)).exists()).toBe(false);
   });
 
+  it('F2Lの41ケースと4スロットの記録を保存し、不正な識別情報を拒否する', async () => {
+    const reference = doc(
+      environment.authenticatedContext(ownerId).firestore(),
+      'users',
+      ownerId,
+      'solves',
+      solveId,
+    );
+    for (const f2lSlot of ['FR', 'FL', 'BL', 'BR']) {
+      await assertSucceeds(
+        setDoc(reference, solve({ category: 'f2l', caseName: '41', f2lCaseId: 'F2L-41', f2lSlot })),
+      );
+    }
+    for (const fields of [
+      { category: 'f2l' },
+      { category: 'f2l', caseName: '01', f2lCaseId: 'F2L-01', f2lSlot: 'XX' },
+      { category: 'f2l', caseName: '42', f2lCaseId: 'F2L-42', f2lSlot: 'FR' },
+      { category: 'full', f2lCaseId: 'F2L-01', f2lSlot: 'FR' },
+    ])
+      await assertFails(setDoc(reference, solve(fields)));
+  });
+
   it('本人が自分のSolve一覧を取得できる', async () => {
     await environment.withSecurityRulesDisabled(async (context) => {
       await setDoc(doc(context.firestore(), 'users', ownerId, 'solves', solveId), solve());

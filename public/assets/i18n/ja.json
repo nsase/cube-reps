@@ -49,6 +49,7 @@
     "algorithms": "アルゴリズム"
   },
   "solveCategories": {
+    "f2l": "F2L",
     "full": "フルソルブ",
     "oll": "OLL練習",
     "pll": "PLL練習"
@@ -72,6 +73,8 @@
     "recentAverage": "直近5回 平均"
   },
   "timer": {
+    "selectRandomDrill": "ケースまたはスロットをランダムに選び直す",
+    "f2lDrillHint": "白を下・緑を正面にしてSetupと末尾の持ち替えを回し、対象の1ペアを解く時間を計測します。",
     "recordGroup": "RECORD GROUP",
     "recordDestination": "記録先",
     "mode": "計測モード",

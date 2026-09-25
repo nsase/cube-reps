@@ -33,7 +33,7 @@ select {
 
 .record-context {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: stretch;
   gap: $gap;
 
@@ -91,5 +91,32 @@ select {
 @media (max-width: 400px) {
   .record-context {
     grid-template-columns: 1fr;
+  }
+}
+
+.slot-select {
+  @extend %box;
+  grid-template-columns: auto minmax(0, auto) 1fr;
+  height: auto;
+  min-height: $height;
+  padding-block: 6px;
+  font-size: var(--font-size-small);
+
+  span {
+    color: $muted;
+  }
+}
+
+@media (max-width: 620px) {
+  .record-context {
+    grid-template-columns: 1fr;
+  }
+
+  .slot-select {
+    grid-template-columns: auto minmax(0, 1fr);
+
+    span {
+      grid-column: 1 / -1;
+    }
   }
 }
