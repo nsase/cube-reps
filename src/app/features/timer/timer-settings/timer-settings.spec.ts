@@ -29,7 +29,9 @@ describe('TimerSettings', () => {
       expect(store.category()).toBe(category);
       expect(button.getAttribute('aria-checked')).toBe('true');
       expect(element.querySelectorAll('.modes button[aria-checked="true"]')).toHaveLength(1);
-      expect(element.querySelectorAll('.case-select option')).toHaveLength(count);
+      expect(
+        element.querySelectorAll('[data-testid="timer-drill-case-filter"] option'),
+      ).toHaveLength(count);
     }
   });
 
@@ -48,6 +50,7 @@ describe('TimerSettings', () => {
     expect(store.selectedCase()).toBe(0);
     expect(store.selectedSlot()).toBe('random');
     const slots = element.querySelector<HTMLSelectElement>('[data-testid="timer-f2l-slot"]')!;
+    expect(slots.closest('.case-controls')).toBe(cases.closest('.case-controls'));
     expect(slots.value).toBe('random');
     expect(slots.options).toHaveLength(5);
     slots.value = 'FR';
@@ -80,9 +83,9 @@ describe('TimerSettings', () => {
       i18n.setActiveLang(lang);
       await fixture.whenStable();
       expect(fixture.nativeElement.querySelector('.modes').getAttribute('aria-label')).toBe(label);
-      expect(fixture.nativeElement.querySelector('.slot-select span').textContent).toContain(
-        lang === 'ja' ? '対象の1ペア' : 'Time one pair',
-      );
+      expect(
+        fixture.nativeElement.querySelector('#timer-f2l-slot').getAttribute('aria-label'),
+      ).toBe(i18n.translate('algorithms.slot'));
     }
   });
 });

@@ -74,7 +74,6 @@
   },
   "timer": {
     "selectRandomDrill": "Select another random case or slot",
-    "f2lDrillHint": "Time one pair after completing the Setup and final cube rotation. Start with white down and green in front.",
     "recordGroup": "RECORD GROUP",
     "recordDestination": "Record to",
     "mode": "Timer mode",

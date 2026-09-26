@@ -30,35 +30,37 @@
 @if (store.category() !== 'full') {
   <div class="case-select">
     <label for="timer-practice-case">{{ 'timer.practiceCase' | transloco }}</label>
-    <select
-      id="timer-practice-case"
-      data-testid="timer-drill-case-filter"
-      [(ngModel)]="store.selectedCase"
-      (change)="store.newScramble()"
-    >
-      <option [value]="'random'">{{ 'timer.randomCase' | transloco }}</option>
-      @for (item of store.drillCases(); track item.number; let index = $index) {
-        <option [ngValue]="index">{{ item.number }}{{ item.name ? ' — ' + item.name : '' }}</option>
+    <div class="case-controls">
+      <select
+        id="timer-practice-case"
+        data-testid="timer-drill-case-filter"
+        [(ngModel)]="store.selectedCase"
+        (change)="store.newScramble()"
+      >
+        <option [value]="'random'">{{ 'timer.randomCase' | transloco }}</option>
+        @for (item of store.drillCases(); track item.number; let index = $index) {
+          <option [ngValue]="index">
+            {{ item.number }}{{ item.name ? ' — ' + item.name : '' }}
+          </option>
+        }
+      </select>
+      @if (store.category() === 'f2l') {
+        <select
+          id="timer-f2l-slot"
+          [attr.aria-label]="'algorithms.slot' | transloco"
+          data-testid="timer-f2l-slot"
+          [ngModel]="store.selectedSlot()"
+          (ngModelChange)="store.setSlot($event)"
+        >
+          <option value="random">{{ 'timer.randomCase' | transloco }}</option>
+          @for (slot of slots; track slot) {
+            <option [value]="slot">{{ 'algorithms.slots.' + slot | transloco }}</option>
+          }
+        </select>
       }
-    </select>
-    <code>{{ algorithmLibrary.primaryNotation(store.currentDrillCase()) }}</code>
-  </div>
-}
-
-@if (store.category() === 'f2l') {
-  <div class="slot-select">
-    <label for="timer-f2l-slot">{{ 'algorithms.slot' | transloco }}</label>
-    <select
-      id="timer-f2l-slot"
-      data-testid="timer-f2l-slot"
-      [ngModel]="store.selectedSlot()"
-      (ngModelChange)="store.setSlot($event)"
-    >
-      <option value="random">{{ 'timer.randomCase' | transloco }}</option>
-      @for (slot of slots; track slot) {
-        <option [value]="slot">{{ 'algorithms.slots.' + slot | transloco }}</option>
-      }
-    </select>
-    <span>{{ 'timer.f2lDrillHint' | transloco }}</span>
+    </div>
+    <code data-testid="timer-drill-solution">{{
+      algorithmLibrary.primaryNotation(store.currentDrillCase())
+    }}</code>
   </div>
 }

@@ -75,6 +75,51 @@ test(
   },
 );
 
+test(
+  '練習ケースとスロットを同じ行に表示し、狭い幅でも解法を省略しない',
+  { tag: '@responsive' },
+  async ({ page }) => {
+    for (const kind of ['F2L', 'OLL', 'PLL']) {
+      await page.getByRole('radio', { name: new RegExp(kind) }).click();
+      const cases = page.getByTestId('timer-drill-case-filter');
+      const solution = page.getByTestId('timer-drill-solution');
+      await cases.selectOption({ index: 1 });
+      if (kind === 'F2L') {
+        const slots = page.getByTestId('timer-f2l-slot');
+        await slots.selectOption('FR');
+        await expect(solution).toHaveText("U R U' R'");
+        const caseBox = (await cases.boundingBox())!;
+        const slotBox = (await slots.boundingBox())!;
+        expect(Math.abs(caseBox.y - slotBox.y)).toBeLessThanOrEqual(1);
+        expect(slotBox.x).toBeGreaterThanOrEqual(caseBox.x + caseBox.width);
+      }
+      await expect(solution).toBeVisible();
+      await expect(solution).not.toBeEmpty();
+      const caseBox = (await cases.boundingBox())!;
+      const solutionBox = (await solution.boundingBox())!;
+      const settingsBox = (await page.locator('app-timer-settings').boundingBox())!;
+      if (settingsBox.width <= 700) {
+        expect(solutionBox.y).toBeGreaterThanOrEqual(caseBox.y + caseBox.height);
+      } else {
+        expect(solutionBox.x).toBeGreaterThanOrEqual(caseBox.x + caseBox.width);
+      }
+      const content = await solution.evaluate((element) => ({
+        width: element.clientWidth,
+        contentWidth: element.scrollWidth,
+        height: element.clientHeight,
+        contentHeight: element.scrollHeight,
+      }));
+      expect(content.contentWidth).toBeLessThanOrEqual(content.width);
+      expect(content.contentHeight).toBeLessThanOrEqual(content.height);
+      await expectResponsiveLayout(
+        page,
+        '[data-testid="timer-drill-case-filter"], [data-testid="timer-f2l-slot"], [data-testid="timer-drill-solution"]',
+      );
+      await expectNoHorizontalOverflow(page);
+    }
+  },
+);
+
 test('スクランブル再作成後のSpace操作でタイマーを開始する', async ({ page }) => {
   const refreshButton = page.getByTestId('timer-scramble-refresh');
   const clock = page.locator('app-timer-clock .clock');
