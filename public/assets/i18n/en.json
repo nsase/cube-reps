@@ -51,8 +51,8 @@
   "solveCategories": {
     "f2l": "F2L",
     "full": "Full solve",
-    "oll": "OLL drill",
-    "pll": "PLL drill"
+    "oll": "OLL",
+    "pll": "PLL"
   },
   "common": {
     "ok": "OK",

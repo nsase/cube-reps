@@ -16,6 +16,27 @@ describe('HistoryFilter', () => {
     }).compileComponents();
   });
 
+  /** カテゴリー名の統一と言語切替後の表示を保証する。 */
+  it('カテゴリーをFull solve・F2L・OLL・PLLで表示する', async () => {
+    const fixture = TestBed.createComponent(HistoryFilter);
+    const i18n = TestBed.inject(TranslocoService);
+    for (const [lang, fullLabel] of [
+      ['en', 'Full solve'],
+      ['ja', 'フルソルブ'],
+    ]) {
+      i18n.setActiveLang(lang);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+      expect(Array.from(select.options, (option) => option.textContent?.trim())).toEqual([
+        fullLabel,
+        'F2L',
+        'OLL',
+        'PLL',
+      ]);
+    }
+  });
+
   it('カテゴリーと記録グループを切り替えて共有Storeへ反映する', async () => {
     const cube = TestBed.inject(CubeService);
     const group = cube.addGroup('大会')!;
