@@ -33,7 +33,7 @@ select {
 
 .record-context {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: stretch;
   gap: $gap;
 
@@ -54,18 +54,32 @@ select {
 
 .case-select {
   @extend %box;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+  height: auto;
+  min-height: $height;
+  padding-block: 6px;
   font-size: var(--font-size-small);
 
-  select {
-    min-width: 150px;
+  .case-controls {
+    display: flex;
+    gap: $gap;
+    min-width: 0;
+  }
+
+  #timer-practice-case {
+    flex: 1;
+    min-width: 0;
+  }
+
+  #timer-f2l-slot {
+    width: 120px;
   }
 
   code {
+    min-width: 0;
     color: $muted;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -75,20 +89,17 @@ select {
   }
 }
 
-@media (max-width: 620px) {
-  .modes small {
-    display: none;
-  }
+@container timer (max-width: 600px) {
   .case-select {
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(0, 1fr);
 
     code {
-      display: none;
+      grid-column: 1 / -1;
     }
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 620px) {
   .record-context {
     grid-template-columns: 1fr;
   }

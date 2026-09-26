@@ -19,6 +19,46 @@ describe('Firestore Solve mapper', () => {
     penalty: '+2',
   };
 
+  /** 共通ケースIDの同期とカテゴリーとの対応を保証する。 */
+  it.each([
+    ['oll', 'OLL-57'],
+    ['pll', 'PLL-T'],
+  ] as const)('%sのcaseIdを往復変換する', (category, caseId) => {
+    const document = toFirestoreSolve({ ...solve, category, caseId }, 'account-1');
+    expect(fromFirestoreSolve(solve.id, document, 'account-1')).toMatchObject({ category, caseId });
+    expect(
+      fromFirestoreSolve(solve.id, { ...document, caseId: 'F2L-01' }, 'account-1'),
+    ).toBeUndefined();
+    expect(fromFirestoreSolve(solve.id, { ...document, caseId: 1 }, 'account-1')).toBeUndefined();
+  });
+
+  it('F2L記録の固定ID・番号・スロットを往復変換で維持する', () => {
+    const f2l: Solve = {
+      ...solve,
+      category: 'f2l',
+      caseName: '41',
+      caseId: 'F2L-41',
+      f2lSlot: 'BR',
+    };
+    const document = toFirestoreSolve(f2l, 'account-1');
+    expect(fromFirestoreSolve(f2l.id, document, 'account-1')).toMatchObject({
+      category: 'f2l',
+      caseName: '41',
+      caseId: 'F2L-41',
+      f2lSlot: 'BR',
+      scramble: f2l.scramble,
+    });
+    for (const invalid of [
+      { f2lSlot: 'XX' },
+      { f2lSlot: ['FR'] },
+      { caseId: 'F2L-42' },
+      { f2lSlot: undefined },
+      { caseName: undefined },
+    ]) {
+      expect(fromFirestoreSolve(f2l.id, { ...document, ...invalid }, 'account-1')).toBeUndefined();
+    }
+  });
+
   it('現行SolveをFirestore timestamp互換のDateと認証UIDを持つ保存形式へ変換する', () => {
     const stored = toFirestoreSolve(solve, 'account-1');
 

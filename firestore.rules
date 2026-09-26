@@ -11,6 +11,15 @@ service cloud.firestore {
         && (!data.keys().hasAny(['groupId']) || data.groupId is string);
     }
 
+    function validCaseId(data) {
+      return !data.keys().hasAny(['caseId'])
+        || (data.caseId is string && (
+          (data.category == 'f2l' && data.caseId.matches('^F2L-(0[1-9]|[1-3][0-9]|4[01])$'))
+          || (data.category == 'oll' && data.caseId.matches('^OLL-(0[1-9]|[1-4][0-9]|5[0-7])$'))
+          || (data.category == 'pll' && data.caseId.matches('^PLL-(Aa|Ab|E|F|Ga|Gb|Gc|Gd|H|Ja|Jb|Na|Nb|Ra|Rb|T|Ua|Ub|V|Y|Z)$'))
+        ));
+    }
+
     function validSolve(userId, solveId, data) {
       return data.keys().hasAll([
           'id', 'time', 'scramble', 'createdAt', 'updatedAt', 'ownerType', 'ownerId',
@@ -18,7 +27,7 @@ service cloud.firestore {
         ])
         && data.keys().hasOnly([
           'id', 'time', 'scramble', 'createdAt', 'updatedAt', 'ownerType', 'ownerId',
-          'schemaVersion', 'category', 'caseName', 'groupId', 'penalty', 'deletedAt'
+          'schemaVersion', 'category', 'caseName', 'caseId', 'f2lSlot', 'groupId', 'penalty', 'deletedAt'
         ])
         && solveId.matches('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')
         && data.id == solveId
@@ -32,9 +41,16 @@ service cloud.firestore {
         && data.ownerId == userId
         && data.schemaVersion is int
         && data.schemaVersion >= 1
-        && data.category in ['full', 'oll', 'pll']
+        && data.category in ['full', 'f2l', 'oll', 'pll']
         && data.penalty in ['none', '+2', 'DNF']
-        && validOptionalStrings(data);
+        && validOptionalStrings(data)
+        && (data.category == 'f2l'
+          ? (data.keys().hasAll(['caseName', 'caseId', 'f2lSlot'])
+            && data.caseId is string
+            && data.caseId.matches('^F2L-(0[1-9]|[1-3][0-9]|4[01])$')
+            && data.f2lSlot in ['FR', 'FL', 'BL', 'BR'])
+          : !data.keys().hasAny(['f2lSlot']))
+        && validCaseId(data);
     }
 
     match /users/{userId}/groups/{groupId} {

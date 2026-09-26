@@ -2,6 +2,8 @@ import { AlgorithmCase, CaseAlgorithm } from '../../../cube/cube.models';
 
 /** OLLケース生成時に必要な元データ。 */
 interface OllCaseDefinition {
+  /** 表示番号を変更しても維持する固定のケース識別子。 */
+  caseId: string;
   /** 2桁のOLL番号。 */
   number: string;
   /** 表示と検索に使用するケース名一覧。 */
@@ -23,6 +25,7 @@ interface OllCaseDefinition {
 export function defineOllCase(definition: OllCaseDefinition): AlgorithmCase<'OLL'> {
   return {
     kind: 'OLL',
+    caseId: definition.caseId,
     number: definition.number,
     name: definition.names.join(' / ') || `OLL ${Number(definition.number)}`,
     group: definition.group,

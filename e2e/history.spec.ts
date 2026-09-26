@@ -17,6 +17,12 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('レスポンシブ配置が画面内に収まる', { tag: '@responsive' }, async ({ page }) => {
+  await expect(page.getByLabel('Solve category', { exact: true }).locator('option')).toHaveText([
+    'Full solve',
+    'F2L',
+    'OLL',
+    'PLL',
+  ]);
   await expectNoHorizontalOverflow(page);
   await expectResponsiveLayout(page, layoutItems);
 });

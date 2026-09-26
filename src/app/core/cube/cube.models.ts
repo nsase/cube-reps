@@ -1,6 +1,7 @@
 /** 集計単位として扱うsolveカテゴリーの定義。 */
 export const SOLVE_CATEGORIES = [
   { id: 'full', labelKey: 'solveCategories.full' },
+  { id: 'f2l', labelKey: 'solveCategories.f2l' },
   { id: 'oll', labelKey: 'solveCategories.oll' },
   { id: 'pll', labelKey: 'solveCategories.pll' },
 ] as const satisfies ReadonlyArray<{ id: string; labelKey: string }>;
@@ -50,8 +51,12 @@ export interface Solve extends SyncMetadata {
   scramble: string;
   /** 記録を独立して集計するsolveカテゴリー。 */
   category: SolveCategory;
-  /** PLL練習時のケース名。 */
+  /** ケース練習時の表示番号またはケース名。 */
   caseName?: string;
+  /** 表示番号の変更に影響されないF2L・OLL・PLL共通のケース識別子。 */
+  caseId?: string;
+  /** F2L計測で解いた対象スロット。 */
+  f2lSlot?: F2lSlot;
   /** 記録が属するグループID。 */
   groupId?: string;
   /** 記録へ適用されたペナルティ。 */
@@ -86,6 +91,8 @@ export interface AlgorithmPreference extends SyncMetadata {
 
 /** F2L・OLL・PLLに共通するケースと登録済み手順。 */
 export interface AlgorithmCase<Kind extends 'F2L' | 'OLL' | 'PLL' = 'F2L' | 'OLL' | 'PLL'> {
+  /** 表示番号を変更しても維持する、種別を含む固定のケース識別子。 */
+  caseId: string;
   /** ケースの種別。 */
   kind: Kind;
   /**

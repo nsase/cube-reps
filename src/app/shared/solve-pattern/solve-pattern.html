@@ -1,5 +1,7 @@
 @if (category() === 'full') {
   <app-cube-net [scramble]="scramble()" orientation="white-top" />
+} @else if (category() === 'f2l') {
+  <app-cube-quarter-view [pattern]="quarterPattern()" [label]="label()" />
 } @else {
   <app-cube-pattern [pattern]="pattern()" [label]="label()" />
 }

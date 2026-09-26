@@ -2,6 +2,8 @@ import { CaseAlgorithm, F2lCase, F2lAlgorithmCase, F2lSlot } from '../../../cube
 
 /** ケース共通情報と、独立した4スロットの元データ。 */
 interface F2lCaseDefinition {
+  /** 初期の番号対応で固定し、表示番号の変更時にも変更しない識別子。 */
+  caseId: string;
   /** 表示番号。参照サイトとの対応は各ケースのコメントに記載する。 */
   number: string;
   /** 形状による分類。 */
@@ -33,6 +35,7 @@ export function defineF2lCase(definition: F2lCaseDefinition): F2lCase {
   }
   return {
     kind: 'F2L',
+    caseId: definition.caseId,
     number: definition.number,
     group: definition.group,
     setup: definition.setup,
@@ -51,6 +54,7 @@ export function f2lCaseForSlot(item: F2lCase, slot: F2lSlot): F2lAlgorithmCase {
   const rotation: Record<F2lSlot, string> = { FR: '', FL: 'y', BL: 'y2', BR: "y'" };
   return {
     kind: item.kind,
+    caseId: item.caseId,
     number: item.number,
     group: item.group,
     slot,

@@ -23,6 +23,15 @@ describe('SolvePattern', () => {
     expect(fixture.nativeElement.querySelector('app-cube-pattern')).toBeFalsy();
   });
 
+  it('F2Lでは持ち替え後のクォータービューを表示する', () => {
+    const fixture = createFixture('f2l');
+    fixture.componentRef.setInput('scramble', "R U R' y2");
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-cube-quarter-view')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-cube-pattern')).toBeFalsy();
+    expect(fixture.nativeElement.querySelector('app-cube-net')).toBeFalsy();
+  });
+
   it('OLLでは黄色方向だけの上段パターンを表示する', () => {
     const fixture = createFixture('oll');
     const sideSticker = fixture.nativeElement.querySelector(

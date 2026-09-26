@@ -2,6 +2,7 @@ import { definePllCase } from './pll-case';
 
 /** PLL Gbのケース定義。 */
 export const GB_CASE = definePllCase({
+  caseId: 'PLL-Gb',
   number: 'Gb',
   group: 'Mixed',
   setup: "D' R2 U R' U R' U' R U' R2 D U' R' U R",

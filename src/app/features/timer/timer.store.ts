@@ -1,8 +1,16 @@
 import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
-import { OLL_CASES, PLL_CASES } from '../../core/algorithm/algorithm-cases';
+import { F2L_CASES, OLL_CASES, PLL_CASES } from '../../core/algorithm/algorithm-cases';
+import { f2lCaseForSlot } from '../../core/algorithm/algorithm-cases/f2l/f2l-case';
 import { AppUpdateService } from '../../core/app-update.service';
 import { CubeService } from '../../core/cube/cube';
-import { AlgorithmCase, Penalty, Solve, SolveCategory } from '../../core/cube/cube.models';
+import {
+  AlgorithmCase,
+  F2lAlgorithmCase,
+  F2lSlot,
+  Penalty,
+  Solve,
+  SolveCategory,
+} from '../../core/cube/cube.models';
 import { NativeAppService } from '../../core/platform/native-app.service';
 
 /** Timerコンポーネントツリー内で計測状態と操作を共有するStore。 */
@@ -29,14 +37,21 @@ export class TimerStore implements OnDestroy {
   readonly scrambleGenerationFailed = signal(false);
   /** 操作対象として表示する直前の計測結果。 */
   readonly completedSolve = signal<Solve | undefined>(undefined);
-  /** OLL・PLL練習で選択中のケースまたはランダムモード。 */
+  /** F2L・OLL・PLL練習で選択中のケースまたはランダムモード。 */
   readonly selectedCase = signal<number | 'random'>('random');
+  /** F2Lで練習する対象スロット、または毎回選び直すランダム指定。 */
+  readonly selectedSlot = signal<F2lSlot | 'random'>('random');
   /** 現在のドリル種別に対応するケース選択肢。 */
-  readonly drillCases = computed<AlgorithmCase[]>(() =>
-    this.category() === 'oll' ? OLL_CASES : PLL_CASES,
-  );
-  /** 現在のスクランブルで出題しているOLL・PLLケース。 */
-  readonly currentDrillCase = signal<AlgorithmCase>(PLL_CASES[0]);
+  readonly drillCases = computed<AlgorithmCase[]>(() => {
+    const slot = this.selectedSlot();
+    if (this.category() === 'f2l') {
+      // 選択肢を列挙するだけでは乱数を消費せず、出題時に位置を確定する。
+      return F2L_CASES.map((item) => f2lCaseForSlot(item, slot === 'random' ? 'FR' : slot));
+    }
+    return this.category() === 'oll' ? OLL_CASES : PLL_CASES;
+  });
+  /** 現在のスクランブルで出題しているF2L・OLL・PLLケース。 */
+  readonly currentDrillCase = signal<AlgorithmCase | F2lAlgorithmCase>(PLL_CASES[0]);
 
   /** 計測表示を更新するタイマーID。 */
   private interval?: number;
@@ -69,13 +84,7 @@ export class TimerStore implements OnDestroy {
   constructor() {
     const retrySolve = this.cube.takeRetrySolve();
     if (retrySolve) {
-      this.category.set(retrySolve.category);
-      const selectedCase = this.drillCases().findIndex(
-        ({ number }) => number === retrySolve.caseName,
-      );
-      this.selectedCase.set(Math.max(selectedCase, 0));
-      this.currentDrillCase.set(this.drillCases()[Math.max(selectedCase, 0)]);
-      this.scramble.set(retrySolve.scramble);
+      this.restoreSolve(retrySolve);
     }
     this.cube.activeSolveCategory.set(this.category());
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
@@ -153,8 +162,33 @@ export class TimerStore implements OnDestroy {
     this.scrambleRequest++;
     this.scrambleGenerating.set(false);
     this.scrambleGenerationFailed.set(false);
-    this.scramble.set(solve.scramble);
+    this.restoreSolve(solve);
     this.completedSolve.set(undefined);
+  }
+
+  /** スロットを変更し、現在のケースの共通Setupへ対応する持ち替えを付け直す。 */
+  setSlot(slot: F2lSlot | 'random'): void {
+    this.selectedSlot.set(slot);
+    if (this.category() !== 'f2l') return;
+    const current = this.currentDrillCase();
+    const item = F2L_CASES.find((item) => item.caseId === current.caseId);
+    if (!item) return;
+    const next = f2lCaseForSlot(item, this.chooseSlot());
+    this.currentDrillCase.set(next);
+    this.scramble.set(next.setup);
+    this.completedSolve.set(undefined);
+  }
+
+  /** 記録のケース・スロット・スクランブルを復元し、再計測を同じ条件に揃える。 */
+  private restoreSolve(solve: Solve): void {
+    this.category.set(solve.category);
+    this.selectedSlot.set(solve.f2lSlot ?? 'FR');
+    const index = this.drillCases().findIndex((item) =>
+      solve.caseId ? item.caseId === solve.caseId : item.number === solve.caseName,
+    );
+    this.selectedCase.set(Math.max(index, 0));
+    this.currentDrillCase.set(this.drillCases()[Math.max(index, 0)]);
+    this.scramble.set(solve.scramble);
   }
 
   /** Store破棄時に計測用タイマーとWake Lockを停止する。 */
@@ -212,6 +246,14 @@ export class TimerStore implements OnDestroy {
       this.scramble(),
       this.category(),
       this.category() === 'full' ? undefined : this.currentDrillCase().number,
+      this.category() !== 'full'
+        ? {
+            caseId: this.currentDrillCase().caseId,
+            ...(this.category() === 'f2l'
+              ? { f2lSlot: (this.currentDrillCase() as F2lAlgorithmCase).slot }
+              : {}),
+          }
+        : undefined,
     );
     this.state.set('idle');
     this.updateScramble();
@@ -285,15 +327,25 @@ export class TimerStore implements OnDestroy {
       });
   }
 
-  /** @returns 選択中、またはランダムに選んだOLL・PLLケースを作る固定スクランブル */
+  /** @returns 選択中、またはランダムに選んだF2L・OLL・PLLケースを作る固定スクランブル */
   private createDrillScramble(): string {
     const cases = this.drillCases();
     const selectedCase = this.selectedCase();
     const index =
       selectedCase === 'random' ? Math.floor(Math.random() * cases.length) : selectedCase;
-    const item = cases[index];
+    const item =
+      this.category() === 'f2l'
+        ? f2lCaseForSlot(F2L_CASES[index], this.chooseSlot())
+        : cases[index];
     this.currentDrillCase.set(item);
     return item.setup;
+  }
+
+  /** ランダム指定時は4スロットから等確率で選び、固定指定時はその位置を返す。 */
+  private chooseSlot(): F2lSlot {
+    const selected = this.selectedSlot();
+    const slots: readonly F2lSlot[] = ['FR', 'FL', 'BL', 'BR'];
+    return selected === 'random' ? slots[Math.floor(Math.random() * slots.length)] : selected;
   }
 
   /** @returns 完成したスクランブルがあり、計測開始できる場合は`true` */

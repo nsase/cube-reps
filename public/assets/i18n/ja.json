@@ -49,9 +49,10 @@
     "algorithms": "アルゴリズム"
   },
   "solveCategories": {
+    "f2l": "F2L",
     "full": "フルソルブ",
-    "oll": "OLL練習",
-    "pll": "PLL練習"
+    "oll": "OLL",
+    "pll": "PLL"
   },
   "common": {
     "ok": "OK",
@@ -72,6 +73,7 @@
     "recentAverage": "直近5回 平均"
   },
   "timer": {
+    "selectRandomDrill": "ケースまたはスロットをランダムに選び直す",
     "recordGroup": "RECORD GROUP",
     "recordDestination": "記録先",
     "mode": "計測モード",

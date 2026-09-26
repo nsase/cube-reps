@@ -7,6 +7,7 @@ describe('F2Lケース定義', () => {
     expect(F2L_CASES.map(({ number }) => number)).toEqual(
       Array.from({ length: 41 }, (_, index) => String(index + 1).padStart(2, '0')),
     );
+    expect(new Set(F2L_CASES.map((item) => item.caseId)).size).toBe(41);
     for (const item of F2L_CASES) {
       expect(item.setup).toMatch(/^[URFDLB2' ]+$/);
       expect(item).not.toHaveProperty('algorithms');
@@ -29,6 +30,7 @@ describe('F2Lケース定義', () => {
         }
         expect(f2lCaseForSlot(item, slot)).toEqual({
           kind: 'F2L',
+          caseId: item.caseId,
           number: item.number,
           group: item.group,
           slot,
@@ -82,6 +84,7 @@ describe('F2Lケース定義', () => {
       ],
     };
     const item = defineF2lCase({
+      caseId: 'F2L-test',
       number: '01',
       group: 'test',
       setup: 'U',
