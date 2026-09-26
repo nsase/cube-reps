@@ -27,6 +27,9 @@ describe('TimerSettings', () => {
       button.click();
       await fixture.whenStable();
       expect(store.category()).toBe(category);
+      for (const kind of ['f2l', 'oll', 'pll']) {
+        expect(element.classList.contains(kind)).toBe(kind === category);
+      }
       expect(button.getAttribute('aria-checked')).toBe('true');
       expect(element.querySelectorAll('.modes button[aria-checked="true"]')).toHaveLength(1);
       expect(

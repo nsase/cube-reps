@@ -9,6 +9,12 @@ import { TimerStore } from '../timer.store';
 /** 記録先、計測モード、F2L・OLL・PLL練習ケースを選択するコンポーネント。 */
 @Component({
   selector: 'app-timer-settings',
+  /** 練習種別ごとのスタイル調整に使うクラスをホストへ反映する。 */
+  host: {
+    '[class.f2l]': "store.category() === 'f2l'",
+    '[class.oll]': "store.category() === 'oll'",
+    '[class.pll]': "store.category() === 'pll'",
+  },
   imports: [FormsModule, MatButtonToggleModule, TranslocoPipe],
   templateUrl: './timer-settings.html',
   styleUrl: './timer-settings.scss',
