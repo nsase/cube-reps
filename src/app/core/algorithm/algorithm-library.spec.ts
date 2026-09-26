@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { f2lCaseForSlot } from './algorithm-cases/f2l/f2l-case';
-import { F2L_CASES, PLL_CASES } from './algorithm-cases';
+import { F2L_CASES, OLL_CASES, PLL_CASES } from './algorithm-cases';
 import { UserDataRepository } from '../local-storage/user-data-repository';
 import { AlgorithmLibraryService } from './algorithm-library';
 
@@ -20,6 +20,9 @@ describe('AlgorithmLibraryService', () => {
   it('既存ケースのキーを維持し、F2Lは表示番号を変えても固定IDとスロットで識別する', () => {
     const service = createService();
     expect(service.caseKey(item)).toBe(`${item.kind}-${item.number}`);
+    for (const entry of [...OLL_CASES, ...PLL_CASES]) {
+      expect(service.caseKey({ ...entry, number: 'renumbered' })).toBe(entry.caseId);
+    }
     for (const slot of ['FL', 'FR', 'BL', 'BR'] as const) {
       expect(service.caseKey({ ...f2lCaseForSlot(F2L_CASES[0], slot), slot })).toBe(
         `F2L-01-${slot}`,

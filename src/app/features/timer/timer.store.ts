@@ -171,9 +171,7 @@ export class TimerStore implements OnDestroy {
     this.selectedSlot.set(slot);
     if (this.category() !== 'f2l') return;
     const current = this.currentDrillCase();
-    const item = F2L_CASES.find(
-      (item) => item.caseId === ('caseId' in current ? current.caseId : undefined),
-    );
+    const item = F2L_CASES.find((item) => item.caseId === current.caseId);
     if (!item) return;
     const next = f2lCaseForSlot(item, this.chooseSlot());
     this.currentDrillCase.set(next);
@@ -187,7 +185,7 @@ export class TimerStore implements OnDestroy {
     this.selectedSlot.set(solve.f2lSlot ?? 'FR');
     const index = this.drillCases().findIndex((item) =>
       solve.category === 'f2l' && solve.f2lCaseId
-        ? 'caseId' in item && item.caseId === solve.f2lCaseId
+        ? item.caseId === solve.f2lCaseId
         : item.number === solve.caseName,
     );
     this.selectedCase.set(Math.max(index, 0));

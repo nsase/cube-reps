@@ -91,6 +91,8 @@ export interface AlgorithmPreference extends SyncMetadata {
 
 /** F2L・OLL・PLLに共通するケースと登録済み手順。 */
 export interface AlgorithmCase<Kind extends 'F2L' | 'OLL' | 'PLL' = 'F2L' | 'OLL' | 'PLL'> {
+  /** 表示番号を変更しても維持する、種別を含む固定のケース識別子。 */
+  caseId: string;
   /** ケースの種別。 */
   kind: Kind;
   /**
@@ -119,8 +121,6 @@ export type F2lSlot = 'FL' | 'FR' | 'BL' | 'BR';
 
 /** 番号・分類を共有し、4スロットそれぞれに解法を持つF2Lケース。 */
 export interface F2lCase extends Omit<AlgorithmCase<'F2L'>, 'algorithms'> {
-  /** 表示番号を変更しても維持する固定のケース識別子。 */
-  caseId: string;
   /** FR基準の共通Setup。ほかのスロットは末尾に持ち替えを追加して作る。 */
   setup: string;
   /** 各スロットの解法一覧。 */
@@ -129,8 +129,6 @@ export interface F2lCase extends Omit<AlgorithmCase<'F2L'>, 'algorithms'> {
 
 /** F2L固有の手順の対象スロットを持つケース。 */
 export interface F2lAlgorithmCase extends AlgorithmCase<'F2L'> {
-  /** 保存済み記録・手順設定と対応づける固定識別子。 */
-  caseId: string;
   /** Setupと解法手順の基準スロット。選択位置への持ち替えはこの位置を基準とする。 */
   readonly slot: F2lSlot;
 }
