@@ -32,23 +32,6 @@ describe('Firestore Solve mapper', () => {
     expect(fromFirestoreSolve(solve.id, { ...document, caseId: 1 }, 'account-1')).toBeUndefined();
   });
 
-  /** 旧F2L記録を共通モデルへ移行し、旧フィールドを再保存しない。 */
-  it('旧f2lCaseIdをcaseIdとして読み込む', () => {
-    const restored = fromFirestoreSolve(
-      solve.id,
-      {
-        ...toFirestoreSolve(solve, 'account-1'),
-        category: 'f2l',
-        f2lCaseId: 'F2L-01',
-        f2lSlot: 'FR',
-      },
-      'account-1',
-    );
-    expect(restored?.caseId).toBe('F2L-01');
-    expect(restored).not.toHaveProperty('f2lCaseId');
-    expect(toFirestoreSolve(restored!, 'account-1')).not.toHaveProperty('f2lCaseId');
-  });
-
   it('F2L記録の固定ID・番号・スロットを往復変換で維持する', () => {
     const f2l: Solve = {
       ...solve,

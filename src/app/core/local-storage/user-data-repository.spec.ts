@@ -43,29 +43,6 @@ describe('IndexedDbUserDataRepository', () => {
     });
   });
 
-  /** 旧フィールドで保存されたF2L記録を読み込み境界で共通化する。 */
-  it('旧F2Lケース識別子を共通caseIdへ移す', async () => {
-    const repository = new IndexedDbUserDataRepository();
-    const legacy = {
-      id: 'legacy',
-      time: 1000,
-      scramble: 'R U',
-      category: 'f2l' as const,
-      caseName: '01',
-      f2lCaseId: 'F2L-01',
-      f2lSlot: 'FR' as const,
-      penalty: 'none' as const,
-      ownerType: 'guest' as const,
-      schemaVersion: 3,
-      createdAt: '2026-01-01T00:00:00.000Z',
-      updatedAt: '2026-01-01T00:00:00.000Z',
-    };
-    await repository.putSolve(legacy);
-    const restored = (await new IndexedDbUserDataRepository().load()).solves[0];
-    expect(restored.caseId).toBe('F2L-01');
-    expect(restored).not.toHaveProperty('f2lCaseId');
-  });
-
   it('IndexedDBの記録・グループ・手順設定を復元し、更新・削除を永続化する', async () => {
     const metadata = {
       createdAt: '2026-01-01T00:00:00.000Z',

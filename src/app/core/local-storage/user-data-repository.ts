@@ -89,9 +89,7 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
     const groups = await database.getAllFromIndex('groups', 'createdAt');
     const algorithmPreferences = await database.getAll('algorithmPreferences');
     return {
-      solves: solves
-        .map(normalizeSolveCaseId)
-        .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      solves: solves.sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       accounts: await database.getAll('accounts'),
       groups,
       algorithmPreferences,
@@ -207,12 +205,4 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
       },
     });
   }
-}
-
-/** 旧F2L専用フィールドを共通IDへ移し、既存記録を同じケースで再計測できるようにする。 */
-function normalizeSolveCaseId(solve: Solve & { f2lCaseId?: string }): Solve {
-  const { f2lCaseId, ...current } = solve;
-  return f2lCaseId && current.category === 'f2l'
-    ? { ...current, caseId: current.caseId ?? f2lCaseId }
-    : current;
 }

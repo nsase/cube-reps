@@ -75,7 +75,7 @@ export function fromFirestoreSolve(id: string, value: unknown, userId: string): 
   if (!createdAt) return undefined;
   const updatedAt = readDate(value['updatedAt']) ?? createdAt;
   const category = readCategory(value['category']);
-  const caseId = value['caseId'] ?? (category === 'f2l' ? value['f2lCaseId'] : undefined);
+  const caseId = value['caseId'];
   if (caseId !== undefined && !validCaseId(category, caseId)) return undefined;
   if (
     category === 'f2l' &&
