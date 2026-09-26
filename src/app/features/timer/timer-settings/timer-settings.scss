@@ -54,7 +54,7 @@ select {
 
 .case-select {
   @extend %box;
-  grid-template-columns: auto minmax(0, 1fr) minmax(0, 2fr);
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
   height: auto;
   min-height: $height;
   padding-block: 6px;
@@ -66,10 +66,13 @@ select {
     min-width: 0;
   }
 
-  select {
+  #timer-practice-case {
     flex: 1;
-    width: 0;
     min-width: 0;
+  }
+
+  #timer-f2l-slot {
+    width: 120px;
   }
 
   code {
@@ -86,7 +89,7 @@ select {
   }
 }
 
-@container timer (max-width: 700px) {
+@container timer (max-width: 600px) {
   .case-select {
     grid-template-columns: auto minmax(0, 1fr);
 
@@ -97,10 +100,6 @@ select {
 }
 
 @media (max-width: 620px) {
-  .modes small {
-    display: none;
-  }
-
   .record-context {
     grid-template-columns: 1fr;
   }
