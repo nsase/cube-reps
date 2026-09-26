@@ -19,26 +19,56 @@ describe('Firestore Solve mapper', () => {
     penalty: '+2',
   };
 
+  /** 共通ケースIDの同期とカテゴリーとの対応を保証する。 */
+  it.each([
+    ['oll', 'OLL-57'],
+    ['pll', 'PLL-T'],
+  ] as const)('%sのcaseIdを往復変換する', (category, caseId) => {
+    const document = toFirestoreSolve({ ...solve, category, caseId }, 'account-1');
+    expect(fromFirestoreSolve(solve.id, document, 'account-1')).toMatchObject({ category, caseId });
+    expect(
+      fromFirestoreSolve(solve.id, { ...document, caseId: 'F2L-01' }, 'account-1'),
+    ).toBeUndefined();
+    expect(fromFirestoreSolve(solve.id, { ...document, caseId: 1 }, 'account-1')).toBeUndefined();
+  });
+
+  /** 旧F2L記録を共通モデルへ移行し、旧フィールドを再保存しない。 */
+  it('旧f2lCaseIdをcaseIdとして読み込む', () => {
+    const restored = fromFirestoreSolve(
+      solve.id,
+      {
+        ...toFirestoreSolve(solve, 'account-1'),
+        category: 'f2l',
+        f2lCaseId: 'F2L-01',
+        f2lSlot: 'FR',
+      },
+      'account-1',
+    );
+    expect(restored?.caseId).toBe('F2L-01');
+    expect(restored).not.toHaveProperty('f2lCaseId');
+    expect(toFirestoreSolve(restored!, 'account-1')).not.toHaveProperty('f2lCaseId');
+  });
+
   it('F2L記録の固定ID・番号・スロットを往復変換で維持する', () => {
     const f2l: Solve = {
       ...solve,
       category: 'f2l',
       caseName: '41',
-      f2lCaseId: 'F2L-41',
+      caseId: 'F2L-41',
       f2lSlot: 'BR',
     };
     const document = toFirestoreSolve(f2l, 'account-1');
     expect(fromFirestoreSolve(f2l.id, document, 'account-1')).toMatchObject({
       category: 'f2l',
       caseName: '41',
-      f2lCaseId: 'F2L-41',
+      caseId: 'F2L-41',
       f2lSlot: 'BR',
       scramble: f2l.scramble,
     });
     for (const invalid of [
       { f2lSlot: 'XX' },
       { f2lSlot: ['FR'] },
-      { f2lCaseId: 'F2L-42' },
+      { caseId: 'F2L-42' },
       { f2lSlot: undefined },
       { caseName: undefined },
     ]) {

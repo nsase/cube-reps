@@ -24,8 +24,8 @@ export interface FirestoreSolveDocument {
   readonly category: SolveCategory;
   /** ケース練習時の表示番号またはケース名。 */
   readonly caseName?: string;
-  /** F2Lの表示番号から独立した固定識別子。 */
-  readonly f2lCaseId?: string;
+  /** F2L・OLL・PLLの表示番号から独立した固定識別子。 */
+  readonly caseId?: string;
   /** F2Lで解いた対象位置。 */
   readonly f2lSlot?: F2lSlot;
   /** 記録が属するグループID。 */
@@ -75,10 +75,11 @@ export function fromFirestoreSolve(id: string, value: unknown, userId: string): 
   if (!createdAt) return undefined;
   const updatedAt = readDate(value['updatedAt']) ?? createdAt;
   const category = readCategory(value['category']);
+  const caseId = value['caseId'] ?? (category === 'f2l' ? value['f2lCaseId'] : undefined);
+  if (caseId !== undefined && !validCaseId(category, caseId)) return undefined;
   if (
     category === 'f2l' &&
-    (typeof value['f2lCaseId'] !== 'string' ||
-      !/^F2L-(0[1-9]|[1-3][0-9]|4[01])$/.test(value['f2lCaseId']) ||
+    (typeof caseId !== 'string' ||
       typeof value['f2lSlot'] !== 'string' ||
       !['FR', 'FL', 'BL', 'BR'].includes(value['f2lSlot']) ||
       typeof value['caseName'] !== 'string')
@@ -96,9 +97,8 @@ export function fromFirestoreSolve(id: string, value: unknown, userId: string): 
     schemaVersion: typeof value['schemaVersion'] === 'number' ? value['schemaVersion'] : 0,
     category,
     caseName: typeof value['caseName'] === 'string' ? value['caseName'] : undefined,
-    ...(category === 'f2l'
-      ? { f2lCaseId: value['f2lCaseId'] as string, f2lSlot: value['f2lSlot'] as F2lSlot }
-      : {}),
+    caseId: caseId as string | undefined,
+    ...(category === 'f2l' ? { f2lSlot: value['f2lSlot'] as F2lSlot } : {}),
     groupId: typeof value['groupId'] === 'string' ? value['groupId'] : undefined,
     penalty,
     deletedAt: readDate(value['deletedAt']),
@@ -113,4 +113,19 @@ function readCategory(value: unknown): SolveCategory {
 /** 未知または欠落した旧ペナルティを未適用へ寄せる。 */
 function readPenalty(value: unknown): Penalty {
   return value === '+2' || value === 'DNF' ? value : 'none';
+}
+
+/** ケース識別子と計測カテゴリーの対応を検証する。 */
+function validCaseId(category: SolveCategory, value: unknown): boolean {
+  if (typeof value !== 'string') return false;
+  switch (category) {
+    case 'f2l':
+      return /^F2L-(0[1-9]|[1-3][0-9]|4[01])$/.test(value);
+    case 'oll':
+      return /^OLL-(0[1-9]|[1-4][0-9]|5[0-7])$/.test(value);
+    case 'pll':
+      return /^PLL-(Aa|Ab|E|F|Ga|Gb|Gc|Gd|H|Ja|Jb|Na|Nb|Ra|Rb|T|Ua|Ub|V|Y|Z)$/.test(value);
+    default:
+      return false;
+  }
 }

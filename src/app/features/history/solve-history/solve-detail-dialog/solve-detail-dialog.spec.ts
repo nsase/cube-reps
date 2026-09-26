@@ -64,7 +64,7 @@ describe('SolveDetailDialog', () => {
 
   it('F2Lのケース番号・対象位置とクォータービューを履歴詳細に表示する', async () => {
     TestBed.inject(CubeService).storedSolves.set([
-      { ...solve, category: 'f2l', caseName: '41', f2lCaseId: 'F2L-41', f2lSlot: 'BL' },
+      { ...solve, category: 'f2l', caseName: '41', caseId: 'F2L-41', f2lSlot: 'BL' },
     ]);
     const fixture = TestBed.createComponent(SolveDetailDialog);
     await fixture.whenStable();

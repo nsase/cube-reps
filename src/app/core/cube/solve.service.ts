@@ -79,7 +79,7 @@ export class SolveService {
    * @param scramble 計測に使用したスクランブル
    * @param category 集計カテゴリーID
    * @param caseName ケース練習時の表示番号またはケース名
-   * @param f2l F2Lの固定ケース識別子と対象スロット
+   * @param drill ケース練習の固定識別子とF2Lの対象スロット
    * @returns 保存した計測記録
    */
   addSolve(
@@ -88,7 +88,7 @@ export class SolveService {
     scramble: string,
     category: SolveCategory,
     caseName?: string,
-    f2l?: Pick<Solve, 'f2lCaseId' | 'f2lSlot'>,
+    drill?: Pick<Solve, 'caseId' | 'f2lSlot'>,
   ): Solve {
     // 計測記録を作成
     const now = new Date().toISOString();
@@ -104,7 +104,7 @@ export class SolveService {
       schemaVersion: USER_DATA_SCHEMA_VERSION,
       category,
       caseName,
-      ...(category === 'f2l' ? f2l : {}),
+      ...(category === 'full' ? {} : drill),
       groupId: state.activeGroupId(),
       penalty: 'none',
       pendingSync: !!accountId,

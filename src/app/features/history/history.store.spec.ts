@@ -39,7 +39,7 @@ describe('HistoryStore', () => {
     const store = TestBed.inject(HistoryStore);
     cube.addSolve(1000, 'R U', 'full');
     cube.addSolve(2000, 'U R', 'pll', 'T');
-    cube.addSolve(1500, 'R U', 'f2l', '01', { f2lCaseId: 'F2L-01', f2lSlot: 'FL' });
+    cube.addSolve(1500, 'R U', 'f2l', '01', { caseId: 'F2L-01', f2lSlot: 'FL' });
 
     expect(store.filteredSolves().map(({ category }) => category)).toEqual(['full']);
 
@@ -50,7 +50,7 @@ describe('HistoryStore', () => {
     expect(store.filteredSolves()).toHaveLength(1);
     expect(store.filteredSolves()[0]).toMatchObject({
       category: 'f2l',
-      f2lCaseId: 'F2L-01',
+      caseId: 'F2L-01',
       f2lSlot: 'FL',
     });
   });

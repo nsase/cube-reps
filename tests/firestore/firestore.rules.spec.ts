@@ -64,14 +64,25 @@ describe('Firestore Solve Security Rules', () => {
     );
     for (const f2lSlot of ['FR', 'FL', 'BL', 'BR']) {
       await assertSucceeds(
-        setDoc(reference, solve({ category: 'f2l', caseName: '41', f2lCaseId: 'F2L-41', f2lSlot })),
+        setDoc(reference, solve({ category: 'f2l', caseName: '41', caseId: 'F2L-41', f2lSlot })),
       );
+    }
+    for (const [category, caseId] of [
+      ['oll', 'OLL-57'],
+      ['pll', 'PLL-T'],
+    ]) {
+      await assertSucceeds(setDoc(reference, solve({ category, caseId })));
     }
     for (const fields of [
       { category: 'f2l' },
-      { category: 'f2l', caseName: '01', f2lCaseId: 'F2L-01', f2lSlot: 'XX' },
-      { category: 'f2l', caseName: '42', f2lCaseId: 'F2L-42', f2lSlot: 'FR' },
-      { category: 'full', f2lCaseId: 'F2L-01', f2lSlot: 'FR' },
+      { category: 'oll', caseId: 'PLL-T' },
+      { category: 'oll', caseId: 'OLL-58' },
+      { category: 'pll', caseId: 'PLL-XX' },
+      { category: 'pll', caseId: 1 },
+      { category: 'full', caseId: 'OLL-01' },
+      { category: 'f2l', caseName: '01', caseId: 'F2L-01', f2lSlot: 'XX' },
+      { category: 'f2l', caseName: '42', caseId: 'F2L-42', f2lSlot: 'FR' },
+      { category: 'full', caseId: 'F2L-01', f2lSlot: 'FR' },
     ])
       await assertFails(setDoc(reference, solve(fields)));
   });

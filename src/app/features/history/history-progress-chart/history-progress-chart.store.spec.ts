@@ -30,7 +30,7 @@ describe('HistoryProgressChartStore', () => {
     const cube = TestBed.inject(CubeService);
     cube.addSolve(99999, 'R U', 'full');
     for (const time of [1000, 2000, 3000, 4000, 5000]) {
-      cube.addSolve(time, 'R U', 'f2l', '01', { f2lCaseId: 'F2L-01', f2lSlot: 'FR' });
+      cube.addSolve(time, 'R U', 'f2l', '01', { caseId: 'F2L-01', f2lSlot: 'FR' });
     }
     cube.activeSolveCategory.set('f2l');
     expect(cube.activeGroupSolves()).toHaveLength(5);

@@ -34,7 +34,7 @@ describe('Timer F2L', () => {
           time: 1234,
           category: 'f2l',
           caseName: item.number,
-          f2lCaseId: item.caseId,
+          caseId: item.caseId,
           f2lSlot: slot,
           scramble: expected.setup,
         });
@@ -61,7 +61,7 @@ describe('Timer F2L', () => {
     store.state.set('ready');
     store.release();
     store.press();
-    expect(store.completedSolve()).toMatchObject({ f2lCaseId: 'F2L-01', f2lSlot: 'BL' });
+    expect(store.completedSolve()).toMatchObject({ caseId: 'F2L-01', f2lSlot: 'BL' });
   });
 
   it('ケース固定と両方ランダムに対応し、実際の出題位置を保存して再計測する', () => {
@@ -91,7 +91,7 @@ describe('Timer F2L', () => {
     store.press();
     expect(store.completedSolve()).toMatchObject({
       caseName: '41',
-      f2lCaseId: 'F2L-41',
+      caseId: 'F2L-41',
       f2lSlot: 'FL',
     });
     store.retryCompletedSolve();
@@ -103,7 +103,7 @@ describe('Timer F2L', () => {
     const cube = TestBed.inject(CubeService);
     const scramble = f2lCaseForSlot(F2L_CASES[40], 'BR').setup;
     const solve = cube.addSolve(1000, scramble, 'f2l', 'old-number', {
-      f2lCaseId: 'F2L-41',
+      caseId: 'F2L-41',
       f2lSlot: 'BR',
     });
     cube.prepareRetry(solve);

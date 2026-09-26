@@ -53,8 +53,8 @@ export interface Solve extends SyncMetadata {
   category: SolveCategory;
   /** ケース練習時の表示番号またはケース名。 */
   caseName?: string;
-  /** 表示番号の変更に影響されないF2Lケース識別子。 */
-  f2lCaseId?: string;
+  /** 表示番号の変更に影響されないF2L・OLL・PLL共通のケース識別子。 */
+  caseId?: string;
   /** F2L計測で解いた対象スロット。 */
   f2lSlot?: F2lSlot;
   /** 記録が属するグループID。 */
