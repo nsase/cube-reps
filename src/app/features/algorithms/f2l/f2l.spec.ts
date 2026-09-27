@@ -140,7 +140,7 @@ describe('F2L共通カード', () => {
     }
   });
 
-  it('F2Lの案内と共通カードの操作ラベルを言語切替に追従させる', async () => {
+  it('説明文を表示せず、共通カードの操作ラベルを言語切替に追従させる', async () => {
     const fixture = TestBed.createComponent(Algorithms);
     const i18n = TestBed.inject(TranslocoService);
     for (const [lang, notice, copyLabel] of [
@@ -150,7 +150,9 @@ describe('F2L共通カード', () => {
       await firstValueFrom(i18n.load(lang));
       i18n.setActiveLang(lang);
       await fixture.whenStable();
-      expect(fixture.nativeElement.textContent).toContain(notice);
+      /** OLL/PLLと同様に、ケース一覧の前に説明ブロックを表示しない。 */
+      expect(fixture.nativeElement.textContent).not.toContain(notice);
+      expect(fixture.nativeElement.querySelector('section > div > h2')).toBeNull();
       expect(fixture.nativeElement.querySelector('select').getAttribute('aria-label')).toBe(
         lang === 'ja' ? 'グループ' : 'Group',
       );

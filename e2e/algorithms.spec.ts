@@ -132,7 +132,7 @@ test.describe('アルゴリズムの画面遷移', { tag: '@responsive' }, () =>
               exact: false,
             },
           ),
-        ).toBeVisible();
+        ).toBeHidden();
       } else {
         await expect(page.locator('app-algorithm-case-card')).toHaveCount(kind === 'OLL' ? 57 : 21);
         await expect(page.locator('app-cube-pattern')).toHaveCount(kind === 'OLL' ? 57 : 21);
