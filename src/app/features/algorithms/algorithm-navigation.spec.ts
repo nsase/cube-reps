@@ -35,14 +35,16 @@ describe('Algorithm navigation', () => {
     ).click();
     await harness.fixture.whenStable();
     expect(TestBed.inject(Router).url).toBe('/algorithms/f2l');
-    expect(harness.routeNativeElement!.textContent).toContain('F2Lの41ケース');
+    /** 説明文ではなく、遷移先のケース一覧が表示されることを確認する。 */
+    expect(harness.routeNativeElement!.querySelectorAll('app-algorithm-case-card')).toHaveLength(41);
   }, 15000);
 
   it('F2LのURLを直接開き、他の種類への切り替えを表示する', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/algorithms/f2l', Algorithms);
     await harness.fixture.whenStable();
-    expect(harness.routeNativeElement!.querySelector('h2')!.textContent).toBe('F2L');
+    /** ページ種別は共通の切り替えボタンで示し、独立した見出しは表示しない。 */
+    expect(harness.routeNativeElement!.querySelector('h2')).toBeNull();
     expect(
       harness.routeNativeElement!.querySelectorAll('app-algorithm-kind-links button'),
     ).toHaveLength(3);
