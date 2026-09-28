@@ -26,6 +26,29 @@ describe('HistoryProgressChartStore', () => {
     expect(store.points()).toHaveLength(120);
   });
 
+  /** 範囲の外にあるベストと移動平均の境界を、DNF・+2込みで維持する。 */
+  it('範囲を切り替えても全件集計と同じベスト・Ao5・Ao12を表示する', () => {
+    const cube = TestBed.inject(CubeService);
+    const solves = Array.from({ length: 130 }, (_, index) =>
+      cube.addSolve(index === 0 ? 1000 : 10000 + index * 100, 'R U', 'full'),
+    );
+    cube.togglePenalty(solves[28].id, 'DNF');
+    cube.togglePenalty(solves[29].id, 'DNF');
+    cube.togglePenalty(solves[79].id, '+2');
+    const store = TestBed.inject(HistoryProgressChartStore);
+    store.displayRange.set('all');
+    const all = store.points();
+    for (const range of [50, 100, 500, 1000] as const) {
+      store.displayRange.set(range);
+      expect(store.points()).toEqual(all.slice(-range));
+      expect(store.points()[0].best).toBe(1000);
+    }
+    store.displayRange.set(100);
+    expect(store.points()[0].ao5).toBe(Infinity);
+    cube.togglePenalty(solves[0].id, 'DNF');
+    expect(store.points()[0].best).toBe(10100);
+  });
+
   it('F2Lだけの集計とグラフを既存カテゴリーから分離する', () => {
     const cube = TestBed.inject(CubeService);
     cube.addSolve(99999, 'R U', 'full');

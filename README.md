@@ -24,6 +24,7 @@ CubeReps is a browser-based Rubik's Cube timer and training tool. Solve records 
 - Create, rename, and delete record groups, moving their records to Unclassified on deletion, with one shared selection across timer and history
 - Per-group statistics for best, overall average, Ao5, Ao12, Ao50, and Ao100
 - `+2` and `DNF` penalties for solve records
+- History keeps 100 records per page and creates each row’s action buttons when the row enters the viewport. Chart moving averages are calculated for the selected range while retaining earlier records needed for the averages and all-time best.
 - Retry any solve from history with its original scramble, category, and record group
 - History rows with point-in-time Ao5/Ao12 and details for scrambles and cube previews
 - English and Japanese interfaces

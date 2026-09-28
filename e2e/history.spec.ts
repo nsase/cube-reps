@@ -92,6 +92,7 @@ test('記録グループの削除後も所属記録を未分類で表示する',
   await expect(targetGroup).toHaveCount(0);
   await expect(page.getByTestId('history-group-filter')).toHaveValue('unclassified');
   await expect(page.locator('app-solve-record')).toHaveCount(1);
+  await page.locator('app-solve-record').first().scrollIntoViewIfNeeded();
   await page.getByRole('button', { name: /計測記録の詳細を表示|View solve details/ }).click();
   await expect(
     page
@@ -142,6 +143,7 @@ test('履歴のスクランブルを引き継いでタイマーでリトライ�
   });
   await page.reload();
 
+  await page.locator('app-solve-record').first().scrollIntoViewIfNeeded();
   await page.getByRole('button', { name: /リトライ|Retry/ }).click();
 
   await expect(page).toHaveURL(/#\/timer$/);
@@ -169,6 +171,8 @@ test(
 
     const header = page.locator('.history-header');
     const firstRecord = page.locator('app-solve-record').first();
+    await firstRecord.scrollIntoViewIfNeeded();
+    await expect(firstRecord.locator('.row-details')).toBeVisible();
     await expect(header).toContainText(/タイム|Time/);
     await expect(header).toContainText('Ao5');
     await expect(header).toContainText('Ao12');
@@ -370,6 +374,7 @@ test('グループ未取得の記録を選択でき、取得後も同じ分類�
   await expect(groups.locator('option:checked')).toHaveText('Other device practice');
   await expect(page.locator('app-solve-record')).toHaveCount(1);
   await expect(page.locator('app-solve-record')).not.toContainText('Other device practice');
+  await page.locator('app-solve-record').first().scrollIntoViewIfNeeded();
   await page.getByRole('button', { name: /計測記録の詳細を表示|View solve details/ }).click();
   await expect(page.getByRole('dialog')).toContainText('Other device practice');
   await expect(page.locator('[data-series="result"]')).toHaveCount(1);
@@ -458,3 +463,43 @@ async function storeHistoryData(
     }
   }, data);
 }
+
+/** 画面外の記録をスクロール表示した後も詳細・ペナルティ・ページ移動を利用できる。 */
+test(
+  '画面外の履歴操作を遅延表示し、ページ移動後も記録を操作できる',
+  { tag: '@responsive' },
+  async ({ page }) => {
+    const solves = Array.from({ length: 120 }, (_, index) => ({
+      id: String(index),
+      time: 1000 + index,
+      scramble: 'R U',
+      createdAt: new Date(index).toISOString(),
+      category: 'full',
+      groupId: 'unclassified',
+      penalty: 'none',
+    }));
+    await storeHistoryData(page, { solves });
+    await page.reload();
+    const rows = page.locator('app-solve-record');
+    await expect(rows).toHaveCount(100);
+    const last = rows.last();
+    await expect(last.getByRole('button', { name: 'View solve details', exact: true })).toHaveCount(
+      0,
+    );
+    await last.scrollIntoViewIfNeeded();
+    await last.getByRole('button', { name: 'View solve details', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.locator('.record-number')).toHaveText('21');
+    await dialog.getByRole('button', { name: '+2', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(last.locator('.result')).toContainText('3.02');
+    await page.getByRole('button', { name: 'Next page', exact: true }).click();
+    await expect(rows).toHaveCount(20);
+    await rows.first().scrollIntoViewIfNeeded();
+    await rows.first().getByRole('button', { name: 'View solve details', exact: true }).click();
+    await expect(dialog.locator('.record-number')).toHaveText('20');
+    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await expectNoHorizontalOverflow(page);
+    await expectResponsiveLayout(page, 'app-solve-record');
+  },
+);

@@ -33,6 +33,7 @@ $muted: var(--text-muted-color);
 }
 
 .row-actions {
+  min-height: 40px;
   display: flex;
   container-type: inline-size;
   grid-column: 9;
