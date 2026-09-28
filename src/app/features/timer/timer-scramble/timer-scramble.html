@@ -1,15 +1,19 @@
 <span
   >{{ 'timer.scramble' | transloco }}
-  @if (store.category() === 'full' || store.selectedCase() === 'random') {
+  @if (
+    store.category() === 'full' ||
+    store.selectedCase() === 'random' ||
+    (store.category() === 'f2l' && store.selectedSlot() === 'random')
+  ) {
     <button
       mat-icon-button
       data-testid="timer-scramble-refresh"
       [attr.aria-label]="
-        (store.category() === 'full' ? 'timer.refreshScramble' : 'timer.selectRandomCase')
+        (store.category() === 'full' ? 'timer.refreshScramble' : 'timer.selectRandomDrill')
           | transloco
       "
       [title]="
-        (store.category() === 'full' ? 'timer.refreshScramble' : 'timer.selectRandomCase')
+        (store.category() === 'full' ? 'timer.refreshScramble' : 'timer.selectRandomDrill')
           | transloco
       "
       [disabled]="store.scrambleGenerating()"

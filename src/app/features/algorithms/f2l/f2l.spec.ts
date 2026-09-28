@@ -1,0 +1,223 @@
+import { TestBed } from '@angular/core/testing';
+import { ActivatedRoute, provideRouter } from '@angular/router';
+import { firstValueFrom, of } from 'rxjs';
+import { TranslocoService } from '@jsverse/transloco';
+import { f2lCaseForSlot } from '../../../core/algorithm/algorithm-cases/f2l/f2l-case';
+import { F2L_CASES } from '../../../core/algorithm/algorithm-cases/f2l';
+import { AlgorithmLibraryService } from '../../../core/algorithm/algorithm-library';
+import { f2lQuarterPatternFromScramble } from '../../../core/cube/cube-state';
+import { ConfirmService } from '../../../shared/confirm-dialog/confirm.service';
+import { Algorithms } from '../algorithms';
+import { AlgorithmCaseCard } from '../algorithm-case-card/algorithm-case-card';
+
+describe('F2L共通カード', () => {
+  beforeEach(() =>
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { data: of({ kind: 'F2L' }) } },
+      ],
+    }),
+  );
+
+  // 全41ケースの実手順とMaterialボタンを描画するため、並列実行時の余裕を持たせる。
+  it('41ケースを共通カードで番号順に表示し、グループとクォータービューを表示する', async () => {
+    const fixture = TestBed.createComponent(Algorithms);
+    await fixture.whenStable();
+    const cards = (fixture.nativeElement as HTMLElement).querySelectorAll(
+      'app-algorithm-case-card',
+    );
+    expect(cards).toHaveLength(41);
+    expect(fixture.nativeElement.querySelectorAll('app-cube-quarter-view')).toHaveLength(41);
+    expect(fixture.nativeElement.querySelector('app-cube-pattern')).toBeNull();
+    expect(
+      Array.from(cards, (card) => card.querySelector('.number > .number')!.textContent),
+    ).toEqual(F2L_CASES.map(({ number }) => number));
+    expect(Array.from(cards, (card) => card.querySelector('.group')!.textContent)).toEqual(
+      F2L_CASES.map(({ group }) => group),
+    );
+    /** 名前を省略したケースでは、番号と重複する名前欄を表示しない。 */
+    expect(fixture.nativeElement.querySelector('.name')).toBeNull();
+    const expected = f2lQuarterPatternFromScramble(F2L_CASES[0].setup);
+    const sticker = cards[0].querySelector<SVGElement>(
+      '[data-face="F"] [data-row="1"][data-column="1"]',
+    )!;
+    expect(sticker.dataset['color']).toBe(expected.F[1][1]);
+  }, 15000);
+
+  it('グループを完全一致で絞り込み、検索との併用と解除ができる', async () => {
+    const fixture = TestBed.createComponent(Algorithms);
+    await fixture.whenStable();
+    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
+    select.value = 'Connected Pairs';
+    select.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelectorAll('app-algorithm-case-card')).toHaveLength(
+      F2L_CASES.filter((item) => item.group === 'Connected Pairs').length,
+    );
+    expect(
+      Array.from(
+        element.querySelectorAll('app-algorithm-case-card .group'),
+        (node) => node.textContent,
+      ),
+    ).toEqual(
+      F2L_CASES.filter((item) => item.group === 'Connected Pairs').map((item) => item.group),
+    );
+    const input = element.querySelector('app-algorithm-tools input') as HTMLInputElement;
+    input.value = '18';
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(element.querySelectorAll('app-algorithm-case-card')).toHaveLength(1);
+    input.value = 'missing';
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(element.querySelector('.empty')).not.toBeNull();
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    select.value = '';
+    select.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
+    expect(element.querySelectorAll('app-algorithm-case-card')).toHaveLength(41);
+  }, 15000);
+
+  it('4スロットを切り替えてSetup・手順・お気に入りを独立して操作する', async () => {
+    const fixture = TestBed.createComponent(AlgorithmCaseCard);
+    fixture.componentRef.setInput('item', F2L_CASES[0]);
+    const library = TestBed.inject(AlgorithmLibraryService);
+    await library.ready;
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    for (const [slot, label] of [
+      ['FR', 'Front Right'],
+      ['FL', 'Front Left'],
+      ['BL', 'Back Left'],
+      ['BR', 'Back Right'],
+    ] as const) {
+      const button = Array.from(element.querySelectorAll<HTMLButtonElement>('.slots button')).find(
+        (button) => button.getAttribute('aria-label') === label,
+      )!;
+      button.click();
+      await fixture.whenStable();
+      const data = f2lCaseForSlot(F2L_CASES[0], slot);
+      expect(button.getAttribute('aria-checked')).toBe('true');
+      expect(element.querySelectorAll('.slots button[aria-checked="true"]')).toHaveLength(1);
+      expect(element.querySelector('.setup')!.textContent).toContain(data.setup);
+      expect(
+        Array.from(element.querySelectorAll('app-algorithm-row code'), (row) =>
+          row.textContent?.trim(),
+        ),
+      ).toEqual(data.algorithms.map(({ notation }) => notation));
+      const projected = f2lCaseForSlot(F2L_CASES[0], slot);
+      library.add(projected, 'R2 U2 R2');
+      const custom = library.algorithmsFor(projected).find(({ builtIn }) => !builtIn)!;
+      library.setFavorite(projected, custom.id);
+      await fixture.whenStable();
+      expect(element.querySelector('.favorite-algorithm code')!.textContent).toBe('R2 U2 R2');
+    }
+  });
+
+  it('共通の検索欄で番号・グループを絞り込み、該当なしと検索解除を表示する', async () => {
+    const fixture = TestBed.createComponent(Algorithms);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    const input = element.querySelector('app-algorithm-tools input') as HTMLInputElement;
+    for (const [query, count] of [
+      ['41', 1],
+      ['Edge in Slot', 6],
+      ['missing', 0],
+      ['', 41],
+    ] as const) {
+      input.value = query;
+      input.dispatchEvent(new Event('input'));
+      await fixture.whenStable();
+      const cards = element.querySelectorAll('app-algorithm-case-card');
+      expect(cards).toHaveLength(count);
+      if (query === '41') {
+        expect(cards[0].querySelector('.number > .number')!.textContent).toBe('41');
+      }
+      if (count === 0) expect(element.querySelector('.empty')).not.toBeNull();
+    }
+  });
+
+  it('説明文を表示せず、共通カードの操作ラベルを言語切替に追従させる', async () => {
+    const fixture = TestBed.createComponent(Algorithms);
+    const i18n = TestBed.inject(TranslocoService);
+    for (const [lang, notice, copyLabel] of [
+      ['ja', '最終層のピースを灰色', '手順をコピー'],
+      ['en', 'last-layer pieces in gray', 'Copy algorithm'],
+    ]) {
+      await firstValueFrom(i18n.load(lang));
+      i18n.setActiveLang(lang);
+      await fixture.whenStable();
+      /** OLL/PLLと同様に、ケース一覧の前に説明ブロックを表示しない。 */
+      expect(fixture.nativeElement.textContent).not.toContain(notice);
+      expect(fixture.nativeElement.querySelector('section > div > h2')).toBeNull();
+      expect(fixture.nativeElement.querySelector('select').getAttribute('aria-label')).toBe(
+        lang === 'ja' ? 'グループ' : 'Group',
+      );
+      expect(
+        fixture.nativeElement.querySelector('select').selectedOptions[0].textContent,
+      ).toContain(lang === 'ja' ? 'すべてのグループ' : 'All groups');
+      expect(
+        Array.from(
+          (fixture.nativeElement as HTMLElement)
+            .querySelector('.slots')!
+            .querySelectorAll('button'),
+          (button) => button.getAttribute('aria-label'),
+        ),
+      ).toEqual(['Front Right', 'Front Left', 'Back Left', 'Back Right']);
+      expect(fixture.nativeElement.querySelector('.slots').getAttribute('aria-label')).toBe(
+        lang === 'ja' ? 'スロット' : 'Slot',
+      );
+      expect(
+        fixture.nativeElement.querySelector('app-cube-quarter-view').getAttribute('aria-label'),
+      ).toBe(
+        lang === 'ja'
+          ? 'F2L 01のクォータービュー（上面・前面・右面）'
+          : 'Quarter view for F2L 01: top, front, and right faces',
+      );
+      expect(
+        fixture.nativeElement.querySelector(`button[aria-label="${copyLabel}"]`),
+      ).not.toBeNull();
+    }
+  });
+
+  it('共通カードでF2L手順を追加・お気に入り指定し、確認後に削除する', async () => {
+    const fixture = TestBed.createComponent(AlgorithmCaseCard);
+    // 組み込み手順の追加・修正に左右されず、カードの操作契約を検証する。
+    const item = {
+      ...f2lCaseForSlot(F2L_CASES[0], 'FR'),
+      algorithms: [{ id: 'test-built-in', notation: "R U R'", builtIn: true }],
+    };
+    fixture.componentRef.setInput('item', item);
+    const library = TestBed.inject(AlgorithmLibraryService);
+    await library.ready;
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    const input = element.querySelector('form input') as HTMLInputElement;
+    input.value = "U R U' R'";
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    element.querySelector('form')!.dispatchEvent(new Event('submit'));
+    await fixture.whenStable();
+    expect(element.querySelectorAll('app-algorithm-row')).toHaveLength(2);
+    expect(input.value).toBe('');
+    const customRow = element.querySelector('app-algorithm-row:last-child')!;
+    (customRow.querySelector('.star') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(element.querySelector('.favorite-algorithm code')!.textContent).toBe("U R U' R'");
+    expect(library.caseKey(item)).toBe('F2L-01-FR');
+    const confirm = vi.spyOn(TestBed.inject(ConfirmService), 'delete').mockReturnValue(of(false));
+    (customRow.querySelector('.remove') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(element.querySelectorAll('app-algorithm-row')).toHaveLength(2);
+    confirm.mockReturnValue(of(true));
+    (customRow.querySelector('.remove') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(element.querySelectorAll('app-algorithm-row')).toHaveLength(1);
+    expect(element.querySelector('.favorite-algorithm code')!.textContent).toBe(
+      item.algorithms[0].notation,
+    );
+  });
+});

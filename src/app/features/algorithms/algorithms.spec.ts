@@ -21,6 +21,8 @@ describe('Algorithms', () => {
     await fixture.whenStable();
 
     expect(fixture.nativeElement.querySelectorAll('app-algorithm-case-card')).toHaveLength(21);
+    expect(fixture.nativeElement.querySelectorAll('app-cube-pattern')).toHaveLength(21);
+    expect(fixture.nativeElement.querySelector('app-cube-quarter-view')).toBeNull();
   });
 
   it('PLL一覧の認識図をケースのSetupから生成する', async () => {

@@ -1,13 +1,38 @@
-<div class="casehead">
-  <b>{{ item().number }}</b
-  ><small>{{ item().kind }}</small>
-</div>
-<app-cube-pattern
-  [pattern]="pattern()"
-  [label]="'algorithms.pattern' | transloco: { name: item().name }"
-/>
-<div>
-  <h2>{{ item().name }}</h2>
-  <p>{{ item().group }}</p>
-</div>
-<app-algorithm-panel [item]="item()" />
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>
+      @if (item().kind === 'F2L') {
+        <app-cube-quarter-view
+          [pattern]="quarterPattern()"
+          [label]="'algorithms.quarterPattern' | transloco: { name: item().name || item().number }"
+        />
+      } @else {
+        <app-cube-pattern
+          [pattern]="pattern()"
+          [label]="
+            'algorithms.pattern'
+              | transloco: { name: item().name || item().kind + ' ' + item().number }
+          "
+        />
+      }
+      <div class="info">
+        <div class="number">
+          <div class="number">{{ item().number }}</div>
+          <div class="group">{{ item().group }}</div>
+        </div>
+        @if (item().name) {
+          <div class="name">{{ item().name }}</div>
+        }
+        <code class="setup">{{ 'algorithms.setup' | transloco }}: {{ displayItem().setup }}</code>
+      </div>
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (hasSlots()) {
+      <app-slot-button-group [(slot)]="slot" />
+    }
+    @for (selected of [displayItem()]; track selected.kind + selected.number + slot()) {
+      <app-algorithm-panel [item]="selected" />
+    }
+  </mat-card-content>
+</mat-card>

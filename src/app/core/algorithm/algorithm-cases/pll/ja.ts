@@ -2,6 +2,7 @@ import { definePllCase } from './pll-case';
 
 /** PLL Jaのケース定義。 */
 export const JA_CASE = definePllCase({
+  caseId: 'PLL-Ja',
   number: 'Ja',
   group: 'Mixed',
   setup: "U L' R' U2 R U R' U2 L U' R",

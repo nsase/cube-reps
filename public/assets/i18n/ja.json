@@ -45,12 +45,14 @@
   "nav": {
     "timer": "タイマー",
     "history": "記録",
-    "settings": "設定"
+    "settings": "設定",
+    "algorithms": "アルゴリズム"
   },
   "solveCategories": {
+    "f2l": "F2L",
     "full": "フルソルブ",
-    "oll": "OLL練習",
-    "pll": "PLL練習"
+    "oll": "OLL",
+    "pll": "PLL"
   },
   "common": {
     "ok": "OK",
@@ -71,8 +73,10 @@
     "recentAverage": "直近5回 平均"
   },
   "timer": {
+    "selectRandomDrill": "ケースまたはスロットをランダムに選び直す",
     "recordGroup": "RECORD GROUP",
     "recordDestination": "記録先",
+    "mode": "計測モード",
     "fullSolve": "FULL SOLVE",
     "caseDrill": "CASE DRILL",
     "practiceCase": "練習ケース",
@@ -97,6 +101,8 @@
     "solvePattern": "スクランブルの上段パターン: {{scramble}}"
   },
   "algorithms": {
+    "groupFilter": "グループ",
+    "allGroups": "すべてのグループ",
     "search": "番号・名前・グループで検索",
     "empty": "該当するケースがありません。",
     "pattern": "{{name}} のパターン",
@@ -109,7 +115,17 @@
     "copied": "コピーしました",
     "removeUserAlgorithm": "ユーザー手順を削除",
     "removeTitle": "ユーザー手順を削除しますか？",
-    "removeMessage": "{{kind}} {{number}} の手順「{{notation}}」を削除します。\nこの操作は取り消せません。"
+    "removeMessage": "{{kind}} {{number}} の手順「{{notation}}」を削除します。\nこの操作は取り消せません。",
+    "selection": {
+      "f2l": "最初の2層のコーナーとエッジを揃えます。41ケースの4スロット分の手順を確認できます。",
+      "oll": "最終層の向きを揃える57ケースを確認できます。",
+      "pll": "最終層の位置を揃える21ケースを確認できます。"
+    },
+    "slots": { "FR": "Front Right", "FL": "Front Left", "BL": "Back Left", "BR": "Back Right" },
+    "slot": "スロット",
+    "solve": "Solve",
+    "setup": "Setup",
+    "quarterPattern": "F2L {{name}}のクォータービュー（上面・前面・右面）"
   },
   "history": {
     "unclassified": "未分類",

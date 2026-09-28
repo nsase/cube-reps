@@ -45,12 +45,14 @@
   "nav": {
     "timer": "Timer",
     "history": "History",
-    "settings": "Settings"
+    "settings": "Settings",
+    "algorithms": "Algorithms"
   },
   "solveCategories": {
+    "f2l": "F2L",
     "full": "Full solve",
-    "oll": "OLL drill",
-    "pll": "PLL drill"
+    "oll": "OLL",
+    "pll": "PLL"
   },
   "common": {
     "ok": "OK",
@@ -71,8 +73,10 @@
     "recentAverage": "Last 5 average"
   },
   "timer": {
+    "selectRandomDrill": "Select another random case or slot",
     "recordGroup": "RECORD GROUP",
     "recordDestination": "Record to",
+    "mode": "Timer mode",
     "fullSolve": "FULL SOLVE",
     "caseDrill": "CASE DRILL",
     "practiceCase": "Practice case",
@@ -97,6 +101,8 @@
     "solvePattern": "Top-layer pattern for scramble: {{scramble}}"
   },
   "algorithms": {
+    "groupFilter": "Group",
+    "allGroups": "All groups",
     "search": "Search by number, name, or group",
     "empty": "No matching cases.",
     "pattern": "Pattern for {{name}}",
@@ -109,7 +115,17 @@
     "copied": "Copied",
     "removeUserAlgorithm": "Delete custom algorithm",
     "removeTitle": "Delete custom algorithm?",
-    "removeMessage": "Delete algorithm “{{notation}}” from {{kind}} {{number}}?\nThis action cannot be undone."
+    "removeMessage": "Delete algorithm “{{notation}}” from {{kind}} {{number}}?\nThis action cannot be undone.",
+    "selection": {
+      "f2l": "Pair and insert first two layer pieces. Browse algorithms for all four slots in 41 cases.",
+      "oll": "Orient the last layer. Browse 57 cases.",
+      "pll": "Permute the last layer. Browse 21 cases."
+    },
+    "slots": { "FR": "Front Right", "FL": "Front Left", "BL": "Back Left", "BR": "Back Right" },
+    "slot": "Slot",
+    "solve": "Solve",
+    "setup": "Setup",
+    "quarterPattern": "Quarter view for F2L {{name}}: top, front, and right faces"
   },
   "history": {
     "unclassified": "Unclassified",

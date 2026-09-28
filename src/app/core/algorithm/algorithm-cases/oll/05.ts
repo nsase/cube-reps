@@ -2,6 +2,7 @@ import { defineOllCase } from './oll-case';
 
 /** OLL 05のケース定義。 */
 export const OLL_05_CASE = defineOllCase({
+  caseId: 'OLL-05',
   number: '05',
   names: ['Right back wide antisune (RBWAS)', 'Lefty Square'],
   group: 'Square Shape',

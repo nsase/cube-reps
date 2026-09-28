@@ -2,6 +2,7 @@ import { defineOllCase } from './oll-case';
 
 /** OLL 54のケース定義。 */
 export const OLL_54_CASE = defineOllCase({
+  caseId: 'OLL-54',
   number: '54',
   names: ['Anti-Frying Pan'],
   group: 'Small L Shape',
