@@ -182,11 +182,12 @@ test(
     await page.keyboard.press('Space');
     await expect(page.locator('app-timer-solve-actions')).toBeVisible();
     await page.getByRole('link', { name: 'History', exact: true }).click();
-    const category = page.getByLabel('Solve category', { exact: true });
+    /** 再読込後も同じカテゴリー選択欄で保存結果を確認する。 */
+    const category = page.getByTestId('history-category-filter');
     await category.selectOption('f2l');
     await expect(page.locator('app-solve-record')).toHaveCount(1);
     await page.reload();
-    await page.getByLabel('Solve category', { exact: true }).selectOption('f2l');
+    await page.getByTestId('history-category-filter').selectOption('f2l');
     await expect(page.locator('app-solve-record')).toHaveCount(1);
     await page.getByRole('button', { name: 'View solve details', exact: true }).click();
     const dialog = page.getByRole('dialog');

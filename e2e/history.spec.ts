@@ -17,7 +17,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('レスポンシブ配置が画面内に収まる', { tag: '@responsive' }, async ({ page }) => {
-  await expect(page.getByLabel('Solve category', { exact: true }).locator('option')).toHaveText([
+  /** 選択肢を内包するラベルの文字列に依存せず、カテゴリー選択欄を検証する。 */
+  await expect(page.getByTestId('history-category-filter').locator('option')).toHaveText([
     'Full solve',
     'F2L',
     'OLL',

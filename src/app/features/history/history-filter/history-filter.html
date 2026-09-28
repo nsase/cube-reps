@@ -1,6 +1,6 @@
 <label
   >{{ 'history.solveCategory' | transloco
-  }}<select [(ngModel)]="store.selectedCategory">
+  }}<select data-testid="history-category-filter" [(ngModel)]="store.selectedCategory">
     @for (category of solveCategories; track category.id) {
       <option [value]="category.id">{{ category.labelKey | transloco }}</option>
     }
