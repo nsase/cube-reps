@@ -97,8 +97,9 @@ test(
       await expect(solution).not.toBeEmpty();
       const caseBox = (await cases.boundingBox())!;
       const solutionBox = (await solution.boundingBox())!;
+      /** 設定欄はtimerコンテナの全幅を占めるため、CSSと同じ600pxで段組みを判定する。 */
       const settingsBox = (await page.locator('app-timer-settings').boundingBox())!;
-      if (settingsBox.width <= 700) {
+      if (settingsBox.width <= 600) {
         expect(solutionBox.y).toBeGreaterThanOrEqual(caseBox.y + caseBox.height);
       } else {
         expect(solutionBox.x).toBeGreaterThanOrEqual(caseBox.x + caseBox.width);
