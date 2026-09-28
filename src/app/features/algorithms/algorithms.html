@@ -2,7 +2,18 @@
   <app-algorithm-tools [(query)]="query" [(group)]="group" [groups]="groups()" />
   <div class="grid">
     @for (item of filteredCases(); track item.kind + item.number) {
-      <app-algorithm-case-card [item]="item" />
+      <div class="case-slot" data-testid="algorithm-case-slot">
+        @defer (on viewport) {
+          <app-algorithm-case-card [item]="item" />
+        } @placeholder {
+          <mat-card class="case-placeholder" aria-hidden="true">
+            <mat-card-header>
+              <mat-card-title>{{ item.number }}</mat-card-title>
+              <mat-card-subtitle>{{ item.group }}</mat-card-subtitle>
+            </mat-card-header>
+          </mat-card>
+        }
+      </div>
     } @empty {
       <div class="empty">{{ 'algorithms.empty' | transloco }}</div>
     }
