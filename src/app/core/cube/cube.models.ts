@@ -1,6 +1,7 @@
 /** 集計単位として扱うsolveカテゴリーの定義。 */
 export const SOLVE_CATEGORIES = [
   { id: 'full', labelKey: 'solveCategories.full' },
+  { id: 'f2l', labelKey: 'solveCategories.f2l' },
   { id: 'oll', labelKey: 'solveCategories.oll' },
   { id: 'pll', labelKey: 'solveCategories.pll' },
 ] as const satisfies ReadonlyArray<{ id: string; labelKey: string }>;
@@ -50,8 +51,12 @@ export interface Solve extends SyncMetadata {
   scramble: string;
   /** 記録を独立して集計するsolveカテゴリー。 */
   category: SolveCategory;
-  /** PLL練習時のケース名。 */
+  /** ケース練習時の表示番号またはケース名。 */
   caseName?: string;
+  /** 表示番号の変更に影響されないF2L・OLL・PLL共通のケース識別子。 */
+  caseId?: string;
+  /** F2L計測で解いた対象スロット。 */
+  f2lSlot?: F2lSlot;
   /** 記録が属するグループID。 */
   groupId?: string;
   /** 記録へ適用されたペナルティ。 */
@@ -84,20 +89,22 @@ export interface AlgorithmPreference extends SyncMetadata {
   favoriteId?: string;
 }
 
-/** OLLまたはPLLのケースと登録済み手順。 */
-export interface AlgorithmCase {
+/** F2L・OLL・PLLに共通するケースと登録済み手順。 */
+export interface AlgorithmCase<Kind extends 'F2L' | 'OLL' | 'PLL' = 'F2L' | 'OLL' | 'PLL'> {
+  /** 表示番号を変更しても維持する、種別を含む固定のケース識別子。 */
+  caseId: string;
   /** ケースの種別。 */
-  kind: 'OLL' | 'PLL';
+  kind: Kind;
   /**
    * ケース番号または識別名。
-   * OLL: 01～57, PLL: Aa, Tなど
+   * F2L: 1～41, OLL: 01～57, PLL: Aa, Tなど
    */
   number: string;
   /**
    * ケース名。複数の呼称がある場合は表示用に連結した文字列。
    * OLL: Sune, Bowtieなど, PLL: Aa-perm, T-permなど
    */
-  name: string;
+  name?: string;
   /**
    * ケースの分類名。
    * OLL: Dot, Small L Shape, T Shapeなど, PLL: Corner, Edge, Mixed
@@ -107,6 +114,23 @@ export interface AlgorithmCase {
   setup: string;
   /** 組み込み手順の一覧。 */
   algorithms: readonly CaseAlgorithm[];
+}
+
+/** コーナーとエッジのペアを入れる、ユーザーから見たF2Lスロット。 */
+export type F2lSlot = 'FL' | 'FR' | 'BL' | 'BR';
+
+/** 番号・分類を共有し、4スロットそれぞれに解法を持つF2Lケース。 */
+export interface F2lCase extends Omit<AlgorithmCase<'F2L'>, 'algorithms'> {
+  /** FR基準の共通Setup。ほかのスロットは末尾に持ち替えを追加して作る。 */
+  setup: string;
+  /** 各スロットの解法一覧。 */
+  slots: Record<F2lSlot, Pick<AlgorithmCase<'F2L'>, 'algorithms'>>;
+}
+
+/** F2L固有の手順の対象スロットを持つケース。 */
+export interface F2lAlgorithmCase extends AlgorithmCase<'F2L'> {
+  /** Setupと解法手順の基準スロット。選択位置への持ち替えはこの位置を基準とする。 */
+  readonly slot: F2lSlot;
 }
 
 /** 保存・同期せず画面表示にだけ使用するアプリ組み込みグループ。 */

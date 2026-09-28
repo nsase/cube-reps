@@ -131,6 +131,23 @@ describe('TimerStore', () => {
     expect(cube.createScramble).not.toHaveBeenCalled();
   });
 
+  /** OLL・PLLも共通IDで保存・復元し、表示番号の変更に依存しない。 */
+  it.each(['oll', 'pll'] as const)('%sの固定IDを保存し再計測で優先する', (category) => {
+    const store = TestBed.inject(TimerStore);
+    const cube = TestBed.inject(CubeService);
+    store.setCategory(category);
+    const expected = store.currentDrillCase();
+    store.state.set('ready');
+    store.release();
+    store.elapsed.set(2000);
+    store.press();
+    expect(store.completedSolve()?.caseId).toBe(expected.caseId);
+    expect(store.completedSolve()?.f2lSlot).toBeUndefined();
+    store.completedSolve.set({ ...store.completedSolve()!, caseName: 'renumbered' });
+    store.retryCompletedSolve();
+    expect(store.currentDrillCase().caseId).toBe(expected.caseId);
+  });
+
   it('PLLのランダムモードでは出題したケース番号を記録へ保存する', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.5);
     const store = TestBed.inject(TimerStore);

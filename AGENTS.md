@@ -40,6 +40,10 @@
 
 ## Angular Material
 
+- UI部品は原則としてAngular Materialを使用する。対応するコンポーネントがある場合は、それを優先する。
+- selectはスマートフォンでのOS標準の選択操作を優先し、`mat-select`よりHTML標準の`select`を使用する。
+- カードには`MatCardModule`の`mat-card`を使用する。
+- 選択肢をまとめて切り替えるボタングループには、`MatButtonToggleModule`の`mat-button-toggle-group`と`mat-button-toggle`を使用する。
 - Angular Materialのディレクティブを使用するコンポーネントでは、対応するModuleを明示的に`imports`へ追加する。
 - `mat-icon-button`を使用する場合は、`MatButtonModule`と`MatIconModule`をimportする。
 - ボタンには可能な限り`mat-button`、`mat-flat-button`、`mat-icon-button`を使用する。
@@ -71,6 +75,11 @@
 
 - タイマー計測中はタイマーだけを画面に表示し、更新通知、ダイアログ、固定UIなど計測停止のポインター操作を横取りする要素を表示しない。
 - 計測前から表示されていた通知は計測開始時に一時的に非表示とし、計測停止後も必要であれば再表示する。
+
+## Cube Notation
+
+- 組み込み手順とSetupのWide Moveは、`Rw`、`Lw`、`Uw`、`Dw`、`Fw`、`Bw`の表記に統一する。`r`、`l`、`u`、`d`、`f`、`b`の小文字表記は使用しない。
+- 外部サイトから手順を取り込むときも同じ表記へ変換する。回転方向・回転量とキューブ状態を維持する。
 
 ## OLL/PLL Setup
 

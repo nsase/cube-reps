@@ -1,8 +1,17 @@
-<div class="kind-selector">
-  <button routerLink="/algorithms/oll" [class.on]="kind() === 'OLL'">OLL <small>57</small></button
-  ><button routerLink="/algorithms/pll" [class.on]="kind() === 'PLL'">PLL <small>21</small></button>
-</div>
-<label>
+<app-algorithm-kind-links class="kind-selector" />
+<label class="search-field">
   <mat-icon aria-hidden="true">search</mat-icon>
   <input [placeholder]="'algorithms.search' | transloco" [(ngModel)]="query" />
 </label>
+<div class="group-filter">
+  <select
+    [(ngModel)]="group"
+    [attr.aria-label]="'algorithms.groupFilter' | transloco"
+    data-testid="algorithm-group-filter"
+  >
+    <option value="">{{ 'algorithms.allGroups' | transloco }}</option>
+    @for (groupName of groups(); track groupName) {
+      <option [value]="groupName">{{ groupName }}</option>
+    }
+  </select>
+</div>

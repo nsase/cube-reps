@@ -9,6 +9,40 @@ describe('IndexedDbUserDataRepository', () => {
     localStorage.clear();
   });
   afterEach(() => vi.unstubAllGlobals());
+  it('F2Lのケース・スロットと既存カテゴリーを再起動後にも保持する', async () => {
+    const repository = new IndexedDbUserDataRepository();
+    const metadata = {
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      ownerType: 'guest' as const,
+      schemaVersion: USER_DATA_SCHEMA_VERSION,
+    };
+    for (const category of ['full', 'oll', 'pll', 'f2l'] as const) {
+      await repository.putSolve({
+        ...metadata,
+        id: category,
+        category,
+        time: 1000,
+        scramble: 'R U',
+        penalty: 'none',
+        ...(category === 'f2l'
+          ? { caseName: '01', caseId: 'F2L-01', f2lSlot: 'BL' as const }
+          : category === 'full'
+            ? {}
+            : { caseId: category === 'oll' ? 'OLL-01' : 'PLL-T' }),
+      });
+    }
+    const restored = await new IndexedDbUserDataRepository().load();
+    expect(restored.solves).toHaveLength(4);
+    expect(restored.solves.find((solve) => solve.category === 'oll')?.caseId).toBe('OLL-01');
+    expect(restored.solves.find((solve) => solve.category === 'pll')?.caseId).toBe('PLL-T');
+    expect(restored.solves.find((solve) => solve.category === 'f2l')).toMatchObject({
+      caseName: '01',
+      caseId: 'F2L-01',
+      f2lSlot: 'BL',
+    });
+  });
+
   it('IndexedDBの記録・グループ・手順設定を復元し、更新・削除を永続化する', async () => {
     const metadata = {
       createdAt: '2026-01-01T00:00:00.000Z',

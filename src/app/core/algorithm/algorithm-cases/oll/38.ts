@@ -2,6 +2,7 @@ import { defineOllCase } from './oll-case';
 
 /** OLL 38のケース定義。 */
 export const OLL_38_CASE = defineOllCase({
+  caseId: 'OLL-38',
   number: '38',
   names: ['Mario', 'Moustache'],
   group: 'W Shape',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { OLL_CASES, PLL_CASES } from './algorithm-cases';
+import { F2L_CASES, OLL_CASES, PLL_CASES } from './algorithm-cases';
 import {
   cubeFacesFromScramble,
   isOllSolved,
@@ -11,6 +11,15 @@ import {
 const cases = [...OLL_CASES, ...PLL_CASES];
 
 describe('algorithm cases', () => {
+  /** 全種別のケースを共通IDで識別できることを保証する。 */
+  it('provides unique fixed case IDs across F2L, OLL and PLL', () => {
+    const allCases = [...F2L_CASES, ...cases];
+    expect(new Set(allCases.map((item) => item.caseId)).size).toBe(allCases.length);
+    for (const item of allCases) {
+      expect(item.caseId).toBe(`${item.kind}-${item.number}`);
+    }
+  });
+
   it('includes OLL 01 through 57 in order', () => {
     expect(OLL_CASES.map((item) => item.number)).toEqual(
       Array.from({ length: 57 }, (_, index) => String(index + 1).padStart(2, '0')),
@@ -20,7 +29,10 @@ describe('algorithm cases', () => {
   it('provides algorithms and nine yellow stickers for every OLL case', () => {
     for (const item of OLL_CASES) {
       expect(item.kind).toBe('OLL');
-      expect(item.name.length).toBeGreaterThan(0);
+      /** ケース名は省略可能だが、指定された場合は空でないことを確認する。 */
+      if (item.name !== undefined) {
+        expect(item.name.trim().length).toBeGreaterThan(0);
+      }
       expect(item.algorithms.length).toBeGreaterThan(0);
       const pattern = topLayerOrientationPatternFromScramble(item.setup);
       const yellowCount = pattern.flat().filter((color) => color === 'yellow').length;

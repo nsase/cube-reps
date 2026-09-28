@@ -2,6 +2,7 @@ import { definePllCase } from './pll-case';
 
 /** PLL Gaのケース定義。 */
 export const GA_CASE = definePllCase({
+  caseId: 'PLL-Ga',
   number: 'Ga',
   group: 'Mixed',
   setup: "D R' U' R U D' R2 U R' U R U' R U' R2",

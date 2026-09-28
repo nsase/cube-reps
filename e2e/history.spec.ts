@@ -17,6 +17,13 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('レスポンシブ配置が画面内に収まる', { tag: '@responsive' }, async ({ page }) => {
+  /** 選択肢を内包するラベルの文字列に依存せず、カテゴリー選択欄を検証する。 */
+  await expect(page.getByTestId('history-category-filter').locator('option')).toHaveText([
+    'Full solve',
+    'F2L',
+    'OLL',
+    'PLL',
+  ]);
   await expectNoHorizontalOverflow(page);
   await expectResponsiveLayout(page, layoutItems);
 });

@@ -2,6 +2,8 @@ import { AlgorithmCase, CaseAlgorithm } from '../../../cube/cube.models';
 
 /** PLLケース生成時に必要な元データ。 */
 interface PllCaseDefinition {
+  /** 表示番号を変更しても維持する固定のケース識別子。 */
+  caseId: string;
   /** PLLケースの識別名。 */
   number: string;
   /** 置換対象による分類。 */
@@ -18,11 +20,11 @@ interface PllCaseDefinition {
  * @param definition PLLケースの元データ
  * @returns 種別と表示名を補完したケース
  */
-export function definePllCase(definition: PllCaseDefinition): AlgorithmCase {
+export function definePllCase(definition: PllCaseDefinition): AlgorithmCase<'PLL'> {
   return {
     kind: 'PLL',
+    caseId: definition.caseId,
     number: definition.number,
-    name: definition.number + '-perm',
     group: definition.group,
     setup: definition.setup,
     algorithms: definition.algorithms.map((algorithm) => ({ ...algorithm, builtIn: true })),
