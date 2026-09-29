@@ -39,3 +39,10 @@ a {
     display: none;
   }
 }
+
+// スマートフォンの2段集計は余白を抑え、長いスクランブルの表示領域を確保する。
+@media (max-width: 620px) {
+  div {
+    padding-block: 6px;
+  }
+}
