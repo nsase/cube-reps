@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { DeferBlockBehavior, DeferBlockState, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { provideRouter } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
@@ -25,6 +25,7 @@ describe('SolveRecord', () => {
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [SolveRecord],
+      deferBlockBehavior: DeferBlockBehavior.Manual,
       providers: [
         provideRouter([]),
         { provide: ConfirmService, useValue: confirm },
@@ -35,7 +36,7 @@ describe('SolveRecord', () => {
   });
 
   /** 計測記録を作成して行コンポーネントへ設定する。 */
-  function createFixture() {
+  async function createFixture(renderActions = true) {
     const cube = TestBed.inject(CubeService);
     cube.addSolve(1234, 'R U', 'full');
     const solve = { ...cube.activeSolves()[0], createdAt: '2026-08-24T09:28:00.000Z' };
@@ -46,11 +47,27 @@ describe('SolveRecord', () => {
     fixture.componentRef.setInput('ao5', 2000);
     fixture.componentRef.setInput('ao12', 3000);
     fixture.detectChanges();
+    if (renderActions) {
+      for (const block of await fixture.getDeferBlocks())
+        await block.render(DeferBlockState.Complete);
+    }
     return { cube, fixture, solve };
   }
 
-  it('ヘッダーに対応する値だけを表示し、スクランブルは詳細ダイアログで開く', () => {
-    const { fixture, solve } = createFixture();
+  /** 記録の値はすぐ表示し、操作ボタンの生成だけを表示範囲への到達まで待つ。 */
+  it('表示範囲に入るまで操作ボタンを生成しない', async () => {
+    const { fixture } = await createFixture(false);
+    expect(fixture.nativeElement.querySelector('.result').textContent).toContain('1.23');
+    expect(fixture.nativeElement.querySelector('.row-details')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-solve-actions')).toBeNull();
+    const [block] = await fixture.getDeferBlocks();
+    await block.render(DeferBlockState.Complete);
+    expect(fixture.nativeElement.querySelector('.row-details')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-solve-actions')).not.toBeNull();
+  });
+
+  it('ヘッダーに対応する値だけを表示し、スクランブルは詳細ダイアログで開く', async () => {
+    const { fixture, solve } = await createFixture();
 
     expect(fixture.nativeElement.querySelector('.ao5').textContent).toContain('2.00');
     expect(fixture.nativeElement.querySelector('.ao12').textContent).toContain('3.00');
@@ -65,8 +82,8 @@ describe('SolveRecord', () => {
     });
   });
 
-  it('選択不可でもチェック欄を表示し、選択可能な行だけ変更を通知する', () => {
-    const { fixture } = createFixture();
+  it('選択不可でもチェック欄を表示し、選択可能な行だけ変更を通知する', async () => {
+    const { fixture } = await createFixture();
     const changed = vi.fn();
     fixture.componentInstance.selectionChanged.subscribe(changed);
     const checkbox = fixture.nativeElement.querySelector(
@@ -83,10 +100,10 @@ describe('SolveRecord', () => {
     expect(changed).toHaveBeenCalledOnce();
   });
 
-  it('言語切替後もグループ名を一覧に表示せず、年なしの短い計測日時を表示する', () => {
+  it('言語切替後もグループ名を一覧に表示せず、年なしの短い計測日時を表示する', async () => {
     const i18n = TestBed.inject(TranslocoService);
     i18n.setActiveLang('en');
-    const { cube, fixture, solve } = createFixture();
+    const { cube, fixture, solve } = await createFixture();
     const date = fixture.nativeElement.querySelector('time') as HTMLElement;
     expect(date.textContent).toBe('Aug 24, 09:28');
     expect(fixture.nativeElement.textContent).not.toContain(cube.groupName(solve.groupId));

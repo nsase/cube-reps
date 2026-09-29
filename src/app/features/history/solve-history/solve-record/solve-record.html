@@ -12,15 +12,17 @@
 <span class="average ao5">{{ formatAverage(ao5()) }}</span>
 <span class="average ao12">{{ formatAverage(ao12()) }}</span>
 <time>{{ formattedDate() }}</time>
-<div class="row-actions">
-  <button
-    mat-icon-button
-    class="row-details"
-    [attr.aria-label]="'history.viewSolveDetails' | transloco"
-    [title]="'history.viewSolveDetails' | transloco"
-    (click)="showDetails()"
-  >
-    <mat-icon>info</mat-icon>
-  </button>
-  <app-solve-actions [solve]="solve()" />
+<div class="row-actions" #actions>
+  @defer (on viewport(actions)) {
+    <button
+      mat-icon-button
+      class="row-details"
+      [attr.aria-label]="'history.viewSolveDetails' | transloco"
+      [title]="'history.viewSolveDetails' | transloco"
+      (click)="showDetails()"
+    >
+      <mat-icon>info</mat-icon>
+    </button>
+    <app-solve-actions [solve]="solve()" />
+  }
 </div>

@@ -190,6 +190,7 @@ test(
     await page.reload();
     await page.getByTestId('history-category-filter').selectOption('f2l');
     await expect(page.locator('app-solve-record')).toHaveCount(1);
+    await page.locator('app-solve-record').first().scrollIntoViewIfNeeded();
     await page.getByRole('button', { name: 'View solve details', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toContainText('F2L · 01');

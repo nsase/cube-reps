@@ -45,11 +45,6 @@ export class HistorySummary {
     return value === Infinity ? 'DNF' : this.cube.formatTime(value);
   }
 
-  /** @returns 絞り込み対象の記録をDNF込みの集計値へ変換した配列 */
-  private statTimes(): number[] {
-    return this.store.filteredSolves().map((solve) => this.cube.statTime(solve));
-  }
-
   /** @returns 絞り込み対象からDNFを除外し、+2を反映したタイム配列 */
   private validTimes(): number[] {
     return this.store
@@ -60,7 +55,9 @@ export class HistorySummary {
 
   /** 指定件数が揃っている場合に最新記録のAverageを返す。 */
   private averageOf(count: number): number | undefined {
-    const times = this.statTimes();
-    return times.length < count ? undefined : average(times.slice(0, count));
+    const solves = this.store.filteredSolves();
+    return solves.length < count
+      ? undefined
+      : average(solves.slice(0, count).map((solve) => this.cube.statTime(solve)));
   }
 }

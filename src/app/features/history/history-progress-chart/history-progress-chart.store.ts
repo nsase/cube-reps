@@ -42,30 +42,32 @@ export class HistoryProgressChartStore {
     { id: 'ao12', labelKey: 'common.ao12' },
   ] as const satisfies ReadonlyArray<{ id: ProgressSeries; labelKey: string }>;
 
-  /** 絞り込み対象を古い順に集計した全グラフデータ。 */
-  private readonly allPoints = computed<readonly ProgressPoint[]>(() => {
-    const solves = [...this.historyStore.filteredSolves()].reverse();
-    const times: number[] = [];
+  /**
+   * 表示範囲の点だけを集計する。
+   * 範囲より古い記録はベスト値だけに反映し、移動平均には境界直前の記録も含める。
+   */
+  readonly points = computed<readonly ProgressPoint[]>(() => {
+    const solves = this.historyStore.filteredSolves();
+    const range = this.displayRange();
+    const count = range === 'all' ? solves.length : Math.min(range, solves.length);
     let best = Infinity;
-    return solves.map((solve, index) => {
-      const result = this.cube.statTime(solve);
-      times.push(result);
+    for (let index = solves.length - 1; index >= count; index--) {
+      best = Math.min(best, this.cube.statTime(solves[index]));
+    }
+    const times = solves.slice(0, count + 11).map((solve) => this.cube.statTime(solve));
+    const points: ProgressPoint[] = [];
+    for (let index = count - 1; index >= 0; index--) {
+      const result = times[index];
       best = Math.min(best, result);
-      return {
-        number: index + 1,
+      points.push({
+        number: solves.length - index,
         result,
         best,
-        ao5: this.averageAt(times, 5),
-        ao12: this.averageAt(times, 12),
-      };
-    });
-  });
-
-  /** 選択件数に応じて全履歴から切り出した表示対象。 */
-  readonly points = computed(() => {
-    const points = this.allPoints();
-    const range = this.displayRange();
-    return range === 'all' ? points : points.slice(-range);
+        ao5: this.averageAt(times, index, 5),
+        ao12: this.averageAt(times, index, 12),
+      });
+    }
+    return points;
   });
 
   /** 縦軸の表示範囲を決める有限タイムの最小値と最大値。 */
@@ -157,8 +159,8 @@ export class HistoryProgressChartStore {
     return value === Infinity ? 'DNF' : this.cube.formatTime(value);
   }
 
-  /** 指定件数が揃った時点のAverageを返す。 */
-  private averageAt(times: readonly number[], count: number): number | undefined {
-    return times.length < count ? undefined : average(times.slice(-count));
+  /** 新しい順のタイム列から、対象点とそれ以前の記録でAverageを求める。 */
+  private averageAt(times: readonly number[], index: number, count: number): number | undefined {
+    return times.length - index < count ? undefined : average(times.slice(index, index + count));
   }
 }
