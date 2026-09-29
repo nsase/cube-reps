@@ -10,7 +10,7 @@ import {
 const routes = ['algorithms/f2l', 'algorithms/oll', 'algorithms/pll'] as const;
 
 /** 手順一覧画面で独立して配置される主要要素。 */
-const layoutItems = 'app-algorithm-tools, .grid > app-algorithm-case-card';
+const layoutItems = 'app-algorithm-tools, .case-slot';
 
 test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
   for (const route of routes) {
@@ -122,8 +122,8 @@ test.describe('アルゴリズムの画面遷移', { tag: '@responsive' }, () =>
       await page.keyboard.press('Enter');
       await expect(page).toHaveURL(new RegExp(`/algorithms/${kind.toLowerCase()}$`));
       if (kind === 'F2L') {
-        await expect(page.locator('app-algorithm-case-card')).toHaveCount(41);
-        await expect(page.locator('app-cube-quarter-view')).toHaveCount(41);
+        await expect(page.getByTestId('algorithm-case-slot')).toHaveCount(41);
+        await expect(page.locator('app-cube-quarter-view').first()).toBeVisible();
         await expect(page.locator('app-cube-pattern')).toHaveCount(0);
         await expect(
           page.getByText(
@@ -134,8 +134,8 @@ test.describe('アルゴリズムの画面遷移', { tag: '@responsive' }, () =>
           ),
         ).toBeHidden();
       } else {
-        await expect(page.locator('app-algorithm-case-card')).toHaveCount(kind === 'OLL' ? 57 : 21);
-        await expect(page.locator('app-cube-pattern')).toHaveCount(kind === 'OLL' ? 57 : 21);
+        await expect(page.getByTestId('algorithm-case-slot')).toHaveCount(kind === 'OLL' ? 57 : 21);
+        await expect(page.locator('app-cube-pattern').first()).toBeVisible();
         await expect(page.locator('app-cube-quarter-view')).toHaveCount(0);
       }
       await expectNoHorizontalOverflow(page);
@@ -155,14 +155,14 @@ test.describe('アルゴリズムの画面遷移', { tag: '@responsive' }, () =>
 test('F2Lの41カードを最後まで閲覧できる', { tag: '@responsive' }, async ({ page }) => {
   await page.goto('/#/algorithms/f2l');
   const cards = page.locator('app-algorithm-case-card');
-  await expect(cards).toHaveCount(41);
+  await expect(page.getByTestId('algorithm-case-slot')).toHaveCount(41);
   await expect(cards.first().locator('.number > .number')).toHaveText('01');
   await expect(
     cards
       .first()
       .getByRole('img', { name: 'Quarter view for F2L 01: top, front, and right faces' }),
   ).toBeVisible();
-  await cards.last().scrollIntoViewIfNeeded();
+  await page.getByTestId('algorithm-case-slot').last().scrollIntoViewIfNeeded();
   await expect(cards.last().locator('.number > .number')).toHaveText('41');
   await expect(
     cards.last().getByRole('img', { name: 'Quarter view for F2L 41: top, front, and right faces' }),
@@ -179,7 +179,7 @@ test('F2Lの41カードを最後まで閲覧できる', { tag: '@responsive' }, 
   await expect(cards).toHaveCount(1);
   await expect(cards.locator('.number > .number')).toHaveText('41');
   await search.clear();
-  await expect(cards).toHaveCount(41);
+  await expect(page.getByTestId('algorithm-case-slot')).toHaveCount(41);
   await expectNoHorizontalOverflow(page);
 });
 
@@ -190,6 +190,7 @@ test(
     await page.goto('/#/algorithms/f2l');
     await page.locator('app-algorithm-tools input').fill('01');
     const card = page.locator('app-algorithm-case-card');
+    await expect(card).toBeVisible();
     await expectElementsWithin(
       page,
       'app-algorithm-case-card mat-card-content',
@@ -344,7 +345,9 @@ for (const kind of ['f2l', 'oll', 'pll'] as const) {
     await expect(cards).toHaveCount(1);
     await page.locator('app-algorithm-tools input').clear();
     await select.selectOption('');
-    await expect(cards).toHaveCount(kind === 'f2l' ? 41 : kind === 'oll' ? 57 : 21);
+    await expect(page.getByTestId('algorithm-case-slot')).toHaveCount(
+      kind === 'f2l' ? 41 : kind === 'oll' ? 57 : 21,
+    );
     await select.selectOption({ label: selectedGroup });
     await page
       .locator('app-algorithm-kind-links')
@@ -354,6 +357,45 @@ for (const kind of ['f2l', 'oll', 'pll'] as const) {
       })
       .click();
     await expect(select).toHaveValue('');
-    await expect(cards).toHaveCount(kind === 'pll' ? 57 : 21);
+    await expect(page.getByTestId('algorithm-case-slot')).toHaveCount(kind === 'pll' ? 57 : 21);
   });
+}
+
+for (const kind of ['f2l', 'oll', 'pll'] as const) {
+  test(
+    `${kind}の画面外カードをスクロールで表示し、未表示ケースも検索できる`,
+    { tag: '@responsive' },
+    async ({ page }) => {
+      await page.goto(`/#/algorithms/${kind}`);
+      const slots = page.getByTestId('algorithm-case-slot');
+      const first = slots.first().locator('app-algorithm-case-card');
+      const last = slots.last().locator('app-algorithm-case-card');
+      await expect(first).toBeVisible();
+      await expect(last).toHaveCount(0);
+      const search = page.locator('app-algorithm-tools input');
+      // 未表示の最終ケースも検索対象に含み、絞り込み後に描画する。
+      const lastNumber = kind === 'f2l' ? '41' : kind === 'oll' ? '57' : 'Z';
+      await search.fill(lastNumber);
+      await expect(slots).toHaveCount(1);
+      await expect(slots.locator('app-algorithm-case-card .number > .number')).toHaveText(
+        lastNumber,
+      );
+      await search.clear();
+      /** 絞り込み解除後の件数と先頭番号を待ち、切替前のカードへの入力を防ぐ。 */
+      await expect(slots).toHaveCount(kind === 'f2l' ? 41 : kind === 'oll' ? 57 : 21);
+      await expect(first.locator('.number > .number')).toHaveText(kind === 'pll' ? 'Aa' : '01');
+      const draft = first.getByPlaceholder('Enter a new algorithm');
+      await draft.fill("R U R'");
+      await slots.last().scrollIntoViewIfNeeded();
+      await expect(last).toBeVisible();
+      await expect(last.getByRole('button', { name: 'Add', exact: true })).toBeVisible();
+      await slots.first().scrollIntoViewIfNeeded();
+      await expect(draft).toHaveValue("R U R'");
+      /** sticky検索欄がカード上に重なるスクロール状態を解除して通常配置を検証する。 */
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+      await expectNoHorizontalOverflow(page);
+      await expectResponsiveLayout(page, layoutItems);
+    },
+  );
 }

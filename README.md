@@ -20,10 +20,15 @@ CubeReps is a browser-based Rubik's Cube timer and training tool. Solve records 
 - F2L timing measures one pair: choose one of 41 cases or Random and a target slot (Random / FR / FL / BL / BR). Both case and slot default to Random; they can be randomized independently. Each new drill chooses an actual slot, which is retained in the saved result. Start white down and green in front, apply the common Setup and final cube rotation, then time solving the pair. Changing the slot keeps the current case. Case and slot selectors share one row; on narrow screens, the solution appears below them and wraps without being hidden or truncated. Only the timer remains visible while running. F2L, OLL, and PLL results retain a shared `caseId`, displayed number, and scramble in local storage and cloud sync; F2L also retains its slot. Retry uses the fixed case ID. Older records without an ID fall back to the case name. History supports the F2L category for filtering, statistics, and Progress Chart; details show the case and slot, and Retry restores the original case, slot, and scramble.
   The type buttons support arrow-key navigation and stay synchronized with browser Back/Forward navigation. Each F2L / OLL / PLL page offers a native group dropdown independent of text search, using the browser/OS selection interface. Select a group (such as Connected Pairs) to match it exactly, combine it with text search, or select All groups to clear it. Switching types resets the group filter.
 
+  Algorithm cards render their diagrams and controls when they enter the viewport. Search and group filters still include every case; cards already displayed retain their state while scrolling.
+
 - Add, delete, copy, and favorite algorithms
 - Create, rename, and delete record groups, moving their records to Unclassified on deletion, with one shared selection across timer and history
 - Per-group statistics for best, overall average, Ao5, Ao12, Ao50, and Ao100
 - `+2` and `DNF` penalties for solve records
+- History keeps 100 records per page and creates each row’s action buttons when the row enters the viewport. Chart moving averages are calculated for the selected range while retaining earlier records needed for the averages and all-time best.
+- On phone-sized screens, Timer uses compact vertical spacing in the statistics panel to leave room for long scrambles.
+- On landscape screens at least 1024px wide with an aspect ratio of 4:3 or wider, Timer places the clock and scramble side by side, including iPad Mini landscape.
 - Retry any solve from history with its original scramble, category, and record group
 - History rows with point-in-time Ao5/Ao12 and details for scrambles and cube previews
 - English and Japanese interfaces

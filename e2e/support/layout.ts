@@ -27,12 +27,13 @@ export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
  * 主要レイアウト要素が画面左右へはみ出さず、互いに重ならないことを確認する。
  *
  * 縦方向は一覧画面の正常なスクロールを許可し、要素同士の重なりだけを検証する。
+ * ヘッダーは専用IDで取得し、グラフ内のheader要素と区別する。
  *
  * @param page 検証対象のブラウザページ
  * @param selector 兄弟関係にある主要レイアウト要素のセレクター
  */
 export async function expectResponsiveLayout(page: Page, selector: string): Promise<void> {
-  const headerLayout = await page.locator('header').evaluate((header) => {
+  const headerLayout = await page.getByTestId('app-header').evaluate((header) => {
     const headerBox = header.getBoundingClientRect();
     const main = header.closest('main');
     const mainBox = main?.getBoundingClientRect();

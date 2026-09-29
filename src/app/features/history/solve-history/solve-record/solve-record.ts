@@ -11,7 +11,29 @@ import { OwnerAvatar } from '../../../../shared/owner-avatar/owner-avatar';
 import { SolveActions } from '../solve-actions/solve-actions';
 import { SolveDetailDialog } from '../solve-detail-dialog/solve-detail-dialog';
 
-/** 1件の計測記録と、そのペナルティ・削除操作を表示するコンポーネント。 */
+/** 言語ごとに日時整形器を共有し、100行表示時の生成コストを抑える。 */
+const dateFormatters = new Map<string, Intl.DateTimeFormat>();
+
+/** 現在の言語に合う短い日時の整形器を必要になったときだけ作る。 */
+function dateFormatter(locale: string): Intl.DateTimeFormat {
+  let formatter = dateFormatters.get(locale);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, {
+      month: locale === 'ja-JP' ? '2-digit' : 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    });
+    dateFormatters.set(locale, formatter);
+  }
+  return formatter;
+}
+
+/**
+ * 1件の計測記録と、そのペナルティ・削除操作を表示するコンポーネント。
+ * 操作ボタンは表示範囲に入ってから生成し、履歴を開いた直後の描画負荷を抑える。
+ */
 @Component({
   selector: 'app-solve-record',
   imports: [
@@ -56,13 +78,7 @@ export class SolveRecord {
    */
   protected readonly formattedDate = computed(() => {
     const locale = this.activeLang() === 'ja' ? 'ja-JP' : 'en-US';
-    return new Intl.DateTimeFormat(locale, {
-      month: locale === 'ja-JP' ? '2-digit' : 'short',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hourCycle: 'h23',
-    }).format(new Date(this.solve().createdAt));
+    return dateFormatter(locale).format(new Date(this.solve().createdAt));
   });
   /** 記録の低優先度情報を詳細表示するダイアログサービス。 */
   private readonly dialog = inject(MatDialog);

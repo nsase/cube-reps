@@ -7,25 +7,27 @@
       }
     </select>
   </div>
-  <mat-button-toggle-group
-    class="modes"
-    [value]="store.category()"
-    (change)="store.setCategory($event.value)"
-    [attr.aria-label]="'timer.mode' | transloco"
-  >
-    <mat-button-toggle value="full">
-      3×3<small>{{ 'timer.fullSolve' | transloco }}</small>
-    </mat-button-toggle>
-    <mat-button-toggle value="f2l">
-      F2L<small>{{ 'timer.caseDrill' | transloco }}</small>
-    </mat-button-toggle>
-    <mat-button-toggle value="oll">
-      OLL<small>{{ 'timer.caseDrill' | transloco }}</small>
-    </mat-button-toggle>
-    <mat-button-toggle value="pll">
-      PLL<small>{{ 'timer.caseDrill' | transloco }}</small>
-    </mat-button-toggle>
-  </mat-button-toggle-group>
+  <div>
+    <mat-button-toggle-group
+      class="modes"
+      [value]="store.category()"
+      (change)="store.setCategory($event.value)"
+      [attr.aria-label]="'timer.mode' | transloco"
+    >
+      <mat-button-toggle value="full">
+        3×3<small>{{ 'timer.fullSolve' | transloco }}</small>
+      </mat-button-toggle>
+      <mat-button-toggle value="f2l">
+        F2L<small>{{ 'timer.caseDrill' | transloco }}</small>
+      </mat-button-toggle>
+      <mat-button-toggle value="oll">
+        OLL<small>{{ 'timer.caseDrill' | transloco }}</small>
+      </mat-button-toggle>
+      <mat-button-toggle value="pll">
+        PLL<small>{{ 'timer.caseDrill' | transloco }}</small>
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
 </div>
 @if (store.category() !== 'full') {
   <div class="case-select">

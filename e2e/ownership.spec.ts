@@ -163,6 +163,7 @@ test(
     }
     await owner.click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.locator('app-solve-record').first().scrollIntoViewIfNeeded();
     await page.getByRole('button', { name: 'View solve details', exact: true }).click();
     await expect(page.getByRole('dialog')).toContainText('apple.com');
     // 一覧の操作が省略される端末でも、詳細で他所有者の編集禁止を確認する。

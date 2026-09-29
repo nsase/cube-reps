@@ -31,3 +31,14 @@ section {
     grid-template-columns: 1fr;
   }
 }
+
+// 未描画のカードにも領域を確保し、読み込み時の一覧の縮みを防ぐ。
+.case-slot {
+  display: grid;
+  min-width: 0;
+  min-height: 40rem;
+}
+
+.case-placeholder {
+  height: 100%;
+}

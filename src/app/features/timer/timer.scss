@@ -50,7 +50,7 @@ app-timer-stats {
   grid-area: stats;
 }
 
-@media (min-width: 1050px) and (min-aspect-ratio: 4 / 3) {
+@media (min-width: 1024px) and (min-aspect-ratio: 4 / 3) {
   section {
     grid-template-areas:
       'settings settings'
@@ -74,7 +74,7 @@ app-timer-stats {
   }
 }
 
-@media (min-width: 1050px) and (min-aspect-ratio: 4 / 3) and (max-height: 720px) {
+@media (min-width: 1024px) and (min-aspect-ratio: 4 / 3) and (max-height: 720px) {
   section {
     grid-template-areas:
       'settings settings'

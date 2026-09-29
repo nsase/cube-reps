@@ -6,6 +6,7 @@ import {
   linkedSignal,
   signal,
 } from '@angular/core';
+import { MatCardModule } from '@angular/material/card';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -13,10 +14,13 @@ import { F2L_CASES, OLL_CASES, PLL_CASES } from '../../core/algorithm/algorithm-
 import { AlgorithmCaseCard } from './algorithm-case-card/algorithm-case-card';
 import { AlgorithmTools } from './algorithm-tools/algorithm-tools';
 
-/** F2L・OLL・PLLケースの検索、手順登録、お気に入りを扱う画面。 */
+/**
+ * F2L・OLL・PLLケースの検索と一覧を提供する画面。
+ * 表示範囲に入ったカードから操作部品を生成し、画面切替時の一括描画を避ける。
+ */
 @Component({
   selector: 'app-algorithms',
-  imports: [AlgorithmTools, AlgorithmCaseCard, TranslocoPipe],
+  imports: [AlgorithmTools, AlgorithmCaseCard, MatCardModule, TranslocoPipe],
   templateUrl: './algorithms.html',
   styleUrl: './algorithms.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

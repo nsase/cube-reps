@@ -1,5 +1,5 @@
 import { firstValueFrom } from 'rxjs';
-import { TestBed } from '@angular/core/testing';
+import { DeferBlockBehavior, DeferBlockState, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { TranslocoService } from '@jsverse/transloco';
@@ -11,7 +11,10 @@ import { Algorithms } from './algorithms';
 
 describe('Algorithm navigation', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [provideRouter(routes)] });
+    TestBed.configureTestingModule({
+      deferBlockBehavior: DeferBlockBehavior.Manual,
+      providers: [provideRouter(routes)],
+    });
   });
 
   // 全41ケースの実手順とMaterialボタンを描画するため、並列実行時の余裕を持たせる。
@@ -34,15 +37,21 @@ describe('Algorithm navigation', () => {
       harness.routeNativeElement!.querySelector('a[href="/algorithms/f2l"]') as HTMLAnchorElement
     ).click();
     await harness.fixture.whenStable();
+    for (const block of await harness.fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     expect(TestBed.inject(Router).url).toBe('/algorithms/f2l');
     /** 説明文ではなく、遷移先のケース一覧が表示されることを確認する。 */
-    expect(harness.routeNativeElement!.querySelectorAll('app-algorithm-case-card')).toHaveLength(41);
+    expect(harness.routeNativeElement!.querySelectorAll('app-algorithm-case-card')).toHaveLength(
+      41,
+    );
   }, 15000);
 
   it('F2LのURLを直接開き、他の種類への切り替えを表示する', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/algorithms/f2l', Algorithms);
     await harness.fixture.whenStable();
+    for (const block of await harness.fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     /** ページ種別は共通の切り替えボタンで示し、独立した見出しは表示しない。 */
     expect(harness.routeNativeElement!.querySelector('h2')).toBeNull();
     expect(
