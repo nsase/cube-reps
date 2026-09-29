@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { DeferBlockBehavior, DeferBlockState, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter } from '@angular/router';
 import { firstValueFrom, of } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
@@ -13,17 +13,21 @@ import { AlgorithmCaseCard } from '../algorithm-case-card/algorithm-case-card';
 describe('F2L共通カード', () => {
   beforeEach(() =>
     TestBed.configureTestingModule({
+      imports: [Algorithms],
+      deferBlockBehavior: DeferBlockBehavior.Manual,
       providers: [
         provideRouter([]),
         { provide: ActivatedRoute, useValue: { data: of({ kind: 'F2L' }) } },
       ],
-    }),
+    }).compileComponents(),
   );
 
   // 全41ケースの実手順とMaterialボタンを描画するため、並列実行時の余裕を持たせる。
   it('41ケースを共通カードで番号順に表示し、グループとクォータービューを表示する', async () => {
     const fixture = TestBed.createComponent(Algorithms);
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     const cards = (fixture.nativeElement as HTMLElement).querySelectorAll(
       'app-algorithm-case-card',
     );
@@ -48,10 +52,14 @@ describe('F2L共通カード', () => {
   it('グループを完全一致で絞り込み、検索との併用と解除ができる', async () => {
     const fixture = TestBed.createComponent(Algorithms);
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
     select.value = 'Connected Pairs';
     select.dispatchEvent(new Event('change'));
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     const element = fixture.nativeElement as HTMLElement;
     expect(element.querySelectorAll('app-algorithm-case-card')).toHaveLength(
       F2L_CASES.filter((item) => item.group === 'Connected Pairs').length,
@@ -68,16 +76,22 @@ describe('F2L共通カード', () => {
     input.value = '18';
     input.dispatchEvent(new Event('input'));
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     expect(element.querySelectorAll('app-algorithm-case-card')).toHaveLength(1);
     input.value = 'missing';
     input.dispatchEvent(new Event('input'));
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     expect(element.querySelector('.empty')).not.toBeNull();
     input.value = '';
     input.dispatchEvent(new Event('input'));
     select.value = '';
     select.dispatchEvent(new Event('change'));
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     expect(element.querySelectorAll('app-algorithm-case-card')).toHaveLength(41);
   }, 15000);
 
@@ -87,6 +101,8 @@ describe('F2L共通カード', () => {
     const library = TestBed.inject(AlgorithmLibraryService);
     await library.ready;
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     const element = fixture.nativeElement as HTMLElement;
     for (const [slot, label] of [
       ['FR', 'Front Right'],
@@ -99,6 +115,8 @@ describe('F2L共通カード', () => {
       )!;
       button.click();
       await fixture.whenStable();
+      for (const block of await fixture.getDeferBlocks())
+        await block.render(DeferBlockState.Complete);
       const data = f2lCaseForSlot(F2L_CASES[0], slot);
       expect(button.getAttribute('aria-checked')).toBe('true');
       expect(element.querySelectorAll('.slots button[aria-checked="true"]')).toHaveLength(1);
@@ -113,6 +131,8 @@ describe('F2L共通カード', () => {
       const custom = library.algorithmsFor(projected).find(({ builtIn }) => !builtIn)!;
       library.setFavorite(projected, custom.id);
       await fixture.whenStable();
+      for (const block of await fixture.getDeferBlocks())
+        await block.render(DeferBlockState.Complete);
       expect(element.querySelector('.favorite-algorithm code')!.textContent).toBe('R2 U2 R2');
     }
   });
@@ -120,6 +140,8 @@ describe('F2L共通カード', () => {
   it('共通の検索欄で番号・グループを絞り込み、該当なしと検索解除を表示する', async () => {
     const fixture = TestBed.createComponent(Algorithms);
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     const element = fixture.nativeElement as HTMLElement;
     const input = element.querySelector('app-algorithm-tools input') as HTMLInputElement;
     for (const [query, count] of [
@@ -131,6 +153,8 @@ describe('F2L共通カード', () => {
       input.value = query;
       input.dispatchEvent(new Event('input'));
       await fixture.whenStable();
+      for (const block of await fixture.getDeferBlocks())
+        await block.render(DeferBlockState.Complete);
       const cards = element.querySelectorAll('app-algorithm-case-card');
       expect(cards).toHaveLength(count);
       if (query === '41') {
@@ -150,6 +174,8 @@ describe('F2L共通カード', () => {
       await firstValueFrom(i18n.load(lang));
       i18n.setActiveLang(lang);
       await fixture.whenStable();
+      for (const block of await fixture.getDeferBlocks())
+        await block.render(DeferBlockState.Complete);
       /** OLL/PLLと同様に、ケース一覧の前に説明ブロックを表示しない。 */
       expect(fixture.nativeElement.textContent).not.toContain(notice);
       expect(fixture.nativeElement.querySelector('section > div > h2')).toBeNull();
@@ -194,27 +220,39 @@ describe('F2L共通カード', () => {
     const library = TestBed.inject(AlgorithmLibraryService);
     await library.ready;
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     const element = fixture.nativeElement as HTMLElement;
     const input = element.querySelector('form input') as HTMLInputElement;
     input.value = "U R U' R'";
     input.dispatchEvent(new Event('input'));
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     element.querySelector('form')!.dispatchEvent(new Event('submit'));
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     expect(element.querySelectorAll('app-algorithm-row')).toHaveLength(2);
     expect(input.value).toBe('');
     const customRow = element.querySelector('app-algorithm-row:last-child')!;
     (customRow.querySelector('.star') as HTMLButtonElement).click();
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     expect(element.querySelector('.favorite-algorithm code')!.textContent).toBe("U R U' R'");
     expect(library.caseKey(item)).toBe('F2L-01-FR');
     const confirm = vi.spyOn(TestBed.inject(ConfirmService), 'delete').mockReturnValue(of(false));
     (customRow.querySelector('.remove') as HTMLButtonElement).click();
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     expect(element.querySelectorAll('app-algorithm-row')).toHaveLength(2);
     confirm.mockReturnValue(of(true));
     (customRow.querySelector('.remove') as HTMLButtonElement).click();
     await fixture.whenStable();
+    for (const block of await fixture.getDeferBlocks())
+      await block.render(DeferBlockState.Complete);
     expect(element.querySelectorAll('app-algorithm-row')).toHaveLength(1);
     expect(element.querySelector('.favorite-algorithm code')!.textContent).toBe(
       item.algorithms[0].notation,

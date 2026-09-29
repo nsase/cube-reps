@@ -132,7 +132,9 @@ describe('App', () => {
     await fixture.whenStable();
 
     expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain('ALGORITHM LIBRARY');
-    expect(fixture.nativeElement.querySelectorAll('app-algorithm-case-card')).toHaveLength(57);
+    expect(
+      fixture.nativeElement.querySelectorAll('[data-testid="algorithm-case-slot"]'),
+    ).toHaveLength(57);
   });
 
   it('PLLのURLへ直接移動してPLL一覧を表示する', async () => {
@@ -141,7 +143,9 @@ describe('App', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(fixture.nativeElement.querySelectorAll('app-algorithm-case-card')).toHaveLength(21);
+    expect(
+      fixture.nativeElement.querySelectorAll('[data-testid="algorithm-case-slot"]'),
+    ).toHaveLength(21);
   });
 
   it('履歴を100件ずつ表示し、Paginatorの言語切替を反映する', async () => {
