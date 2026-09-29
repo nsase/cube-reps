@@ -503,3 +503,61 @@ test(
     await expectResponsiveLayout(page, 'app-solve-record');
   },
 );
+
+/** 768px高で失敗した長いスクランブルを、再計測の操作で再現する。 */
+test(
+  '長いスクランブルの再計測でも横向きタブレットのTimerが画面内に収まる',
+  { tag: '@responsive' },
+  async ({ page }) => {
+    const scramble = "D R B' R2 F2 D2 F2 L' B' U' L2 B R2 F2 L2 D2 F R2 L2 F2 U2";
+    await storeHistoryData(page, {
+      solves: [
+        {
+          id: 'long-scramble-layout',
+          time: 1234,
+          scramble,
+          createdAt: '2026-09-29T00:00:00.000Z',
+          category: 'full',
+          groupId: 'unclassified',
+          penalty: 'none',
+        },
+      ],
+    });
+    await page.reload();
+    await page.locator('app-solve-record').scrollIntoViewIfNeeded();
+    await page.getByRole('button', { name: 'View solve details', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: /Retry/ }).click();
+    await expect(page).toHaveURL(/#\/timer$/);
+    await expect(page.locator('app-timer-scramble p')).toHaveText(scramble);
+    await page.evaluate(() => document.fonts.ready.then(() => undefined));
+    const viewport = page.viewportSize()!;
+    if (viewport.height >= 600) {
+      await expect
+        .poll(() => page.evaluate(() => document.documentElement.scrollHeight))
+        .toBeLessThanOrEqual(viewport.height);
+      /** ページだけが収まり、パネルのoverflowで内容が隠れる退行も防ぐ。 */
+      const panel = (await page.locator('app-timer-scramble').boundingBox())!;
+      for (const selector of ['app-timer-scramble p', 'app-timer-scramble app-solve-pattern']) {
+        const content = (await page.locator(selector).boundingBox())!;
+        expect(content.y).toBeGreaterThanOrEqual(panel.y);
+        expect(content.y + content.height).toBeLessThanOrEqual(panel.y + panel.height);
+      }
+    }
+    if (viewport.width >= 1024 && viewport.width / viewport.height >= 4 / 3) {
+      const clock = (await page.locator('app-timer-clock').boundingBox())!;
+      const panel = (await page.locator('app-timer-scramble').boundingBox())!;
+      expect(panel.x).toBeGreaterThanOrEqual(clock.x + clock.width);
+      expect(Math.abs(panel.y - clock.y)).toBeLessThanOrEqual(1);
+    }
+    await expectElementsWithin(
+      page,
+      'app-timer-scramble',
+      'app-timer-scramble p, app-timer-scramble app-solve-pattern',
+    );
+    await expectNoHorizontalOverflow(page);
+    await expectResponsiveLayout(
+      page,
+      'app-timer-settings, app-timer-clock, app-timer-scramble, app-timer-stats',
+    );
+  },
+);
