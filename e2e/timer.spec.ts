@@ -19,15 +19,22 @@ test.describe('レスポンシブ表示', { tag: '@responsive' }, () => {
   });
 
   test('内容が収まる高さでは不要な縦スクロールが発生しない', async ({ page }) => {
+    /** スクランブルとフォントの準備後に、最終的な画面寸法を検証する。 */
+    await expect(page.getByTestId('timer-scramble-refresh')).toBeEnabled({ timeout: 15_000 });
+    await expect(page.locator('app-timer-scramble app-solve-pattern')).toBeVisible();
+    await page.evaluate(() => document.fonts.ready.then(() => undefined));
     const viewportHeight = await page.evaluate(() => window.innerHeight);
-    const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight);
 
     if (viewportHeight >= 600) {
-      expect(pageHeight).toBeLessThanOrEqual(viewportHeight);
+      await expect
+        .poll(() => page.evaluate(() => document.documentElement.scrollHeight))
+        .toBeLessThanOrEqual(viewportHeight);
       return;
     }
 
-    expect(pageHeight).toBeGreaterThan(viewportHeight);
+    await expect
+      .poll(() => page.evaluate(() => document.documentElement.scrollHeight))
+      .toBeGreaterThan(viewportHeight);
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
   });
