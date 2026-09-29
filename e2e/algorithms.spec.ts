@@ -381,7 +381,9 @@ for (const kind of ['f2l', 'oll', 'pll'] as const) {
         lastNumber,
       );
       await search.clear();
-      await expect(first).toBeVisible();
+      /** 絞り込み解除後の件数と先頭番号を待ち、切替前のカードへの入力を防ぐ。 */
+      await expect(slots).toHaveCount(kind === 'f2l' ? 41 : kind === 'oll' ? 57 : 21);
+      await expect(first.locator('.number > .number')).toHaveText(kind === 'pll' ? 'Aa' : '01');
       const draft = first.getByPlaceholder('Enter a new algorithm');
       await draft.fill("R U R'");
       await slots.last().scrollIntoViewIfNeeded();
@@ -389,6 +391,9 @@ for (const kind of ['f2l', 'oll', 'pll'] as const) {
       await expect(last.getByRole('button', { name: 'Add', exact: true })).toBeVisible();
       await slots.first().scrollIntoViewIfNeeded();
       await expect(draft).toHaveValue("R U R'");
+      /** sticky検索欄がカード上に重なるスクロール状態を解除して通常配置を検証する。 */
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
       await expectNoHorizontalOverflow(page);
       await expectResponsiveLayout(page, layoutItems);
     },
