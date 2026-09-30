@@ -27,6 +27,39 @@ describe('手順の所有者と移行', () => {
     expect(library.algorithmsFor(item).at(-1)?.notation).toBe('guest');
   });
 
+  it('表示中のゲスト手順を操作してもアカウントへ自動移行せず、別所有者の同じIDを変更しない', async () => {
+    const library = TestBed.inject(AlgorithmLibraryService);
+    const auth = TestBed.inject(AuthService);
+    await library.ready;
+    const item = OLL_CASES[0];
+    library.add(item, 'guest');
+    const guest = library.displayedAlgorithmsFor(item).at(-1)!;
+    auth.user.set(account);
+    await library.merge([
+      {
+        caseKey: item.caseId,
+        ownerId: 'alice',
+        ownerType: 'account',
+        custom: [{ id: guest.id, notation: 'account', builtIn: false }],
+        schemaVersion: 3,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
+    ]);
+    expect(library.displayedAlgorithmsFor(item).filter((entry) => !entry.builtIn)).toHaveLength(2);
+    library.setDisplayedFavorite(item, guest);
+    expect(library.guestPreferences('OLL')[0].favoriteId).toBe(guest.id);
+    expect(library.favoriteFor(item)?.id).toBe(item.algorithms[0].id);
+    library.removeDisplayed(item, guest);
+    expect(library.algorithmsFor(item).at(-1)?.notation).toBe('account');
+    expect(library.guestPreferences('OLL')).toHaveLength(0);
+    const owned = library.displayedAlgorithmsFor(item).at(-1)!;
+    auth.user.set({ ...account, uid: 'bob' });
+    library.removeDisplayed(item, owned);
+    auth.user.set(account);
+    expect(library.algorithmsFor(item).at(-1)?.notation).toBe('account');
+  });
+
   it('指定種類のゲストだけを統合し、重複を除き、既存のお気に入りを維持する', async () => {
     const library = TestBed.inject(AlgorithmLibraryService);
     const auth = TestBed.inject(AuthService);

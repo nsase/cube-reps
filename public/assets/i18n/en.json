@@ -132,11 +132,12 @@
     "setup": "Setup",
     "quarterPattern": "Quarter view for F2L {{name}}: top, front, and right faces",
     "transfer": {
-      "title": "Move to account",
-      "available": "{{count}} {{kind}} cases have guest settings to move.",
-      "confirm": "Move custom algorithms and favorites for {{count}} {{kind}} cases to {{account}}? Identical algorithms are deduplicated and account favorites take priority. Guest settings are removed after moving.",
+      "title": "Move all guest settings",
+      "available": "{{count}} guest settings are available to move.",
+      "confirm": "Move all {{count}} guest settings across OLL, PLL, and F2L (counting F2L slots separately) to {{account}}? Identical algorithms are deduplicated and account favorites take priority. Guest settings are removed after moving.",
       "failed": "Could not move settings. Settings not yet moved remain on this device. Check your connection and try again."
-    }
+    },
+    "builtIn": "Built-in algorithm"
   },
   "history": {
     "unclassified": "Unclassified",

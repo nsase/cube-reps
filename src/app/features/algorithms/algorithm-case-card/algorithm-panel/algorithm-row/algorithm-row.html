@@ -1,26 +1,26 @@
-<span class="rank">{{ rank() }}</span>
+<app-algorithm-owner [algorithm]="algorithm()" />
 <code>{{ algorithm().notation }}</code>
 <div class="algorithm-actions">
   <button
     mat-icon-button
     class="star"
-    [class.active]="library.favoriteFor(item())?.id === algorithm().id"
+    [class.active]="library.isDisplayedFavorite(item(), algorithm())"
     [attr.aria-label]="
-      (library.favoriteFor(item())?.id === algorithm().id
+      (library.isDisplayedFavorite(item(), algorithm())
         ? 'algorithms.favorite'
         : 'algorithms.makeFavorite'
       ) | transloco
     "
     [title]="
-      (library.favoriteFor(item())?.id === algorithm().id
+      (library.isDisplayedFavorite(item(), algorithm())
         ? 'algorithms.favorite'
         : 'algorithms.makeFavorite'
       ) | transloco
     "
-    (click)="library.setFavorite(item(), algorithm().id)"
+    (click)="library.setDisplayedFavorite(item(), algorithm())"
   >
     <mat-icon>{{
-      library.favoriteFor(item())?.id === algorithm().id ? 'star' : 'star_border'
+      library.isDisplayedFavorite(item(), algorithm()) ? 'star' : 'star_border'
     }}</mat-icon>
   </button>
   <button

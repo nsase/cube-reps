@@ -1,9 +1,10 @@
+import { f2lCaseForSlot } from '../../../core/algorithm/algorithm-cases/f2l/f2l-case';
 import { TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslocoService } from '@jsverse/transloco';
 import { of, Subject } from 'rxjs';
 import { AlgorithmLibraryService } from '../../../core/algorithm/algorithm-library';
-import { OLL_CASES } from '../../../core/algorithm/algorithm-cases';
+import { OLL_CASES, PLL_CASES, F2L_CASES } from '../../../core/algorithm/algorithm-cases';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AlgorithmSyncService } from '../../../core/firestore/algorithm-sync.service';
 import { AlgorithmTransfer } from './algorithm-transfer';
@@ -21,7 +22,7 @@ describe('AlgorithmTransfer', () => {
         afterClosed: () => (typeof result === 'string' ? of(result) : result),
       })),
     };
-    const sync = { refresh: vi.fn(async () => true) };
+    const sync = { refresh: vi.fn(async (_kind: string) => true) };
     TestBed.configureTestingModule({
       providers: [
         { provide: MatDialog, useValue: dialog },
@@ -34,18 +35,38 @@ describe('AlgorithmTransfer', () => {
     const auth = TestBed.inject(AuthService);
     auth.user.set(account);
     const fixture = TestBed.createComponent(AlgorithmTransfer);
-    fixture.componentRef.setInput('kind', 'OLL');
     await fixture.whenStable();
     return { fixture, library, sync, dialog, auth };
   }
 
-  it('確認後に表示種類だけを取得し、手順を移行して案内を消す', async () => {
+  it('確認ボタンを押した後に全種類を取得し、手順を移行して案内を消す', async () => {
     const { fixture, library, sync } = await setup('move');
     fixture.nativeElement.querySelector('button').click();
     await fixture.whenStable();
-    expect(sync.refresh).toHaveBeenCalledWith('OLL');
+    expect(sync.refresh.mock.calls).toEqual([['OLL'], ['PLL'], ['F2L']]);
     expect(library.algorithmsFor(OLL_CASES[0]).at(-1)?.notation).toBe('guest');
     expect(fixture.nativeElement.querySelector('button')).toBeNull();
+  });
+
+  it('表示だけでは自動移行せず、ボタン確認時に全種類のゲスト設定を移行する', async () => {
+    const { fixture, library, sync, auth } = await setup('move');
+    auth.user.set(null);
+    library.add(PLL_CASES[0], 'PLL guest');
+    const f2l = f2lCaseForSlot(F2L_CASES[0], 'BL');
+    library.add(f2l, 'F2L guest');
+    auth.user.set(account);
+    await fixture.whenStable();
+    expect(sync.refresh).not.toHaveBeenCalled();
+    expect(library.guestPreferences('OLL')).toHaveLength(1);
+    expect(library.guestPreferences('PLL')).toHaveLength(1);
+    expect(library.guestPreferences('F2L')).toHaveLength(1);
+    fixture.nativeElement.querySelector('button').click();
+    await fixture.whenStable();
+    expect(library.guestPreferences('OLL')).toHaveLength(0);
+    expect(library.guestPreferences('PLL')).toHaveLength(0);
+    expect(library.guestPreferences('F2L')).toHaveLength(0);
+    expect(library.algorithmsFor(PLL_CASES[0]).at(-1)?.notation).toBe('PLL guest');
+    expect(library.algorithmsFor(f2l).at(-1)?.notation).toBe('F2L guest');
   });
 
   it('キャンセルでは取得も移行も行わない', async () => {
@@ -81,9 +102,9 @@ describe('AlgorithmTransfer', () => {
       Object.keys(ja.algorithms.transfer).sort(),
     );
     const { fixture } = await setup('cancel');
-    expect(fixture.nativeElement.textContent).toContain('Move to account');
+    expect(fixture.nativeElement.textContent).toContain('Move all guest settings');
     TestBed.inject(TranslocoService).setActiveLang('ja');
     await fixture.whenStable();
-    expect(fixture.nativeElement.textContent).toContain('アカウントへ移行');
+    expect(fixture.nativeElement.textContent).toContain('ゲスト設定をすべて移行');
   });
 });

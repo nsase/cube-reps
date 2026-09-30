@@ -1,6 +1,6 @@
 @if (auth.user() && count()) {
   <p>
-    {{ 'algorithms.transfer.available' | transloco: { kind: kind(), count: count() } }}
+    {{ 'algorithms.transfer.available' | transloco: { count: count() } }}
     <button mat-button data-testid="algorithm-transfer" [disabled]="pending()" (click)="transfer()">
       {{ 'algorithms.transfer.title' | transloco }}
     </button>

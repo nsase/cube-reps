@@ -11,6 +11,12 @@ export type { CaseAlgorithm } from '../cube/cube.models';
 /** 同期の取得範囲を分けるアルゴリズムの種類。 */
 export type AlgorithmKind = AlgorithmCase['kind'];
 
+/** 保存データを変更せず、一覧へ手順の所有者を添える表示用モデル。 */
+export interface DisplayedAlgorithm extends CaseAlgorithm {
+  /** 組み込み手順には所有者を付けず、ユーザー手順には保存元を保持する。 */
+  owner?: AlgorithmPreference;
+}
+
 /** 所有者とケースキーごとのユーザー設定。 */
 type AlgorithmPreferences = Record<string, AlgorithmPreference>;
 
@@ -49,6 +55,71 @@ export class AlgorithmLibraryService {
   /** @returns 組み込み手順の後ろにユーザー手順を連結した一覧 */
   algorithmsFor(item: AlgorithmCase): CaseAlgorithm[] {
     return [...item.algorithms, ...this.preferenceFor(item).custom];
+  }
+
+  /** ゲスト手順と現在のアカウントの手順を、所有者付きで同じ一覧へ表示する。 */
+  displayedAlgorithmsFor(item: AlgorithmCase): DisplayedAlgorithm[] {
+    const guest = this.preferences()[this.caseKey(item)];
+    const account = this.auth.user() ? this.preferenceFor(item) : undefined;
+    return [
+      ...item.algorithms,
+      ...[guest, account].flatMap((owner) =>
+        owner ? owner.custom.map((algorithm) => ({ ...algorithm, owner })) : [],
+      ),
+    ];
+  }
+
+  /** お気に入り欄にも手順の出自を表示する。組み込み手順は全員共通として扱う。 */
+  displayedFavoriteFor(item: AlgorithmCase): DisplayedAlgorithm | undefined {
+    const favorite = this.favoriteFor(item);
+    return favorite
+      ? { ...favorite, ...(!favorite.builtIn ? { owner: this.preferenceFor(item) } : {}) }
+      : undefined;
+  }
+
+  /** 手順の保存元ごとにお気に入りを判定し、ゲストとアカウントの設定を混同しない。 */
+  isDisplayedFavorite(item: AlgorithmCase, algorithm: DisplayedAlgorithm): boolean {
+    if (!algorithm.owner) return this.favoriteFor(item)?.id === algorithm.id;
+    const owner =
+      this.preferences()[algorithmStorageKey(this.caseKey(item), algorithm.owner.ownerId)];
+    return owner?.favoriteId === algorithm.id;
+  }
+
+  /** 表示中の手順の所有者へお気に入りを保存する。ゲストの操作では自動移行しない。 */
+  setDisplayedFavorite(item: AlgorithmCase, algorithm: DisplayedAlgorithm): void {
+    if (!algorithm.owner) {
+      this.setFavorite(item, algorithm.id);
+      return;
+    }
+    const owner = this.editableOwner(item, algorithm);
+    if (owner) void this.savePreference({ ...owner, favoriteId: algorithm.id });
+  }
+
+  /** 確認した手順の保存元だけから削除し、同じケースの別所有者には影響させない。 */
+  removeDisplayed(item: AlgorithmCase, algorithm: DisplayedAlgorithm): void {
+    const owner = this.editableOwner(item, algorithm);
+    if (!owner) return;
+    void this.savePreference({
+      ...owner,
+      custom: owner.custom.filter((entry) => entry.id !== algorithm.id),
+      favoriteId: owner.favoriteId === algorithm.id ? undefined : owner.favoriteId,
+    });
+  }
+
+  /** 確認中に移行・アカウント変更された手順を誤って編集しないため、現在の保存元を検証する。 */
+  private editableOwner(
+    item: AlgorithmCase,
+    algorithm: DisplayedAlgorithm,
+  ): AlgorithmPreference | undefined {
+    if (algorithm.builtIn || !algorithm.owner) return undefined;
+    if (
+      algorithm.owner.ownerType === 'account' &&
+      algorithm.owner.ownerId !== this.auth.user()?.uid
+    )
+      return undefined;
+    const owner =
+      this.preferences()[algorithmStorageKey(this.caseKey(item), algorithm.owner.ownerId)];
+    return owner?.custom.some((entry) => entry.id === algorithm.id) ? owner : undefined;
   }
 
   /** @returns お気に入り手順。未設定または不明なIDの場合は先頭手順 */

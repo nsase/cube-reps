@@ -28,7 +28,6 @@ describe('AlgorithmRow', () => {
     const fixture = TestBed.createComponent(AlgorithmRow);
     fixture.componentRef.setInput('item', item);
     fixture.componentRef.setInput('algorithm', algorithm);
-    fixture.componentRef.setInput('rank', 2);
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -43,7 +42,6 @@ describe('AlgorithmRow', () => {
     const fixture = TestBed.createComponent(AlgorithmRow);
     fixture.componentRef.setInput('item', item);
     fixture.componentRef.setInput('algorithm', library.algorithmsFor(item)[0]);
-    fixture.componentRef.setInput('rank', 1);
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -54,11 +52,10 @@ describe('AlgorithmRow', () => {
     const item = PLL_CASES[0];
     const library = TestBed.inject(AlgorithmLibraryService);
     library.add(item, 'custom algorithm');
-    const algorithm = library.algorithmsFor(item).at(-1)!;
+    const algorithm = library.displayedAlgorithmsFor(item).at(-1)!;
     const fixture = TestBed.createComponent(AlgorithmRow);
     fixture.componentRef.setInput('item', item);
     fixture.componentRef.setInput('algorithm', algorithm);
-    fixture.componentRef.setInput('rank', library.algorithmsFor(item).length);
     fixture.detectChanges();
     await fixture.whenStable();
 

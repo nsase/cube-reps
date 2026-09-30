@@ -1,0 +1,11 @@
+@if (algorithm().owner; as owner) {
+  <app-owner-avatar [metadata]="owner" />
+} @else {
+  <span
+    role="img"
+    [attr.aria-label]="'algorithms.builtIn' | transloco"
+    [matTooltip]="'algorithms.builtIn' | transloco"
+  >
+    <mat-icon aria-hidden="true">view_in_ar</mat-icon>
+  </span>
+}
