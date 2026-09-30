@@ -121,11 +121,22 @@
       "oll": "最終層の向きを揃える57ケースを確認できます。",
       "pll": "最終層の位置を揃える21ケースを確認できます。"
     },
-    "slots": { "FR": "Front Right", "FL": "Front Left", "BL": "Back Left", "BR": "Back Right" },
+    "slots": {
+      "FR": "Front Right",
+      "FL": "Front Left",
+      "BL": "Back Left",
+      "BR": "Back Right"
+    },
     "slot": "スロット",
     "solve": "Solve",
     "setup": "Setup",
-    "quarterPattern": "F2L {{name}}のクォータービュー（上面・前面・右面）"
+    "quarterPattern": "F2L {{name}}のクォータービュー（上面・前面・右面）",
+    "transfer": {
+      "title": "アカウントへ移行",
+      "available": "未移行の{{kind}}設定が{{count}}ケースあります。",
+      "confirm": "{{kind}}の{{count}}ケースの追加手順とお気に入りを{{account}}へ移行します。同じ手順は重複させず、アカウント側のお気に入りを優先します。移行後、ゲスト側の設定は削除されます。",
+      "failed": "移行できませんでした。未移行の設定は端末に保持されています。接続を確認して再試行してください。"
+    }
   },
   "history": {
     "unclassified": "未分類",

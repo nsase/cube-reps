@@ -40,6 +40,47 @@ describe('Firestore Solve Security Rules', () => {
   });
 
   afterEach(async () => environment.clearFirestore());
+
+  it('手順設定は本人だけが種類別に読み書きでき、空設定で削除を同期できる', async () => {
+    const ownDb = environment.authenticatedContext(ownerId).firestore();
+    for (const [kind, caseKey] of [
+      ['OLL', 'OLL-01'],
+      ['PLL', 'PLL-T'],
+      ['F2L', 'F2L-41-BL'],
+    ]) {
+      const ref = doc(ownDb, 'users', ownerId, 'algorithmPreferences', caseKey);
+      const data = {
+        caseKey,
+        kind,
+        custom: [{ id: 'custom', notation: 'R U', builtIn: false }],
+        favoriteId: 'custom',
+        ownerId,
+        ownerType: 'account',
+        schemaVersion: 3,
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      };
+      await assertSucceeds(setDoc(ref, data));
+      await assertSucceeds(getDoc(ref));
+      const { favoriteId, ...empty } = data;
+      await assertSucceeds(setDoc(ref, { ...empty, custom: [] }));
+      expect((await getDoc(ref)).data()?.['custom']).toEqual([]);
+      for (const db of [
+        environment.unauthenticatedContext().firestore(),
+        environment.authenticatedContext(otherUserId).firestore(),
+      ]) {
+        const other = doc(db, 'users', ownerId, 'algorithmPreferences', caseKey);
+        await assertFails(getDoc(other));
+        await assertFails(setDoc(other, data));
+        await assertFails(deleteDoc(other));
+      }
+      await assertFails(setDoc(ref, { ...data, ownerId: otherUserId }));
+      await assertFails(setDoc(ref, { ...data, kind: 'invalid' }));
+      await assertFails(setDoc(ref, { ...data, custom: 'invalid' }));
+      await assertFails(setDoc(ref, { ...data, pendingSync: true }));
+      await assertFails(deleteDoc(ref));
+    }
+  });
   afterAll(async () => environment.cleanup());
 
   it('本人がUUIDをドキュメントIDとして追加・取得・更新・削除できる', async () => {

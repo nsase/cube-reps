@@ -1,5 +1,6 @@
 <section>
   <app-algorithm-tools [(query)]="query" [(group)]="group" [groups]="groups()" />
+  <app-algorithm-transfer [kind]="kind()" />
   <div class="grid">
     @for (item of filteredCases(); track item.kind + item.number) {
       <div class="case-slot" data-testid="algorithm-case-slot">

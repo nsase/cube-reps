@@ -1,12 +1,17 @@
+import { AuthService } from '../auth/auth.service';
 import { Injectable, inject, signal } from '@angular/core';
 import { AlgorithmCase, AlgorithmPreference, CaseAlgorithm } from '../cube/cube.models';
 import {
+  algorithmStorageKey,
   USER_DATA_SCHEMA_VERSION,
   UserDataRepository,
 } from '../local-storage/user-data-repository';
 export type { CaseAlgorithm } from '../cube/cube.models';
 
-/** ケースキーごとのユーザー設定。 */
+/** 同期の取得範囲を分けるアルゴリズムの種類。 */
+export type AlgorithmKind = AlgorithmCase['kind'];
+
+/** 所有者とケースキーごとのユーザー設定。 */
 type AlgorithmPreferences = Record<string, AlgorithmPreference>;
 
 /** F2L・OLL・PLL手順のお気に入りとユーザー追加手順を管理するサービス。 */
@@ -14,7 +19,15 @@ type AlgorithmPreferences = Record<string, AlgorithmPreference>;
 export class AlgorithmLibraryService {
   /** ユーザー設定の永続化を画面から分離するRepository。 */
   private readonly repository = inject(UserDataRepository);
-  /** ケースキーごとの保存済みユーザー設定。 */
+  /** 表示・編集する所有者を決定する認証状態。 */
+  private readonly auth = inject(AuthService);
+  /** 保存完了後に種類ごとの同期処理へ渡す更新。 */
+  readonly mutations = {
+    OLL: signal<readonly AlgorithmPreference[]>([]),
+    PLL: signal<readonly AlgorithmPreference[]>([]),
+    F2L: signal<readonly AlgorithmPreference[]>([]),
+  };
+  /** 所有者とケースキーごとの保存済みユーザー設定。 */
   private readonly preferences = signal<AlgorithmPreferences>({});
   /** IndexedDB初期化後の変更だけを保存するフラグ。 */
   private readonly storageReady = signal(false);
@@ -100,55 +113,164 @@ export class AlgorithmLibraryService {
   private preferenceFor(item: AlgorithmCase): AlgorithmPreference {
     const caseKey = this.caseKey(item);
     return (
-      this.preferences()[caseKey] ?? {
+      this.preferences()[algorithmStorageKey(caseKey, this.auth.user()?.uid)] ?? {
         caseKey,
         custom: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date(0).toISOString(),
-        ownerType: 'guest',
+        ownerType: this.auth.user() ? 'account' : 'guest',
+        ownerId: this.auth.user()?.uid,
         schemaVersion: USER_DATA_SCHEMA_VERSION,
       }
     );
   }
 
-  /** 指定ケースの設定を状態へ保存し、変更されたケースだけを永続化する。 */
+  /** 指定ケースの設定を現在のアカウントへ保存する。ゲスト設定は明示的な移行まで分離する。 */
   private save(item: AlgorithmCase, preference: AlgorithmPreference): void {
-    const caseKey = this.caseKey(item);
-    const updated: AlgorithmPreference = {
-      ...preference,
-      caseKey,
-      updatedAt: new Date().toISOString(),
-      ownerType: 'guest',
-      schemaVersion: USER_DATA_SCHEMA_VERSION,
-    };
-    const shouldDelete = updated.custom.length === 0 && !updated.favoriteId;
-    this.preferences.update((preferences) => {
-      if (!shouldDelete) return { ...preferences, [caseKey]: updated };
-      const remaining = { ...preferences };
-      delete remaining[caseKey];
-      return remaining;
-    });
-    if (!this.storageReady()) return;
-    if (shouldDelete) void this.repository.deleteAlgorithmPreference(caseKey);
-    else void this.repository.putAlgorithmPreference(updated);
+    void this.savePreference({ ...preference, caseKey: this.caseKey(item) });
   }
 
-  /** IndexedDBの復元値と起動直後の変更をケースキー単位で統合する。 */
+  /** 空のアカウント設定も保存し、削除・お気に入り解除を別端末へ伝える。 */
+  private savePreference(preference: AlgorithmPreference): Promise<void> {
+    const previous =
+      this.preferences()[algorithmStorageKey(preference.caseKey, preference.ownerId)];
+    const updated: AlgorithmPreference = {
+      ...preference,
+      updatedAt: new Date(
+        Math.max(Date.now(), Date.parse(previous?.updatedAt ?? '') + 1 || 0),
+      ).toISOString(),
+      pendingSync: preference.ownerType === 'account',
+      schemaVersion: USER_DATA_SCHEMA_VERSION,
+    };
+    const key = algorithmStorageKey(updated.caseKey, updated.ownerId);
+    this.preferences.update((preferences) => ({ ...preferences, [key]: updated }));
+    return this.storageReady() ? this.persist(updated) : Promise.resolve();
+  }
+
+  /** ローカル保存に成功した版だけを送信待ちにする。空設定は削除通知として維持する。 */
+  private async persist(preference: AlgorithmPreference): Promise<void> {
+    if (preference.ownerType === 'guest' && !preference.custom.length && !preference.favoriteId) {
+      await this.repository.deleteAlgorithmPreference(preference.caseKey);
+      return;
+    }
+    await this.repository.putAlgorithmPreference(preference);
+    if (preference.pendingSync && preference.ownerType === 'account') {
+      const kind = preference.caseKey.split('-')[0] as AlgorithmKind;
+      this.mutations[kind]?.update((items) => [...items, preference]);
+    }
+  }
+
+  /** 対象種類の未移行ゲスト設定を取得する。 */
+  guestPreferences(kind: AlgorithmKind): AlgorithmPreference[] {
+    return Object.values(this.preferences()).filter(
+      (entry) =>
+        entry.ownerType === 'guest' &&
+        entry.caseKey.startsWith(kind + '-') &&
+        (entry.custom.length > 0 || !!entry.favoriteId),
+    );
+  }
+
+  /** 確認済みゲスト設定を統合する。同一記法を重複させず、アカウントのお気に入りを優先する。 */
+  async importGuests(kind: AlgorithmKind, userId: string): Promise<void> {
+    await this.ready;
+    if (this.auth.user()?.uid !== userId) return;
+    for (const guest of this.guestPreferences(kind)) {
+      if (this.auth.user()?.uid !== userId) return;
+      const key = algorithmStorageKey(guest.caseKey, userId);
+      const account = this.preferences()[key];
+      const custom = [...(account?.custom ?? [])];
+      const ids = new Map<string, string>();
+      for (const algorithm of guest.custom) {
+        const existing = custom.find((entry) => entry.notation === algorithm.notation);
+        if (existing) ids.set(algorithm.id, existing.id);
+        else {
+          const added = {
+            ...algorithm,
+            id: custom.some((entry) => entry.id === algorithm.id)
+              ? crypto.randomUUID()
+              : algorithm.id,
+          };
+          custom.push(added);
+          ids.set(algorithm.id, added.id);
+        }
+      }
+      await this.savePreference({
+        ...guest,
+        ...account,
+        caseKey: guest.caseKey,
+        custom,
+        favoriteId:
+          account?.favoriteId ??
+          (guest.favoriteId ? (ids.get(guest.favoriteId) ?? guest.favoriteId) : undefined),
+        ownerType: 'account',
+        ownerId: userId,
+      });
+      // 確認後に所有者や元設定が変わった場合は、新しいゲスト編集を除去しない。
+      if (this.auth.user()?.uid !== userId || this.preferences()[guest.caseKey] !== guest) return;
+      // 保存失敗時に元設定を失わないよう、統合先を永続化してからゲストを除去する。
+      await this.repository.deleteAlgorithmPreference(guest.caseKey);
+      this.preferences.update((entries) => {
+        if (entries[guest.caseKey] !== guest) return entries;
+        const remaining = { ...entries };
+        delete remaining[guest.caseKey];
+        return remaining;
+      });
+    }
+  }
+
+  /** 未送信版を優先し、それ以外は更新日時の新しい取得値へ更新する。空設定も保持して削除の復活を防ぐ。 */
+  async merge(preferences: readonly AlgorithmPreference[]): Promise<void> {
+    await this.ready;
+    for (const remote of preferences) {
+      const key = algorithmStorageKey(remote.caseKey, remote.ownerId);
+      const local = this.preferences()[key];
+      if (
+        local?.pendingSync ||
+        (local && Date.parse(local.updatedAt) > Date.parse(remote.updatedAt))
+      )
+        continue;
+      this.preferences.update((entries) => ({ ...entries, [key]: remote }));
+      await this.repository.putAlgorithmPreference(remote);
+    }
+  }
+
+  /** 新しい版がある場合は古い失敗操作を再送しない。削除後の手順復活を防ぐ。 */
+  needsUpload(preference: AlgorithmPreference): boolean {
+    const current = this.preferences()[algorithmStorageKey(preference.caseKey, preference.ownerId)];
+    return !!current?.pendingSync && current.updatedAt === preference.updatedAt;
+  }
+
+  /** 送信中に行われた新しい編集を残し、送信できた版の再送フラグだけを解除する。 */
+  async acknowledge(uploaded: AlgorithmPreference): Promise<void> {
+    const key = algorithmStorageKey(uploaded.caseKey, uploaded.ownerId);
+    const current = this.preferences()[key];
+    if (!current?.pendingSync || current.updatedAt !== uploaded.updatedAt) return;
+    const saved = { ...current, pendingSync: false };
+    this.preferences.update((entries) => ({ ...entries, [key]: saved }));
+    await this.repository.putAlgorithmPreference(saved);
+  }
+
+  /** 保存値を復元し、初期化中の編集を保持して未送信の変更を再送する。 */
   private async initializeStorage(): Promise<void> {
     const stored = await this.repository.load();
-    const current = Object.values(this.preferences());
-    const currentKeys = new Set(current.map(({ caseKey }) => caseKey));
-    this.preferences.set(
-      Object.fromEntries(
-        [
-          ...current,
-          ...stored.algorithmPreferences.filter(({ caseKey }) => !currentKeys.has(caseKey)),
-        ].map((preference) => [preference.caseKey, preference]),
+    const current = this.preferences();
+    this.preferences.set({
+      ...Object.fromEntries(
+        stored.algorithmPreferences.map((entry) => [
+          algorithmStorageKey(entry.caseKey, entry.ownerId),
+          entry,
+        ]),
       ),
-    );
-    await Promise.all(
-      current.map((preference) => this.repository.putAlgorithmPreference(preference)),
-    );
+      ...current,
+    });
     this.storageReady.set(true);
+    await Promise.all(
+      Object.values(this.preferences())
+        .filter(
+          (entry) =>
+            entry.pendingSync || current[algorithmStorageKey(entry.caseKey, entry.ownerId)],
+        )
+        .map((entry) => this.persist(entry)),
+    );
   }
 }

@@ -121,11 +121,22 @@
       "oll": "Orient the last layer. Browse 57 cases.",
       "pll": "Permute the last layer. Browse 21 cases."
     },
-    "slots": { "FR": "Front Right", "FL": "Front Left", "BL": "Back Left", "BR": "Back Right" },
+    "slots": {
+      "FR": "Front Right",
+      "FL": "Front Left",
+      "BL": "Back Left",
+      "BR": "Back Right"
+    },
     "slot": "Slot",
     "solve": "Solve",
     "setup": "Setup",
-    "quarterPattern": "Quarter view for F2L {{name}}: top, front, and right faces"
+    "quarterPattern": "Quarter view for F2L {{name}}: top, front, and right faces",
+    "transfer": {
+      "title": "Move to account",
+      "available": "{{count}} {{kind}} cases have guest settings to move.",
+      "confirm": "Move custom algorithms and favorites for {{count}} {{kind}} cases to {{account}}? Identical algorithms are deduplicated and account favorites take priority. Guest settings are removed after moving.",
+      "failed": "Could not move settings. Settings not yet moved remain on this device. Check your connection and try again."
+    }
   },
   "history": {
     "unclassified": "Unclassified",

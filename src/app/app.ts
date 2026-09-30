@@ -1,3 +1,4 @@
+import { AlgorithmSyncService } from './core/firestore/algorithm-sync.service';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, Injector } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
@@ -30,6 +31,9 @@ export class App {
       if (!destroyRef.destroyed) injector.get(NativeAppService);
     });
   }
+
+  /** 画面にかかわらずログイン時の全手順同期を開始する。 */
+  private readonly algorithmSync = inject(AlgorithmSyncService);
 
   /** 現在のルートとナビゲーションイベントを提供するサービス。 */
   private readonly router = inject(Router);

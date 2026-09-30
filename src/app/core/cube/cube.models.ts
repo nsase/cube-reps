@@ -79,9 +79,9 @@ export interface CaseAlgorithm {
   builtIn: boolean;
 }
 
-/** OLL／PLLケース単位で同期するユーザー設定。 */
+/** F2L・OLL・PLLのケース単位で同期するユーザー設定。 */
 export interface AlgorithmPreference extends SyncMetadata {
-  /** OLL／PLL種別とケース番号を組み合わせた固定キー。 */
+  /** ケースの固定ID。F2Lでは対象スロットを末尾に付ける。 */
   caseKey: string;
   /** ユーザーが追加した手順。 */
   custom: CaseAlgorithm[];

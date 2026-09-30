@@ -399,3 +399,39 @@ for (const kind of ['f2l', 'oll', 'pll'] as const) {
     },
   );
 }
+
+for (const kind of ['oll', 'pll'] as const) {
+  test(`${kind}のゲスト手順がページ往復・再読込後も残り、削除後は復活しない`, async ({ page }) => {
+    await page.goto(`/#/algorithms/${kind}`);
+    const search = page.locator('app-algorithm-tools input');
+    const query = kind === 'oll' ? '01' : 'Aa';
+    await search.fill(query);
+    const card = page.locator('app-algorithm-case-card');
+    await expect(card).toHaveCount(1);
+    const notation = 'R2 U2 R2 U2 R2 U2';
+    await card.getByPlaceholder('Enter a new algorithm').fill(notation);
+    await card.getByRole('button', { name: 'Add', exact: true }).click();
+    const custom = card.locator('app-algorithm-row').filter({ hasText: notation });
+    await custom.getByRole('button', { name: 'Set as favorite', exact: true }).click();
+    await expect(card.locator('.favorite-algorithm code')).toHaveText(notation);
+    await expect(page.getByTestId('algorithm-transfer')).toHaveCount(0);
+    await page
+      .locator('app-algorithm-kind-links')
+      .getByRole('radio', { name: 'F2L 41', exact: true })
+      .click();
+    await page.goBack();
+    await search.fill(query);
+    await expect(card.locator('.favorite-algorithm code')).toHaveText(notation);
+    await page.reload();
+    await search.fill(query);
+    await expect(card.locator('.favorite-algorithm code')).toHaveText(notation);
+    await custom.getByRole('button', { name: 'Delete custom algorithm', exact: true }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(custom).toHaveCount(0);
+    await page.reload();
+    await search.fill(query);
+    await expect(card).toBeVisible();
+    await expect(custom).toHaveCount(0);
+    await expect(card.locator('.favorite-algorithm code')).not.toHaveText(notation);
+  });
+}
