@@ -136,8 +136,7 @@
       "available": "{{count}} guest settings are available to move.",
       "confirm": "Move all {{count}} guest settings across OLL, PLL, and F2L (counting F2L slots separately) to {{account}}? Identical algorithms are deduplicated and account favorites take priority. Guest settings are removed after moving.",
       "failed": "Could not move settings. Settings not yet moved remain on this device. Check your connection and try again."
-    },
-    "builtIn": "Built-in algorithm"
+    }
   },
   "history": {
     "unclassified": "Unclassified",

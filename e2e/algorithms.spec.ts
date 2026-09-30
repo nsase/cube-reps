@@ -421,6 +421,9 @@ for (const kind of ['oll', 'pll'] as const) {
         custom.getByRole('img', { name: 'Not linked to an account', exact: true }),
       ).toBeVisible();
       await expect(card.locator('.rank')).toHaveCount(0);
+      await expect(
+        card.locator('app-algorithm-row app-algorithm-owner').getByRole('img'),
+      ).toHaveCount(1);
       await expectElementsWithin(
         page,
         'app-algorithm-panel .algorithm-list',

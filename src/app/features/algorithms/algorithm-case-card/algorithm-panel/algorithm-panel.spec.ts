@@ -39,9 +39,7 @@ describe('AlgorithmPanel', () => {
     await fixture.whenStable();
     const rows = [...fixture.nativeElement.querySelectorAll('app-algorithm-row')] as HTMLElement[];
     expect(fixture.nativeElement.querySelector('.rank')).toBeNull();
-    expect(rows[0].querySelector('[role="img"]')?.getAttribute('aria-label')).toBe(
-      'Built-in algorithm',
-    );
+    expect(rows[0].querySelector('app-algorithm-owner [role="img"]')).toBeNull();
     const guest = rows.find((row) => row.textContent?.includes('guest move'))!;
     const account = rows.find((row) => row.textContent?.includes('account move'))!;
     expect(guest.querySelector('[role="img"]')?.getAttribute('aria-label')).toBe(
