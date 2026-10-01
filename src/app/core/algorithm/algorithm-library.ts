@@ -81,22 +81,29 @@ export class AlgorithmLibraryService {
       : undefined;
   }
 
-  /** 手順の保存元ごとにお気に入りを判定し、ゲストとアカウントの設定を混同しない。 */
-  isDisplayedFavorite(item: AlgorithmCase, algorithm: DisplayedAlgorithm): boolean {
-    if (!algorithm.owner) return this.favoriteFor(item)?.id === algorithm.id;
-    const owner =
-      this.preferences()[algorithmStorageKey(this.caseKey(item), algorithm.owner.ownerId)];
-    return owner?.favoriteId === algorithm.id;
+  /** 現在の利用者の設定だけをお気に入りの対象とする。手順一覧の閲覧範囲とは分離する。 */
+  canFavoriteDisplayed(item: AlgorithmCase, algorithm: DisplayedAlgorithm): boolean {
+    return (
+      algorithm.builtIn ||
+      (!!algorithm.owner &&
+        algorithm.owner.ownerId === this.auth.user()?.uid &&
+        !!this.editableOwner(item, algorithm))
+    );
   }
 
-  /** 表示中の手順の所有者へお気に入りを保存する。ゲストの操作では自動移行しない。 */
+  /** 現在のアカウント、未ログイン時はゲストのお気に入りだけをケース内で1件強調する。 */
+  isDisplayedFavorite(item: AlgorithmCase, algorithm: DisplayedAlgorithm): boolean {
+    const favorite = this.favoriteFor(item);
+    return (
+      this.canFavoriteDisplayed(item, algorithm) &&
+      favorite?.id === algorithm.id &&
+      favorite.builtIn === algorithm.builtIn
+    );
+  }
+
+  /** 現在の利用者のお気に入りだけを変更し、表示中の別所有者の設定には触れない。 */
   setDisplayedFavorite(item: AlgorithmCase, algorithm: DisplayedAlgorithm): void {
-    if (!algorithm.owner) {
-      this.setFavorite(item, algorithm.id);
-      return;
-    }
-    const owner = this.editableOwner(item, algorithm);
-    if (owner) void this.savePreference({ ...owner, favoriteId: algorithm.id });
+    if (this.canFavoriteDisplayed(item, algorithm)) this.setFavorite(item, algorithm.id);
   }
 
   /** 確認した手順の保存元だけから削除し、同じケースの別所有者には影響させない。 */

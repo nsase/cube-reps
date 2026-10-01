@@ -48,9 +48,8 @@ describe('AlgorithmPanel', () => {
     expect(account.querySelector('[role="img"]')?.getAttribute('aria-label')).toContain('Alice');
     (guest.querySelector('.star') as HTMLButtonElement).click();
     await fixture.whenStable();
-    expect(library.guestPreferences('PLL')[0].favoriteId).toBe(
-      library.displayedAlgorithmsFor(item).find((entry) => entry.notation === 'guest move')?.id,
-    );
+    expect((guest.querySelector('.star') as HTMLButtonElement).disabled).toBe(true);
+    expect(library.guestPreferences('PLL')[0].favoriteId).toBeUndefined();
     expect(library.favoriteFor(item)?.id).toBe(item.algorithms[0].id);
     expect(library.guestPreferences('PLL')).toHaveLength(1);
   });
@@ -83,6 +82,36 @@ describe('AlgorithmPanel', () => {
           owner !== 'guest' && owner !== user?.uid,
         );
       }
+    }
+  });
+
+  it('別所有者の手順を残しつつ、お気に入り欄・星・強調行を現在の利用者の1件に揃える', async () => {
+    const library = TestBed.inject(AlgorithmLibraryService);
+    const auth = TestBed.inject(AuthService);
+    await library.ready;
+    const item = PLL_CASES[0];
+    library.add(item, 'guest favorite');
+    library.setFavorite(item, library.algorithmsFor(item).at(-1)!.id);
+    const alice = { uid: 'alice', displayName: 'Alice', email: null, photoURL: null };
+    auth.user.set(alice);
+    library.add(item, 'alice favorite');
+    library.setFavorite(item, library.algorithmsFor(item).at(-1)!.id);
+    const fixture = TestBed.createComponent(AlgorithmPanel);
+    fixture.componentRef.setInput('item', item);
+    for (const user of [alice, null]) {
+      auth.user.set(user);
+      await fixture.whenStable();
+      const expected = user ? 'alice favorite' : 'guest favorite';
+      expect(fixture.nativeElement.querySelectorAll('app-algorithm-row.preferred')).toHaveLength(1);
+      expect(fixture.nativeElement.querySelectorAll('.star.active')).toHaveLength(1);
+      expect(
+        fixture.nativeElement.querySelector('app-algorithm-row.preferred code').textContent,
+      ).toBe(expected);
+      expect(fixture.nativeElement.querySelector('.favorite-algorithm code').textContent).toBe(
+        expected,
+      );
+      expect(fixture.nativeElement.textContent).toContain('guest favorite');
+      expect(fixture.nativeElement.textContent).toContain('alice favorite');
     }
   });
 

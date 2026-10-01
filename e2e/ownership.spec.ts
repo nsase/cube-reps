@@ -341,6 +341,7 @@ test('保存済みの全所有者の手順をログアウト・再読込後も�
       transaction.objectStore('algorithmPreferences').put({
         caseKey: JSON.stringify([ownerId, 'OLL-01']),
         custom: [{ id: ownerId, notation, builtIn: false }],
+        favoriteId: ownerId,
         ownerType: 'account',
         ownerId,
         schemaVersion: 3,
@@ -361,6 +362,10 @@ test('保存済みの全所有者の手順をログアウト・再読込後も�
   const other = page.locator('app-algorithm-row').filter({ hasText: 'F2 U2 F2 U2 F2 U2' });
   await expect(mine.getByRole('button', { name: 'Delete custom algorithm' })).toBeEnabled();
   await expect(other.getByRole('button', { name: 'Delete custom algorithm' })).toBeDisabled();
+  await expect(page.locator('app-algorithm-row.preferred')).toHaveCount(1);
+  await expect(page.locator('app-algorithm-row .star.active')).toHaveCount(1);
+  await expect(mine).toHaveClass(/preferred/);
+  await expect(other).not.toHaveClass(/preferred/);
   await page.getByTestId('profile-menu-trigger').click();
   await page.getByRole('menuitem', { name: 'Sign out', exact: true }).click();
   for (const row of [mine, other]) {
@@ -372,6 +377,10 @@ test('保存済みの全所有者の手順をログアウト・再読込後も�
   await page.locator('app-algorithm-tools input').fill('01');
   await expect(mine.getByRole('img', { name: /Target User/ })).toBeVisible();
   await expect(other.getByRole('img', { name: /Other User/ })).toBeVisible();
+  await expect(page.locator('app-algorithm-row.preferred')).toHaveCount(1);
+  await expect(page.locator('app-algorithm-row .star.active')).toHaveCount(1);
+  await expect(mine).not.toHaveClass(/preferred/);
+  await expect(other).not.toHaveClass(/preferred/);
   await expect(mine.getByRole('button', { name: 'Delete custom algorithm' })).toBeDisabled();
   await expect(other.getByRole('button', { name: 'Delete custom algorithm' })).toBeDisabled();
 });

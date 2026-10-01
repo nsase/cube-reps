@@ -4,7 +4,7 @@
   <button
     mat-icon-button
     class="star"
-    [disabled]="!library.canManageDisplayed(item(), algorithm())"
+    [disabled]="!library.canFavoriteDisplayed(item(), algorithm())"
     [class.active]="library.isDisplayedFavorite(item(), algorithm())"
     [attr.aria-label]="
       (library.isDisplayedFavorite(item(), algorithm())

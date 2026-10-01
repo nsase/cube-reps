@@ -9,6 +9,48 @@ import { f2lCaseForSlot } from './algorithm-cases/f2l/f2l-case';
 const account = { uid: 'alice', email: null, displayName: null, photoURL: null };
 
 describe('手順の所有者と移行', () => {
+  it.each([
+    OLL_CASES[0],
+    PLL_CASES[0],
+    ...(['FR', 'FL', 'BL', 'BR'] as const).map((slot) => f2lCaseForSlot(F2L_CASES[0], slot)),
+  ])('$caseIdで所有者間の手順IDが同じでも現在の利用者のお気に入りだけを強調する', async (item) => {
+    const repository = TestBed.inject(UserDataRepository);
+    const caseKey =
+      item.kind === 'F2L' ? item.caseId + '-' + ('slot' in item ? item.slot : '') : item.caseId;
+    for (const ownerId of [undefined, 'alice', 'bob']) {
+      await repository.putAlgorithmPreference({
+        caseKey,
+        ownerType: ownerId ? 'account' : 'guest',
+        ownerId,
+        custom: [{ id: 'shared', notation: ownerId ?? 'guest', builtIn: false }],
+        favoriteId: 'shared',
+        schemaVersion: 3,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+    }
+    const library = TestBed.inject(AlgorithmLibraryService);
+    const auth = TestBed.inject(AuthService);
+    await library.ready;
+    for (const ownerId of [undefined, 'alice', 'bob']) {
+      auth.user.set(ownerId ? { ...account, uid: ownerId } : null);
+      const displayed = library.displayedAlgorithmsFor(item);
+      expect(displayed.filter((entry) => !entry.builtIn)).toHaveLength(3);
+      const favorites = displayed.filter((entry) => library.isDisplayedFavorite(item, entry));
+      expect(favorites).toHaveLength(1);
+      expect(favorites[0].notation).toBe(ownerId ?? 'guest');
+      expect(library.displayedFavoriteFor(item)?.notation).toBe(favorites[0].notation);
+      const other = displayed.find((entry) => !entry.builtIn && entry.owner?.ownerId !== ownerId)!;
+      expect(library.canFavoriteDisplayed(item, other)).toBe(false);
+      library.setDisplayedFavorite(item, other);
+      expect(library.favoriteFor(item)?.notation).toBe(ownerId ?? 'guest');
+      library.setFavorite(item, item.algorithms[0].id);
+      expect(displayed.filter((entry) => library.isDisplayedFavorite(item, entry))).toEqual([
+        item.algorithms[0],
+      ]);
+    }
+  });
+
   it('ゲストと各アカウントの同じケースを分離し、ログアウトでゲストへ戻る', async () => {
     const library = TestBed.inject(AlgorithmLibraryService);
     const auth = TestBed.inject(AuthService);
@@ -48,7 +90,7 @@ describe('手順の所有者と移行', () => {
     ]);
     expect(library.displayedAlgorithmsFor(item).filter((entry) => !entry.builtIn)).toHaveLength(2);
     library.setDisplayedFavorite(item, guest);
-    expect(library.guestPreferences('OLL')[0].favoriteId).toBe(guest.id);
+    expect(library.guestPreferences('OLL')[0].favoriteId).toBeUndefined();
     expect(library.favoriteFor(item)?.id).toBe(item.algorithms[0].id);
     library.removeDisplayed(item, guest);
     expect(library.algorithmsFor(item).at(-1)?.notation).toBe('account');
