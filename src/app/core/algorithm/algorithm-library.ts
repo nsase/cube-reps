@@ -57,16 +57,20 @@ export class AlgorithmLibraryService {
     return [...item.algorithms, ...this.preferenceFor(item).custom];
   }
 
-  /** ゲスト手順と現在のアカウントの手順を、所有者付きで同じ一覧へ表示する。 */
+  /** 認証状態にかかわらず、端末に保存された全所有者の手順を同じ一覧へ表示する。 */
   displayedAlgorithmsFor(item: AlgorithmCase): DisplayedAlgorithm[] {
-    const guest = this.preferences()[this.caseKey(item)];
-    const account = this.auth.user() ? this.preferenceFor(item) : undefined;
+    const caseKey = this.caseKey(item);
     return [
       ...item.algorithms,
-      ...[guest, account].flatMap((owner) =>
-        owner ? owner.custom.map((algorithm) => ({ ...algorithm, owner })) : [],
-      ),
+      ...Object.values(this.preferences())
+        .filter((owner) => owner.caseKey === caseKey)
+        .flatMap((owner) => owner.custom.map((algorithm) => ({ ...algorithm, owner }))),
     ];
+  }
+
+  /** ゲスト手順と本人の手順だけを変更可能にし、保存済みの他所有者の手順は閲覧・コピーに限定する。 */
+  canManageDisplayed(item: AlgorithmCase, algorithm: DisplayedAlgorithm): boolean {
+    return algorithm.builtIn || !!this.editableOwner(item, algorithm);
   }
 
   /** お気に入り欄にも手順の出自を表示する。組み込み手順は全員共通として扱う。 */

@@ -1,5 +1,6 @@
+import { AuthService } from '../../../../../core/auth/auth.service';
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { PLL_CASES } from '../../../../../core/algorithm/algorithm-cases';
 import { AlgorithmLibraryService } from '../../../../../core/algorithm/algorithm-library';
 import { ConfirmService } from '../../../../../shared/confirm-dialog/confirm.service';
@@ -34,6 +35,33 @@ describe('AlgorithmRow', () => {
     (fixture.nativeElement.querySelector('.star') as HTMLButtonElement).click();
 
     expect(library.favoriteFor(item)?.id).toBe(algorithm.id);
+  });
+
+  it('削除確認中にログアウトした場合はアカウントの手順を削除しない', async () => {
+    const item = PLL_CASES[0];
+    const library = TestBed.inject(AlgorithmLibraryService);
+    const auth = TestBed.inject(AuthService);
+    await library.ready;
+    auth.user.set({ uid: 'alice', displayName: null, email: null, photoURL: null });
+    library.add(item, 'saved account algorithm');
+    const algorithm = library.displayedAlgorithmsFor(item).at(-1)!;
+    const result = new Subject<boolean>();
+    confirm.delete.mockReturnValueOnce(result);
+    const fixture = TestBed.createComponent(AlgorithmRow);
+    fixture.componentRef.setInput('item', item);
+    fixture.componentRef.setInput('algorithm', algorithm);
+    await fixture.whenStable();
+    (fixture.nativeElement.querySelector('.remove') as HTMLButtonElement).click();
+    auth.user.set(null);
+    result.next(true);
+    result.complete();
+    await fixture.whenStable();
+    expect(library.displayedAlgorithmsFor(item).some((entry) => entry.id === algorithm.id)).toBe(
+      true,
+    );
+    expect((fixture.nativeElement.querySelector('.remove') as HTMLButtonElement).disabled).toBe(
+      true,
+    );
   });
 
   it('組み込み手順では削除ボタンを表示しない', async () => {

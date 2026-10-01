@@ -4,6 +4,7 @@
   <button
     mat-icon-button
     class="star"
+    [disabled]="!library.canManageDisplayed(item(), algorithm())"
     [class.active]="library.isDisplayedFavorite(item(), algorithm())"
     [attr.aria-label]="
       (library.isDisplayedFavorite(item(), algorithm())
@@ -35,6 +36,7 @@
     <button
       mat-icon-button
       class="remove"
+      [disabled]="!library.canManageDisplayed(item(), algorithm())"
       [attr.aria-label]="'algorithms.removeUserAlgorithm' | transloco"
       [title]="'common.delete' | transloco"
       (click)="remove()"

@@ -55,6 +55,37 @@ describe('AlgorithmPanel', () => {
     expect(library.guestPreferences('PLL')).toHaveLength(1);
   });
 
+  it('ログアウト・別アカウントへの切替後も全所有者の手順を表示し、本人以外の削除を無効にする', async () => {
+    const library = TestBed.inject(AlgorithmLibraryService);
+    const auth = TestBed.inject(AuthService);
+    await library.ready;
+    const item = PLL_CASES[0];
+    library.add(item, 'guest move');
+    const alice = { uid: 'alice', displayName: 'Alice', email: null, photoURL: null };
+    const bob = { ...alice, uid: 'bob', displayName: 'Bob' };
+    auth.user.set(alice);
+    library.add(item, 'alice move');
+    auth.user.set(bob);
+    library.add(item, 'bob move');
+    const fixture = TestBed.createComponent(AlgorithmPanel);
+    fixture.componentRef.setInput('item', item);
+    for (const user of [null, alice, bob]) {
+      auth.user.set(user);
+      await fixture.whenStable();
+      const rows = [
+        ...fixture.nativeElement.querySelectorAll('app-algorithm-row'),
+      ] as HTMLElement[];
+      for (const owner of ['guest', 'alice', 'bob']) {
+        const row = rows.find((entry) => entry.textContent?.includes(owner + ' move'))!;
+        expect(row).toBeTruthy();
+        expect(row.querySelector('app-owner-avatar')).not.toBeNull();
+        expect((row.querySelector('.remove') as HTMLButtonElement).disabled).toBe(
+          owner !== 'guest' && owner !== user?.uid,
+        );
+      }
+    }
+  });
+
   it('入力したユーザー手順を追加し、入力欄を空にする', async () => {
     const fixture = TestBed.createComponent(AlgorithmPanel);
     fixture.componentRef.setInput('item', PLL_CASES[0]);

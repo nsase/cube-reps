@@ -44,6 +44,7 @@ export class AlgorithmRow {
   protected remove(): void {
     const item = this.item();
     const algorithm = this.algorithm();
+    if (!this.library.canManageDisplayed(item, algorithm)) return;
     this.confirm
       .delete(
         this.i18n.translate('algorithms.removeTitle'),
