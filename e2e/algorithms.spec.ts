@@ -435,7 +435,11 @@ for (const kind of ['oll', 'pll'] as const) {
         .locator('app-algorithm-kind-links')
         .getByRole('radio', { name: 'F2L 41', exact: true })
         .click();
+      /** 遷移先の表示を待ち、履歴追加より先に戻る操作が走ることを防ぐ。 */
+      await expect(page).toHaveURL(/\/algorithms\/f2l$/);
+      await expect(page.getByRole('radio', { name: 'F2L 41', exact: true })).toBeChecked();
       await page.goBack();
+      await expect(page).toHaveURL(new RegExp(`/algorithms/${kind}$`));
       await search.fill(query);
       await expect(card.locator('.favorite-algorithm code')).toHaveText(notation);
       await page.reload();
