@@ -535,13 +535,29 @@ test(
       await expect
         .poll(() => page.evaluate(() => document.documentElement.scrollHeight))
         .toBeLessThanOrEqual(viewport.height);
-      /** ページだけが収まり、パネルのoverflowで内容が隠れる退行も防ぐ。 */
-      const panel = (await page.locator('app-timer-scramble').boundingBox())!;
-      for (const selector of ['app-timer-scramble p', 'app-timer-scramble app-solve-pattern']) {
-        const content = (await page.locator(selector).boundingBox())!;
-        expect(content.y).toBeGreaterThanOrEqual(panel.y);
-        expect(content.y + content.height).toBeLessThanOrEqual(panel.y + panel.height);
-      }
+      /**
+       * 遷移後の配置が整うまで、親子の矩形を同じ描画時点で比較する。
+       * パネルのoverflowで内容が隠れたままの場合は成功させない。
+       */
+      await expect(async () => {
+        const bounds = await page.locator('app-timer-scramble').evaluate((panel) => {
+          const panelBox = panel.getBoundingClientRect();
+          return {
+            top: panelBox.top,
+            bottom: panelBox.bottom,
+            children: Array.from(panel.querySelectorAll('p, app-solve-pattern')).map((child) => {
+              const box = child.getBoundingClientRect();
+              return { top: box.top, bottom: box.bottom, height: box.height };
+            }),
+          };
+        });
+        expect(bounds.children).toHaveLength(2);
+        for (const content of bounds.children) {
+          expect(content.height).toBeGreaterThan(0);
+          expect(content.top).toBeGreaterThanOrEqual(bounds.top);
+          expect(content.bottom).toBeLessThanOrEqual(bounds.bottom);
+        }
+      }).toPass({ timeout: 5000 });
     }
     if (viewport.width >= 1024 && viewport.width / viewport.height >= 4 / 3) {
       const clock = (await page.locator('app-timer-clock').boundingBox())!;

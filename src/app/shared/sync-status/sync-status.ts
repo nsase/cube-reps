@@ -1,3 +1,4 @@
+import { AlgorithmSyncService } from '../../core/firestore/algorithm-sync.service';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { GroupSyncService } from '../../core/firestore/group-sync.service';
@@ -12,12 +13,14 @@ import { SolveSyncService } from '../../core/firestore/solve-sync.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SyncStatus {
+  /** 手順設定の同期状態と再試行操作。 */
+  protected readonly algorithmSync = inject(AlgorithmSyncService);
   protected readonly solveSync = inject(SolveSyncService);
   protected readonly groupSync = inject(GroupSyncService);
 
   /** Firestoreとの同期状態。 */
   protected readonly phase = computed(() => {
-    const phases = [this.solveSync.phase(), this.groupSync.phase()];
+    const phases = [this.solveSync.phase(), this.groupSync.phase(), this.algorithmSync.phase()];
     return (
       (['signed-out', 'error', 'offline', 'pending', 'syncing', 'synced'] as const).find((phase) =>
         phases.includes(phase),
@@ -32,5 +35,6 @@ export class SyncStatus {
   protected async retry(): Promise<void> {
     await this.groupSync.retry();
     await this.solveSync.retry();
+    await this.algorithmSync.retry();
   }
 }

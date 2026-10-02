@@ -2,9 +2,9 @@
   <div class="algorithm-heading">
     <strong>{{ 'algorithms.favorite' | transloco }}</strong>
   </div>
-  @if (library.favoriteFor(item()); as favorite) {
+  @if (library.displayedFavoriteFor(item()); as favorite) {
     <div class="favorite-algorithm">
-      <span class="rank">{{ favoriteRank(favorite) + 1 }}</span>
+      <app-algorithm-owner [algorithm]="favorite" />
       <code>{{ favorite.notation }}</code>
     </div>
   }
@@ -13,12 +13,16 @@
   <strong>{{ 'algorithms.algorithms' | transloco }}</strong>
 </div>
 <div class="algorithm-list">
-  @for (algorithm of library.algorithmsFor(item()); track algorithm.id; let index = $index) {
+  @for (
+    algorithm of library.displayedAlgorithmsFor(item());
+    track (algorithm.builtIn ? 'builtin' : (algorithm.owner?.ownerId ?? 'guest')) +
+      ':' +
+      algorithm.id
+  ) {
     <app-algorithm-row
-      [class.preferred]="library.favoriteFor(item())?.id === algorithm.id"
+      [class.preferred]="library.isDisplayedFavorite(item(), algorithm)"
       [item]="item()"
       [algorithm]="algorithm"
-      [rank]="index + 1"
     />
   } @empty {
     <div class="no-algorithm">{{ 'algorithms.noAlgorithm' | transloco }}</div>

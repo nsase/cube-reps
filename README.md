@@ -32,7 +32,7 @@ CubeReps is a browser-based Rubik's Cube timer and training tool. Solve records 
 - Retry any solve from history with its original scramble, category, and record group
 - History rows with point-in-time Ao5/Ao12 and details for scrambles and cube previews
 - English and Japanese interfaces
-- Optional Google sign-in, confirmation-based guest record import, and cross-device solve synchronization
+- Optional Google sign-in, confirmation-based guest record and algorithm import, and cross-device solve and algorithm synchronization
 - Responsive layouts for desktop, tablet, and mobile devices, with a 16px base font and larger scramble and supporting text
 
 ## Related links
@@ -68,7 +68,7 @@ The Android app bundles the Angular UI, timer, and storage using Capacitor 8. It
 - The app keeps the screen awake during timing and prevents Android Back from leaving an active timer. Otherwise, Back dismisses a dismissible confirmation dialog, navigates through screen history, or minimizes the app when there is no history.
 - The native app does not use PWA updates. Install a newer APK or a store update. Do not uninstall first when updating with the same application ID and signing key.
 
-Browser/PWA storage and Android app storage are separate. Existing web guest records do not migrate automatically. To transfer account-owned solves, migrate the desired guest records to your account on the web, confirm that sync has completed, then sign into the same account on Android. Data that is not currently cloud-synced, such as algorithm preferences, does not migrate automatically. Guest-only APKs cannot retrieve cloud records.
+Browser/PWA storage and Android app storage are separate. Existing web guest records do not migrate automatically. To transfer account-owned solves, migrate the desired guest records to your account on the web, confirm that sync has completed, then sign into the same account on Android. Algorithm preferences can also be transferred to Android with the same account after using the bulk move button on an algorithm page and completing synchronization. Guest-only APKs cannot retrieve cloud records.
 
 See [Android development and distribution](docs/android.md) for authentication, signing, and device checks. CI builds a guest debug APK and uploads it as an artifact; this does not verify device startup, authentication, or data retention.
 
@@ -89,6 +89,12 @@ History displays all undeleted solves saved in this browser profile, regardless 
 Guest records are **Not linked to an account** and have no guest ID. Existing guest IDs are removed without changing solve IDs or group associations. Signing in does not automatically import records. Select records in History, then confirm **Move to current account** for unlinked records or **Copy to current account** for another account's records. The **Move all guest records** button is enabled when guest records exist and moves all of them after confirmation, across all groups, categories, filters, and pages, without selecting individual records. It does not open a prompt on sign-in. Moving preserves the solve ID; copying creates an independent ID and keeps the original unchanged. Deliberately copying again creates another independent record. Check the header for cloud synchronization status.
 
 Account-owned solves are fetched when signing in, opening History, and returning online. Adds, penalty and group changes, and deletions are applied locally immediately and queued by Firestore while offline. The header shows syncing, synced, offline, pending, or error status; failed operations can be retried. Firestore's persistent web cache is enabled and should be used only on a trusted device.
+
+Custom F2L, OLL, and PLL algorithms and favorites synchronize for all three types on sign-in and account changes. Opening an algorithm page fetches only that type. Reconnecting also fetches only the currently displayed type. Edits are saved locally immediately and sent to the cloud; pending edits are retried after reconnection or restart regardless of the displayed type. Pages and timer solutions use local settings and update after fetching. Built-in algorithms are not synchronized.
+
+Algorithm settings are separated between guests and individual accounts. The list shows algorithms from every owner saved on this device, including guests and other accounts, even after signing out, replacing algorithm row numbers with a guest icon or account avatar for custom algorithms. Built-in algorithms have no icon. Case numbers remain. Copying is available for every algorithm. Custom algorithms can be deleted only when guest-owned or owned by the signed-in account. Favorite display and changes use only the current account, or guest settings while signed out, highlighting one algorithm per case. Changes apply to the algorithm’s owner; interacting with a guest algorithm does not import it automatically. Existing guest settings move only after signing in, pressing **Move all guest settings**, and confirming the destination and count. All guest settings across OLL, PLL, and F2L (every slot) are merged regardless of the current page or search, identical custom notations are deduplicated, and existing account favorites take priority. A guest favorite pointing to a duplicate is remapped to the retained algorithm ID. Guest settings are removed after the merged account settings are saved locally, allowing failed cloud uploads to be retried. Signing out retains account settings and keeps their algorithms visible with owner avatars. The favorite summary and timer solution use the current account’s settings while signed in and guest settings while signed out.
+
+Preferences are stored per case at `users/{userId}/algorithmPreferences/{caseKey}`, including the slot in F2L keys. Pending local edits take priority over fetched values; synchronized settings are compared by update time. Uploads replace the entire case setting, so merging simultaneous edits to the same case on multiple devices is not guaranteed. Deletion and favorite removal are synchronized as complete settings; empty account settings remain in the cloud and on the device to prevent old algorithms from reappearing. Failed synchronization can be retried from the header.
 
 Account-owned groups also synchronize their names and deletions. When an account-owned solve is added to a guest group, or a guest solve in that group is moved to an account, the existing group becomes owned by that account without creating another group. Unselected guest solves keep their ownership and group association. The group panel shows each custom group’s owner avatar. Solve `createdAt` is the measurement time and remains unchanged by moves and copies; legacy `date` values migrate without changing that time.
 
@@ -147,7 +153,7 @@ The following synchronization-ready user data is stored in your browser's `Index
 
 - Solve records and penalties
 - Record groups
-- Custom and favorite OLL and PLL algorithms
+- Custom and favorite F2L, OLL, and PLL algorithms
 
 The following device-specific settings are stored in `localStorage`:
 

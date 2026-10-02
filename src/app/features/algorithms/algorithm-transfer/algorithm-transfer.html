@@ -1,0 +1,11 @@
+@if (auth.user() && count()) {
+  <p>
+    {{ 'algorithms.transfer.available' | transloco: { count: count() } }}
+    <button mat-button data-testid="algorithm-transfer" [disabled]="pending()" (click)="transfer()">
+      {{ 'algorithms.transfer.title' | transloco }}
+    </button>
+  </p>
+}
+@if (failed()) {
+  <p role="alert">{{ 'algorithms.transfer.failed' | transloco }}</p>
+}

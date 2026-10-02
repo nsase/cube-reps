@@ -7,7 +7,11 @@ import ja from '../public/assets/i18n/ja.json';
 import { LocalAccount } from './app/core/account.models';
 import { AuthenticatedUser, AuthGateway } from './app/core/auth/auth.gateway';
 import { AlgorithmPreference, RecordGroup, Solve } from './app/core/cube/cube.models';
-import { StoredUserData, UserDataRepository } from './app/core/local-storage/user-data-repository';
+import {
+  algorithmStorageKey,
+  StoredUserData,
+  UserDataRepository,
+} from './app/core/local-storage/user-data-repository';
 
 /** コンポーネントテスト間でIndexedDB状態を共有しないメモリRepository。 */
 class TestUserDataRepository extends UserDataRepository {
@@ -57,15 +61,21 @@ class TestUserDataRepository extends UserDataRepository {
   /** @param preference 追加または更新するユーザー手順設定 */
   override async putAlgorithmPreference(preference: AlgorithmPreference): Promise<void> {
     this.algorithmPreferences = [
-      ...this.algorithmPreferences.filter(({ caseKey }) => caseKey !== preference.caseKey),
+      ...this.algorithmPreferences.filter(
+        (entry) =>
+          algorithmStorageKey(entry.caseKey, entry.ownerId) !==
+          algorithmStorageKey(preference.caseKey, preference.ownerId),
+      ),
       preference,
     ];
   }
 
   /** @param caseKey 削除するユーザー手順設定のケースキー */
-  override async deleteAlgorithmPreference(caseKey: string): Promise<void> {
+  override async deleteAlgorithmPreference(caseKey: string, ownerId?: string): Promise<void> {
     this.algorithmPreferences = this.algorithmPreferences.filter(
-      (preference) => preference.caseKey !== caseKey,
+      (preference) =>
+        algorithmStorageKey(preference.caseKey, preference.ownerId) !==
+        algorithmStorageKey(caseKey, ownerId),
     );
   }
 }

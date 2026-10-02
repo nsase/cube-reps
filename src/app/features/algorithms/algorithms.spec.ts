@@ -1,3 +1,5 @@
+import { AlgorithmSyncService } from '../../core/firestore/algorithm-sync.service';
+import { RouterTestingHarness } from '@angular/router/testing';
 import { DeferBlockBehavior, DeferBlockState, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { PLL_CASES } from '../../core/algorithm/algorithm-cases';
@@ -14,6 +16,21 @@ describe('Algorithms', () => {
       imports: [Algorithms],
       providers: [provideRouter(routes)],
     }).compileComponents();
+  });
+
+  it('OLL・PLL・F2Lのページ遷移で対象種類だけを再取得する', async () => {
+    const sync = TestBed.inject(AlgorithmSyncService);
+    const refresh = vi.spyOn(sync, 'refresh').mockResolvedValue(true);
+    const harness = await RouterTestingHarness.create();
+    for (const kind of ['oll', 'pll', 'f2l']) {
+      refresh.mockClear();
+      await harness.navigateByUrl('/algorithms/' + kind);
+      await harness.fixture.whenStable();
+      expect(refresh.mock.calls).toEqual([[kind.toUpperCase()]]);
+      expect(sync.activeKind()).toBe(kind.toUpperCase());
+    }
+    await harness.navigateByUrl('/timer');
+    expect(sync.activeKind()).toBeNull();
   });
 
   /** viewport到達前は操作部品を生成せず、到達したカードだけ表示する。 */

@@ -1,10 +1,9 @@
 $line: var(--outline-color);
-$muted: var(--mat-sys-surface-container-highest);
 
 :host {
   display: grid;
   flex: 0 0 auto;
-  grid-template-columns: 20px minmax(0, 1fr) auto;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
   align-items: center;
   gap: 6px;
   min-width: 0;
@@ -28,13 +27,6 @@ code {
   overflow-wrap: anywhere;
 }
 
-.rank {
-  color: $muted;
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-small);
-  text-align: center;
-}
-
 .algorithm-actions {
   display: flex;
   align-items: center;
@@ -50,11 +42,5 @@ code {
 
   .remove {
     color: var(--danger-color);
-  }
-}
-
-@media (max-width: 620px) {
-  :host {
-    grid-template-columns: 18px minmax(0, 1fr) auto;
   }
 }
