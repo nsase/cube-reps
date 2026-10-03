@@ -1,3 +1,4 @@
+import { SolveRetryService } from '../../../../core/cube/solve-retry.service';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
@@ -55,7 +56,7 @@ describe('SolveActions', () => {
 
     (fixture.nativeElement.querySelector('.row-retry') as HTMLButtonElement).click();
 
-    expect(cube.takeRetrySolve()).toEqual(solve);
+    expect(TestBed.inject(SolveRetryService).takeRetrySolve()).toEqual(solve);
     expect(retried).toHaveBeenCalledOnce();
     expect(navigate).toHaveBeenCalledWith(['/timer']);
   });

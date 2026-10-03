@@ -1,3 +1,4 @@
+import { SolveRetryService } from './solve-retry.service';
 import { TestBed } from '@angular/core/testing';
 import { AuthService } from '../auth/auth.service';
 import { LocalSyncService } from '../local-storage/local-sync.service';
@@ -6,7 +7,7 @@ import { CubeService } from './cube';
 import { Penalty, Solve } from './cube.models';
 import { UserDataRepository } from '../local-storage/user-data-repository';
 
-describe('CubeService record statistics', () => {
+describe('CubeService shared data integration', () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.resetTestingModule();
@@ -53,20 +54,6 @@ describe('CubeService record statistics', () => {
       ownerId: 'account-1',
     });
     expect((await repository.load()).solves).toContainEqual(cube.activeSolves()[0]);
-  });
-
-  it('現在のカテゴリーに属する記録件数を返す', async () => {
-    const cube = TestBed.inject(CubeService);
-    await cube.ready;
-    const other = cube.addGroup('別カテゴリー')!;
-    cube.storedSolves.set([
-      solve(1, 1000),
-      solve(2, 2000),
-      { ...solve(3, 3000), groupId: other.id },
-    ]);
-    cube.activeGroupId.set('unclassified');
-
-    expect(cube.activeGroupSolves()).toHaveLength(2);
   });
 
   it('新しい計測記録とユーザー作成カテゴリーへUUIDを割り当てる', () => {
@@ -151,7 +138,12 @@ describe('CubeService record statistics', () => {
     expect(cube.activeSolves().find(({ id }) => id === second.id)?.groupId).toBe('unclassified');
     expect(cube.activeSolves().find(({ id }) => id === untouched.id)?.groupId).toBe(other.id);
     expect(cube.activeGroupId()).toBe('unclassified');
-    expect(cube.activeGroupSolves().map(({ id }) => id)).toEqual([second.id, first.id]);
+    expect(
+      cube
+        .activeSolves()
+        .filter((solve) => solve.groupId === cube.activeGroupId())
+        .map(({ id }) => id),
+    ).toEqual([second.id, first.id]);
   });
 
   it('リトライ対象と元の計測条件を次のタイマーへ一度だけ引き渡す', () => {
@@ -159,70 +151,11 @@ describe('CubeService record statistics', () => {
     const group = cube.addGroup('Retry group')!;
     const solve = cube.addSolve(1234, 'R U', 'pll', 'Aa');
 
-    cube.prepareRetry(solve);
+    TestBed.inject(SolveRetryService).prepareRetry(solve);
 
-    expect(cube.activeSolveCategory()).toBe('pll');
     expect(cube.activeGroupId()).toBe(group.id);
-    expect(cube.takeRetrySolve()).toEqual(solve);
-    expect(cube.takeRetrySolve()).toBeUndefined();
-  });
-
-  it('fullとpllを同じ記録先でも別々に集計する', async () => {
-    const cube = TestBed.inject(CubeService);
-    await cube.ready;
-    cube.storedSolves.set([
-      { ...solve(1, 1000), category: 'full' },
-      { ...solve(2, 2000), category: 'pll' },
-    ]);
-
-    expect(cube.activeGroupSolves().map(({ id }) => id)).toEqual(['1']);
-    expect(cube.best()).toBe(1000);
-
-    cube.activeSolveCategory.set('pll');
-
-    expect(cube.activeGroupSolves().map(({ id }) => id)).toEqual(['2']);
-    expect(cube.best()).toBe(2000);
-  });
-
-  it('DNFを除外し、+2を反映してベストを計算する', async () => {
-    const cube = TestBed.inject(CubeService);
-    await cube.ready;
-    cube.storedSolves.set([solve(1, 1000, 'DNF'), solve(2, 900, '+2'), solve(3, 1500)]);
-
-    expect(cube.best()).toBe(1500);
-  });
-
-  it('全記録の平均へ+2を反映し、DNFを除外する', async () => {
-    const cube = TestBed.inject(CubeService);
-    await cube.ready;
-    cube.storedSolves.set([solve(1, 1000), solve(3, 1000, '+2'), solve(4, 4000)]);
-
-    expect(cube.mean()).toBe((1000 + 3000 + 4000) / 3);
-    cube.storedSolves.update((solves) => [solve(2, 2000, 'DNF'), ...solves]);
-    expect(cube.mean()).toBe((1000 + 3000 + 4000) / 3);
-  });
-
-  it('有効な記録がない場合はベストと平均を未記録として扱う', async () => {
-    const cube = TestBed.inject(CubeService);
-    await cube.ready;
-    cube.storedSolves.set([solve(1, 1000, 'DNF')]);
-
-    expect(cube.best()).toBe(Infinity);
-    expect(cube.mean()).toBeUndefined();
-    expect(cube.formatTime(cube.best())).toBe('—');
-  });
-
-  it('必要件数が揃ったAOだけを計算する', async () => {
-    const cube = TestBed.inject(CubeService);
-    await cube.ready;
-    cube.storedSolves.set(
-      Array.from({ length: 12 }, (_, index) => solve(index, (index + 1) * 1000)),
-    );
-
-    expect(cube.ao5()).toBe(10000);
-    expect(cube.ao12()).toBe(6500);
-    expect(cube.ao50()).toBeUndefined();
-    expect(cube.ao100()).toBeUndefined();
+    expect(TestBed.inject(SolveRetryService).takeRetrySolve()).toEqual(solve);
+    expect(TestBed.inject(SolveRetryService).takeRetrySolve()).toBeUndefined();
   });
 
   it('通常操作で変更対象のレコードだけをRepositoryへ渡す', async () => {

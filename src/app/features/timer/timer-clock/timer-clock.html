@@ -19,8 +19,8 @@
       }
     }
   }
-  <strong>{{ cube.formatTime(store.elapsed()) }}</strong
-  >@if (store.state() !== 'running') {
+  <strong>{{ formatTime(store.elapsed()) }}</strong>
+  @if (store.state() !== 'running') {
     <i>━━ SPACE ━━</i>
   }
 </div>

@@ -65,6 +65,11 @@ test('TimerとHistoryで選択中のグループを共有する', async ({ page 
   await page.getByRole('link', { name: /Timer/ }).click();
 
   await expect(page.locator('.record-context select')).toHaveValue('unclassified');
+  await page.locator('.record-context select').selectOption('competition');
+  await page.getByRole('link', { name: 'History', exact: true }).click();
+  await expect(historyGroup).toHaveValue('competition');
+  await page.reload();
+  await expect(historyGroup).toHaveValue('competition');
 });
 
 test('記録グループの削除後も所属記録を未分類で表示する', async ({ page }) => {
@@ -148,6 +153,12 @@ test('履歴のスクランブルを引き継いでタイマーでリトライ�
 
   await expect(page).toHaveURL(/#\/timer$/);
   await expect(page.locator('app-timer-scramble p')).toHaveText(scramble);
+  /** リトライ指定を消費した後の通常遷移では、新しい計測へ戻る。 */
+  await page.getByRole('link', { name: 'History', exact: true }).click();
+  await page.getByRole('link', { name: /Timer/ }).click();
+  await expect(page.getByTestId('timer-scramble-refresh')).toBeEnabled({ timeout: 15_000 });
+  await expect(page.getByRole('radio', { name: /3×3/ })).toBeChecked();
+  await expect(page.locator('app-timer-scramble p')).not.toHaveText(scramble);
 });
 
 test(

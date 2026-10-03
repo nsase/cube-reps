@@ -1,3 +1,7 @@
+import { provideRouter } from '@angular/router';
+import { Timer } from './timer';
+import { ScrambleGenerator } from './scramble-generator.service';
+import { SolveRetryService } from '../../core/cube/solve-retry.service';
 import { TestBed } from '@angular/core/testing';
 import { AppUpdateService } from '../../core/app-update.service';
 import { CubeService } from '../../core/cube/cube';
@@ -8,9 +12,11 @@ import { TimerStore } from './timer.store';
 describe('TimerStore', () => {
   beforeEach(() => {
     localStorage.clear();
-    vi.spyOn(CubeService.prototype, 'createScramble').mockResolvedValue('R U');
+    vi.spyOn(ScrambleGenerator.prototype, 'createScramble').mockResolvedValue('R U');
     TestBed.resetTestingModule();
-    TestBed.configureTestingModule({ providers: [TimerStore] });
+    TestBed.configureTestingModule({
+      providers: [provideRouter([]), ScrambleGenerator, TimerStore],
+    });
   });
 
   afterEach(() => {
@@ -53,7 +59,7 @@ describe('TimerStore', () => {
     expect(cube.activeSolves()[0].time).toBe(1234);
     expect(cube.activeSolves()[0].category).toBe('full');
     expect(store.completedSolve()?.id).toBe(cube.activeSolves()[0].id);
-    expect(cube.createScramble).toHaveBeenCalledTimes(2);
+    expect(ScrambleGenerator.prototype.createScramble).toHaveBeenCalledTimes(2);
     vi.useRealTimers();
   });
 
@@ -106,7 +112,9 @@ describe('TimerStore', () => {
   });
 
   it('スクランブル生成に失敗した場合は計測を開始しない', async () => {
-    vi.mocked(CubeService.prototype.createScramble).mockRejectedValueOnce(new Error('failed'));
+    vi.mocked(ScrambleGenerator.prototype.createScramble).mockRejectedValueOnce(
+      new Error('failed'),
+    );
     const store = TestBed.inject(TimerStore);
 
     await vi.waitFor(() => expect(store.scrambleGenerationFailed()).toBe(true));
@@ -119,7 +127,7 @@ describe('TimerStore', () => {
     const cube = TestBed.inject(CubeService);
     const group = cube.addGroup('Retry group')!;
     const solve = cube.addSolve(1234, 'R U F', 'pll', 'Aa');
-    cube.prepareRetry(solve);
+    TestBed.inject(SolveRetryService).prepareRetry(solve);
 
     const store = TestBed.inject(TimerStore);
 
@@ -128,7 +136,7 @@ describe('TimerStore', () => {
     expect(store.scramble()).toBe('R U F');
     expect(store.scrambleGenerating()).toBe(false);
     expect(cube.activeGroupId()).toBe(group.id);
-    expect(cube.createScramble).not.toHaveBeenCalled();
+    expect(ScrambleGenerator.prototype.createScramble).not.toHaveBeenCalled();
   });
 
   /** OLL・PLLも共通IDで保存・復元し、表示番号の変更に依存しない。 */
@@ -298,5 +306,49 @@ describe('TimerStore', () => {
 
     expect(store.state()).toBe('idle');
     vi.useRealTimers();
+  });
+
+  it('画面の再生成で一時状態を初期化し、共有する記録先と記録を維持する', async () => {
+    const cube = TestBed.inject(CubeService);
+    await cube.ready;
+    const group = cube.addGroup('共有グループ')!;
+    cube.addSolve(1000, 'R U', 'full');
+    const retrySolve = cube.addSolve(2000, 'R U F', 'pll', 'Aa');
+    TestBed.inject(SolveRetryService).prepareRetry(retrySolve);
+    const first = TestBed.createComponent(Timer);
+    const firstStore = first.debugElement.injector.get(TimerStore);
+    expect(firstStore.category()).toBe('pll');
+    expect(firstStore.best()).toBe(2000);
+    expect(firstStore.scramble()).toBe('R U F');
+    firstStore.completedSolve.set(retrySolve);
+    first.destroy();
+
+    const second = TestBed.createComponent(Timer);
+    const secondStore = second.debugElement.injector.get(TimerStore);
+    await vi.waitFor(() => expect(secondStore.scramble()).toBe('R U'));
+    expect(secondStore.category()).toBe('full');
+    expect(secondStore.best()).toBe(1000);
+    expect(secondStore.selectedCase()).toBe('random');
+    expect(secondStore.completedSolve()).toBeUndefined();
+    expect(cube.activeGroupId()).toBe(group.id);
+    expect(cube.activeSolves()).toHaveLength(2);
+    second.destroy();
+  });
+
+  it('カテゴリー変更後に完了した古い生成結果でドリルを上書きしない', async () => {
+    let finishGeneration!: (scramble: string) => void;
+    vi.mocked(ScrambleGenerator.prototype.createScramble).mockReturnValueOnce(
+      new Promise<string>((resolve) => {
+        finishGeneration = resolve;
+      }),
+    );
+    const store = TestBed.inject(TimerStore);
+    store.setCategory('pll');
+    const setup = store.scramble();
+    finishGeneration('old scramble');
+    await Promise.resolve();
+    expect(store.scramble()).toBe(setup);
+    expect(store.scrambleGenerating()).toBe(false);
+    expect(store.scrambleGenerationFailed()).toBe(false);
   });
 });
