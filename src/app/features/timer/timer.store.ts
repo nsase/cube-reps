@@ -1,3 +1,8 @@
+import { ScrambleGenerator } from './scramble-generator.service';
+import { SolveRetryService } from '../../core/cube/solve-retry.service';
+import { DEFAULT_GROUP } from '../../core/cube/default-groups';
+import { average, mean } from '../../core/cube/cube-statistics';
+import { finalTime, statTime } from '../../core/cube/solve-time';
 import { computed, inject, Injectable, OnDestroy, signal } from '@angular/core';
 import { F2L_CASES, OLL_CASES, PLL_CASES } from '../../core/algorithm/algorithm-cases';
 import { f2lCaseForSlot } from '../../core/algorithm/algorithm-cases/f2l/f2l-case';
@@ -16,8 +21,12 @@ import { NativeAppService } from '../../core/platform/native-app.service';
 /** Timerコンポーネントツリー内で計測状態と操作を共有するStore。 */
 @Injectable()
 export class TimerStore implements OnDestroy {
-  /** 計測記録とスクランブルを管理するサービス。 */
+  /** 共有する記録と記録先の操作窓口。 */
   private readonly cube = inject(CubeService);
+  /** Timer画面内で次のスクランブルを生成する。 */
+  private readonly scrambleGenerator = inject(ScrambleGenerator);
+  /** 履歴からの一度限りのリトライ指定。 */
+  private readonly retry = inject(SolveRetryService);
   /** 計測中に更新通知を抑止するアプリ更新サービス。 */
   private readonly appUpdates = inject(AppUpdateService);
   /** ネイティブ端末の画面消灯防止を提供する境界。 */
@@ -53,6 +62,38 @@ export class TimerStore implements OnDestroy {
   /** 現在のスクランブルで出題しているF2L・OLL・PLLケース。 */
   readonly currentDrillCase = signal<AlgorithmCase | F2lAlgorithmCase>(PLL_CASES[0]);
 
+  /** Timerのカテゴリーと共有の記録先で絞り込んだ計測記録。 */
+  readonly activeGroupSolves = computed(() =>
+    this.cube
+      .activeSolves()
+      .filter(
+        (solve) =>
+          (solve.groupId || DEFAULT_GROUP.id) === this.cube.activeGroupId() &&
+          solve.category === this.category(),
+      ),
+  );
+  /** Timerの集計対象からDNFを除いた計測記録。 */
+  readonly validActiveGroupSolves = computed(() =>
+    this.activeGroupSolves().filter((solve) => solve.penalty !== 'DNF'),
+  );
+
+  /** 現在のグループ内のベストタイム。記録がない場合は`Infinity`。 */
+  readonly best = computed(() =>
+    Math.min(...this.validActiveGroupSolves().map((solve) => finalTime(solve)), Infinity),
+  );
+  /** 現在のグループにある全記録のMean。 */
+  readonly mean = computed(() =>
+    mean(this.validActiveGroupSolves().map((solve) => finalTime(solve))),
+  );
+  /** 現在のグループにある直近5件のAverage。 */
+  readonly ao5 = computed(() => this.averageOf(this.activeGroupSolves(), 5));
+  /** 現在のグループにある直近12件のAverage。 */
+  readonly ao12 = computed(() => this.averageOf(this.activeGroupSolves(), 12));
+  /** 現在のグループにある直近50件のAverage。 */
+  readonly ao50 = computed(() => this.averageOf(this.activeGroupSolves(), 50));
+  /** 現在のグループにある直近100件のAverage。 */
+  readonly ao100 = computed(() => this.averageOf(this.activeGroupSolves(), 100));
+
   /** 計測表示を更新するタイマーID。 */
   private interval?: number;
   /** 計測開始に必要な長押しの完了を待つタイマーID。 */
@@ -78,17 +119,22 @@ export class TimerStore implements OnDestroy {
   private static readonly START_HOLD_DURATION = 500;
 
   /**
-   * 初期カテゴリーをrootサービスへ同期し、最初のスクランブルを設定する。
+   * 画面固有のカテゴリーと最初のスクランブルを設定する。
    * 履歴からのリトライでは元記録の条件を復元し、通常表示では新しいスクランブルを生成する。
    */
   constructor() {
-    const retrySolve = this.cube.takeRetrySolve();
+    const retrySolve = this.retry.takeRetrySolve();
     if (retrySolve) {
       this.restoreSolve(retrySolve);
     }
-    this.cube.activeSolveCategory.set(this.category());
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
     if (!retrySolve) this.updateScramble();
+  }
+
+  /** 指定件数が揃っている場合に、最新記録からAverageを計算する。 */
+  private averageOf(solves: readonly Solve[], count: number): number | undefined {
+    if (solves.length < count) return undefined;
+    return average(solves.slice(0, count).map((solve) => statTime(solve)));
   }
 
   /** スペース押下で長押し状態へ入り、計測中の場合は停止する。 */
@@ -128,7 +174,6 @@ export class TimerStore implements OnDestroy {
   setCategory(category: SolveCategory): void {
     this.category.set(category);
     this.selectedCase.set('random');
-    this.cube.activeSolveCategory.set(category);
     this.reset();
     this.updateScramble();
   }
@@ -313,7 +358,7 @@ export class TimerStore implements OnDestroy {
       return;
     }
     this.scrambleGenerating.set(true);
-    void this.cube
+    void this.scrambleGenerator
       .createScramble()
       .then((scramble) => {
         if (request !== this.scrambleRequest) return;

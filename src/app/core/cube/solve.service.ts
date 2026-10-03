@@ -1,30 +1,51 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
-import { CubeOperationState } from './cube-operation-state';
+import { Subject } from 'rxjs';
 import { Penalty, Solve, SolveCategory } from './cube.models';
 import {
   USER_DATA_SCHEMA_VERSION,
   UserDataRepository,
 } from '../local-storage/user-data-repository';
 import { remoteWins, isLatestSyncData } from './sync-policy';
-import { GroupService } from './group.service';
 
-/** 計測記録の編集、所有権、同期反映とタイム表示を担当する。 */
+/** 計測記録の状態を所有し、編集・所有権・同期反映を担当する。 */
 @Injectable({ providedIn: 'root' })
 export class SolveService {
   /** 操作を許可する現在のアカウント。 */
   private readonly auth = inject(AuthService);
   /** 操作結果の永続化先。 */
   private readonly userDataRepository = inject(UserDataRepository);
-  /** 同期で取得した記録の所属先を整理する。 */
-  private readonly groups = inject(GroupService);
+  /** tombstoneを含む、ブラウザ内の全所有者の計測記録。 */
+  readonly storedSolves = signal<readonly Solve[]>([]);
+  /** 認証状態に関係なく公開する、新しい順のブラウザ内履歴。削除済みのものは含まない。 */
+  readonly activeSolves = computed(() =>
+    this.storedSolves()
+      .filter((solve) => !solve.deletedAt)
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+  );
+  /** アカウント未紐づけで、選択移行の対象になる計測記録。 */
+  readonly guestSolves = computed(() =>
+    this.storedSolves().filter((solve) => solve.ownerType === 'guest' && !solve.deletedAt),
+  );
+  /** 現在ログイン中のアカウントが所有する、未削除の計測記録。 */
+  readonly accountSolves = computed(() => {
+    const accountId = this.auth.user()?.uid;
+    if (!accountId) return [];
+    return this.storedSolves().filter(
+      (solve) => solve.ownerType === 'account' && solve.ownerId === accountId && !solve.deletedAt,
+    );
+  });
+
+  /** 計測記録の変更を永続化・同期へ通知する。 */
+  readonly solveChange$ = new Subject<Solve | Solve[]>();
 
   /**
    * クラウドから受信した計測記録を端末へ反映する。
    * 別端末の変更を再起動後も保持するためIndexedDBへ保存し、受信した削除はStoreとIndexedDBから除去する。
+   * @returns 更新を反映した場合はtrue。所属整理が必要かを呼び出し側へ通知する。
    */
-  async mergeSolves(state: CubeOperationState, remoteSolves: readonly Solve[]): Promise<void> {
-    const currentSolves = state.storedSolves();
+  async mergeSolves(remoteSolves: readonly Solve[]): Promise<boolean> {
+    const currentSolves = this.storedSolves();
     const solvesById = new Map(currentSolves.map((solve) => [solve.id, solve]));
     const changedSolves: Solve[] = [];
     for (const remote of remoteSolves) {
@@ -33,10 +54,10 @@ export class SolveService {
       solvesById.set(remote.id, remote);
       changedSolves.push(remote);
     }
-    if (changedSolves.length === 0) return;
+    if (changedSolves.length === 0) return false;
 
     // storeを更新
-    state.storedSolves.set(
+    this.storedSolves.set(
       [...solvesById.values()]
         .filter((s) => !s.deletedAt || s.pendingSync)
         .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
@@ -48,8 +69,7 @@ export class SolveService {
       ...updatedSolves.map((solve) => this.userDataRepository.putSolve(solve)),
       ...deletedSolves.map((solve) => this.userDataRepository.deleteSolve(solve.id)),
     ]);
-    // 削除済みグループに所属する計測記録を未分類グループへ移動する
-    await this.groups.reconcileDeletedGroups(state);
+    return true;
   }
 
   /**
@@ -58,12 +78,12 @@ export class SolveService {
    *
    * @param solve クラウドへの送信が成功した計測記録の版
    */
-  async solveSyncFinished(state: CubeOperationState, solve: Solve): Promise<void> {
-    const current = state.storedSolves().find((s) => s.id === solve.id);
+  async solveSyncFinished(solve: Solve): Promise<void> {
+    const current = this.storedSolves().find((s) => s.id === solve.id);
     if (!current || !isLatestSyncData(current, solve)) return;
 
     const { pendingSync: _pending, ...saved } = solve;
-    state.storedSolves.update((solves) =>
+    this.storedSolves.update((solves) =>
       saved.deletedAt
         ? solves.filter((s) => s.id !== saved.id)
         : solves.map((s) => (s.id === saved.id ? saved : s)),
@@ -73,8 +93,9 @@ export class SolveService {
   }
 
   /**
-   * 現在のグループへ計測記録を追加する。
+   * 指定された記録先へ計測記録を追加する。
    *
+   * @param groupId 保存先のグループID
    * @param time 計測時間（ミリ秒）
    * @param scramble 計測に使用したスクランブル
    * @param category 集計カテゴリーID
@@ -83,7 +104,7 @@ export class SolveService {
    * @returns 保存した計測記録
    */
   addSolve(
-    state: CubeOperationState,
+    groupId: string,
     time: number,
     scramble: string,
     category: SolveCategory,
@@ -105,14 +126,14 @@ export class SolveService {
       category,
       caseName,
       ...(category === 'full' ? {} : drill),
-      groupId: state.activeGroupId(),
+      groupId,
       penalty: 'none',
       pendingSync: !!accountId,
     };
-    state.storedSolves.update((solves) => [solve, ...solves]);
+    this.storedSolves.update((solves) => [solve, ...solves]);
 
     // 計測記録の変更を通知（DBへの保存などを行う）
-    state.solveChange$.next(solve);
+    this.solveChange$.next(solve);
     return solve;
   }
 
@@ -122,9 +143,9 @@ export class SolveService {
    * @param id 対象の計測記録ID
    * @param penalty 切り替えるペナルティ
    */
-  togglePenalty(state: CubeOperationState, id: string, penalty: Exclude<Penalty, 'none'>): void {
+  togglePenalty(id: string, penalty: Exclude<Penalty, 'none'>): void {
     // 計測記録がない（tombstone含む）、または別アカウントデータであれば、編集はできない
-    const current = state.activeSolves().find((solve) => solve.id === id);
+    const current = this.activeSolves().find((solve) => solve.id === id);
     if (!current || !this.canManageSolve(current)) return;
 
     // 計測記録のペナルティーを更新する
@@ -134,12 +155,12 @@ export class SolveService {
       penalty: current.penalty === penalty ? 'none' : penalty,
       pendingSync: current.ownerType === 'account',
     };
-    state.storedSolves.update((solves) =>
+    this.storedSolves.update((solves) =>
       solves.map((solve) => (solve.id === id ? updated : solve)),
     );
 
     // 計測記録の変更を通知（DBへの保存などを行う）
-    state.solveChange$.next(updated);
+    this.solveChange$.next(updated);
   }
 
   /**
@@ -148,9 +169,9 @@ export class SolveService {
    *
    * @param id 削除する計測記録ID
    */
-  removeSolve(state: CubeOperationState, id: string): void {
+  removeSolve(id: string): void {
     // 計測記録がない（tombstone含む）、または別アカウントデータであれば、削除はできない
-    const current = state.activeSolves().find((solve) => solve.id === id);
+    const current = this.activeSolves().find((solve) => solve.id === id);
     if (!current || !this.canManageSolve(current)) return;
 
     // 計測記録を削除する
@@ -161,16 +182,16 @@ export class SolveService {
       deletedAt: now,
       pendingSync: current.ownerType === 'account',
     };
-    state.storedSolves.update((solves) =>
+    this.storedSolves.update((solves) =>
       solves.map((solve) => (solve.id === id ? deleted : solve)),
     );
 
     // 計測記録の変更を通知（DBへの保存などを行う）
-    state.solveChange$.next(deleted);
+    this.solveChange$.next(deleted);
   }
 
   /** 選択した未紐づけ記録を現在のアカウントへ移し、保存後に同期キューへ渡す。 */
-  assignSolveToAccount(state: CubeOperationState, solve: Solve, accountId: string): void {
+  assignSolveToAccount(solve: Solve, accountId: string): void {
     // ゲスト記録以外は移行できない。アカウント間の移行はコピーで行う。
     if (solve.ownerType !== 'guest') throw new Error('Invalid transfer source');
 
@@ -182,16 +203,16 @@ export class SolveService {
       ownerId: accountId,
       pendingSync: true,
     };
-    state.storedSolves.update((solves) =>
+    this.storedSolves.update((solves) =>
       solves.map((item) => (item.id === solve.id ? updated : item)),
     );
 
     // 計測記録の変更を通知（DBへの保存などを行う）
-    state.solveChange$.next(updated);
+    this.solveChange$.next(updated);
   }
 
   /** 別アカウントの記録を新しいIDでコピーする。元のローカル・クラウド記録は変更しない。 */
-  copySolveToAccount(state: CubeOperationState, solve: Solve, accountId: string): void {
+  copySolveToAccount(solve: Solve, accountId: string): void {
     // アカウント所有の計測記録のみコピー可能。ゲスト所有の計測記録はassignSolveToAccountで移行する。
     if (solve.ownerType !== 'account') throw new Error('Invalid transfer source');
 
@@ -205,10 +226,10 @@ export class SolveService {
       ownerId: accountId,
       pendingSync: true,
     };
-    state.storedSolves.update((solves) => [...solves, updated]);
+    this.storedSolves.update((solves) => [...solves, updated]);
 
     // 計測記録の変更を通知（DBへの保存などを行う）
-    state.solveChange$.next(updated);
+    this.solveChange$.next(updated);
   }
 
   /** 未紐づけ、または現在のアカウントの記録だけに編集を許可する。 */
@@ -218,51 +239,5 @@ export class SolveService {
       (solve.ownerType === 'guest' ||
         Boolean(solve.ownerId && solve.ownerId === this.auth.user()?.uid))
     );
-  }
-
-  /**
-   * +2ペナルティを反映した計測時間を返す。
-   *
-   * @param solve 対象の計測記録
-   * @returns 補正後の時間（ミリ秒）
-   */
-  finalTime(solve: Solve): number {
-    return solve.time + (solve.penalty === '+2' ? 2000 : 0);
-  }
-
-  /**
-   * 集計用にDNFを最悪値へ変換したタイムを返す。
-   *
-   * @param solve 対象の計測記録
-   * @returns +2反映後のタイム。DNFの場合は`Infinity`
-   */
-  statTime(solve: Solve): number {
-    return solve.penalty === 'DNF' ? Infinity : this.finalTime(solve);
-  }
-
-  /**
-   * ミリ秒をタイマー表示用文字列へ整形する。
-   *
-   * @param milliseconds 整形する時間
-   * @returns `m:ss.cc`または`s.cc`形式。有限値でない場合は`—`
-   */
-  formatTime(milliseconds: number): string {
-    if (!Number.isFinite(milliseconds)) return '—';
-    const minutes = Math.floor(milliseconds / 60000);
-    const seconds = Math.floor((milliseconds % 60000) / 1000);
-    const centiseconds = Math.floor((milliseconds % 1000) / 10);
-    return `${minutes ? `${minutes}:` : ''}${minutes ? String(seconds).padStart(2, '0') : seconds}.${String(centiseconds).padStart(2, '0')}`;
-  }
-
-  /**
-   * ペナルティを含む記録の表示文字列を返す。
-   *
-   * @param solve 表示する計測記録
-   * @returns DNFまたは整形済みタイム
-   */
-  displayTime(solve: Solve): string {
-    return solve.penalty === 'DNF'
-      ? 'DNF'
-      : `${this.formatTime(this.finalTime(solve))}${solve.penalty === '+2' ? '+' : ''}`;
   }
 }

@@ -1,5 +1,5 @@
+import { formatTime, finalTime, statTime } from '../../../core/cube/solve-time';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { CubeService } from '../../../core/cube/cube';
 import { HistoryStore } from '../history.store';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { average, mean } from '../../../core/cube/cube-statistics';
@@ -13,8 +13,9 @@ import { average, mean } from '../../../core/cube/cube-statistics';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HistorySummary {
-  /** グループ一覧と時間整形を提供するサービス。 */
-  protected readonly cube = inject(CubeService);
+  /** 共通の時間表示をテンプレートへ提供する。 */
+  protected readonly formatTime = formatTime;
+
   /** Historyコンポーネントツリー内で共有する画面状態。 */
   protected readonly store = inject(HistoryStore);
 
@@ -24,7 +25,7 @@ export class HistorySummary {
       ...this.store
         .filteredSolves()
         .filter((solve) => solve.penalty !== 'DNF')
-        .map((solve) => this.cube.finalTime(solve)),
+        .map((solve) => finalTime(solve)),
       Infinity,
     ),
   );
@@ -42,7 +43,7 @@ export class HistorySummary {
   /** 集計結果を未計測・DNF・タイムのいずれかで表示する。 */
   protected formatStatistic(value: number | undefined): string {
     if (value === undefined) return '—';
-    return value === Infinity ? 'DNF' : this.cube.formatTime(value);
+    return value === Infinity ? 'DNF' : formatTime(value);
   }
 
   /** @returns 絞り込み対象からDNFを除外し、+2を反映したタイム配列 */
@@ -50,7 +51,7 @@ export class HistorySummary {
     return this.store
       .filteredSolves()
       .filter((solve) => solve.penalty !== 'DNF')
-      .map((solve) => this.cube.finalTime(solve));
+      .map((solve) => finalTime(solve));
   }
 
   /** 指定件数が揃っている場合に最新記録のAverageを返す。 */
@@ -58,6 +59,6 @@ export class HistorySummary {
     const solves = this.store.filteredSolves();
     return solves.length < count
       ? undefined
-      : average(solves.slice(0, count).map((solve) => this.cube.statTime(solve)));
+      : average(solves.slice(0, count).map((solve) => statTime(solve)));
   }
 }

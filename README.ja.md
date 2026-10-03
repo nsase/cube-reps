@@ -178,6 +178,10 @@ Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`�
 
 各画面はStandalone Componentとして構成し、ルート単位で遅延読み込みしています。rootの`SettingsStore`で言語などの永続的なブラウザ設定を管理し、設定画面は言語と更新の操作欄を子コンポーネントへ分割しています。アプリ全体の永続データはrootサービス、タイマーや履歴画面の一時状態は画面スコープのSignal Storeで管理しています。
 
+rootの`SolveService`が計測記録の状態と操作を、`GroupService`がグループ台帳・操作とTimer／Historyで共有する選択グループを所有します。`GroupMembershipService`がグループ削除と記録の所属移動を調整し、`UserDataInitializer`がIndexedDBから各所有者への初期復元を一度だけ実行します。`CubeService`は共有データと同期の委譲窓口として残し、状態の複製は持ちません。
+
+`TimerStore`はカテゴリー、スクランブルの表示・生成状態、Timer用集計を所有します。`ScrambleGenerator`はTimer画面配下で提供し、rootの`SolveRetryService`はHistoryから次回のTimerへリトライ指定を一度だけ渡します。時間整形とペナルティ計算は`solve-time.ts`の純粋関数、平均計算は`cube-statistics.ts`を使用します。選択グループの画面間共有と端末保存の挙動は維持しています。
+
 Angular Materialの共通テーマとアプリ用のカラー変数は、`src/styles/_material-theme.scss`で定義しています。Materialコンポーネントの配色は、個別コンポーネントのスタイルで上書きせず、このテーマで調整します。
 
 カードの外観は`src/app/app.config.ts`の`MAT_CARD_CONFIG`で`outlined`を既定にしています。個別のカードでは、既定と異なる外観を使う場合だけ`appearance`を指定します。

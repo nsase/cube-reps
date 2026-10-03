@@ -1,3 +1,4 @@
+import { SolveRetryService } from '../../../../core/cube/solve-retry.service';
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,6 +18,9 @@ import { ConfirmService } from '../../../../shared/confirm-dialog/confirm.servic
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolveActions {
+  /** 履歴から次回のTimerへリトライ条件を渡す。 */
+  private readonly retryRequest = inject(SolveRetryService);
+
   /** 操作する計測記録。 */
   readonly solve = input.required<Solve>();
   /** retryと削除をアイコンだけでなくテキスト付きで表示するか。 */
@@ -67,7 +71,7 @@ export class SolveActions {
    * 詳細ダイアログなどの呼び出し元が表示を閉じられるように、遷移前にリトライ開始を通知する。
    */
   protected retry(): void {
-    this.cube.prepareRetry(this.currentSolve());
+    this.retryRequest.prepareRetry(this.currentSolve());
     this.retried.emit();
     void this.router.navigate(['/timer']);
   }

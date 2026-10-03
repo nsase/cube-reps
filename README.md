@@ -178,6 +178,10 @@ After explicit confirmation, guest import writes to the signed-in user’s `user
 
 Each page uses standalone components and route-level lazy loading. The root `SettingsStore` manages persistent browser settings, including language; the settings page separates language and update controls into child components. Persistent application data is managed by root services, while temporary timer and history state is managed by screen-scoped Signal Stores.
 
+The root `SolveService` owns solve records and their operations; `GroupService` owns the group ledger, group operations, and the selected group shared by Timer and History. `GroupMembershipService` coordinates deletion and record reassignment, and `UserDataInitializer` restores IndexedDB data into its owners once. `CubeService` remains a delegating entry point for shared data and synchronization, without owning a second copy of that state.
+
+`TimerStore` owns the timer category, scramble state, and timer statistics. `ScrambleGenerator` is provided under the Timer screen, while the root `SolveRetryService` passes a retry request from History to the next Timer instance exactly once. Time formatting and penalty calculations are pure functions in `solve-time.ts`; averages use `cube-statistics.ts`. The shared group selection and its device-local persistence remain unchanged.
+
 The shared Angular Material theme and application color variables are defined in `src/styles/_material-theme.scss`. Material component colors should be customized through that theme instead of being overridden in individual component styles.
 
 Card appearance defaults to `outlined` through `MAT_CARD_CONFIG` in `src/app/app.config.ts`; individual cards only need an `appearance` attribute when overriding that default.

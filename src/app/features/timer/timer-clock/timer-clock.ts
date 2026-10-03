@@ -1,5 +1,5 @@
+import { formatTime } from '../../../core/cube/solve-time';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { CubeService } from '../../../core/cube/cube';
 import { TimerStore } from '../timer.store';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { TimerSolveActions } from '../timer-solve-actions/timer-solve-actions';
@@ -13,8 +13,9 @@ import { TimerSolveActions } from '../timer-solve-actions/timer-solve-actions';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimerClock {
-  /** 時間を表示用文字列へ整形するサービス。 */
-  protected readonly cube = inject(CubeService);
+  /** 共通の時間表示をテンプレートへ提供する。 */
+  protected readonly formatTime = formatTime;
+
   /** Timerコンポーネントツリー内で共有する計測状態。 */
   protected readonly store = inject(TimerStore);
 }
