@@ -1,3 +1,4 @@
+import { formatTime, displayTime } from '../../../../core/cube/solve-time';
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
@@ -5,7 +6,6 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { CubeService } from '../../../../core/cube/cube';
 import { Solve } from '../../../../core/cube/cube.models';
 import { OwnerAvatar } from '../../../../shared/owner-avatar/owner-avatar';
 import { SolveActions } from '../solve-actions/solve-actions';
@@ -49,6 +49,9 @@ function dateFormatter(locale: string): Intl.DateTimeFormat {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolveRecord {
+  /** 共通の時間表示をテンプレートへ提供する。 */
+  protected readonly displayTime = displayTime;
+
   /** 親の履歴スコープで判定した選択可否。 */
   readonly selectable = input(false);
   /** 親の履歴スコープで保持する選択状態。 */
@@ -64,8 +67,6 @@ export class SolveRecord {
   /** この記録を末尾とするAo12。 */
   readonly ao12 = input<number>();
 
-  /** 計測記録の表示と更新を行うサービス。 */
-  protected readonly cube = inject(CubeService);
   /** 表示中の言語と変更通知を提供するサービス。 */
   private readonly i18n = inject(TranslocoService);
   /** 一覧を表示したまま切り替えられる現在の言語。 */
@@ -101,6 +102,6 @@ export class SolveRecord {
    */
   protected formatAverage(value: number | undefined): string {
     if (value === undefined) return '—';
-    return value === Infinity ? 'DNF' : this.cube.formatTime(value);
+    return value === Infinity ? 'DNF' : formatTime(value);
   }
 }

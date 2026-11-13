@@ -41,8 +41,12 @@ export abstract class UserDataRepository {
   /** @param preference 追加または更新するユーザー手順設定 */
   abstract putAlgorithmPreference(preference: AlgorithmPreference): Promise<void>;
 
-  /** @param caseKey 削除するユーザー手順設定のケースキー */
-  abstract deleteAlgorithmPreference(caseKey: string): Promise<void>;
+  /**
+   * 指定所有者のケース設定だけを削除する。
+   * @param caseKey 削除するケースの固定キー
+   * @param ownerId アカウント所有者。省略時はゲスト設定を対象とする。
+   */
+  abstract deleteAlgorithmPreference(caseKey: string, ownerId?: string): Promise<void>;
 }
 
 interface CubeRepsDatabase extends DBSchema {
@@ -87,7 +91,15 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
     const database = await this.database;
     const solves = await database.getAllFromIndex('solves', 'createdAt');
     const groups = await database.getAllFromIndex('groups', 'createdAt');
-    const algorithmPreferences = await database.getAll('algorithmPreferences');
+    const algorithmPreferences = (await database.getAll('algorithmPreferences')).map(
+      (preference) => ({
+        ...preference,
+        caseKey:
+          preference.ownerType === 'account' && preference.caseKey.startsWith('[')
+            ? (JSON.parse(preference.caseKey) as [string, string])[1]
+            : preference.caseKey,
+      }),
+    );
     return {
       solves: solves.sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
       accounts: await database.getAll('accounts'),
@@ -131,17 +143,20 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
     });
   }
 
-  /** ケース設定を既存データへ影響させず追加または更新する。 */
+  /** 所有者を含む保存キーへ変換して保存する。ゲストの既存キーは変更しない。 */
   putAlgorithmPreference(preference: AlgorithmPreference): Promise<void> {
     return this.enqueueWrite(async (database) => {
-      await database.put('algorithmPreferences', preference);
+      await database.put('algorithmPreferences', {
+        ...preference,
+        caseKey: algorithmStorageKey(preference.caseKey, preference.ownerId),
+      });
     });
   }
 
-  /** 指定ケースの設定だけを削除する。 */
-  deleteAlgorithmPreference(caseKey: string): Promise<void> {
+  /** 指定所有者のケース設定だけを削除する。ほかのアカウントの同じケースは維持する。 */
+  deleteAlgorithmPreference(caseKey: string, ownerId?: string): Promise<void> {
     return this.enqueueWrite(async (database) => {
-      await database.delete('algorithmPreferences', caseKey);
+      await database.delete('algorithmPreferences', algorithmStorageKey(caseKey, ownerId));
     });
   }
   /** 通常の書き込みを呼び出し順に実行する。 */
@@ -205,4 +220,9 @@ export class IndexedDbUserDataRepository extends UserDataRepository {
       },
     });
   }
+}
+
+/** ゲストの既存キーを維持し、アカウントの設定を所有者ごとに分離する永続化キー。 */
+export function algorithmStorageKey(caseKey: string, ownerId?: string): string {
+  return ownerId ? JSON.stringify([ownerId, caseKey]) : caseKey;
 }

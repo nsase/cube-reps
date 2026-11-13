@@ -9,6 +9,37 @@ describe('IndexedDbUserDataRepository', () => {
     localStorage.clear();
   });
   afterEach(() => vi.unstubAllGlobals());
+  it('同じケースの旧ゲスト設定と複数アカウント設定を再起動後も分離する', async () => {
+    const repository = new IndexedDbUserDataRepository();
+    const base = {
+      caseKey: 'OLL-01',
+      custom: [],
+      ownerType: 'guest' as const,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      schemaVersion: 3,
+    };
+    await repository.putAlgorithmPreference(base);
+    for (const ownerId of ['alice', 'bob']) {
+      await repository.putAlgorithmPreference({
+        ...base,
+        ownerType: 'account',
+        ownerId,
+        favoriteId: ownerId,
+      });
+    }
+    expect((await new IndexedDbUserDataRepository().load()).algorithmPreferences).toHaveLength(3);
+    await repository.deleteAlgorithmPreference('OLL-01', 'alice');
+    const restored = (await new IndexedDbUserDataRepository().load()).algorithmPreferences;
+    expect(restored).toEqual(
+      expect.arrayContaining([
+        base,
+        expect.objectContaining({ caseKey: 'OLL-01', ownerId: 'bob' }),
+      ]),
+    );
+    expect(restored).toHaveLength(2);
+  });
+
   it('F2Lのケース・スロットと既存カテゴリーを再起動後にも保持する', async () => {
     const repository = new IndexedDbUserDataRepository();
     const metadata = {

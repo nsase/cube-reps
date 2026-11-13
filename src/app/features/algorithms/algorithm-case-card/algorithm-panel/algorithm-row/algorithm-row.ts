@@ -1,9 +1,10 @@
+import { AlgorithmOwner } from '../algorithm-owner/algorithm-owner';
 import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import {
   AlgorithmLibraryService,
-  CaseAlgorithm,
+  DisplayedAlgorithm,
 } from '../../../../../core/algorithm/algorithm-library';
 import { AlgorithmCase } from '../../../../../core/cube/cube.models';
 import { ConfirmService } from '../../../../../shared/confirm-dialog/confirm.service';
@@ -12,7 +13,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 /** 1件の手順と、お気に入り・コピー・削除操作を表示するコンポーネント。 */
 @Component({
   selector: 'app-algorithm-row',
-  imports: [MatButtonModule, MatIconModule, TranslocoPipe],
+  imports: [AlgorithmOwner, MatButtonModule, MatIconModule, TranslocoPipe],
   templateUrl: './algorithm-row.html',
   styleUrl: './algorithm-row.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,9 +22,7 @@ export class AlgorithmRow {
   /** 手順が属するF2L・OLL・PLLケース。 */
   readonly item = input.required<AlgorithmCase>();
   /** 表示する手順。 */
-  readonly algorithm = input.required<CaseAlgorithm>();
-  /** 手順一覧内での表示順位。 */
-  readonly rank = input.required<number>();
+  readonly algorithm = input.required<DisplayedAlgorithm>();
 
   /** ケースごとの表示手順とユーザー設定を管理するサービス。 */
   protected readonly library = inject(AlgorithmLibraryService);
@@ -45,6 +44,7 @@ export class AlgorithmRow {
   protected remove(): void {
     const item = this.item();
     const algorithm = this.algorithm();
+    if (!this.library.canManageDisplayed(item, algorithm)) return;
     this.confirm
       .delete(
         this.i18n.translate('algorithms.removeTitle'),
@@ -55,7 +55,7 @@ export class AlgorithmRow {
         }),
       )
       .subscribe((confirmed) => {
-        if (confirmed) this.library.remove(item, algorithm.id);
+        if (confirmed) this.library.removeDisplayed(item, algorithm);
       });
   }
 }

@@ -1,3 +1,5 @@
+import { ScrambleGenerator } from '../scramble-generator.service';
+import { TimerStore } from '../timer.store';
 import { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
@@ -11,7 +13,11 @@ describe('TimerStats', () => {
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [TimerStats],
-      providers: [provideRouter([])],
+      providers: [
+        { provide: ScrambleGenerator, useValue: { createScramble: () => Promise.resolve('R U') } },
+        TimerStore,
+        provideRouter([]),
+      ],
     }).compileComponents();
     await TestBed.inject(CubeService).ready;
   });
@@ -114,7 +120,7 @@ describe('TimerStats', () => {
     await fixture.whenStable();
     expect(displayedValues(fixture)).toEqual(['1.00', '1.00', '—', '—', '—', '—']);
 
-    cube.activeSolveCategory.set('pll');
+    TestBed.inject(TimerStore).category.set('pll');
     fixture.detectChanges();
 
     expect(displayedValues(fixture)).toEqual(['4.00', '4.00', '—', '—', '—', '—']);

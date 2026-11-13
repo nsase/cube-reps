@@ -1,7 +1,9 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, Signal, computed, effect, inject, signal } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
-import { CubeOperationState } from './cube-operation-state';
-import { RecordGroup } from './cube.models';
+import { Subject } from 'rxjs';
+import { translateSignal } from '@jsverse/transloco';
+import { SolveService } from './solve.service';
+import { DisplayRecordGroup, RecordGroup } from './cube.models';
 import {
   USER_DATA_SCHEMA_VERSION,
   UserDataRepository,
@@ -9,7 +11,7 @@ import {
 import { DEFAULT_GROUP, DEFAULT_GROUPS } from './default-groups';
 import { remoteWins, isLatestSyncData } from './sync-policy';
 
-/** 記録グループの編集、所有権と同期後の所属整理を担当する。 */
+/** グループ台帳と共有の選択状態を所有し、編集・所有権・同期反映を担当する。 */
 @Injectable({ providedIn: 'root' })
 export class GroupService {
   /** 操作を許可する現在のアカウント。 */
@@ -17,15 +19,85 @@ export class GroupService {
   /** 操作結果の永続化先。 */
   private readonly userDataRepository = inject(UserDataRepository);
 
+  /** 未取得グループの表示と編集権限の判定に使用する記録。 */
+  private readonly solves = inject(SolveService);
+
+  /** 作成順に保持し、IndexedDBへ保存するユーザー作成グループ。 */
+  readonly userGroups = signal<RecordGroup[]>([]);
+  /** 別端末から取得した、台帳にないグループの表示名。 */
+  private readonly savedGroupLabel = translateSignal('ownership.savedGroup');
+  /**
+   *  有効なグループの一覧。
+   * リモートの計測記録がIndexedDBにないグループを参照している場合、group.idをグループ名として表示する。
+   */
+  readonly activeGroups = computed<DisplayRecordGroup[]>(() => {
+    const groups: DisplayRecordGroup[] = [
+      ...DEFAULT_GROUPS,
+      ...this.userGroups().filter((group) => !group.deletedAt),
+    ];
+    const knownGroupIds = new Set([...groups, ...this.userGroups()].map((group) => group.id));
+    for (const solve of this.solves.activeSolves()) {
+      if (!solve.groupId || knownGroupIds.has(solve.groupId)) continue;
+      knownGroupIds.add(solve.groupId);
+      groups.push({
+        id: solve.groupId,
+        name: `${this.savedGroupLabel()} (${solve.groupId})`,
+        createdAt: solve.createdAt,
+        updatedAt: solve.updatedAt,
+        ownerType: solve.ownerType,
+        ...(solve.ownerId ? { ownerId: solve.ownerId } : {}),
+        schemaVersion: USER_DATA_SCHEMA_VERSION,
+      });
+    }
+    return groups;
+  });
+  /** 現在の記録先グループID。 */
+  readonly activeGroupId = signal(this.loadActiveGroupId());
+  /** 現在の記録先グループ。 */
+  readonly activeGroup = computed(
+    () =>
+      this.activeGroups().find((group) => group.id === this.activeGroupId()) ??
+      this.activeGroups()[0],
+  );
+  /** アプリ定義グループIDに対応する、ロード完了後の翻訳済み表示名。 */
+  private readonly defaultGroupNames = new Map<string, Signal<string>>(
+    DEFAULT_GROUPS.flatMap((group) =>
+      'nameKey' in group ? [[group.id, translateSignal(group.nameKey)] as const] : [],
+    ),
+  );
+
+  /** グループの変更を永続化・同期へ通知する。 */
+  readonly groupChange$ = new Subject<RecordGroup>();
+
+  /** HistoryとTimerで共有する選択を端末に保存する。 */
+  constructor() {
+    effect(() => localStorage.setItem('cube-reps.active-group', this.activeGroupId()));
+  }
+
+  /**
+   * グループIDに対応する表示名を返す。
+   *
+   * @param groupId 検索するグループID
+   * @returns グループ名。見つからない場合は既定グループ名
+   */
+  groupName(groupId?: string): string {
+    const group = this.activeGroups().find(({ id }) => id === groupId) ?? DEFAULT_GROUP;
+    return this.defaultGroupNames.get(group.id)?.() ?? group.name;
+  }
+
+  /** @returns 保存済みの記録先ID。未設定時は既定グループID */
+  private loadActiveGroupId(): string {
+    const stored = localStorage.getItem('cube-reps.active-group');
+    return stored || DEFAULT_GROUP.id;
+  }
+
   /**
    * クラウドから受信したグループを端末へ反映する。
    * 別端末の変更を再起動後も保持するためIndexedDBへ保存し、受信した削除はStoreとIndexedDBから除去する。
+   * @returns 所属整理で削除を確認する台帳。変更がない場合も受信した削除を返す。
    */
-  async mergeGroups(
-    state: CubeOperationState,
-    remoteGroups: readonly RecordGroup[],
-  ): Promise<void> {
-    const currentGroups = state.userGroups();
+  async mergeGroups(remoteGroups: readonly RecordGroup[]): Promise<readonly RecordGroup[]> {
+    const currentGroups = this.userGroups();
     const groupsById = new Map(currentGroups.map((group) => [group.id, group]));
     const changedGroups: RecordGroup[] = [];
     for (const remote of remoteGroups) {
@@ -35,12 +107,11 @@ export class GroupService {
       changedGroups.push(remote);
     }
     if (changedGroups.length === 0) {
-      await this.reconcileDeletedGroups(state, remoteGroups);
-      return;
+      return remoteGroups;
     }
 
     // storeを更新
-    state.userGroups.set(
+    this.userGroups.set(
       [...groupsById.values()]
         .filter((group) => !group.deletedAt || group.pendingSync)
         .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
@@ -53,8 +124,7 @@ export class GroupService {
       ...deletedGroups.map((group) => this.userDataRepository.deleteRecordGroup(group.id)),
     ]);
 
-    // 削除済みグループに所属する計測記録を未分類グループへ移動する
-    await this.reconcileDeletedGroups(state, deletedGroups);
+    return deletedGroups;
   }
 
   /**
@@ -63,12 +133,12 @@ export class GroupService {
    *
    * @param group クラウドへの送信が成功したグループの版
    */
-  async groupSyncFinished(state: CubeOperationState, group: RecordGroup): Promise<void> {
-    const current = state.userGroups().find((g) => g.id === group.id);
+  async groupSyncFinished(group: RecordGroup): Promise<void> {
+    const current = this.userGroups().find((g) => g.id === group.id);
     if (!current || !isLatestSyncData(current, group)) return;
 
     const { pendingSync: _pending, ...saved } = group;
-    state.userGroups.update((groups) =>
+    this.userGroups.update((groups) =>
       saved.deletedAt
         ? groups.filter((g) => g.id !== saved.id)
         : groups.map((g) => (g.id === saved.id ? saved : g)),
@@ -78,7 +148,7 @@ export class GroupService {
   }
 
   /** 選択した未紐づけ記録グループを現在のアカウントへ移し、保存後に同期キューへ渡す。 */
-  assignGroupToAccount(state: CubeOperationState, group: RecordGroup, accountId: string): void {
+  assignGroupToAccount(group: RecordGroup, accountId: string): void {
     // ゲスト記録以外は移行できない。アカウント間の移行はコピーで行う。
     if (group.ownerType !== 'guest') throw new Error('Invalid transfer source');
 
@@ -90,12 +160,12 @@ export class GroupService {
       ownerId: accountId,
       pendingSync: true,
     };
-    state.userGroups.update((groups) =>
+    this.userGroups.update((groups) =>
       groups.map((item) => (item.id === group.id ? updated : item)),
     );
 
     // 記録グループの変更を通知（DBへの保存などを行う）
-    state.groupChange$.next(updated);
+    this.groupChange$.next(updated);
   }
 
   /**
@@ -104,7 +174,7 @@ export class GroupService {
    * @param name 作成するグループ名
    * @returns 作成したグループ。空白名の場合は`undefined`
    */
-  addGroup(state: CubeOperationState, name: string): RecordGroup | undefined {
+  addGroup(name: string): RecordGroup | undefined {
     // グループを追加
     const trimmedName = name.trim();
     if (!trimmedName) return undefined;
@@ -118,13 +188,13 @@ export class GroupService {
       ...(this.auth.user() ? { ownerId: this.auth.user()!.uid, pendingSync: true } : {}),
       schemaVersion: USER_DATA_SCHEMA_VERSION,
     };
-    state.userGroups.update((groups) => [...groups, group]);
+    this.userGroups.update((groups) => [...groups, group]);
 
     // 作成したグループをアクティブな記録先に設定
-    state.activeGroupId.set(group.id);
+    this.activeGroupId.set(group.id);
 
     // グループの変更を通知（DBへの保存などを行う）
-    state.groupChange$.next(group);
+    this.groupChange$.next(group);
     return group;
   }
 
@@ -135,14 +205,14 @@ export class GroupService {
    * @param name 新しいグループ名
    * @returns 名前を変更できた場合は`true`
    */
-  renameGroup(state: CubeOperationState, id: string, name: string): boolean {
+  renameGroup(id: string, name: string): boolean {
     // 名前が空だった場合やデフォルトグループだった場合は名前を変更しない
     const trimmedName = name.trim();
     if (!trimmedName || DEFAULT_GROUPS.some((group) => group.id === id)) return false;
 
     // ほかアカウントのデータが混ざっている場合は変更しない(Guestデータの場合は変更可能)
-    const current = state.userGroups().find((group) => group.id === id);
-    if (!current || !this.canManageGroup(state, id)) return false;
+    const current = this.userGroups().find((group) => group.id === id);
+    if (!current || !this.canManageGroup(id)) return false;
 
     // グループ名を更新
     const updated = {
@@ -151,74 +221,22 @@ export class GroupService {
       name: trimmedName,
       updatedAt: new Date().toISOString(),
     };
-    state.userGroups.update((groups) => groups.map((group) => (group.id === id ? updated : group)));
+    this.userGroups.update((groups) => groups.map((group) => (group.id === id ? updated : group)));
 
     // グループの変更を通知（DBへの保存などを行う）
-    state.groupChange$.next(updated);
+    this.groupChange$.next(updated);
     return true;
   }
 
-  /**
-   * 指定したユーザー作成グループを削除し、所属する記録を未分類へ移動する。既定グループは削除しない。
-   * グループ整理で計測記録を失わず、削除後も履歴と集計から参照できる状態を守る。
-   *
-   * @param id 削除対象のグループID
-   */
-  removeGroup(state: CubeOperationState, id: string): void {
-    // 既定グループは削除しない
-    if (DEFAULT_GROUPS.some((group) => group.id === id)) return;
-
-    // ほかアカウントのデータが混ざっている場合は削除しない(Guestデータの場合は削除可能)
-    if (!this.canManageGroup(state, id)) return;
-
-    // 削除対象グループを取得（取得できない場合は削除処理は中止）
-    const group = state.userGroups().find((group) => group.id === id);
-    if (!group) return;
-
-    // 削除するグループに属する計測記録を「未分類」へ移動する
-    const now = new Date().toISOString();
-    const affectedSolves = state
-      .storedSolves()
-      .filter((solve) => solve.groupId === id)
-      .map((solve) => ({
-        ...solve,
-        groupId: DEFAULT_GROUP.id,
-        updatedAt: now,
-        pendingSync: solve.ownerType === 'account',
-      }));
-    const affectedById = new Map(affectedSolves.map((solve) => [solve.id, solve]));
-    state.storedSolves.update((solves) =>
-      solves.map((solve) => affectedById.get(solve.id) ?? solve),
-    );
-
-    // グループを削除
-    const deleted = {
-      ...group,
-      updatedAt: now,
-      deletedAt: now,
-      pendingSync: group.ownerType === 'account',
-    };
-    state.userGroups.update((groups) => groups.map((item) => (item.id === id ? deleted : item)));
-
-    // 計測記録の変更を通知（DBへの保存などを行う）
-    state.solveChange$.next(affectedSolves);
-
-    // グループの変更を通知（DBへの保存などを行う）
-    state.groupChange$.next(deleted);
-
-    // 削除したグループが現在のアクティブグループだった場合は、未分類を選択する
-    if (state.activeGroupId() === id) state.activeGroupId.set(DEFAULT_GROUP.id);
-  }
-
   /** 別アカウントの記録を間接的にも変更しないグループ操作だけを許可する。 */
-  canManageGroup(state: CubeOperationState, id: string): boolean {
-    const group = state.userGroups().find((group) => group.id === id);
+  canManageGroup(id: string): boolean {
+    const group = this.userGroups().find((group) => group.id === id);
     return Boolean(
       group &&
       !group.deletedAt &&
       (group.ownerType === 'guest' ||
         Boolean(group.ownerId && group.ownerId === this.auth.user()?.uid)) &&
-      state
+      this.solves
         .activeSolves()
         .filter((solve) => solve.groupId === id)
         .every(
@@ -228,66 +246,5 @@ export class GroupService {
               Boolean(solve.ownerId && solve.ownerId === this.auth.user()?.uid)),
         ),
     );
-  }
-
-  /** GroupとSolveの取得成功後、現在のアカウントの存在しない所属先を整理する。
-   * 同一アカウントで複数端末から同時に追加・削除する操作は保証対象外とする。
-   * @param ownerId 今回の一覧取得が完了したアカウント
-   */
-  async reconcileMissingGroups(state: CubeOperationState, ownerId: string): Promise<void> {
-    const knownIds = new Set(
-      [...DEFAULT_GROUPS, ...state.userGroups().filter((group) => !group.deletedAt)].map(
-        (group) => group.id,
-      ),
-    );
-    const missingGroupIds = new Set(
-      state
-        .storedSolves()
-        .filter(
-          (solve) => solve.ownerType === 'account' && solve.ownerId === ownerId && !solve.deletedAt,
-        )
-        .map((solve) => solve.groupId)
-        .filter((groupId): groupId is string => !!groupId && !knownIds.has(groupId)),
-    );
-    await this.moveSolvesToDefault(state, missingGroupIds, ownerId);
-  }
-
-  /** 削除を確認できたグループの所属を整理する。起動時には未取得を削除と判断しない。
-   * @param deletedGroup 削除状態を確認するグループ台帳
-   */
-  async reconcileDeletedGroups(
-    state: CubeOperationState,
-    deletedGroup: readonly RecordGroup[] = state.userGroups(),
-  ): Promise<void> {
-    const ids = new Set(deletedGroup.filter((group) => group.deletedAt).map((group) => group.id));
-    await this.moveSolvesToDefault(state, ids);
-  }
-
-  /** 対象グループの有効な記録だけを未分類へ移し、削除済み記録の再保存を防ぐ。
-   * @param groupIds 所属を解除するグループID
-   * @param ownerId 不明な所属を整理する場合の対象アカウント
-   */
-  private async moveSolvesToDefault(
-    state: CubeOperationState,
-    groupIds: ReadonlySet<string>,
-    ownerId?: string,
-  ): Promise<void> {
-    const moved = state
-      .storedSolves()
-      .filter(
-        (solve) =>
-          !solve.deletedAt &&
-          solve.groupId !== DEFAULT_GROUP.id &&
-          !!solve.groupId &&
-          groupIds.has(solve.groupId) &&
-          (!ownerId || (solve.ownerType === 'account' && solve.ownerId === ownerId)),
-      )
-      .map((solve) => ({ ...solve, groupId: DEFAULT_GROUP.id }));
-    if (moved.length) {
-      const byId = new Map(moved.map((solve) => [solve.id, solve]));
-      state.storedSolves.update((solves) => solves.map((solve) => byId.get(solve.id) ?? solve));
-      await Promise.all(moved.map((solve) => this.userDataRepository.putSolve(solve)));
-    }
-    if (groupIds.has(state.activeGroupId())) state.activeGroupId.set(DEFAULT_GROUP.id);
   }
 }

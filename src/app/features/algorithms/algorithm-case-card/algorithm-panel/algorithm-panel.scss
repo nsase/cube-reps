@@ -22,7 +22,7 @@ $muted: var(--text-muted-color);
 
 .favorite-algorithm {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
+  grid-template-columns: 24px minmax(0, 1fr);
   align-items: center;
   gap: 6px;
   min-width: 0;
@@ -37,13 +37,6 @@ $muted: var(--text-muted-color);
     background: none;
     overflow-wrap: anywhere;
   }
-}
-
-.rank {
-  color: $muted;
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-small);
-  text-align: center;
 }
 
 .algorithm-list {

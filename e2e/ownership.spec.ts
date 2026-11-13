@@ -319,3 +319,68 @@ test(
     await expectNoHorizontalOverflow(page);
   },
 );
+
+test('保存済みの全所有者の手順をログアウト・再読込後も表示し、本人以外は削除できない', async ({
+  page,
+}) => {
+  await page.goto('/#/algorithms/oll');
+  await page.locator('app-algorithm-tools input').fill('01');
+  await expect(page.getByPlaceholder('Enter a new algorithm')).toBeVisible();
+  await page.evaluate(async () => {
+    const request = indexedDB.open('cube-reps');
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const transaction = database.transaction(['algorithmPreferences', 'accounts'], 'readwrite');
+    for (const [ownerId, name, notation] of [
+      ['target', 'Target User', 'R2 U2 R2 U2 R2 U2'],
+      ['other', 'Other User', 'F2 U2 F2 U2 F2 U2'],
+    ]) {
+      transaction.objectStore('accounts').put({ uid: ownerId, displayName: name });
+      transaction.objectStore('algorithmPreferences').put({
+        caseKey: JSON.stringify([ownerId, 'OLL-01']),
+        custom: [{ id: ownerId, notation, builtIn: false }],
+        favoriteId: ownerId,
+        ownerType: 'account',
+        ownerId,
+        schemaVersion: 3,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+    }
+    await new Promise<void>((resolve, reject) => {
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+    database.close();
+  });
+  await seedSession(page);
+  await page.reload();
+  await page.locator('app-algorithm-tools input').fill('01');
+  const mine = page.locator('app-algorithm-row').filter({ hasText: 'R2 U2 R2 U2 R2 U2' });
+  const other = page.locator('app-algorithm-row').filter({ hasText: 'F2 U2 F2 U2 F2 U2' });
+  await expect(mine.getByRole('button', { name: 'Delete custom algorithm' })).toBeEnabled();
+  await expect(other.getByRole('button', { name: 'Delete custom algorithm' })).toBeDisabled();
+  await expect(page.locator('app-algorithm-row.preferred')).toHaveCount(1);
+  await expect(page.locator('app-algorithm-row .star.active')).toHaveCount(1);
+  await expect(mine).toHaveClass(/preferred/);
+  await expect(other).not.toHaveClass(/preferred/);
+  await page.getByTestId('profile-menu-trigger').click();
+  await page.getByRole('menuitem', { name: 'Sign out', exact: true }).click();
+  for (const row of [mine, other]) {
+    await expect(row).toBeVisible();
+    await expect(row.getByRole('button', { name: 'Delete custom algorithm' })).toBeDisabled();
+    await expect(row.getByRole('button', { name: 'Copy algorithm', exact: true })).toBeEnabled();
+  }
+  await page.reload();
+  await page.locator('app-algorithm-tools input').fill('01');
+  await expect(mine.getByRole('img', { name: /Target User/ })).toBeVisible();
+  await expect(other.getByRole('img', { name: /Other User/ })).toBeVisible();
+  await expect(page.locator('app-algorithm-row.preferred')).toHaveCount(1);
+  await expect(page.locator('app-algorithm-row .star.active')).toHaveCount(1);
+  await expect(mine).not.toHaveClass(/preferred/);
+  await expect(other).not.toHaveClass(/preferred/);
+  await expect(mine.getByRole('button', { name: 'Delete custom algorithm' })).toBeDisabled();
+  await expect(other.getByRole('button', { name: 'Delete custom algorithm' })).toBeDisabled();
+});

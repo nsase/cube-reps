@@ -65,6 +65,11 @@ test('TimerとHistoryで選択中のグループを共有する', async ({ page 
   await page.getByRole('link', { name: /Timer/ }).click();
 
   await expect(page.locator('.record-context select')).toHaveValue('unclassified');
+  await page.locator('.record-context select').selectOption('competition');
+  await page.getByRole('link', { name: 'History', exact: true }).click();
+  await expect(historyGroup).toHaveValue('competition');
+  await page.reload();
+  await expect(historyGroup).toHaveValue('competition');
 });
 
 test('記録グループの削除後も所属記録を未分類で表示する', async ({ page }) => {
@@ -148,6 +153,12 @@ test('履歴のスクランブルを引き継いでタイマーでリトライ�
 
   await expect(page).toHaveURL(/#\/timer$/);
   await expect(page.locator('app-timer-scramble p')).toHaveText(scramble);
+  /** リトライ指定を消費した後の通常遷移では、新しい計測へ戻る。 */
+  await page.getByRole('link', { name: 'History', exact: true }).click();
+  await page.getByRole('link', { name: /Timer/ }).click();
+  await expect(page.getByTestId('timer-scramble-refresh')).toBeEnabled({ timeout: 15_000 });
+  await expect(page.getByRole('radio', { name: /3×3/ })).toBeChecked();
+  await expect(page.locator('app-timer-scramble p')).not.toHaveText(scramble);
 });
 
 test(
@@ -535,13 +546,29 @@ test(
       await expect
         .poll(() => page.evaluate(() => document.documentElement.scrollHeight))
         .toBeLessThanOrEqual(viewport.height);
-      /** ページだけが収まり、パネルのoverflowで内容が隠れる退行も防ぐ。 */
-      const panel = (await page.locator('app-timer-scramble').boundingBox())!;
-      for (const selector of ['app-timer-scramble p', 'app-timer-scramble app-solve-pattern']) {
-        const content = (await page.locator(selector).boundingBox())!;
-        expect(content.y).toBeGreaterThanOrEqual(panel.y);
-        expect(content.y + content.height).toBeLessThanOrEqual(panel.y + panel.height);
-      }
+      /**
+       * 遷移後の配置が整うまで、親子の矩形を同じ描画時点で比較する。
+       * パネルのoverflowで内容が隠れたままの場合は成功させない。
+       */
+      await expect(async () => {
+        const bounds = await page.locator('app-timer-scramble').evaluate((panel) => {
+          const panelBox = panel.getBoundingClientRect();
+          return {
+            top: panelBox.top,
+            bottom: panelBox.bottom,
+            children: Array.from(panel.querySelectorAll('p, app-solve-pattern')).map((child) => {
+              const box = child.getBoundingClientRect();
+              return { top: box.top, bottom: box.bottom, height: box.height };
+            }),
+          };
+        });
+        expect(bounds.children).toHaveLength(2);
+        for (const content of bounds.children) {
+          expect(content.height).toBeGreaterThan(0);
+          expect(content.top).toBeGreaterThanOrEqual(bounds.top);
+          expect(content.bottom).toBeLessThanOrEqual(bounds.bottom);
+        }
+      }).toPass({ timeout: 5000 });
     }
     if (viewport.width >= 1024 && viewport.width / viewport.height >= 4 / 3) {
       const clock = (await page.locator('app-timer-clock').boundingBox())!;

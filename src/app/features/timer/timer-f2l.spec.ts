@@ -1,3 +1,5 @@
+import { ScrambleGenerator } from './scramble-generator.service';
+import { SolveRetryService } from '../../core/cube/solve-retry.service';
 import { TestBed } from '@angular/core/testing';
 import { F2L_CASES } from '../../core/algorithm/algorithm-cases';
 import { f2lCaseForSlot } from '../../core/algorithm/algorithm-cases/f2l/f2l-case';
@@ -7,8 +9,8 @@ import { TimerStore } from './timer.store';
 /** F2Lの計測条件がスクランブル・保存・再計測を通して一致することを検証する。 */
 describe('Timer F2L', () => {
   beforeEach(() => {
-    vi.spyOn(CubeService.prototype, 'createScramble').mockResolvedValue('R U');
-    TestBed.configureTestingModule({ providers: [TimerStore] });
+    vi.spyOn(ScrambleGenerator.prototype, 'createScramble').mockResolvedValue('R U');
+    TestBed.configureTestingModule({ providers: [ScrambleGenerator, TimerStore] });
   });
   afterEach(() => vi.restoreAllMocks());
 
@@ -106,7 +108,7 @@ describe('Timer F2L', () => {
       caseId: 'F2L-41',
       f2lSlot: 'BR',
     });
-    cube.prepareRetry(solve);
+    TestBed.inject(SolveRetryService).prepareRetry(solve);
     const store = TestBed.inject(TimerStore);
     expect(store.category()).toBe('f2l');
     expect(store.selectedCase()).toBe(40);

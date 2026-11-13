@@ -55,10 +55,6 @@ describe('HistoryProgressChartStore', () => {
     for (const time of [1000, 2000, 3000, 4000, 5000]) {
       cube.addSolve(time, 'R U', 'f2l', '01', { caseId: 'F2L-01', f2lSlot: 'FR' });
     }
-    cube.activeSolveCategory.set('f2l');
-    expect(cube.activeGroupSolves()).toHaveLength(5);
-    expect(cube.mean()).toBe(3000);
-    expect(cube.ao5()).toBe(3000);
     TestBed.inject(HistoryStore).selectedCategory.set('f2l');
     const chart = TestBed.inject(HistoryProgressChartStore);
     expect(chart.points()).toHaveLength(5);

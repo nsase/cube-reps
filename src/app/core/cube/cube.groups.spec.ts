@@ -69,7 +69,9 @@ describe('CubeService group synchronization', () => {
     const source = cube.addGroup('Practice')!;
     TestBed.inject(AuthService).user.set(account);
     const created = cube.addSolve(1234, 'R', 'full');
-    expect(cube.activeGroupSolves()).toEqual([created]);
+    expect(cube.activeSolves().filter((solve) => solve.groupId === cube.activeGroupId())).toEqual([
+      created,
+    ]);
     expect(cube.userGroups()).toEqual([
       expect.objectContaining({ id: source.id, ownerId: account.uid }),
     ]);

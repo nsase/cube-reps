@@ -1,3 +1,4 @@
+import { statTime } from '../../core/cube/solve-time';
 import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { CubeService } from '../../core/cube/cube';
@@ -142,6 +143,6 @@ export class HistoryStore {
   private averageAt(solves: readonly Solve[], index: number, count: number): number | undefined {
     return solves.length - index < count
       ? undefined
-      : average(solves.slice(index, index + count).map((solve) => this.cube.statTime(solve)));
+      : average(solves.slice(index, index + count).map((solve) => statTime(solve)));
   }
 }

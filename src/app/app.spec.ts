@@ -1,3 +1,4 @@
+import { ScrambleGenerator } from './features/timer/scramble-generator.service';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { App } from './app';
@@ -12,7 +13,7 @@ import { TimerStore } from './features/timer/timer.store';
 describe('App', () => {
   beforeEach(async () => {
     localStorage.clear();
-    vi.spyOn(CubeService.prototype, 'createScramble').mockResolvedValue('R U');
+    vi.spyOn(ScrambleGenerator.prototype, 'createScramble').mockResolvedValue('R U');
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [App],

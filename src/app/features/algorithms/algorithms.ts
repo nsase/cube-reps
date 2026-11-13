@@ -1,7 +1,11 @@
+import { AlgorithmSyncService } from '../../core/firestore/algorithm-sync.service';
+import { AlgorithmTransfer } from './algorithm-transfer/algorithm-transfer';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
+  untracked,
   inject,
   linkedSignal,
   signal,
@@ -20,7 +24,7 @@ import { AlgorithmTools } from './algorithm-tools/algorithm-tools';
  */
 @Component({
   selector: 'app-algorithms',
-  imports: [AlgorithmTools, AlgorithmCaseCard, MatCardModule, TranslocoPipe],
+  imports: [AlgorithmTransfer, AlgorithmTools, AlgorithmCaseCard, MatCardModule, TranslocoPipe],
   templateUrl: './algorithms.html',
   styleUrl: './algorithms.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +39,17 @@ export class Algorithms {
   protected readonly kind = computed(() => {
     const kind = this.routeData()?.['kind'];
     return kind === 'F2L' || kind === 'OLL' ? kind : 'PLL';
+  });
+  /** 種類別の同期境界。 */
+  private readonly sync = inject(AlgorithmSyncService);
+  /** 同一コンポーネント内の種類切替でも遷移先だけを取得する。 */
+  private readonly syncPage = effect((onCleanup) => {
+    const kind = this.kind();
+    untracked(() => {
+      this.sync.activeKind.set(kind);
+      void this.sync.refresh(kind);
+    });
+    onCleanup(() => this.sync.activeKind.set(null));
   });
   /** ケース一覧の検索文字列。 */
   protected readonly query = signal('');

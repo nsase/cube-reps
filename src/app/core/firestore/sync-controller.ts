@@ -11,6 +11,10 @@ export type SyncPhase = 'signed-out' | 'syncing' | 'synced' | 'offline' | 'pendi
 export interface SyncAdapter<T extends SyncMetadata, M> {
   /** 他の同期処理から取得を制御する場合はfalse。送信と認証状態の監視は継続する。 */
   autoPull?: boolean;
+  /** オンライン復帰時だけ取得範囲を画面に合わせて制限する。 */
+  pullOnReconnect?: () => boolean;
+  /** ページ外の種類も含め、接続復帰時に失敗した送信を再試行する。 */
+  retryOnReconnect?: boolean;
   /** 依存データの取得成功を待つ。失敗時は本体の取得・統合を行わない。 */
   beforePull?: () => Promise<boolean>;
   /** 永続化されたローカル変更。 */
@@ -89,7 +93,18 @@ export class SyncController<T extends SyncMetadata, M> {
       this.phase.set('offline');
       return;
     }
-    if (this.adapter.autoPull !== false) untracked(() => void this.pull(user.uid, requestId));
+    if (this.adapter.retryOnReconnect) {
+      const failed = this.failedMutations.splice(0);
+      untracked(() => {
+        for (const mutation of failed) void this.upload(user.uid, mutation);
+      });
+    }
+    if (
+      this.adapter.autoPull !== false &&
+      untracked(() => this.adapter.pullOnReconnect?.() ?? true)
+    )
+      untracked(() => void this.pull(user.uid, requestId));
+    else this.setSettledPhase(user.uid);
   });
 
   /** CubeServiceのローカル操作を、認証が維持されている間だけFirestoreへ転送する。 */
