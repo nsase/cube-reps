@@ -1,19 +1,19 @@
 <div>
-  {{ 'common.best' | transloco }}<strong>{{ cube.formatTime(cube.best()) }}</strong>
+  {{ 'common.best' | transloco }}<strong>{{ formatTime(store.best()) }}</strong>
 </div>
 <div>
-  {{ 'common.mean' | transloco }}<strong>{{ formatStatistic(cube.mean()) }}</strong>
+  {{ 'common.mean' | transloco }}<strong>{{ formatStatistic(store.mean()) }}</strong>
 </div>
 <div>
-  {{ 'common.ao5' | transloco }}<strong>{{ formatStatistic(cube.ao5()) }}</strong>
+  {{ 'common.ao5' | transloco }}<strong>{{ formatStatistic(store.ao5()) }}</strong>
 </div>
 <div>
-  {{ 'common.ao12' | transloco }}<strong>{{ formatStatistic(cube.ao12()) }}</strong>
+  {{ 'common.ao12' | transloco }}<strong>{{ formatStatistic(store.ao12()) }}</strong>
 </div>
 <div>
-  {{ 'common.ao50' | transloco }}<strong>{{ formatStatistic(cube.ao50()) }}</strong>
+  {{ 'common.ao50' | transloco }}<strong>{{ formatStatistic(store.ao50()) }}</strong>
 </div>
 <div>
-  {{ 'common.ao100' | transloco }}<strong>{{ formatStatistic(cube.ao100()) }}</strong>
+  {{ 'common.ao100' | transloco }}<strong>{{ formatStatistic(store.ao100()) }}</strong>
 </div>
 <a routerLink="/history">{{ 'timer.allRecords' | transloco }}</a>

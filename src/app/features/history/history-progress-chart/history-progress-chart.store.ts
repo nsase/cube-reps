@@ -1,5 +1,5 @@
+import { formatTime, statTime } from '../../../core/cube/solve-time';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { CubeService } from '../../../core/cube/cube';
 import { average } from '../../../core/cube/cube-statistics';
 import { HistoryStore } from '../history.store';
 
@@ -26,8 +26,6 @@ export interface ProgressPoint {
 /** 履歴グラフの表示範囲、集計値、SVG座標をチャート内で共有する。 */
 @Injectable()
 export class HistoryProgressChartStore {
-  /** タイムの補正と表示形式を提供するサービス。 */
-  private readonly cube = inject(CubeService);
   /** Historyコンポーネントツリー内で共有する画面状態。 */
   private readonly historyStore = inject(HistoryStore);
   /** グラフへ表示する記録数。 */
@@ -52,9 +50,9 @@ export class HistoryProgressChartStore {
     const count = range === 'all' ? solves.length : Math.min(range, solves.length);
     let best = Infinity;
     for (let index = solves.length - 1; index >= count; index--) {
-      best = Math.min(best, this.cube.statTime(solves[index]));
+      best = Math.min(best, statTime(solves[index]));
     }
-    const times = solves.slice(0, count + 11).map((solve) => this.cube.statTime(solve));
+    const times = solves.slice(0, count + 11).map((solve) => statTime(solve));
     const points: ProgressPoint[] = [];
     for (let index = count - 1; index >= 0; index--) {
       const result = times[index];
@@ -156,7 +154,7 @@ export class HistoryProgressChartStore {
   /** 集計値をタイム、DNF、未集計記号のいずれかへ整形する。 */
   formatValue(value: number | undefined): string {
     if (value === undefined) return '—';
-    return value === Infinity ? 'DNF' : this.cube.formatTime(value);
+    return value === Infinity ? 'DNF' : formatTime(value);
   }
 
   /** 新しい順のタイム列から、対象点とそれ以前の記録でAverageを求める。 */

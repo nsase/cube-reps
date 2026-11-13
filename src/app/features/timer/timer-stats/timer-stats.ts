@@ -1,6 +1,7 @@
+import { formatTime } from '../../../core/cube/solve-time';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CubeService } from '../../../core/cube/cube';
+import { TimerStore } from '../timer.store';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 /** 現在の記録グループの集計値と履歴への導線を表示するコンポーネント。 */
@@ -12,12 +13,15 @@ import { TranslocoPipe } from '@jsverse/transloco';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TimerStats {
-  /** 現在の記録グループの集計値を提供するサービス。 */
-  protected readonly cube = inject(CubeService);
+  /** 共通の時間表示をテンプレートへ提供する。 */
+  protected readonly formatTime = formatTime;
+
+  /** Timerのカテゴリーと記録先に応じた画面スコープの集計。 */
+  protected readonly store = inject(TimerStore);
 
   /** 集計結果を未計測・DNF・タイムのいずれかで表示する。 */
   protected formatStatistic(value: number | undefined): string {
     if (value === undefined) return '—';
-    return value === Infinity ? 'DNF' : this.cube.formatTime(value);
+    return value === Infinity ? 'DNF' : formatTime(value);
   }
 }

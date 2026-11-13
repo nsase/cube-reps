@@ -1,3 +1,4 @@
+import { ScrambleGenerator } from './scramble-generator.service';
 import { ChangeDetectionStrategy, Component, HostListener, inject } from '@angular/core';
 import { TimerClock } from './timer-clock/timer-clock';
 import { TimerScramble } from './timer-scramble/timer-scramble';
@@ -9,7 +10,7 @@ import { TimerStore } from './timer.store';
 @Component({
   selector: 'app-timer',
   imports: [TimerSettings, TimerScramble, TimerClock, TimerStats],
-  providers: [TimerStore],
+  providers: [TimerStore, ScrambleGenerator],
   templateUrl: './timer.html',
   styleUrl: './timer.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

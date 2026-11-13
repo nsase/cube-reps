@@ -1,3 +1,4 @@
+import { ScrambleGenerator } from '../scramble-generator.service';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { CubeService } from '../../../core/cube/cube';
@@ -17,7 +18,11 @@ describe('TimerSolveActions', () => {
     TestBed.resetTestingModule();
     await TestBed.configureTestingModule({
       imports: [TimerSolveActions],
-      providers: [TimerStore, { provide: ConfirmService, useValue: confirm }],
+      providers: [
+        { provide: ScrambleGenerator, useValue: { createScramble: () => Promise.resolve('R U') } },
+        TimerStore,
+        { provide: ConfirmService, useValue: confirm },
+      ],
     }).compileComponents();
   });
 

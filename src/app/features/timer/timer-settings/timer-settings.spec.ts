@@ -1,3 +1,4 @@
+import { ScrambleGenerator } from '../scramble-generator.service';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { TranslocoService } from '@jsverse/transloco';
@@ -6,7 +7,12 @@ import { TimerSettings } from './timer-settings';
 
 describe('TimerSettings', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ providers: [TimerStore] });
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: ScrambleGenerator, useValue: { createScramble: () => Promise.resolve('R U') } },
+        TimerStore,
+      ],
+    });
   });
 
   it('モードを単一選択し、ドリルのケース選択欄を切り替える', async () => {

@@ -1,157 +1,54 @@
+import { Injectable, inject } from '@angular/core';
 import { GroupService } from './group.service';
 import { SolveService } from './solve.service';
-import { DEFAULT_GROUP, DEFAULT_GROUPS } from './default-groups';
-import { Injectable, Signal, computed, effect, inject, signal } from '@angular/core';
-import { translateSignal } from '@jsverse/transloco';
-import { Subject } from 'rxjs';
-import { AccountStore } from '../account.store';
-import { AuthService } from '../auth/auth.service';
-import { average, mean } from './cube-statistics';
-import { DisplayRecordGroup, Penalty, RecordGroup, Solve, SolveCategory } from './cube.models';
-import {
-  USER_DATA_SCHEMA_VERSION,
-  UserDataRepository,
-} from '../local-storage/user-data-repository';
+import { GroupMembershipService } from './group-membership.service';
+import { UserDataInitializer } from './user-data-initializer.service';
+import { Penalty, RecordGroup, Solve, SolveCategory } from './cube.models';
 
-/** 計測記録とグループの状態、派生値、初期復元を管理するストア。 */
+/** 共有データへの窓口。状態の所有と操作は各ドメインへ、初期復元は専用の調整役へ委譲する。 */
 @Injectable({ providedIn: 'root' })
 export class CubeService {
-  /** グループ操作を担当するサービス。 */
+  /** グループの状態と操作の所有者。 */
   private readonly groups = inject(GroupService);
-  /** 計測記録操作を担当するサービス。 */
+  /** 記録の状態と操作の所有者。 */
   private readonly solves = inject(SolveService);
+  /** グループと記録にまたがる所属操作の調整役。 */
+  private readonly membership = inject(GroupMembershipService);
+  /** 端末データの初期復元を一度だけ実行する。 */
+  private readonly initialization = inject(UserDataInitializer);
 
-  /** 新規の計測記録の所有者と表示対象アカウントを決める認証状態。 */
-  private readonly auth = inject(AuthService);
-
-  /** アカウント情報を保存するストア */
-  private readonly accountStore = inject(AccountStore);
-
-  /** 同期対象ユーザーデータの永続化を画面とドメイン処理から分離するRepository。 */
-  private readonly userDataRepository = inject(UserDataRepository);
-
-  /** データのロードが完了し、データが更新可能な状態になった */
-  readonly ready = this.initializeStorage();
-
-  /** データのロードが完了し、データが更新可能な状態になった */
-  readonly storageReady = signal(false);
-
-  /** tombstoneを含む、ブラウザ内の全所有者の計測記録。 */
-  readonly storedSolves = signal<readonly Solve[]>([]);
-  /** 認証状態に関係なく公開する、新しい順のブラウザ内履歴。削除済みのものは含まない。 */
-  readonly activeSolves = computed(() =>
-    this.storedSolves()
-      .filter((solve) => !solve.deletedAt)
-      .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
-  );
-  /** アカウント未紐づけで、選択移行の対象になる計測記録。 */
-  readonly guestSolves = computed(() =>
-    this.storedSolves().filter((solve) => solve.ownerType === 'guest' && !solve.deletedAt),
-  );
-  /** 現在ログイン中のアカウントが所有する、未削除の計測記録。 */
-  readonly accountSolves = computed(() => {
-    const accountId = this.auth.user()?.uid;
-    if (!accountId) return [];
-    return this.storedSolves().filter(
-      (solve) => solve.ownerType === 'account' && solve.ownerId === accountId && !solve.deletedAt,
-    );
-  });
-  /** 現在のグループに属する計測記録。 */
-  readonly activeGroupSolves = computed(() =>
-    this.activeSolves().filter(
-      (solve) =>
-        (solve.groupId || DEFAULT_GROUP.id) === this.activeGroupId() &&
-        solve.category === this.activeSolveCategory(),
-    ),
-  );
-  /** 現在のグループに属するDNF以外の記録。 */
-  readonly validActiveGroupSolves = computed(() =>
-    this.activeGroupSolves().filter((solve) => solve.penalty !== 'DNF'),
-  );
-
-  /** 作成順に保持し、IndexedDBへ保存するユーザー作成グループ。 */
-  readonly userGroups = signal<RecordGroup[]>([]);
-  /** 別端末から取得した、台帳にないグループの表示名。 */
-  private readonly savedGroupLabel = translateSignal('ownership.savedGroup');
-  /**
-   *  有効なグループの一覧。
-   * リモートの計測記録がIndexedDBにないグループを参照している場合、group.idをグループ名として表示する。
-   */
-  readonly activeGroups = computed<DisplayRecordGroup[]>(() => {
-    const groups: DisplayRecordGroup[] = [
-      ...DEFAULT_GROUPS,
-      ...this.userGroups().filter((group) => !group.deletedAt),
-    ];
-    const knownGroupIds = new Set([...groups, ...this.userGroups()].map((group) => group.id));
-    for (const solve of this.activeSolves()) {
-      if (!solve.groupId || knownGroupIds.has(solve.groupId)) continue;
-      knownGroupIds.add(solve.groupId);
-      groups.push({
-        id: solve.groupId,
-        name: `${this.savedGroupLabel()} (${solve.groupId})`,
-        createdAt: solve.createdAt,
-        updatedAt: solve.updatedAt,
-        ownerType: solve.ownerType,
-        ...(solve.ownerId ? { ownerId: solve.ownerId } : {}),
-        schemaVersion: USER_DATA_SCHEMA_VERSION,
-      });
-    }
-    return groups;
-  });
-  /** 現在の記録先グループID。 */
-  readonly activeGroupId = signal(this.loadActiveGroupId());
+  /** 全ドメインの初期復元と所属整理の完了を待つ。 */
+  readonly ready = this.initialization.ready;
+  /** 端末データが復元済みかを公開する。 */
+  readonly storageReady = this.initialization.storageReady;
+  /** SolveServiceが所有する、削除の同期待ちを含む全記録。 */
+  readonly storedSolves = this.solves.storedSolves;
+  /** SolveServiceが導出する、新しい順の未削除履歴。 */
+  readonly activeSolves = this.solves.activeSolves;
+  /** アカウント移行の候補となるゲスト記録。 */
+  readonly guestSolves = this.solves.guestSolves;
+  /** 現在のアカウントが所有する未削除記録。 */
+  readonly accountSolves = this.solves.accountSolves;
+  /** 記録ドメインの変更を永続化・同期へ接続する通知。 */
+  readonly solveChange$ = this.solves.solveChange$;
+  /** GroupServiceが所有するユーザー作成グループの台帳。 */
+  readonly userGroups = this.groups.userGroups;
+  /** 台帳と記録から導出する表示可能なグループ。 */
+  readonly activeGroups = this.groups.activeGroups;
+  /** Historyの表示対象とTimerの記録先で共有し、端末に保存する選択。 */
+  readonly activeGroupId = this.groups.activeGroupId;
   /** 現在の記録先グループ。 */
-  readonly activeGroup = computed(
-    () =>
-      this.activeGroups().find((group) => group.id === this.activeGroupId()) ??
-      this.activeGroups()[0],
-  );
-  /** アプリ定義グループIDに対応する、ロード完了後の翻訳済み表示名。 */
-  private readonly defaultGroupNames = new Map<string, Signal<string>>(
-    DEFAULT_GROUPS.flatMap((group) =>
-      'nameKey' in group ? [[group.id, translateSignal(group.nameKey)] as const] : [],
-    ),
-  );
-
-  /** タイマーで現在選択しているsolveカテゴリー。 */
-  readonly activeSolveCategory = signal<SolveCategory>('full');
-
-  /** 履歴からタイマーへ一度だけ引き渡すリトライ対象。 */
-  private readonly retrySolve = signal<Solve | undefined>(undefined);
-
-  /** 現在のグループ内のベストタイム。記録がない場合は`Infinity`。 */
-  readonly best = computed(() =>
-    Math.min(...this.validActiveGroupSolves().map((solve) => this.finalTime(solve)), Infinity),
-  );
-  /** 現在のグループにある全記録のMean。 */
-  readonly mean = computed(() =>
-    mean(this.validActiveGroupSolves().map((solve) => this.finalTime(solve))),
-  );
-  /** 現在のグループにある直近5件のAverage。 */
-  readonly ao5 = computed(() => this.averageOf(this.activeGroupSolves(), 5));
-  /** 現在のグループにある直近12件のAverage。 */
-  readonly ao12 = computed(() => this.averageOf(this.activeGroupSolves(), 12));
-  /** 現在のグループにある直近50件のAverage。 */
-  readonly ao50 = computed(() => this.averageOf(this.activeGroupSolves(), 50));
-  /** 現在のグループにある直近100件のAverage。 */
-  readonly ao100 = computed(() => this.averageOf(this.activeGroupSolves(), 100));
-
-  /** 計測記録がアップデートされた再にイベントを通知する */
-  readonly solveChange$ = new Subject<Solve | Solve[]>();
-  /** 記録グループがアップデートされた際にイベントを通知する */
-  readonly groupChange$ = new Subject<RecordGroup>();
-
-  /** 端末固有の選択グループだけをlocalStorageへ保存する。 */
-  constructor() {
-    effect(() => localStorage.setItem('cube-reps.active-group', this.activeGroupId()));
-  }
+  readonly activeGroup = this.groups.activeGroup;
+  /** グループドメインの変更を永続化・同期へ接続する通知。 */
+  readonly groupChange$ = this.groups.groupChange$;
 
   /**
    * クラウドから受信したグループを端末へ反映する。
    * 別端末の変更を再起動後も保持するためIndexedDBへ保存し、受信した削除はStoreとIndexedDBから除去する。
    */
   async mergeGroups(remoteGroups: readonly RecordGroup[]): Promise<void> {
-    return this.groups.mergeGroups(this, remoteGroups);
+    const deletedGroups = await this.groups.mergeGroups(remoteGroups);
+    await this.membership.reconcileDeletedGroups(deletedGroups);
   }
 
   /**
@@ -161,12 +58,12 @@ export class CubeService {
    * @param group クラウドへの送信が成功したグループの版
    */
   async groupSyncFinished(group: RecordGroup): Promise<void> {
-    return this.groups.groupSyncFinished(this, group);
+    return this.groups.groupSyncFinished(group);
   }
 
   /** 選択した未紐づけ記録グループを現在のアカウントへ移し、保存後に同期キューへ渡す。 */
   assignGroupToAccount(group: RecordGroup, accountId: string): void {
-    return this.groups.assignGroupToAccount(this, group, accountId);
+    return this.groups.assignGroupToAccount(group, accountId);
   }
 
   /**
@@ -176,7 +73,7 @@ export class CubeService {
    * @returns 作成したグループ。空白名の場合は`undefined`
    */
   addGroup(name: string): RecordGroup | undefined {
-    return this.groups.addGroup(this, name);
+    return this.groups.addGroup(name);
   }
 
   /**
@@ -187,7 +84,7 @@ export class CubeService {
    * @returns 名前を変更できた場合は`true`
    */
   renameGroup(id: string, name: string): boolean {
-    return this.groups.renameGroup(this, id, name);
+    return this.groups.renameGroup(id, name);
   }
 
   /**
@@ -197,7 +94,7 @@ export class CubeService {
    * @param id 削除対象のグループID
    */
   removeGroup(id: string): void {
-    return this.groups.removeGroup(this, id);
+    return this.membership.removeGroup(id);
   }
 
   /**
@@ -207,8 +104,7 @@ export class CubeService {
    * @returns グループ名。見つからない場合は既定グループ名
    */
   groupName(groupId?: string): string {
-    const group = this.activeGroups().find(({ id }) => id === groupId) ?? DEFAULT_GROUP;
-    return this.defaultGroupNames.get(group.id)?.() ?? group.name;
+    return this.groups.groupName(groupId);
   }
 
   /**
@@ -216,7 +112,9 @@ export class CubeService {
    * 別端末の変更を再起動後も保持するためIndexedDBへ保存し、受信した削除はStoreとIndexedDBから除去する。
    */
   async mergeSolves(remoteSolves: readonly Solve[]): Promise<void> {
-    return this.solves.mergeSolves(this, remoteSolves);
+    if (await this.solves.mergeSolves(remoteSolves)) {
+      await this.membership.reconcileDeletedGroups();
+    }
   }
 
   /**
@@ -226,7 +124,7 @@ export class CubeService {
    * @param solve クラウドへの送信が成功した計測記録の版
    */
   async solveSyncFinished(solve: Solve): Promise<void> {
-    return this.solves.solveSyncFinished(this, solve);
+    return this.solves.solveSyncFinished(solve);
   }
 
   /**
@@ -246,7 +144,14 @@ export class CubeService {
     caseName?: string,
     drill?: Pick<Solve, 'caseId' | 'f2lSlot'>,
   ): Solve {
-    return this.solves.addSolve(this, time, scramble, category, caseName, drill);
+    return this.solves.addSolve(
+      this.groups.activeGroupId(),
+      time,
+      scramble,
+      category,
+      caseName,
+      drill,
+    );
   }
 
   /**
@@ -256,7 +161,7 @@ export class CubeService {
    * @param penalty 切り替えるペナルティ
    */
   togglePenalty(id: string, penalty: Exclude<Penalty, 'none'>): void {
-    return this.solves.togglePenalty(this, id, penalty);
+    return this.solves.togglePenalty(id, penalty);
   }
 
   /**
@@ -266,17 +171,17 @@ export class CubeService {
    * @param id 削除する計測記録ID
    */
   removeSolve(id: string): void {
-    return this.solves.removeSolve(this, id);
+    return this.solves.removeSolve(id);
   }
 
   /** 選択した未紐づけ記録を現在のアカウントへ移し、保存後に同期キューへ渡す。 */
   assignSolveToAccount(solve: Solve, accountId: string): void {
-    return this.solves.assignSolveToAccount(this, solve, accountId);
+    return this.solves.assignSolveToAccount(solve, accountId);
   }
 
   /** 別アカウントの記録を新しいIDでコピーする。元のローカル・クラウド記録は変更しない。 */
   copySolveToAccount(solve: Solve, accountId: string): void {
-    return this.solves.copySolveToAccount(this, solve, accountId);
+    return this.solves.copySolveToAccount(solve, accountId);
   }
 
   /** 未紐づけ、または現在のアカウントの記録だけに編集を許可する。 */
@@ -286,185 +191,11 @@ export class CubeService {
 
   /** 別アカウントの記録を間接的にも変更しないグループ操作だけを許可する。 */
   canManageGroup(id: string): boolean {
-    return this.groups.canManageGroup(this, id);
+    return this.groups.canManageGroup(id);
   }
 
-  /**
-   * 履歴の記録を次回のタイマー表示でリトライできる状態にする。
-   * リトライ結果を元記録と同じ条件で保存できるように、カテゴリーと存在する記録グループも引き継ぐ。
-   *
-   * @param solve リトライする計測記録
-   */
-  prepareRetry(solve: Solve): void {
-    this.retrySolve.set(solve);
-    this.activeSolveCategory.set(solve.category);
-    if (solve.groupId && this.activeGroups().some(({ id }) => id === solve.groupId)) {
-      this.activeGroupId.set(solve.groupId);
-    }
-  }
-
-  /**
-   * 履歴から指定されたリトライ対象を一度だけ取得する。
-   * 通常のタイマー再表示で古いスクランブルを再利用しないように、取得と同時に指定を消費する。
-   *
-   * @returns リトライ対象。指定されていない場合は`undefined`
-   */
-  takeRetrySolve(): Solve | undefined {
-    const solve = this.retrySolve();
-    this.retrySolve.set(undefined);
-    return solve;
-  }
-
-  /**
-   * +2ペナルティを反映した計測時間を返す。
-   *
-   * @param solve 対象の計測記録
-   * @returns 補正後の時間（ミリ秒）
-   */
-  finalTime(solve: Solve): number {
-    return this.solves.finalTime(solve);
-  }
-
-  /**
-   * 集計用にDNFを最悪値へ変換したタイムを返す。
-   *
-   * @param solve 対象の計測記録
-   * @returns +2反映後のタイム。DNFの場合は`Infinity`
-   */
-  statTime(solve: Solve): number {
-    return this.solves.statTime(solve);
-  }
-
-  /**
-   * ミリ秒をタイマー表示用文字列へ整形する。
-   *
-   * @param milliseconds 整形する時間
-   * @returns `m:ss.cc`または`s.cc`形式。有限値でない場合は`—`
-   */
-  formatTime(milliseconds: number): string {
-    return this.solves.formatTime(milliseconds);
-  }
-
-  /**
-   * ペナルティを含む記録の表示文字列を返す。
-   *
-   * @param solve 表示する計測記録
-   * @returns DNFまたは整形済みタイム
-   */
-  displayTime(solve: Solve): string {
-    return this.solves.displayTime(solve);
-  }
-
-  /** 初期化中のPromiseも共有し、同時に生成を要求されてもWorker設定を一度だけ行う。 */
-  private scrambleLibrary?: Promise<typeof import('cubing/scramble')>;
-
-  /**
-   * 3×3の合法状態を均等に選んだスクランブルを端末内で生成する。
-   * @returns random-state scramble
-   */
-  async createScramble(): Promise<string> {
-    const { randomScrambleForEvent } = await (this.scrambleLibrary ??= this.initializeScrambleLibrary()
-      .catch((error: unknown) => {
-        this.scrambleLibrary = undefined;
-        throw error;
-      }));
-    return (await randomScrambleForEvent('333')).toString();
-  }
-
-  /**
-   * 初回の生成要求でライブラリを読み込み、Worker起動前に共通設定を適用する。
-   * esbuild向けの起動を優先し、ビルド後に存在しないURLへの不要な通信を避ける。
-   * @returns 設定を適用済みのスクランブル生成ライブラリ
-   */
-  private async initializeScrambleLibrary(): Promise<typeof import('cubing/scramble')> {
-    const [scramble, { setSearchDebug }] = await Promise.all([
-      import('cubing/scramble'),
-      import('cubing/search'),
-    ]);
-    setSearchDebug({
-      logPerf: false,
-      prioritizeEsbuildWorkaroundForWorkerInstantiation: true,
-    });
-    return scramble;
-  }
-
-  /** 指定件数が揃っている場合に、最新記録からAverageを計算する。 */
-  private averageOf(solves: readonly Solve[], count: number): number | undefined {
-    if (solves.length < count) return undefined;
-    return average(solves.slice(0, count).map((solve) => this.statTime(solve)));
-  }
-
-  /** @returns 保存済みの記録先ID。未設定時は既定グループID */
-  private loadActiveGroupId(): string {
-    const stored = localStorage.getItem('cube-reps.active-group');
-    return stored || DEFAULT_GROUP.id;
-  }
-
-  /**
-   * IndexedDBから保存されているデータをロードする。
-   * ロード完了前にデータが登録されている場合は、IndexedDBのデータとマージする。
-   */
-  private async initializeStorage(): Promise<void> {
-    const stored = await this.userDataRepository.load();
-
-    // IndexedDBから取得したアカウント情報をストアへセットし、セット前にブラウザ上で作成されたアカウントがあればマージする
-    this.accountStore.load(stored.accounts);
-
-    // IndexedDBから取得した計測記録をストアへセットし、セット前にブラウザ上で作成された計測記録がればマージする
-    this.storedSolves.update((current) => {
-      const currentIds = new Set(current.map(({ id }) => id));
-      return [...current, ...stored.solves.filter(({ id }) => !currentIds.has(id))];
-    });
-    // IndexedDBから取得した記録グループをストアへセットし、セット前にブラウザ上で作成された記録グループがあればマージする
-    this.userGroups.update((current) => {
-      const currentGroupIds = new Set(current.map(({ id }) => id));
-      return [...current, ...stored.groups.filter(({ id }) => !currentGroupIds.has(id))];
-    });
-
-    // アクティブなグループとして設定されているグループが存在しなかった場合は、既定グループを選択する
-    if (!this.activeGroups().some(({ id }) => id === this.activeGroupId())) {
-      this.activeGroupId.set(DEFAULT_GROUP.id);
-    }
-
-    // 削除済みグループに所属する計測記録を未分類グループへ移動する
-    await this.reconcileDeletedGroups();
-
-    // 旧版が保持した送信済みtombstoneを除去し、未送信の削除だけを再送用に残す。
-    const deletedSolves = this.storedSolves().filter(
-      (solve) => solve.deletedAt && !solve.pendingSync,
-    );
-    const deletedGroups = this.userGroups().filter(
-      (group) => group.deletedAt && !group.pendingSync,
-    );
-    this.storedSolves.update((solves) =>
-      solves.filter((solve) => !solve.deletedAt || solve.pendingSync),
-    );
-    this.userGroups.update((groups) =>
-      groups.filter((group) => !group.deletedAt || group.pendingSync),
-    );
-    await Promise.all([
-      ...deletedSolves.map((solve) => this.userDataRepository.deleteSolve(solve.id)),
-      ...deletedGroups.map((group) => this.userDataRepository.deleteRecordGroup(group.id)),
-    ]);
-
-    // データのロードが完了し、データが更新可能な状態になったことを通知する
-    this.storageReady.set(true);
-  }
-
-  /** GroupとSolveの取得成功後、現在のアカウントの存在しない所属先を整理する。
-   * 同一アカウントで複数端末から同時に追加・削除する操作は保証対象外とする。
-   * @param ownerId 今回の一覧取得が完了したアカウント
-   */
+  /** 両ドメインの同期取得後、存在しない所属先を整理する。 */
   async reconcileMissingGroups(ownerId: string): Promise<void> {
-    return this.groups.reconcileMissingGroups(this, ownerId);
-  }
-
-  /** 削除を確認できたグループの所属を整理する。起動時には未取得を削除と判断しない。
-   * @param deletedGroup 削除状態を確認するグループ台帳
-   */
-  private async reconcileDeletedGroups(
-    deletedGroup: readonly RecordGroup[] = this.userGroups(),
-  ): Promise<void> {
-    return this.groups.reconcileDeletedGroups(this, deletedGroup);
+    return this.membership.reconcileMissingGroups(ownerId);
   }
 }

@@ -1,3 +1,4 @@
+import { displayTime } from '../../../../core/cube/solve-time';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
@@ -26,6 +27,9 @@ export interface SolveDetailData {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SolveDetailDialog {
+  /** 共通の時間表示をテンプレートへ提供する。 */
+  protected readonly displayTime = displayTime;
+
   /** 所有者の表示情報。 */
   protected readonly owners = inject(MetadataOwnerService);
   /** ダイアログで表示する計測記録と通し番号。 */
