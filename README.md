@@ -8,7 +8,7 @@
 
 CubeReps is a browser-based Rubik's Cube timer and training tool. Solve records and preferences are stored in your browser, so no account or server connection is required.
 
-[Open CubeReps](https://nsase.github.io/cube-reps/)
+[Open CubeReps](https://cube-reps.starline-dev.com/)
 
 ## Features
 
@@ -51,7 +51,7 @@ After stopping, you can apply a penalty, delete the latest solve, or retry the s
 
 ## Install and use offline
 
-Open [CubeReps](https://nsase.github.io/cube-reps/) once while online. In a supported desktop or Android browser, use the browser menu or install button to install the app. On iPhone and iPad, open CubeReps in Safari, tap **Share**, and select **Add to Home Screen**.
+Open [CubeReps](https://cube-reps.starline-dev.com/) once while online. In a supported desktop or Android browser, use the browser menu or install button to install the app. On iPhone and iPad, open CubeReps in Safari, tap **Share**, and select **Add to Home Screen**.
 
 After the first online load completes, the installed app can be started and reloaded offline. Solve records, groups, and algorithm preferences remain on the device. When running as an installed PWA, once a new version has finished downloading online, CubeReps displays a dismissible update notification with an **Update now** action so that you can switch versions safely.
 

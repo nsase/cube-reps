@@ -108,16 +108,17 @@ test('Web版では新版を取得しても更新通知や設定の更新操作�
   await expect(page.locator('app-update-snackbar')).toHaveCount(0);
 });
 
+/** 設定画面から独自ドメインのWeb版へ移動できることを検証する。 */
 test('設定の関連リンクからWeb版とGitHubを別タブで開く', async ({ page, context }) => {
   // 外部サイトの稼働状況に依存せず、実際のリンク操作と遷移先を確認する。
-  for (const url of ['https://nsase.github.io/cube-reps/', 'https://github.com/nsase/cube-reps']) {
+  for (const url of ['https://cube-reps.starline-dev.com/', 'https://github.com/nsase/cube-reps']) {
     await context.route(url, (route) =>
       route.fulfill({ contentType: 'text/html', body: '<h1>Linked website</h1>' }),
     );
   }
   await page.goto('/#/settings');
   for (const [name, url] of [
-    ['Open web version', 'https://nsase.github.io/cube-reps/'],
+    ['Open web version', 'https://cube-reps.starline-dev.com/'],
     ['GitHub', 'https://github.com/nsase/cube-reps'],
   ]) {
     const opened = context.waitForEvent('page');
