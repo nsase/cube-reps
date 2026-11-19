@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { WebsiteLinks } from './website-links';
 
+/** 独自ドメインのWeb版とソース公開先への案内を検証する。 */
 describe('WebsiteLinks', () => {
   it('Web版とGitHubへのリンクを別タブで安全に開く', async () => {
     TestBed.configureTestingModule({ imports: [WebsiteLinks] });
@@ -8,7 +9,7 @@ describe('WebsiteLinks', () => {
     await fixture.whenStable();
     const links = Array.from(fixture.nativeElement.querySelectorAll('a')) as HTMLAnchorElement[];
     expect(links.map((link) => link.href)).toEqual([
-      'https://nsase.github.io/cube-reps/',
+      'https://cube-reps.starline-dev.com/',
       'https://github.com/nsase/cube-reps',
     ]);
     for (const link of links) {

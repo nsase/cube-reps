@@ -34,7 +34,7 @@ jobs:
         run: npm ci
 
       - name: Build
-        run: npm run build -- --base-href /cube-reps/
+        run: npm run build -- --base-href /
 
       - name: Add GitHub Pages fallback
         run: |
