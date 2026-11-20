@@ -26,6 +26,14 @@
 - `main`へmergeしてリリースした後も、`develop`は削除せず常設ブランチとして維持する。
 - ユーザーから依頼されたPull Request以外に、同期用を含む追加のブランチやPull Requestを独断で作成しない。追加が必要と判断した場合は、作成前に理由を説明してユーザーの了承を得る。
 
+## Firebase Release Tasks
+
+- Issue実装時と`develop → main`のリリース準備時に、Firestore/Firebaseの本番設定に手動作業が必要か確認する。対象にはFirestoreルール・インデックス、Authenticationの承認済みドメイン、利用している場合のApp Check設定を含む。
+- GitHub PagesのデプロイではFirestoreルール・インデックスやFirebase Consoleの設定は更新されない。エミュレータテストの成功も本番への反映完了を意味しない。
+- 必要な作業はPR本文の`Firebase manual tasks`に未完了のチェック項目として記載する。対象プロジェクト、設定箇所またはコマンド、具体的な変更内容、実施タイミング（mainへのmerge前・アプリ公開前・公開後など）、確認方法を明記する。不要な場合は確認したうえで「なし」と記載する。
+- Issue PRに記録した未完了の作業はリリースPRへ引き継ぐ。mainへのmerge前にユーザーへタスクとしてリマインドし、merge後の完了報告でも未実施・未確認の項目を明記する。公開前に必要な作業が未完了の場合は、その依存関係を伝える。
+- 実施・確認していない項目を完了扱いにしない。リマインドの依頼だけを本番設定変更の許可と解釈せず、既存のCI確認・mergeの権限範囲も維持する。
+
 ## Angular
 
 - AngularのコンポーネントはStandalone Componentとして作成する。

@@ -122,6 +122,8 @@ npm run start:local
 
 Firestoreの開発にはJava 21以降が必要です。`npm run test:firestore`は`demo-cube-reps`というローカル専用プロジェクトIDでFirestore Emulatorを起動し、CRUDとSecurity Rulesを検証します。本番データへは接続しません。ルールとインデックスは`firestore.rules`、`firestore.indexes.json`、`firebase.json`で管理しています。本番へ反映するときは、Firebase CLIで対象プロジェクトを確認してから`firebase deploy --only firestore:rules,firestore:indexes`を実行します。
 
+GitHub Pagesのデプロイでは、Firestoreルール・インデックスの公開やFirebase Consoleの設定更新は行われません。リリースごとに、ルール、インデックス、Authenticationの承認済みドメイン、利用している場合のApp Check設定の変更を確認します。必要な手動作業はPRの`Firebase manual tasks`へ、対象プロジェクト、設定箇所またはコマンド、具体的な変更内容、実施タイミング、確認方法を記載し、Issue PRの未完了タスクをリリースPRへ引き継ぎます。`main`へのmerge前にユーザーへリマインドし、完了報告にも未実施・未確認のタスクを残します。実施と確認が済んだ項目だけを完了とし、作業が不要な場合は「なし」と記載します。
+
 ## 開発コマンド
 
 | コマンド                  | 内容                                             |
