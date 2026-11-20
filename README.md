@@ -122,6 +122,8 @@ The Firebase Web configuration in `src/app/core/auth/firebase.config.ts` contain
 
 Firestore development requires Java 21 or later. `npm run test:firestore` starts the Firestore Emulator with the local-only `demo-cube-reps` project ID and verifies CRUD operations and Security Rules without connecting to production data. Rules and indexes are managed in `firestore.rules`, `firestore.indexes.json`, and `firebase.json`. To publish them, first confirm the target Firebase project and then run `firebase deploy --only firestore:rules,firestore:indexes`.
 
+GitHub Pages deployment does not publish Firestore rules or indexes, or update Firebase Console settings. For each release, review changes to rules, indexes, Authentication authorized domains, and App Check settings if used. Track required manual work in the PR’s `Firebase manual tasks` section with the target project, setting or command, exact change, timing, and verification steps; carry unfinished tasks from issue PRs into the release PR. Remind the user before merging to `main` and list any outstanding or unverified tasks in the completion report. Mark tasks complete only after execution and verification; record “None” when no manual work is needed.
+
 ## Development commands
 
 | Command                   | Description                                  |
